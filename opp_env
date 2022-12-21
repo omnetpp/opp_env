@@ -1,0 +1,244 @@
+#!/usr/bin/env python3
+
+import argparse
+import itertools
+import logging
+import os
+import shlex
+import subprocess
+import sys
+
+_logger = logging.getLogger(__file__)
+
+COLOR_GRAY = "\033[38;20m"
+COLOR_RED = "\033[1;31m"
+COLOR_YELLOW = "\033[1;33m"
+COLOR_CYAN = "\033[0;36m"
+COLOR_GREEN = "\033[0;32m"
+COLOR_RESET = "\033[0;0m"
+
+class ColoredLoggingFormatter(logging.Formatter):
+    COLORS = {
+        logging.DEBUG: COLOR_GREEN,
+        logging.INFO: COLOR_GREEN,
+        logging.WARNING: COLOR_YELLOW,
+        logging.ERROR: COLOR_RED,
+        logging.CRITICAL: COLOR_RED
+    }
+
+    def format(self, record):
+        format = self.COLORS.get(record.levelno) + "%(levelname)s " + COLOR_CYAN + "%(name)s " +  COLOR_RESET + "%(message)s (%(filename)s:%(lineno)d)"
+        formatter = logging.Formatter(format)
+        return formatter.format(record)
+
+def parse_arguments():
+    description = "Sets up the development environment for OMNeT++ projects"
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Verbose output mode")
+    parser.add_argument("projects", nargs="+", help="List of projects")
+    return parser.parse_args(sys.argv[1:])
+
+def process_arguments():
+    args = parse_arguments()
+    handler = logging.StreamHandler()
+    handler.setFormatter(ColoredLoggingFormatter())
+    _logger.setLevel(args.log_level)
+    _logger.handlers = []
+    _logger.addHandler(handler)
+    kwargs = {k: v for k, v in vars(args).items() if v is not None}
+    return kwargs
+
+def run_command(command):
+    _logger.debug(f"Running command: {command}")
+    result = subprocess.run(["bash", "-c", command])
+    assert(result.returncode==0)
+
+class Workspace:
+    def __init__(self, root_directory):
+        self.root_directory = root_directory
+
+    def get_project_root_directory(self, project_description):
+        return os.path.join(self.root_directory, project_description.get_full_name())
+
+    def is_project_downloaded(self, project_description):
+        return os.path.exists(self.get_project_root_directory(project_description))
+
+    def download_project(self, project_description):
+        _logger.info(f"Downloading {project_description.get_full_name()}")
+        run_command(project_description.download_command)
+
+    def check_project_status(self, project_description):
+        file_list_file_name = project_description.get_full_name() + ".txt"
+        md5_file_name = project_description.get_full_name() + ".md5"
+        if not os.path.exists(file_list_file_name):
+            run_command(f"find {self.get_project_root_directory(project_description)} -type f > {file_list_file_name}")
+            run_command(f"cat {file_list_file_name} | xargs md5sum | sort | md5sum > {md5_file_name}")
+        run_command(f"cat {file_list_file_name} | xargs md5sum | sort | md5sum > {md5_file_name}.new")
+        with open(md5_file_name, "r") as old_file:
+            with open(md5_file_name + ".new", "r") as new_file:
+                return COLOR_GREEN + "UNMODIFIED" + COLOR_RESET if old_file.read() == new_file.read() else COLOR_RED + "MODIFIED" + COLOR_RESET
+
+class ProjectDescription:
+    def __init__(self, name, version, folder_name=None, required_projects={}, external_nix_packages=[], download_command=None, setenv_command=None, configure_command=None, build_command=None):
+        self.name = name
+        self.version = version
+        self.folder_name = folder_name or name,
+        self.required_projects = required_projects
+        self.external_nix_packages = external_nix_packages
+        self.download_command = download_command
+        self.setenv_command = setenv_command
+        self.configure_command = configure_command
+        self.build_command = build_command
+
+    def __repr__(self):
+        return self.get_full_name()
+
+    def __str__(self):
+        return self.get_full_name()
+
+    def get_full_name(self, colored=False):
+        return (COLOR_CYAN if colored else "") + self.name + "-" + self.version + (COLOR_RESET if colored else "")
+
+all_project_descriptions = [
+    ProjectDescription(name="omnetpp",version="6.0",
+        external_nix_packages=["bison", "flex", "perl", "llvmPackages_14.bintools", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
+        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0/omnetpp-6.0-linux-x86_64.tgz && tar xvzf omnetpp-6.0-linux-x86_64.tgz && rm omnetpp-6.0-linux-x86_64.tgz",
+        setenv_command="source setenv",
+        configure_command="./configure WITH_OSG=no WITH_QTENV=no",
+        build_command="make -j16 MODE=release"),
+    ProjectDescription(name="omnetpp",version="5.7",
+        external_nix_packages=["bison", "flex", "perl", "llvmPackages_14.bintools", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
+        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.7/omnetpp-5.7-linux-x86_64.tgz && tar xvzf omnetpp-5.7-linux-x86_64.tgz && rm omnetpp-5.7-linux-x86_64.tgz",
+        setenv_command="source setenv",
+        configure_command="./configure WITH_OSG=no WITH_QTENV=no",
+        build_command="make -j16 MODE=release"),
+    ProjectDescription(name="INET",version="4.4.0",
+        folder_name="inet",
+        required_projects={"omnetpp": ["6.0", "5.7"]},
+        external_nix_packages=["z3"],
+        download_command="git clone -b v4.4.0 git@github.com:inet-framework/inet.git && mv inet INET-4.4.0",
+        setenv_command="source setenv",
+        build_command="make makefiles && make -j16 MODE=release"),
+    ProjectDescription(name="INET",version="4.3.5",
+        folder_name="inet",
+        required_projects={"omnetpp": ["6.0", "5.7"]},
+        external_nix_packages=["z3"],
+        download_command="git clone -b v4.3.5 git@github.com:inet-framework/inet.git && mv inet INET-4.3.5",
+        setenv_command="source setenv",
+        configure_command="make makefiles",
+        build_command="make -j16 MODE=release"),
+    ProjectDescription(name="INET",version="4.2.0",
+        folder_name="inet",
+        required_projects={"omnetpp": ["5.7"]},
+        external_nix_packages=["z3"],
+        download_command="git clone -b v4.2.0 git@github.com:inet-framework/inet.git && mv inet INET-4.2.0",
+        setenv_command="source setenv -f",
+        configure_command="make makefiles",
+        build_command="make -j16 MODE=release"),
+    ProjectDescription(name="INET-GPL", version="1.0",
+        required_projects={"INET": ["4.4.0"]},
+        download_command="git clone git@github.com:inet-framework/inet-gpl.git && mv inet-gpl INET-GPL-1.0",
+        setenv_command="source setenv",
+        configure_command="make makefiles",
+        build_command="make -j16 MODE=release"),
+    ProjectDescription(name="Veins", version="5.2",
+        required_projects={"omnetpp": ["6.0"],
+                            "INET": ["4.4.0"]},
+        external_nix_packages=["sumo"],
+        download_command="wget https://veins.car2x.org/download/veins-5.2.zip && unzip veins-5.2.zip && rm veins-5.2.zip && mv veins-veins-5.2 Veins-5.2",
+        setenv_command="source setenv",
+        configure_command="./configure",
+        build_command="make -j16 MODE=release"),
+]
+
+def find_project_description(project_reference):
+    project_descriptions = [x for x in all_project_descriptions if x.name == project_reference.name and x.version == project_reference.version]
+    if len(project_descriptions) == 0:
+         raise Exception("Project description not found for " + project_reference)
+    elif len(project_descriptions) > 1:
+         raise Exception("More than one project descriptions were found for " + project_reference)
+    else:
+        return project_descriptions[0]
+
+class ProjectReference:
+    def __init__(self, name, version):
+        self.name = name
+        self.version = version
+
+    def __repr__(self):
+        return self.get_full_name()
+
+    def __str__(self):
+        return self.get_full_name()
+
+    @classmethod
+    def parse(self, string):
+        parts = string.split("-")
+        return ProjectReference("-".join(parts[:-1]), parts[-1:][0])
+
+    def get_full_name(self):
+        return self.name + "-" + self.version
+
+def compute_effective_project_descriptions(specified_project_descriptions):
+    effective_project_descriptions = []
+    for specified_project_description in specified_project_descriptions:
+        effective_project_descriptions.append(specified_project_description)
+        required_projects = specified_project_description.required_projects
+        for k, v in required_projects.items():
+            required_project_description = find_project_description(ProjectReference.parse(k + "-" + v[0]))
+            effective_project_descriptions += compute_effective_project_descriptions([required_project_description])
+    effective_project_descriptions.reverse()
+    return list(set(effective_project_descriptions))
+
+def nix_develop(nix_packages, command):
+    nix_develop_flake = """{
+                inputs = {
+                    nixpkgs.url = "nixpkgs/nixos-22.11";
+                    flake-utils.url = "github:numtide/flake-utils";
+                };
+                outputs = { self, nixpkgs, flake-utils }:
+                flake-utils.lib.eachDefaultSystem(system:
+                let
+                    pkgs = import nixpkgs { inherit system; };
+                    in rec {
+                        devShells = rec {
+                            default = pkgs.llvmPackages_14.stdenv.mkDerivation {
+                                name = "system";
+                                buildInputs = with pkgs; [ @PACKAGES@ ];
+                            };
+                        };
+                    });
+            }"""
+    nix_develop_flake_file_name = "flake.nix"
+    with open(nix_develop_flake_file_name, "w") as f:
+        f.write(nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages)))
+    nix_develop_command = f"nix develop -i . -c /bin/bash -c '{command}'"
+    run_command(nix_develop_command)
+
+def setup_environment(projects, **kwargs):
+    workspace_directory = os.getcwd()
+    workspace = Workspace(workspace_directory)
+    specified_project_references = list(map(ProjectReference.parse, projects))
+    _logger.info(f"Setting up environment in {COLOR_CYAN + workspace_directory + COLOR_RESET} for {COLOR_CYAN + str(specified_project_references) + COLOR_RESET}")
+    specified_project_descriptions = list(map(find_project_description, specified_project_references))
+    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
+    external_nix_packages = []
+    project_setenv_commands = []
+    downloaded_project_descriptions = []
+    for project_description in effective_project_descriptions:
+        if workspace.is_project_downloaded(project_description):
+            _logger.info(f"{project_description.get_full_name(colored=True)} is {workspace.check_project_status(project_description)}")
+            # downloaded_project_descriptions.append(project_description) # delete this line used for testing
+        else:
+            workspace.download_project(project_description)
+            downloaded_project_descriptions.append(project_description)
+        external_nix_packages += project_description.external_nix_packages
+        project_setenv_commands.append(f"cd {os.path.join(workspace_directory, project_description.get_full_name())} && {project_description.setenv_command}")
+    for downloaded_project_description in downloaded_project_descriptions:
+        if downloaded_project_description.configure_command:
+            nix_develop(external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(downloaded_project_description)} && {downloaded_project_description.configure_command}")
+        if downloaded_project_description.build_command:
+            nix_develop(external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(downloaded_project_description)} && {downloaded_project_description.build_command}")
+    nix_develop(external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && /bin/bash --noprofile --norc")
+
+setup_environment(**process_arguments())

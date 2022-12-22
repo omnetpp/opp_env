@@ -36,7 +36,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Verbose output mode")
     parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
-    subparsers = parser.add_subparsers(title="subcommands", dest="subcommand")
+    subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     parser_list = subparsers.add_parser("list", help="Lists all available projects")
 
@@ -72,6 +72,9 @@ class Workspace:
     def __init__(self, root_directory):
         assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
+        opp_env_directory = os.path.join(self.root_directory, ".opp_env")
+        if not os.path.exists(opp_env_directory):
+            os.mkdir(opp_env_directory)
 
     def get_project_root_directory(self, project_description):
         return os.path.join(self.root_directory, project_description.get_full_name())
@@ -84,8 +87,8 @@ class Workspace:
         run_command(project_description.download_command)
 
     def check_project_status(self, project_description):
-        file_list_file_name = os.path.join(self.root_directory, project_description.get_full_name() + ".txt")
-        md5_file_name = os.path.join(self.root_directory, project_description.get_full_name() + ".md5")
+        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_name() + ".txt")
+        md5_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_name() + ".md5")
         if not os.path.exists(file_list_file_name):
             run_command(f"find {self.get_project_root_directory(project_description)} -type f > {file_list_file_name}")
             run_command(f"cat {file_list_file_name} | xargs md5sum | sort | md5sum > {md5_file_name}")
@@ -132,14 +135,14 @@ all_project_descriptions = [
         folder_name="inet",
         required_projects={"omnetpp": ["6.0", "5.7"]},
         external_nix_packages=["z3"],
-        download_command="git clone -b v4.4.0 git@github.com:inet-framework/inet.git && mv inet INET-4.4.0",
+        download_command="git clone -b v4.4.0 git@github.com:inet-framework/inet.git INET-4.4.0",
         setenv_command="source setenv",
         build_command="make makefiles && make -j16 MODE=release"),
     ProjectDescription(name="INET",version="4.3.5",
         folder_name="inet",
         required_projects={"omnetpp": ["6.0", "5.7"]},
         external_nix_packages=["z3"],
-        download_command="git clone -b v4.3.5 git@github.com:inet-framework/inet.git && mv inet INET-4.3.5",
+        download_command="git clone -b v4.3.5 git@github.com:inet-framework/inet.git INET-4.3.5",
         setenv_command="source setenv",
         configure_command="make makefiles",
         build_command="make -j16 MODE=release"),
@@ -147,13 +150,13 @@ all_project_descriptions = [
         folder_name="inet",
         required_projects={"omnetpp": ["5.7"]},
         external_nix_packages=["z3"],
-        download_command="git clone -b v4.2.0 git@github.com:inet-framework/inet.git && mv inet INET-4.2.0",
+        download_command="git clone -b v4.2.0 git@github.com:inet-framework/inet.git INET-4.2.0",
         setenv_command="source setenv -f",
         configure_command="make makefiles",
         build_command="make -j16 MODE=release"),
     ProjectDescription(name="INET-GPL", version="1.0",
         required_projects={"INET": ["4.4.0"]},
-        download_command="git clone git@github.com:inet-framework/inet-gpl.git && mv inet-gpl INET-GPL-1.0",
+        download_command="git clone git@github.com:inet-framework/inet-gpl.git INET-GPL-1.0",
         setenv_command="source setenv",
         configure_command="make makefiles",
         build_command="make -j16 MODE=release"),
@@ -170,9 +173,9 @@ all_project_descriptions = [
 def find_project_description(project_reference):
     project_descriptions = [x for x in all_project_descriptions if x.name == project_reference.name and x.version == project_reference.version]
     if len(project_descriptions) == 0:
-         raise Exception("Project description not found for " + project_reference)
+         raise Exception("Project description not found for " + str(project_reference))
     elif len(project_descriptions) > 1:
-         raise Exception("More than one project descriptions were found for " + project_reference)
+         raise Exception("More than one project descriptions were found for " + str(project_reference))
     else:
         return project_descriptions[0]
 
@@ -225,10 +228,10 @@ def nix_develop(workspace_directory, nix_packages, command, isolated=True):
             };
         });
 }"""
-    nix_develop_flake_file_name = os.path.join(workspace_directory, "flake.nix")
+    nix_develop_flake_file_name = os.path.join(workspace_directory, ".opp_env/flake.nix")
     with open(nix_develop_flake_file_name, "w") as f:
         f.write(nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages)))
-    nix_develop_command = f"nix develop {'-i' if isolated else ''} {workspace_directory} -c /bin/bash -c '{command}'"
+    nix_develop_command = f"nix develop {'-i' if isolated else ''} {os.path.join(workspace_directory, '.opp_env')} -c /bin/bash -c '{command}'"
     run_command(nix_develop_command)
 
 def list_subcommand_main(**kwargs):

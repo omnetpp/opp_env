@@ -1,5 +1,5 @@
 {
-  description = "INET Framework - GPL licensed models";
+  description = "A tool to set up development environment for OMNeT++ projects";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-22.11";
@@ -13,20 +13,19 @@
       pname = "opp_env";
       githash = self.shortRev or "dirty";
       timestamp = pkgs.lib.substring 0 8 self.lastModifiedDate;
-      gversion = "${githash}.${timestamp}";
+      version = "${githash}.${timestamp}";
 
-    in rec {
+    in with pkgs; rec {
       packages = rec {
-        default = pkgs.python310Packages.buildPythonApplication {
-          inherit pname;
-          version = gversion;
+        default = python3Packages.buildPythonApplication {
+          inherit pname version;
           src = ./.;
           doCheck = false;
           dontConfigure = true;
           dontBuild = true;
           format = "other";
 
-          propagatedBuildInputs = with pkgs; [ nix coreutils findutils bash wget gnutar gzip unzip git openssh ];
+          propagatedBuildInputs = [ nix coreutils findutils bash wget gnutar gzip unzip git openssh ];
 
           postPatch = ''
             patchShebangs ./opp_env
@@ -38,7 +37,7 @@
             runHook postInstall
           '';
 
-          meta = with pkgs.lib; {
+          meta = with lib; {
             description = "A tool to set up development environment for OMNeT++ projects";
             license = licenses.lgpl3;
           };
@@ -46,8 +45,8 @@
       };
 
       devShells = rec {
-        default = pkgs.mkShell {
-          name = "${pname}-${gversion}";
+        default = mkShell {
+          name = "${pname}-${version}";
           packages = [ self.packages.${system}.default ];
         };
 

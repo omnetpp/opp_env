@@ -35,7 +35,20 @@ def parse_arguments():
     description = "Sets up the development environment for OMNeT++ projects"
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Verbose output mode")
-    parser.add_argument("projects", nargs="+", help="List of projects")
+    parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
+    subparsers = parser.add_subparsers(title="subcommands", dest="subcommand")
+
+    parser_list = subparsers.add_parser("list", help="Lists all available projects")
+
+    parser_shell = subparsers.add_parser("shell", help="Runs a shell in the environment of the given projects")
+    parser_shell.add_argument("projects", nargs="+", help="List of projects")
+    parser_shell.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+
+    parser_run = subparsers.add_parser("run", help="Runs a command in the environment of the given projects")
+    parser_run.add_argument("projects", nargs="+", help="List of projects")
+    parser_run.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+    parser_run.add_argument("-c", "--command", help="Specifies the commmand that is run in the environment")
+
     return parser.parse_args(sys.argv[1:])
 
 def process_arguments():
@@ -46,6 +59,8 @@ def process_arguments():
     _logger.handlers = []
     _logger.addHandler(handler)
     kwargs = {k: v for k, v in vars(args).items() if v is not None}
+    if "workspace_directory" in kwargs:
+        kwargs["workspace_directory"] = os.path.abspath(kwargs["workspace_directory"])
     return kwargs
 
 def run_command(command):
@@ -55,6 +70,7 @@ def run_command(command):
 
 class Workspace:
     def __init__(self, root_directory):
+        assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
 
     def get_project_root_directory(self, project_description):
@@ -68,8 +84,8 @@ class Workspace:
         run_command(project_description.download_command)
 
     def check_project_status(self, project_description):
-        file_list_file_name = project_description.get_full_name() + ".txt"
-        md5_file_name = project_description.get_full_name() + ".md5"
+        file_list_file_name = os.path.join(self.root_directory, project_description.get_full_name() + ".txt")
+        md5_file_name = os.path.join(self.root_directory, project_description.get_full_name() + ".md5")
         if not os.path.exists(file_list_file_name):
             run_command(f"find {self.get_project_root_directory(project_description)} -type f > {file_list_file_name}")
             run_command(f"cat {file_list_file_name} | xargs md5sum | sort | md5sum > {md5_file_name}")
@@ -102,13 +118,13 @@ class ProjectDescription:
 all_project_descriptions = [
     ProjectDescription(name="omnetpp",version="6.0",
         external_nix_packages=["bison", "flex", "perl", "llvmPackages_14.bintools", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0/omnetpp-6.0-linux-x86_64.tgz && tar xvzf omnetpp-6.0-linux-x86_64.tgz && rm omnetpp-6.0-linux-x86_64.tgz",
+        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0/omnetpp-6.0-linux-x86_64.tgz && tar xzf omnetpp-6.0-linux-x86_64.tgz && rm omnetpp-6.0-linux-x86_64.tgz",
         setenv_command="source setenv",
         configure_command="./configure WITH_OSG=no WITH_QTENV=no",
         build_command="make -j16 MODE=release"),
     ProjectDescription(name="omnetpp",version="5.7",
         external_nix_packages=["bison", "flex", "perl", "llvmPackages_14.bintools", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.7/omnetpp-5.7-linux-x86_64.tgz && tar xvzf omnetpp-5.7-linux-x86_64.tgz && rm omnetpp-5.7-linux-x86_64.tgz",
+        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.7/omnetpp-5.7-linux-x86_64.tgz && tar xzf omnetpp-5.7-linux-x86_64.tgz && rm omnetpp-5.7-linux-x86_64.tgz",
         setenv_command="source setenv",
         configure_command="./configure WITH_OSG=no WITH_QTENV=no",
         build_command="make -j16 MODE=release"),
@@ -190,33 +206,35 @@ def compute_effective_project_descriptions(specified_project_descriptions):
     effective_project_descriptions.reverse()
     return list(set(effective_project_descriptions))
 
-def nix_develop(nix_packages, command):
+def nix_develop(workspace_directory, nix_packages, command, isolated=True):
     nix_develop_flake = """{
-                inputs = {
-                    nixpkgs.url = "nixpkgs/nixos-22.11";
-                    flake-utils.url = "github:numtide/flake-utils";
+    inputs = {
+        nixpkgs.url = "nixpkgs/nixos-22.11";
+        flake-utils.url = "github:numtide/flake-utils";
+    };
+    outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem(system:
+    let
+        pkgs = import nixpkgs { inherit system; };
+        in rec {
+            devShells = rec {
+                default = pkgs.llvmPackages_14.stdenv.mkDerivation {
+                    name = "system";
+                    buildInputs = with pkgs; [ @PACKAGES@ ];
                 };
-                outputs = { self, nixpkgs, flake-utils }:
-                flake-utils.lib.eachDefaultSystem(system:
-                let
-                    pkgs = import nixpkgs { inherit system; };
-                    in rec {
-                        devShells = rec {
-                            default = pkgs.llvmPackages_14.stdenv.mkDerivation {
-                                name = "system";
-                                buildInputs = with pkgs; [ @PACKAGES@ ];
-                            };
-                        };
-                    });
-            }"""
-    nix_develop_flake_file_name = "flake.nix"
+            };
+        });
+}"""
+    nix_develop_flake_file_name = os.path.join(workspace_directory, "flake.nix")
     with open(nix_develop_flake_file_name, "w") as f:
         f.write(nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages)))
-    nix_develop_command = f"nix develop -i . -c /bin/bash -c '{command}'"
+    nix_develop_command = f"nix develop {'-i' if isolated else ''} {workspace_directory} -c /bin/bash -c '{command}'"
     run_command(nix_develop_command)
 
-def setup_environment(projects, **kwargs):
-    workspace_directory = os.getcwd()
+def list_subcommand_main(**kwargs):
+    print("\n".join(map(str, all_project_descriptions)))
+
+def setup_environment(projects, isolated=True, workspace_directory=os.getcwd(), **kwargs):
     workspace = Workspace(workspace_directory)
     specified_project_references = list(map(ProjectReference.parse, projects))
     _logger.info(f"Setting up environment in {COLOR_CYAN + workspace_directory + COLOR_RESET} for {COLOR_CYAN + str(specified_project_references) + COLOR_RESET}")
@@ -228,7 +246,6 @@ def setup_environment(projects, **kwargs):
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
             _logger.info(f"{project_description.get_full_name(colored=True)} is {workspace.check_project_status(project_description)}")
-            # downloaded_project_descriptions.append(project_description) # delete this line used for testing
         else:
             workspace.download_project(project_description)
             downloaded_project_descriptions.append(project_description)
@@ -236,9 +253,24 @@ def setup_environment(projects, **kwargs):
         project_setenv_commands.append(f"cd {os.path.join(workspace_directory, project_description.get_full_name())} && {project_description.setenv_command}")
     for downloaded_project_description in downloaded_project_descriptions:
         if downloaded_project_description.configure_command:
-            nix_develop(external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(downloaded_project_description)} && {downloaded_project_description.configure_command}")
+            nix_develop(workspace_directory, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(downloaded_project_description)} && {downloaded_project_description.configure_command}", isolated=isolated)
         if downloaded_project_description.build_command:
-            nix_develop(external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(downloaded_project_description)} && {downloaded_project_description.build_command}")
-    nix_develop(external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && /bin/bash --noprofile --norc")
+            nix_develop(workspace_directory, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(downloaded_project_description)} && {downloaded_project_description.build_command}", isolated=isolated)
+    return external_nix_packages, project_setenv_commands
 
-setup_environment(**process_arguments())
+def shell_subcommand_main(isolated=True, workspace_directory=os.getcwd(), **kwargs):
+    external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    nix_inner_command = f"/bin/bash {'--noprofile --norc' if isolated else ''}"
+    nix_develop(workspace_directory, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {nix_inner_command}", isolated=isolated)
+
+def run_subcommand_main(command=None, isolated=True, workspace_directory=os.getcwd(), **kwargs):
+    external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    nix_develop(workspace_directory, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", isolated=isolated)
+
+kwargs = process_arguments()
+if (kwargs['subcommand'] == "list"):
+    list_subcommand_main(**kwargs)
+elif (kwargs['subcommand'] == "shell"):
+    shell_subcommand_main(**kwargs)
+elif (kwargs['subcommand'] == "run"):
+    run_subcommand_main(**kwargs)

@@ -1,0 +1,13 @@
+#!/usr/bin/env -S sh -c "echo >&2 \"Error: You are running this script instead of sourcing it. Make sure to use it as 'source setenv' or '. setenv', otherwise its settings won't take effect.\"; exit 1"
+
+# Get the directory where this script reside using a trick (works differently on bash and zsh)
+# On bash, the current script's name is in 'BASH_SOURCE[0]'
+if [ "$BASH_VERSION" != "" ]; then # for BASH
+  dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+elif [ "$ZSH_VERSION" != "" ]; then # on zsh the script name is in '$0'
+  dir=$(cd $(dirname $0) && pwd)
+else # on any other SH compatible shell we assume that the current working directory is the OMNeT++ root directory
+  dir=$(pwd)
+fi
+
+export PATH=$dir:$PATH

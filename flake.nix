@@ -14,7 +14,6 @@
       githash = self.shortRev or "dirty";
       timestamp = pkgs.lib.substring 0 8 self.lastModifiedDate;
       gversion = "${githash}.${timestamp}";
-      sversion = "0.1.0"; # schemantic version number
 
     in rec {
       packages = rec {
@@ -23,10 +22,11 @@
           version = gversion;
           src = ./.;
           doCheck = false;
+          dontConfigure = true;
           dontBuild = true;
           format = "other";
 
-          buildInputs = with pkgs; [ bash wget git python310 ];
+          propagatedBuildInputs = with pkgs; [ nix coreutils findutils bash wget gnutar gzip unzip git openssh ];
 
           postPatch = ''
             patchShebangs ./opp_env
@@ -39,7 +39,7 @@
           '';
 
           meta = with pkgs.lib; {
-            description = "A tool to set up OMNeT++ model development environments";
+            description = "A tool to set up development environment for OMNeT++ projects";
             license = licenses.lgpl3;
           };
         };
@@ -48,8 +48,7 @@
       devShells = rec {
         default = pkgs.mkShell {
           name = "${pname}-${gversion}";
-          buildInputs = self.packages.${system}.default.buildInputs;
-
+          packages = [ self.packages.${system}.default ];
         };
 
       };

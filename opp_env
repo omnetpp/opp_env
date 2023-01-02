@@ -11,6 +11,9 @@ import sys
 
 _logger = logging.getLogger(__file__)
 
+def repr(object):
+    return f"{object.__class__.__name__}({', '.join([f'{prop}={value}' for prop, value in object.__dict__.items()])})"
+
 COLOR_GRAY = "\033[38;20m"
 COLOR_RED = "\033[1;31m"
 COLOR_YELLOW = "\033[1;33m"
@@ -40,6 +43,9 @@ def parse_arguments():
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     parser_list = subparsers.add_parser("list", help="Lists all available projects")
+
+    parser_describe = subparsers.add_parser("describe", help="Describes the specified project")
+    parser_describe.add_argument("project", help="The project name")
 
     parser_shell = subparsers.add_parser("build", help="Builds the specified projects in their environment")
     parser_shell.add_argument("projects", nargs="+", help="List of projects")
@@ -96,7 +102,7 @@ class Workspace:
         run_command(project_description.download_command)
 
     def check_project_status(self, project_description):
-        # return COLOR_GREEN + "UNMODIFIED" + COLOR_RESET
+        return COLOR_GREEN + "UNMODIFIED" + COLOR_RESET
         # TODO du -k --exclude=\*results\* --exclude=out --exclude=media --exclude=work --exclude=\*.log --exclude=\*.so .
         # TODO du -k --exclude=out --exclude=.metadata exclude=\*results\* exclude=\*.so .
 
@@ -111,9 +117,10 @@ class Workspace:
                 return COLOR_GREEN + "UNMODIFIED" + COLOR_RESET if old_file.read() == new_file.read() else COLOR_RED + "MODIFIED" + COLOR_RESET
 
 class ProjectDescription:
-    def __init__(self, name, version, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):
+    def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):
         self.name = name
         self.version = version
+        self.description = description
         self.stdenv = stdenv
         self.folder_name = folder_name or name
         self.required_projects = required_projects
@@ -230,6 +237,10 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
 def list_subcommand_main(**kwargs):
     print("\n".join(map(str, get_all_project_descriptions())))
 
+def describe_subcommand_main(project, **kwargs):
+    project_description = find_project_description(ProjectReference.parse(project))
+    print(repr(project_description))
+
 def setup_environment(projects, isolated=True, workspace_directory=os.getcwd(), **kwargs):
     workspace = Workspace(workspace_directory)
     specified_project_references = list(map(ProjectReference.parse, projects))
@@ -259,7 +270,7 @@ def build_subcommand_main(workspace_directory=os.getcwd(), **kwargs):
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     project_build_commands = []
     for project_description in effective_project_descriptions:
-            project_build_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.build_command}")
+        project_build_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.build_command}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && {' && '.join(project_build_commands)}", **kwargs)
 
 def clean_subcommand_main(workspace_directory=os.getcwd(), **kwargs):
@@ -281,6 +292,8 @@ def run_subcommand_main(command=None,  workspace_directory=os.getcwd(), **kwargs
 kwargs = process_arguments()
 if (kwargs['subcommand'] == "list"):
     list_subcommand_main(**kwargs)
+elif (kwargs['subcommand'] == "describe"):
+    describe_subcommand_main(**kwargs)
 elif (kwargs['subcommand'] == "build"):
     build_subcommand_main(**kwargs)
 elif (kwargs['subcommand'] == "clean"):

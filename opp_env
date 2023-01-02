@@ -102,14 +102,10 @@ class Workspace:
         run_command(project_description.download_command)
 
     def check_project_status(self, project_description):
-        return COLOR_GREEN + "UNMODIFIED" + COLOR_RESET
-        # TODO du -k --exclude=\*results\* --exclude=out --exclude=media --exclude=work --exclude=\*.log --exclude=\*.so .
-        # TODO du -k --exclude=out --exclude=.metadata exclude=\*results\* exclude=\*.so .
-
         file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".txt")
         md5_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
         if not os.path.exists(file_list_file_name):
-            run_command(f"find {self.get_project_root_directory(project_description)} -type f > {file_list_file_name}")
+            run_command(f"find {self.get_project_root_directory(project_description)} -type f | egrep -v '(bin/|doc/|ide/|media/|out/|results/|\\.log|\\.a|\\.so|\\.metadata|\\.jar|\\.png|\\.jpg)' > {file_list_file_name}")
             run_command(f"cat {file_list_file_name} | xargs -I ARG md5sum 'ARG' | sort | md5sum > {md5_file_name}")
         run_command(f"cat {file_list_file_name} | xargs -I ARG md5sum 'ARG' | sort | md5sum > {md5_file_name}.new")
         with open(md5_file_name, "r") as old_file:

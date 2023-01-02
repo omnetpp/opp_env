@@ -11,7 +11,7 @@ def get_all_inet_4_x_versions():
             "external_nix_packages": ["z3"],
             "download_command": "git clone -b v4.4.0 git@github.com:inet-framework/inet.git inet-4.4",
             "setenv_command": "source setenv",
-            "build_command": "make makefiles && make -j16 MODE:release",
+            "build_command": "make makefiles && make -j16 MODE=release",
             "clean_command": "make clean"
         },
         {
@@ -22,7 +22,7 @@ def get_all_inet_4_x_versions():
             "download_command": "git clone -b v4.3.5 git@github.com:inet-framework/inet.git inet-4.3.5",
             "setenv_command": "source setenv",
             "configure_command": "make makefiles",
-            "build_command": "make -j16 MODE:release",
+            "build_command": "make -j16 MODE=release",
             "clean_command": "make clean"
         },
         {
@@ -33,7 +33,7 @@ def get_all_inet_4_x_versions():
             "download_command": "git clone -b v4.2.2 git@github.com:inet-framework/inet.git inet-4.2.2",
             "setenv_command": "source setenv -f",
             "configure_command": "make makefiles",
-            "build_command": "make -j16 MODE:release",
+            "build_command": "make -j16 MODE=release",
             "clean_command": "make clean"
         },
         {
@@ -44,7 +44,7 @@ def get_all_inet_4_x_versions():
             "download_command": "git clone -b v4.2.0 git@github.com:inet-framework/inet.git inet-4.2",
             "setenv_command": "source setenv -f",
             "configure_command": "make makefiles",
-            "build_command": "make -j16 MODE:release",
+            "build_command": "make -j16 MODE=release",
             "clean_command": "make clean"
         },
     ]
@@ -62,7 +62,7 @@ def get_all_inet_versions():
             "external_nix_packages": ["z3"],
             "download_command": "git git@github.com:inet-framework/inet.git inet",
             "setenv_command": "source setenv",
-            "build_command": "make makefiles && make -j16 MODE:release",
+            "build_command": "make makefiles && make -j16 MODE=release",
             "clean_command": "make clean"
         },
         *get_all_inet_4_x_versions(),

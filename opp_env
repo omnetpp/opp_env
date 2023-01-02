@@ -2,6 +2,7 @@
 
 import argparse
 import itertools
+import json
 import logging
 import os
 import shlex
@@ -135,159 +136,27 @@ class ProjectDescription:
     def get_full_folder_name(self):
         return f"{self.folder_name}-{self.version}"
 
-all_project_descriptions = [
-    # omnetpp
-    ProjectDescription(name="omnetpp",version="git",
-        external_nix_packages=["bison", "flex", "perl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="git clone git@github.com:omnetpp/omnetpp.git",
-        setenv_command="source setenv",
-        configure_command="./configure WITH_OSG=no WITH_QTENV=no",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="omnetpp",version="6.0.1",
-        external_nix_packages=["bison", "flex", "perl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0.1/omnetpp-6.0.1-linux-x86_64.tgz && tar xzf omnetpp-6.0.1-linux-x86_64.tgz && rm omnetpp-6.0.1-linux-x86_64.tgz",
-        setenv_command="source setenv",
-        configure_command="./configure WITH_OSG=no WITH_QTENV=no",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="omnetpp",version="6.0",
-        external_nix_packages=["bison", "flex", "perl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0/omnetpp-6.0-linux-x86_64.tgz && tar xzf omnetpp-6.0-linux-x86_64.tgz && rm omnetpp-6.0-linux-x86_64.tgz",
-        setenv_command="source setenv",
-        configure_command="./configure WITH_OSG=no WITH_QTENV=no",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="omnetpp",version="5.7",
-        external_nix_packages=["bison", "flex", "perl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.7/omnetpp-5.7-linux-x86_64.tgz && tar xzf omnetpp-5.7-linux-x86_64.tgz && rm omnetpp-5.7-linux-x86_64.tgz &&",
-        setenv_command="source setenv",
-        configure_command="./configure WITH_OSG=no WITH_QTENV=no",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="omnetpp",version="5.6.2",
-        external_nix_packages=["bison", "flex", "perl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.6.2/omnetpp-5.6.2-src-linux.tgz && tar xzf omnetpp-5.6.2-src-linux.tgz && rm omnetpp-5.6.2-src-linux.tgz",
-        setenv_command="source setenv",
-        configure_command="./configure WITH_OSG=no WITH_QTENV=no",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="omnetpp",version="5.6.1",
-        external_nix_packages=["bison", "flex", "perl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.6.1/omnetpp-5.6.1-src-linux.tgz && tar xzf omnetpp-5.6.1-src-linux.tgz && rm omnetpp-5.6.1-src-linux.tgz",
-        setenv_command="source setenv",
-        configure_command="./configure WITH_OSG=no WITH_QTENV=no",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="omnetpp",version="5.6",
-        external_nix_packages=["bison", "flex", "perl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.6/omnetpp-5.6-src-linux.tgz && tar xzf omnetpp-5.6-src-linux.tgz && rm omnetpp-5.6-src-linux.tgz",
-        setenv_command="source setenv",
-        configure_command="./configure WITH_OSG=no WITH_QTENV=no",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="omnetpp",version="3.3p1",
-        stdenv="gcc7Stdenv",
-        external_nix_packages=["bison", "flex", "perl", "tk", "tcl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz && tar xzf omnetpp-3.3-src-gcc73.tgz && rm omnetpp-3.3-src-gcc73.tgz && mv omnetpp-omnetpp-3.3-ubuntu18.04 omnetpp-3.3p1",
-        setenv_command="export PATH=$PATH:/home/levy/workspace/test/omnetpp-3.3p1/bin && export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/levy/workspace/test/omnetpp-3.3p1/lib", # TODO hardcoded folder
-        configure_command="./configure",
-        build_command="make MODE=release",
-        clean_command="make clean"),
-    # TODO: add missing versions
-    ProjectDescription(name="omnetpp",version="4.6",
-        external_nix_packages=["bison", "flex", "perl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-        download_command="wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-4.6/omnetpp-4.6-src.tgz && tar xzf omnetpp-4.6-src.tgz && rm omnetpp-4.6-src.tgz",
-        setenv_command="source setenv",
-        configure_command="./configure WITH_TKENV=no",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    # INET
-    ProjectDescription(name="INET",version="git",
-        folder_name="inet",
-        required_projects={"omnetpp": ["git"]},
-        external_nix_packages=["z3"],
-        download_command="git git@github.com:inet-framework/inet.git inet",
-        setenv_command="source setenv",
-        build_command="make makefiles && make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="INET",version="4.4",
-        folder_name="inet",
-        required_projects={"omnetpp": ["6.0", "5.7"]},
-        external_nix_packages=["z3"],
-        download_command="git clone -b v4.4.0 git@github.com:inet-framework/inet.git INET-4.4",
-        setenv_command="source setenv",
-        build_command="make makefiles && make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="INET",version="4.3.5",
-        folder_name="inet",
-        required_projects={"omnetpp": ["6.0", "5.7"]},
-        external_nix_packages=["z3"],
-        download_command="git clone -b v4.3.5 git@github.com:inet-framework/inet.git INET-4.3.5",
-        setenv_command="source setenv",
-        configure_command="make makefiles",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="INET",version="4.2.2",
-        folder_name="inet",
-        required_projects={"omnetpp": ["5.6.2"]},
-        external_nix_packages=["z3"],
-        download_command="git clone -b v4.2.2 git@github.com:inet-framework/inet.git INET-4.2.2",
-        setenv_command="source setenv -f",
-        configure_command="make makefiles",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    ProjectDescription(name="INET",version="4.2",
-        folder_name="inet",
-        required_projects={"omnetpp": ["5.7"]},
-        external_nix_packages=["z3"],
-        download_command="git clone -b v4.2.0 git@github.com:inet-framework/inet.git INET-4.2",
-        setenv_command="source setenv -f",
-        configure_command="make makefiles",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    # INET-GPL
-    ProjectDescription(name="INET-GPL", version="1.0",
-        required_projects={"INET": ["4.4"]},
-        download_command="git clone git@github.com:inet-framework/inet-gpl.git INET-GPL-1.0",
-        setenv_command="source setenv",
-        configure_command="make makefiles",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    # Veins
-    ProjectDescription(name="Veins", version="5.2",
-        required_projects={"omnetpp": ["6.0"],
-                            "INET": ["4.4"]},
-        external_nix_packages=["sumo"],
-        download_command="wget https://veins.car2x.org/download/veins-5.2.zip && unzip veins-5.2.zip && rm veins-5.2.zip && mv veins-veins-5.2 Veins-5.2",
-        setenv_command="source setenv",
-        configure_command="./configure",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    # SimuLTE
-    ProjectDescription(name="SimuLTE", version="1.2",
-        required_projects={"omnetpp": ["5.6.2"],
-                            "INET": ["4.2.2"]},
-        external_nix_packages=["sumo"],
-        download_command="wget https://github.com/inet-framework/simulte/releases/download/v1.2.0/simulte-1.2.0-src.tgz && tar xzf simulte-1.2.0-src.tgz && rm simulte-1.2.0-src.tgz && mv simulte SimuLTE-1.2",
-        setenv_command="source setenv",
-        configure_command="make makefiles",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-    # Simu5G
-    ProjectDescription(name="Simu5G", version="1.2.1",
-        required_projects={"omnetpp": ["6.0"],
-                            "INET": ["4.4"]},
-        external_nix_packages=["sumo"],
-        download_command="wget https://github.com/Unipisa/Simu5G/archive/refs/tags/v1.2.1.tar.gz && tar xzf v1.2.1.tar.gz && rm v1.2.1.tar.gz",
-        setenv_command="source setenv",
-        configure_command="make makefiles",
-        build_command="make -j16 MODE=release",
-        clean_command="make clean"),
-]
+def get_all_omnetpp_project_descriptions():
+    import omnetpp_versions
+    return [ProjectDescription(**e) for e in omnetpp_versions.get_all_omnetpp_versions()]
+
+def get_all_inet_project_descriptions():
+    import inet_versions
+    return [ProjectDescription(**e) for e in inet_versions.get_all_inet_versions()]
+
+def get_all_external_project_descriptions():
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "external_versions.json")) as f:
+        return [ProjectDescription(**e) for e in json.load(f)]
+
+def get_all_project_descriptions():
+    return [
+        *get_all_omnetpp_project_descriptions(),
+        *get_all_inet_project_descriptions(),
+        *get_all_external_project_descriptions(),
+    ]
 
 def find_project_description(project_reference):
-    project_descriptions = [x for x in all_project_descriptions if x.name == project_reference.name and x.version == project_reference.version]
+    project_descriptions = [x for x in get_all_project_descriptions() if x.name == project_reference.name and x.version == project_reference.version]
     if len(project_descriptions) == 0:
          raise Exception("Project description not found for " + str(project_reference))
     elif len(project_descriptions) > 1:
@@ -359,7 +228,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
     run_command(nix_develop_command)
 
 def list_subcommand_main(**kwargs):
-    print("\n".join(map(str, all_project_descriptions)))
+    print("\n".join(map(str, get_all_project_descriptions())))
 
 def setup_environment(projects, isolated=True, workspace_directory=os.getcwd(), **kwargs):
     workspace = Workspace(workspace_directory)

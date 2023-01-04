@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 def get_all_omnetpp_6_x_versions():
     return [
         {

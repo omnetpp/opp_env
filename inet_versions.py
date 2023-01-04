@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 description = "INET Framework is an open-source OMNeT++ model suite for wired, wireless and mobile networks."
 
 def get_all_inet_4_x_versions():

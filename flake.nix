@@ -28,12 +28,13 @@
           propagatedBuildInputs = [ nix coreutils findutils bash wget gnutar gzip unzip git openssh ];
 
           postPatch = ''
-            patchShebangs ./opp_env
+            patchShebangs .
           '';
 
           installPhase = ''
             runHook preInstall
-            install -D ./opp_env "$out"/bin/opp_env
+            install -D opp_env omnetpp_versions.py inet_versions.py external_versions.json -t "$out"/bin/
+
             runHook postInstall
           '';
 

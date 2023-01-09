@@ -2,7 +2,7 @@ def get_all_omnetpp_6_x_versions():
     return [
         {
             "name": "omnetpp", "version": "6.0.1",
-            "external_nix_packages": ["bison", "flex", "perl", "xdg-utils", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
+            "external_nix_packages": ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "qt515.qtbase", "qt515.qtsvg", "openscenegraph", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
             "download_command": "wget http://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0.1/omnetpp-6.0.1-linux-x86_64.tgz && tar xzf omnetpp-6.0.1-linux-x86_64.tgz && rm omnetpp-6.0.1-linux-x86_64.tgz",
             "setenv_command": "source setenv",
             "configure_command": "./configure WITH_OSG=no WITH_QTENV=no",

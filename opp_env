@@ -261,6 +261,10 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
                     name = "@NAME@";
                     buildInputs = with pkgs; [ @PACKAGES@ ];
                     shellHook = ''
+                        export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}
+                        # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)
+                        export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}
+
                         @SCRIPT@
                     '';
                 };
@@ -275,7 +279,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", command)
         f.write(nix_develop_flake)
-    nix_develop_command = f"nix develop {'-i' if isolated else ''} {os.path.join(workspace_directory, '.opp_env')} {'' if interactive else '-c true'}"
+    nix_develop_command = f"nix develop {'-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''} {os.path.join(workspace_directory, '.opp_env')} {'' if interactive else '-c true'}"
     run_command(nix_develop_command)
 
 def list_subcommand_main(**kwargs):

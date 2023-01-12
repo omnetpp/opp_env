@@ -63,7 +63,7 @@ def parse_arguments():
     parser_run = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     parser_run.add_argument("projects", nargs="+", help="List of projects")
     parser_run.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
-    parser_run.add_argument("-c", "--command", help="Specifies the commmand that is run in the environment")
+    parser_run.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
 
     return parser.parse_args(sys.argv[1:])
 

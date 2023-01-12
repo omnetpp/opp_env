@@ -111,7 +111,7 @@ class Workspace:
         return os.path.exists(self.get_project_root_directory(project_description))
 
     def download_project(self, project_description):
-        _logger.info(f"Downloading {project_description.get_full_name()} into {self.get_project_root_directory(project_description)}")
+        _logger.info(f"Downloading {COLOR_CYAN + project_description.get_full_name() + COLOR_RESET} into {COLOR_CYAN + self.get_project_root_directory(project_description) + COLOR_RESET}")
         run_command(project_description.download_command)
 
     def check_project_status(self, project_description):
@@ -291,8 +291,25 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", command)
         f.write(nix_develop_flake)
-    nix_develop_command = f"nix develop {'-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''} {os.path.join(workspace_directory, '.opp_env')} {'' if interactive else '-c true'}"
+    nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {'-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''} {os.path.join(workspace_directory, '.opp_env')} {'' if interactive else '-c true'}"
     run_command(nix_develop_command)
+
+def resolve_projects(projects=[], workspace_directory=os.getcwd(), **kwargs):
+    specified_project_references = list(map(ProjectReference.parse, projects))
+    specified_project_descriptions = list(map(find_project_description, specified_project_references))
+    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
+    _logger.info(f"Using workspace {COLOR_CYAN + workspace_directory + COLOR_RESET} for specified projects {COLOR_CYAN + str(specified_project_references) + COLOR_RESET} with effective projects {COLOR_CYAN + str(effective_project_descriptions) + COLOR_RESET}")
+    return effective_project_descriptions
+
+def setup_environment(projects=[], workspace_directory=os.getcwd(), **kwargs):
+    workspace = Workspace(workspace_directory)
+    effective_project_descriptions = resolve_projects(projects=projects, workspace_directory=workspace_directory, **kwargs)
+    external_nix_packages = []
+    project_setenv_commands = []
+    for project_description in effective_project_descriptions:
+        external_nix_packages += project_description.external_nix_packages
+        project_setenv_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.setenv_command}")
+    return effective_project_descriptions, external_nix_packages, project_setenv_commands
 
 def list_subcommand_main(**kwargs):
     print("\n".join(map(str, get_all_project_descriptions())))
@@ -301,52 +318,86 @@ def describe_subcommand_main(project, **kwargs):
     project_description = find_project_description(ProjectReference.parse(project))
     print(repr(project_description))
 
-def setup_environment(projects, isolated=True, workspace_directory=os.getcwd(), **kwargs):
+def download_subcommand_main(workspace_directory=os.getcwd(), **kwargs):
     workspace = Workspace(workspace_directory)
-    specified_project_references = list(map(ProjectReference.parse, projects))
-    specified_project_descriptions = list(map(find_project_description, specified_project_references))
-    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
-    _logger.info(f"Setting up environment in {COLOR_CYAN + workspace_directory + COLOR_RESET} for {COLOR_CYAN + str(specified_project_references) + COLOR_RESET} as {COLOR_CYAN + str(effective_project_descriptions) + COLOR_RESET}")
-    external_nix_packages = []
-    project_setenv_commands = []
-    downloaded_project_descriptions = []
+    effective_project_descriptions = resolve_projects(workspace_directory=workspace_directory, **kwargs)
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
-            _logger.info(f"{project_description.get_full_name(colored=True)} is {workspace.check_project_status(project_description)}")
+            _logger.info(f"Status of project {project_description.get_full_name(colored=True)} is {workspace.check_project_status(project_description)}")
         else:
             workspace.download_project(project_description)
-            downloaded_project_descriptions.append(project_description)
-        external_nix_packages += project_description.external_nix_packages
-        project_setenv_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.setenv_command}")
-    for downloaded_project_description in downloaded_project_descriptions:
-        if downloaded_project_description.configure_command:
-            nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(downloaded_project_description)} && {downloaded_project_description.configure_command}", isolated=isolated)
-        if downloaded_project_description.build_command:
-            nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(downloaded_project_description)} && {downloaded_project_description.build_command}", isolated=isolated)
-    return effective_project_descriptions, external_nix_packages, project_setenv_commands
 
-def build_subcommand_main(workspace_directory=os.getcwd(), **kwargs):
+def configure_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
+    workspace = Workspace(workspace_directory)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    for project_description in effective_project_descriptions:
+        if workspace.is_project_downloaded(project_description):
+            _logger.info(f"Status of project {project_description.get_full_name(colored=True)} is {workspace.check_project_status(project_description)}")
+        elif prepare_missing:
+            workspace.download_project(project_description)
+        else:
+            raise Exception("Project is missing")
+        if project_description.configure_command:
+            nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(project_description)} && {project_description.configure_command}", **kwargs)
+
+def build_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     project_build_commands = []
     for project_description in effective_project_descriptions:
+        if workspace.is_project_downloaded(project_description):
+            _logger.info(f"Status of project {project_description.get_full_name(colored=True)} is {workspace.check_project_status(project_description)}")
+        elif prepare_missing:
+            workspace.download_project(project_description)
+            if project_description.configure_command:
+                nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(project_description)} && {project_description.configure_command}", **kwargs)
+        else:
+            raise Exception("Project is missing")
         project_build_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.build_command}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && {' && '.join(project_build_commands)}", **kwargs)
 
-def clean_subcommand_main(workspace_directory=os.getcwd(), **kwargs):
+def clean_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     project_clean_commands = []
     for project_description in effective_project_descriptions:
+        if workspace.is_project_downloaded(project_description):
+            _logger.info(f"Status of project {project_description.get_full_name(colored=True)} is {workspace.check_project_status(project_description)}")
+        elif prepare_missing:
+            workspace.download_project(project_description)
+            if project_description.configure_command:
+                nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(project_description)} && {project_description.configure_command}", **kwargs)
+        else:
+            raise Exception("Project is missing")
         project_clean_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.clean_command}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && {' && '.join(project_clean_commands)}", **kwargs)
 
-def shell_subcommand_main(workspace_directory=os.getcwd(), **kwargs):
+def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
+    workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    for project_description in effective_project_descriptions:
+        if workspace.is_project_downloaded(project_description):
+            _logger.info(f"Status of project {project_description.get_full_name(colored=True)} is {workspace.check_project_status(project_description)}")
+        elif prepare_missing:
+            workspace.download_project(project_description)
+            if project_description.configure_command:
+                nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(project_description)} && {project_description.configure_command}", **kwargs)
+        else:
+            raise Exception("Project is missing")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, **kwargs)
 
-def run_subcommand_main(command=None,  workspace_directory=os.getcwd(), **kwargs):
+def run_subcommand_main(command=None, workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
+    workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    for project_description in effective_project_descriptions:
+        if workspace.is_project_downloaded(project_description):
+            _logger.info(f"Status of project {project_description.get_full_name(colored=True)} is {workspace.check_project_status(project_description)}")
+        elif prepare_missing:
+            workspace.download_project(project_description)
+            if project_description.configure_command:
+                nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace.get_project_root_directory(project_description)} && {project_description.configure_command}", **kwargs)
+        else:
+            raise Exception("Project is missing")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", **kwargs)
 
 def main():

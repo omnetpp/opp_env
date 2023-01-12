@@ -41,6 +41,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Verbose output mode")
     parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
+    parser.add_argument("-x", "--handle-exception", action=argparse.BooleanOptionalAction, default=True, help="Don't print exception stacktrace")
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     parser_list = subparsers.add_parser("list", help="Lists all available projects")
@@ -48,21 +49,32 @@ def parse_arguments():
     parser_describe = subparsers.add_parser("describe", help="Describes the specified project")
     parser_describe.add_argument("project", help="The project name")
 
-    parser_shell = subparsers.add_parser("build", help="Builds the specified projects in their environment")
-    parser_shell.add_argument("projects", nargs="+", help="List of projects")
-    parser_shell.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+    parser_download = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
+    parser_download.add_argument("projects", nargs="+", help="List of projects")
 
-    parser_shell = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
-    parser_shell.add_argument("projects", nargs="+", help="List of projects")
-    parser_shell.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+    parser_configure = subparsers.add_parser("configure", help="Configures the specified projects for their environment")
+    parser_configure.add_argument("projects", nargs="+", help="List of projects")
+    parser_configure.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading them")
+
+    parser_build = subparsers.add_parser("build", help="Builds the specified projects in their environment")
+    parser_build.add_argument("projects", nargs="+", help="List of projects")
+    parser_build.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+    parser_build.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
+
+    parser_clean = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
+    parser_clean.add_argument("projects", nargs="+", help="List of projects")
+    parser_clean.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+    parser_clean.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
 
     parser_shell = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
     parser_shell.add_argument("projects", nargs="+", help="List of projects")
     parser_shell.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+    parser_shell.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
 
     parser_run = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     parser_run.add_argument("projects", nargs="+", help="List of projects")
     parser_run.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+    parser_run.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
     parser_run.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
 
     return parser.parse_args(sys.argv[1:])

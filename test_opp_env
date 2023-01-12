@@ -4,7 +4,7 @@ rm -rf test
 mkdir test
 cd test
 opp_env list
-opp_env describe omnetpp-6.
+opp_env describe omnetpp-6.0
 opp_env shell omnetpp-6.0
 opp_env clean omnetpp-6.0
 opp_env build omnetpp-6.0

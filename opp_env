@@ -32,7 +32,7 @@ class ColoredLoggingFormatter(logging.Formatter):
     }
 
     def format(self, record):
-        format = self.COLORS.get(record.levelno) + "%(levelname)s " + "%(message)s"
+        format = self.COLORS.get(record.levelno) + "%(levelname)s " + COLOR_RESET + "%(message)s"
         formatter = logging.Formatter(format)
         return formatter.format(record)
 

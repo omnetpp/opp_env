@@ -349,16 +349,33 @@ def run_subcommand_main(command=None,  workspace_directory=os.getcwd(), **kwargs
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", **kwargs)
 
-kwargs = process_arguments()
-if (kwargs['subcommand'] == "list"):
-    list_subcommand_main(**kwargs)
-elif (kwargs['subcommand'] == "describe"):
-    describe_subcommand_main(**kwargs)
-elif (kwargs['subcommand'] == "build"):
-    build_subcommand_main(**kwargs)
-elif (kwargs['subcommand'] == "clean"):
-    clean_subcommand_main(**kwargs)
-elif (kwargs['subcommand'] == "shell"):
-    shell_subcommand_main(**kwargs)
-elif (kwargs['subcommand'] == "run"):
-    run_subcommand_main(**kwargs)
+def main():
+    kwargs = process_arguments()
+    try:
+        if (kwargs["subcommand"] == "list"):
+            list_subcommand_main(**kwargs)
+        elif (kwargs["subcommand"] == "describe"):
+            describe_subcommand_main(**kwargs)
+        elif (kwargs["subcommand"] == "download"):
+            download_subcommand_main(**kwargs)
+        elif (kwargs["subcommand"] == "configure"):
+            configure_subcommand_main(**kwargs)
+        elif (kwargs["subcommand"] == "build"):
+            build_subcommand_main(**kwargs)
+        elif (kwargs["subcommand"] == "clean"):
+            clean_subcommand_main(**kwargs)
+        elif (kwargs["subcommand"] == "shell"):
+            shell_subcommand_main(**kwargs)
+        elif (kwargs["subcommand"] == "run"):
+            run_subcommand_main(**kwargs)
+        else:
+            raise Exception("Unknown subcommand")
+    except Exception as e:
+        if kwargs["handle_exception"]:
+            _logger.error(str(e))
+        else:
+            raise e
+    except KeyboardInterrupt:
+        _logger.warning("Interrupted by the user")
+
+main()

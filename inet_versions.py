@@ -2,16 +2,18 @@ description = "INET Framework is an open-source OMNeT++ model suite for wired, w
 
 def get_all_inet_4_x_versions():
     return [
-        {
-            "name": "inet", "version": "4.4.1", "description": description,
-            "folder_name": "inet",
-            "required_projects": {"omnetpp":  [ "6.0.1" ]},
-            "external_nix_packages": [ "python3", "z3"],
-            "download_command": "git clone -b v4.4.1 git@github.com:inet-framework/inet.git inet-4.4.1",
-            "setenv_command": "source setenv",
-            "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
+        *[
+            {
+                "name": "inet", "version": version, "description": description,
+                "folder_name": "inet",
+                "required_projects": {"omnetpp":  [ "6.0.1", "6.0" ]},
+                "external_nix_packages": [ "python3", "z3"],
+                "download_command": f"git clone -b v{version} git@github.com:inet-framework/inet.git inet-{version}",
+                "setenv_command": "source setenv",
+                "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
+                "clean_command": "make clean"
+            } for version in ["4.4", "4.4.1"]
+        ],
         {
             "name": "inet", "version": "4.3.9", "description": description,
             "folder_name": "inet",
@@ -34,17 +36,19 @@ def get_all_inet_4_x_versions():
             "build_command": "make -j$NIX_BUILD_CORES MODE=release",
             "clean_command": "make clean"
         },
-        {
-            "name": "inet", "version": "4.2.5", "description": description,
-            "folder_name": "inet",
-            "required_projects": {"omnetpp":  [ "5.6.2", "5.5.1", "5.4.1" ]},
-            "external_nix_packages": [ "python3", "z3"],
-            "download_command": "git clone -b v4.2.5 git@github.com:inet-framework/inet.git inet-4.2.5",
-            "setenv_command": "source setenv -f",
-            "configure_command": "make makefiles",
-            "build_command": "make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
+        *[
+            {
+                "name": "inet", "version": version, "description": description,
+                "folder_name": "inet",
+                "required_projects": {"omnetpp":  [ "5.6.2", "5.5.1", "5.4.1" ]},
+                "external_nix_packages": [ "python3", "z3"],
+                "download_command": f"git clone -b v{version} git@github.com:inet-framework/inet.git inet-{version}",
+                "setenv_command": "source setenv -f",
+                "configure_command": "make makefiles",
+                "build_command": "make -j$NIX_BUILD_CORES MODE=release",
+                "clean_command": "make clean"
+            } for version in ["4.2", "4.2.1", "4.2.2", "4.2.3", "4.2.4", "4.2.5"]
+        ],
     ]
 
 def get_all_inet_3_x_versions():

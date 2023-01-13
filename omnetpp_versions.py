@@ -1,14 +1,16 @@
 def get_all_omnetpp_6_x_versions():
     return [
-        {
-            "name": "omnetpp", "version": "6.0.1",
-            "external_nix_packages": ["ccache", "which", "bison", "flex", "perl", "which", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-            "download_command": "wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0.1/omnetpp-6.0.1-linux-x86_64.tgz && tar xzf omnetpp-6.0.1-linux-x86_64.tgz && rm omnetpp-6.0.1-linux-x86_64.tgz",
-            "setenv_command": "source setenv",
-            "configure_command": "./configure WITH_OSG=no",
-            "build_command": "make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
+        *[
+            {
+                "name": "omnetpp", "version": version,
+                "external_nix_packages": ["ccache", "which", "bison", "flex", "perl", "which", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
+                "download_command": f"wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-{version}/omnetpp-{version}-linux-x86_64.tgz && tar xzf omnetpp-{version}-linux-x86_64.tgz && rm omnetpp-{version}-linux-x86_64.tgz",
+                "setenv_command": "source setenv",
+                "configure_command": "./configure WITH_OSG=no",
+                "build_command": "make -j$NIX_BUILD_CORES MODE=release",
+                "clean_command": "make clean"
+            } for version in ["6.0.1", "6.0"]
+        ]
     ]
 
 def get_all_omnetpp_5_x_versions():

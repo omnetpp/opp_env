@@ -39,6 +39,7 @@ class ColoredLoggingFormatter(logging.Formatter):
 def parse_arguments():
     description = "Sets up the development environment for OMNeT++ projects"
     parser = argparse.ArgumentParser(description=description)
+    parser.add_argument("-q", "--quiet", action=argparse.BooleanOptionalAction, default=False, help="Suppress the standard output of executed commands")
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Verbose output mode")
     parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
     parser.add_argument("-x", "--handle-exception", action=argparse.BooleanOptionalAction, default=True, help="Don't print exception stacktrace")
@@ -91,9 +92,11 @@ def process_arguments():
         kwargs["workspace_directory"] = os.path.abspath(kwargs["workspace_directory"])
     return kwargs
 
-def run_command(command):
+def run_command(command, quiet=False, **kwargs):
     _logger.debug(f"Running command: {command}")
-    result = subprocess.run(["bash", "-c", command])
+    result = subprocess.run(["bash", "-c", command],
+                            stdout=subprocess.DEVNULL if quiet else sys.stdout,
+                            stderr=subprocess.STDOUT if quiet else sys.stderr)
     assert(result.returncode==0)
 
 class Workspace:
@@ -292,7 +295,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", command)
         f.write(nix_develop_flake)
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {'-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''} {os.path.join(workspace_directory, '.opp_env')} {'' if interactive else '-c true'}"
-    run_command(nix_develop_command)
+    run_command(nix_develop_command, **kwargs)
 
 def resolve_projects(projects=[], workspace_directory=os.getcwd(), **kwargs):
     specified_project_references = list(map(ProjectReference.parse, projects))

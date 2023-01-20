@@ -10,4 +10,4 @@ else # on any other SH compatible shell we assume that the current working direc
   dir=$(pwd)
 fi
 
-export PATH=$dir:$PATH
+export PATH=$dir/opp_env:$PATH

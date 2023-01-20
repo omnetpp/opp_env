@@ -173,12 +173,12 @@ class ProjectDescription:
         return f"{self.folder_name}-{self.version}"
 
 def get_all_omnetpp_project_descriptions():
-    import omnetpp_versions
-    return [ProjectDescription(**e) for e in omnetpp_versions.get_all_omnetpp_versions()]
+    import opp_env.omnetpp_versions
+    return [ProjectDescription(**e) for e in opp_env.omnetpp_versions.get_all_omnetpp_versions()]
 
 def get_all_inet_project_descriptions():
-    import inet_versions
-    return [ProjectDescription(**e) for e in inet_versions.get_all_inet_versions()]
+    import opp_env.inet_versions
+    return [ProjectDescription(**e) for e in opp_env.inet_versions.get_all_inet_versions()]
 
 def get_all_external_project_descriptions():
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "external_versions.json")) as f:

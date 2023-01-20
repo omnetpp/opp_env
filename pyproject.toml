@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61", "setuptools_scm[toml]>=6.2"]
+
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opp_env"
+authors = [
+    {name = "Levente Mészáros", email = "levy@omnetpp.org"},
+    {name = "Rudolf Hornig", email = "rudi@omnetpp.org"},
+]
+description = "A tool, that sets up the development environment for OMNeT++ projects"
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["omnetpp", "omnest"]
+license = {text = "LGPL-3"}
+classifiers = [
+    "Framework :: OMNeT++ :: 6",
+]
+dependencies = []
+dynamic = ["version"]
+
+[project.optional-dependencies]
+
+[project.scripts]
+opp_env = "opp_env.opp_env:main"
+
+[tool.setuptools_scm]

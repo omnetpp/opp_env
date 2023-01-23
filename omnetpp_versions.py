@@ -15,73 +15,43 @@ def get_all_omnetpp_6_x_versions():
 
 def get_all_omnetpp_5_x_versions():
     return [
-        {
-            "name": "omnetpp", "version": "5.7",
-            "external_nix_packages": ["ccache", "bison", "flex", "perl", "which", "xdg-utils", "python3", "qt5.qtbase", "qt5.qtsvg" ],
-            "download_command": "wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.7/omnetpp-5.7-linux-x86_64.tgz && tar xzf omnetpp-5.7-linux-x86_64.tgz && rm omnetpp-5.7-linux-x86_64.tgz",
-            "setenv_command": "source setenv",
-            "configure_command": "unset AR && ./configure WITH_OSG=no WITH_OSGEARTH=no",
-            "build_command": "make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
-        {
-            "name": "omnetpp", "version": "5.6.2",
-            "external_nix_packages": ["ccache", "bison", "flex", "perl", "which", "xdg-utils", "python3", "qt5.qtbase", "qt5.qtsvg" ],
-            "download_command": "wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.6.2/omnetpp-5.6.2-src-linux.tgz && tar xzf omnetpp-5.6.2-src-linux.tgz && rm omnetpp-5.6.2-src-linux.tgz",
-            "setenv_command": "source setenv -f",
-            "configure_command": "unset AR && ./configure WITH_OSG=no WITH_OSGEARTH=no",
-            "build_command": "make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
-        {
-            "name": "omnetpp", "version": "5.5.1",
-            "external_nix_packages": ["ccache", "bison", "flex", "perl", "which", "xdg-utils", "python3", "qt5.qtbase", "qt5.qtsvg" ],
-            "download_command": "wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.5.1/omnetpp-5.5.1-src-linux.tgz && tar xzf omnetpp-5.5.1-src-linux.tgz && rm omnetpp-5.5.1-src-linux.tgz",
-            "setenv_command": "source setenv -f",
-            "configure_command": "unset AR && ./configure WITH_OSG=no WITH_OSGEARTH=no",
-            "build_command": "make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
-        {
-            "name": "omnetpp", "version": "5.4.1",
-            "external_nix_packages": ["ccache", "bison", "flex", "perl", "which", "xdg-utils", "python3", "qt5.qtbase", "qt5.qtsvg" ],
-            "download_command": "wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.4.1/omnetpp-5.4.1-src-linux.tgz && tar xzf omnetpp-5.4.1-src-linux.tgz && rm omnetpp-5.4.1-src-linux.tgz",
-            "setenv_command": "source setenv -f",
-            "configure_command": "unset AR && ./configure WITH_OSG=no WITH_OSGEARTH=no",
-            "build_command": "make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
-        {
-            "name": "omnetpp", "version": "5.3",
-            "external_nix_packages": ["ccache", "bison", "flex", "perl", "which", "xdg-utils", "python3", "qt5.qtbase", "qt5.qtsvg" ],
-            "download_command": "wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.3/omnetpp-5.3-src-linux.tgz && tar xzf omnetpp-5.3-src-linux.tgz && rm omnetpp-5.3-src-linux.tgz",
-            "setenv_command": "source setenv -f",
-            "configure_command": "unset AR && ./configure WITH_OSG=no WITH_OSGEARTH=no",
-            "build_command": "make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
+        *[
+            {
+                "name": "omnetpp", "version": version,
+                "external_nix_packages": ["ccache", "bison", "flex", "perl", "which", "xdg-utils", "python3", "qt5.qtbase", "qt5.qtsvg" ],
+                "download_command": f"wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-{version}/omnetpp-{version}-linux-x86_64.tgz && tar xzf omnetpp-{version}-linux-x86_64.tgz && rm omnetpp-{version}-linux-x86_64.tgz",
+                "setenv_command": "source setenv",
+                "configure_command": "unset AR && ./configure WITH_OSG=no WITH_OSGEARTH=no",
+                "build_command": "make -j$NIX_BUILD_CORES MODE=release",
+                "clean_command": "make clean"
+            } for version in ["5.7"]
+        ],
+        *[
+            {
+                "name": "omnetpp", "version": version,
+                "external_nix_packages": ["ccache", "bison", "flex", "perl", "which", "xdg-utils", "python3", "qt5.qtbase", "qt5.qtsvg" ],
+                "download_command": f"wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-{version}/omnetpp-{version}-src-linux.tgz && tar xzf omnetpp-{version}-src-linux.tgz && rm omnetpp-{version}-src-linux.tgz",
+                "setenv_command": "source setenv -f",
+                "configure_command": "unset AR && ./configure WITH_OSG=no WITH_OSGEARTH=no",
+                "build_command": "make -j$NIX_BUILD_CORES MODE=release",
+                "clean_command": "make clean"
+            } for version in ["5.6.2", "5.6.1", "5.6", "5.5.1", "5.4.1", "5.3", "5.2.1", "5.2", "5.1.1", "5.1", "5.0"]
+        ]
     ]
 
 def get_all_omnetpp_4_x_versions():
     return [
-        {
-            "name": "omnetpp", "version": "4.6",
-            "external_nix_packages": [ "bison", "flex", "perl", "tk", "tcl", "expat", "xdg-utils" ],
-            "download_command": "wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-4.6/omnetpp-4.6-src.tgz && tar xzf omnetpp-4.6-src.tgz && rm omnetpp-4.6-src.tgz",
-            "setenv_command": "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish) && export HOSTNAME && export HOST",
-            "configure_command": "unset AR && ./configure",
-            "build_command": "make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
-        {
-            "name": "omnetpp", "version": "4.4.1",
-            "external_nix_packages": [ "bison", "flex", "perl", "tk", "tcl", "expat", "xdg-utils" ],
-            "download_command": "wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-4.4.1/omnetpp-4.4.1-src.tgz && tar xzf omnetpp-4.4.1-src.tgz && rm omnetpp-4.4.1-src.tgz",
-            "setenv_command": "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish) && export HOSTNAME && export HOST",
-            "configure_command": "unset AR && ./configure",
-            "build_command": "make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
-        },
+        *[
+            {
+                "name": "omnetpp", "version": version,
+                "external_nix_packages": [ "bison", "flex", "perl", "tk", "tcl", "expat", "xdg-utils" ],
+                "download_command": f"wget -q -nv --show-progress https://github.com/omnetpp/omnetpp/releases/download/omnetpp-{version}/omnetpp-{version}-src.tgz && tar xzf omnetpp-{version}-src.tgz && rm omnetpp-{version}-src.tgz",
+                "setenv_command": "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish) && export HOSTNAME && export HOST",
+                "configure_command": "unset AR && ./configure",
+                "build_command": "make -j$NIX_BUILD_CORES MODE=release",
+                "clean_command": "make clean"
+            } for version in ["4.6", "4.5", "4.4.1", "4.4", "4.3.1", "4.3", "4.2.2", "4.2.1", "4.2", "4.1", "4.0"]
+        ]
     ]
 
 def get_all_omnetpp_3_x_versions():

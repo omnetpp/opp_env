@@ -434,6 +434,7 @@ def run_subcommand_main(command=None, workspace_directory=os.getcwd(), prepare_m
 def main():
     kwargs = process_arguments()
     try:
+        _logger.debug(f"Starting {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation")
         if (kwargs["subcommand"] == "list"):
             list_subcommand_main(**kwargs)
         elif (kwargs["subcommand"] == "describe"):
@@ -452,7 +453,7 @@ def main():
             run_subcommand_main(**kwargs)
         else:
             raise Exception("Unknown subcommand")
-        _logger.info(f"The {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation completed succesfully")
+        _logger.debug(f"The {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation completed succesfully")
     except Exception as e:
         if kwargs["handle_exception"]:
             _logger.error(f"The {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation stopped with error: {str(e)}")

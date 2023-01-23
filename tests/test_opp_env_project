@@ -11,4 +11,4 @@ opp_env configure $PROJECT
 opp_env clean $PROJECT
 opp_env build $PROJECT
 opp_env shell $PROJECT
-opp_env run -c 'cd $PROJECT/samples/aloha && ./aloha -c PureAloha1' $PROJECT
+opp_env run -c "cd $PROJECT/samples/aloha && ./aloha -c PureAloha1" $PROJECT

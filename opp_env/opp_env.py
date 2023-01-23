@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import argparse
 import copy
 import itertools
@@ -461,5 +459,3 @@ def main():
             raise e
     except KeyboardInterrupt:
         _logger.warning(f"The {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation was interrupted by the user")
-
-main()

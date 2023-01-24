@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import copy
 import itertools
@@ -7,6 +9,20 @@ import os
 import shlex
 import subprocess
 import sys
+
+# Import omnetpp and inet versions.
+# Do it conditionally because we may be running either as a module with __package__ == "opp_env"
+# or we may be running as the __main__ module (when opp_env was started by directly invoking opp_env.py
+# or python -m opp_env)
+try:
+    from opp_env.omnetpp_versions import get_all_omnetpp_versions
+except ImportError:
+    from omnetpp_versions import get_all_omnetpp_versions
+
+try:
+    from opp_env.inet_versions import get_all_inet_versions
+except ImportError:
+    from inet_versions import get_all_inet_versions
 
 _logger = logging.getLogger(__file__)
 
@@ -36,7 +52,7 @@ class ColoredLoggingFormatter(logging.Formatter):
 
 def parse_arguments():
     description = "Sets up the development environment for OMNeT++ projects"
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(prog="opp_env", description=description)
     parser.add_argument("-q", "--quiet", action=argparse.BooleanOptionalAction, default=False, help="Suppress the standard output of executed commands")
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Verbose output mode")
     parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
@@ -171,12 +187,10 @@ class ProjectDescription:
         return f"{self.folder_name}-{self.version}"
 
 def get_all_omnetpp_project_descriptions():
-    import opp_env.omnetpp_versions
-    return [ProjectDescription(**e) for e in opp_env.omnetpp_versions.get_all_omnetpp_versions()]
+    return [ProjectDescription(**e) for e in get_all_omnetpp_versions()]
 
 def get_all_inet_project_descriptions():
-    import opp_env.inet_versions
-    return [ProjectDescription(**e) for e in opp_env.inet_versions.get_all_inet_versions()]
+    return [ProjectDescription(**e) for e in get_all_inet_versions()]
 
 def get_all_external_project_descriptions():
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "external_versions.json")) as f:
@@ -459,3 +473,8 @@ def main():
             raise e
     except KeyboardInterrupt:
         _logger.warning(f"The {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation was interrupted by the user")
+
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())

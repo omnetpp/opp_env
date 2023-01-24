@@ -21,22 +21,9 @@
           inherit pname version;
           src = ./.;
           doCheck = false;
-          dontConfigure = true;
-          dontBuild = true;
-          format = "other";
+          format = "setuptools";
 
           propagatedBuildInputs = [ nix coreutils findutils bash wget gnutar gzip unzip git openssh ];
-
-          postPatch = ''
-            patchShebangs .
-          '';
-
-          installPhase = ''
-            runHook preInstall
-            install -D opp_env omnetpp_versions.py inet_versions.py external_versions.json -t "$out"/bin/
-
-            runHook postInstall
-          '';
 
           meta = with lib; {
             description = "A tool to set up development environment for OMNeT++ projects";

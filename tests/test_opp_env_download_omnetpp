@@ -2,4 +2,4 @@
 
 rm -rf test
 mkdir test
-opp_env -l WARN list | xargs -I '{}' opp_env -w test download {}
+opp_env list | xargs -I '{}' opp_env -w test download {}

@@ -21,9 +21,15 @@
           inherit pname version;
           src = ./.;
           doCheck = false;
-          format = "setuptools";
+          #format = "pyproject";
+
+          nativeBuildInputs = [ python3Packages.setuptools-scm ];
+
+          #SETUPTOOLS_SCM_PRETEND_VERSION=version;
 
           propagatedBuildInputs = [ nix coreutils findutils bash wget gnutar gzip unzip git openssh ];
+
+          pythonImportsCheck = [ "opp_env" ];
 
           meta = with lib; {
             description = "A tool to set up development environment for OMNeT++ projects";

@@ -1,4 +1,4 @@
-# stub for setuptools. Project in configured in pyproject.toml
+# stub for setuptools. Project is configured in pyproject.toml
 
 from setuptools import setup
 

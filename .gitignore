@@ -1,3 +1,6 @@
 __pycache__
 /opp_env.egg-info
 /dist
+/build
+/opp_env/_version.py
+/result

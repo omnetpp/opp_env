@@ -36,6 +36,13 @@ COLOR_CYAN = "\033[0;36m"
 COLOR_GREEN = "\033[0;32m"
 COLOR_RESET = "\033[0;0m"
 
+def cyan(x):
+    return COLOR_CYAN + str(x) + COLOR_RESET
+def green(x):
+    return COLOR_GREEN + str(x) + COLOR_RESET
+def red(x):
+    return COLOR_RED + str(x) + COLOR_RESET
+
 class ColoredLoggingFormatter(logging.Formatter):
     COLORS = {
         logging.DEBUG: COLOR_GREEN,
@@ -131,20 +138,20 @@ class Workspace:
         return os.path.exists(self.get_project_root_directory(project_description))
 
     def download_project(self, project_description, **kwargs):
-        _logger.info(f"Downloading project {COLOR_CYAN + project_description.get_full_name() + COLOR_RESET} in workspace {COLOR_CYAN + self.root_directory + COLOR_RESET}")
+        _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         run_command(f"cd {self.root_directory} && {project_description.download_command}", **kwargs)
         # TODO run patch_command
 
     def configure_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
-        _logger.info(f"Configuring project {COLOR_CYAN + project_description.get_full_name() + COLOR_RESET} in workspace {COLOR_CYAN + self.root_directory + COLOR_RESET}")
+        _logger.info(f"Configuring project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.configure_command}", **kwargs)
 
     def build_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
-        _logger.info(f"Building project {COLOR_CYAN + project_description.get_full_name() + COLOR_RESET} in workspace {COLOR_CYAN + self.root_directory + COLOR_RESET}")
+        _logger.info(f"Building project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.build_command}", **kwargs)
 
     def clean_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
-        _logger.info(f"Cleaning project {COLOR_CYAN + project_description.get_full_name() + COLOR_RESET} in workspace {COLOR_CYAN + self.root_directory + COLOR_RESET}")
+        _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", **kwargs)
 
     def check_project_status(self, project_description):
@@ -156,7 +163,7 @@ class Workspace:
         run_command(f"cat {file_list_file_name} | xargs -I ARG md5sum 'ARG' | sort | md5sum > {md5_file_name}.new")
         with open(md5_file_name, "r") as old_file:
             with open(md5_file_name + ".new", "r") as new_file:
-                return COLOR_GREEN + "UNMODIFIED" + COLOR_RESET if old_file.read() == new_file.read() else COLOR_RED + "MODIFIED" + COLOR_RESET
+                return green("UNMODIFIED") if old_file.read() == new_file.read() else red("MODIFIED")
 
 class ProjectDescription:
     def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_command=None, patch_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):
@@ -181,7 +188,8 @@ class ProjectDescription:
         return self.get_full_name()
 
     def get_full_name(self, colored=False):
-        return (COLOR_CYAN if colored else "") + self.name + "-" + self.version + (COLOR_RESET if colored else "")
+        full_name = self.name + "-" + self.version
+        return cyan(full_name) if colored else full_name
 
     def get_full_folder_name(self):
         return f"{self.folder_name}-{self.version}"
@@ -330,7 +338,7 @@ def resolve_projects(projects=[], workspace_directory=os.getcwd(), **kwargs):
     specified_project_references = list(map(ProjectReference.parse, projects))
     specified_project_descriptions = list(map(find_project_description, specified_project_references))
     effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
-    _logger.info(f"Using specified projects {COLOR_CYAN + str(specified_project_references) + COLOR_RESET} with effective projects {COLOR_CYAN + str(effective_project_descriptions) + COLOR_RESET} in workspace {COLOR_CYAN + workspace_directory + COLOR_RESET}")
+    _logger.info(f"Using specified projects {cyan(str(specified_project_references))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     return effective_project_descriptions
 
 def setup_environment(projects=[], workspace_directory=os.getcwd(), **kwargs):
@@ -374,7 +382,7 @@ def configure_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=T
     for downloaded_project_description in downloaded_project_descriptions:
         if downloaded_project_description.configure_command:
             workspace.configure_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    _logger.info(f"Configuration finished for projects {COLOR_CYAN + str(effective_project_descriptions) + COLOR_RESET} in workspace {COLOR_CYAN + workspace_directory + COLOR_RESET}")
+    _logger.info(f"Configuration finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
 def build_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
     workspace = Workspace(workspace_directory)
@@ -393,7 +401,7 @@ def build_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
             workspace.configure_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
         if downloaded_project_description.build_command:
             workspace.build_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    _logger.info(f"Build finished for projects {COLOR_CYAN + str(effective_project_descriptions) + COLOR_RESET} in workspace {COLOR_CYAN + workspace_directory + COLOR_RESET}")
+    _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
 def clean_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
     workspace = Workspace(workspace_directory)
@@ -410,7 +418,7 @@ def clean_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
     for downloaded_project_description in downloaded_project_descriptions:
         if downloaded_project_description.configure_command:
             workspace.clean_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    _logger.info(f"Clean finished for projects {COLOR_CYAN + str(effective_project_descriptions) + COLOR_RESET} in workspace {COLOR_CYAN + workspace_directory + COLOR_RESET}")
+    _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
 def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
     workspace = Workspace(workspace_directory)
@@ -429,7 +437,7 @@ def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
             workspace.configure_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
         if downloaded_project_description.build_command:
             workspace.build_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    _logger.info(f"Starting shell for projects {COLOR_CYAN + str(effective_project_descriptions) + COLOR_RESET} in workspace {COLOR_CYAN + workspace_directory + COLOR_RESET}")
+    _logger.info(f"Starting shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, **kwargs)
 
 def run_subcommand_main(command=None, workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
@@ -449,13 +457,13 @@ def run_subcommand_main(command=None, workspace_directory=os.getcwd(), prepare_m
             workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
         if downloaded_project_description.build_command:
             workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    _logger.info(f"Running command for projects {COLOR_CYAN + str(effective_project_descriptions) + COLOR_RESET} in workspace {COLOR_CYAN + workspace_directory + COLOR_RESET}")
+    _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", **dict(kwargs, quiet=False))
 
 def main():
     kwargs = process_arguments()
     try:
-        _logger.debug(f"Starting {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation")
+        _logger.debug(f"Starting {cyan(kwargs['subcommand'])} operation")
         if (kwargs["subcommand"] == "list"):
             list_subcommand_main(**kwargs)
         elif (kwargs["subcommand"] == "describe"):
@@ -474,14 +482,14 @@ def main():
             run_subcommand_main(**kwargs)
         else:
             raise Exception("Unknown subcommand")
-        _logger.debug(f"The {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation completed succesfully")
+        _logger.debug(f"The {cyan(kwargs['subcommand'])} operation completed succesfully")
     except Exception as e:
         if kwargs["handle_exception"]:
-            _logger.error(f"The {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation stopped with error: {str(e)}")
+            _logger.error(f"The {cyan(kwargs['subcommand'])} operation stopped with error: {str(e)}")
         else:
             raise e
     except KeyboardInterrupt:
-        _logger.warning(f"The {COLOR_CYAN + kwargs['subcommand'] + COLOR_RESET} operation was interrupted by the user")
+        _logger.warning(f"The {cyan(kwargs['subcommand'])} operation was interrupted by the user")
 
     return 0
 

@@ -4,10 +4,13 @@
 
 - To install this module as editable, type `pip install --editable .`
 
-The abowe line will install the module along with the `opp_env` command in the path,
-but you will be able to make local modifications here.
+The above line will install the module. TODO you may need `sudo`? as by default it fails, and --user doesn't help either
 
-- To build, type:
+You can run `opp_env` with the `python3 -m opp_env` command.  TODO can we have a bloody `opp_env` shell command?
+
+You will be able to make local modifications here.
+
+- To build [the Python package?], type:
 
   $ pip install --upgrade build
   $ python3 -m build

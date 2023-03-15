@@ -113,12 +113,38 @@ def process_arguments():
         kwargs["workspace_directory"] = os.path.abspath(kwargs["workspace_directory"])
     return kwargs
 
-def run_command(command, quiet=False, **kwargs):
+def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, **kwargs):
     _logger.debug(f"Running command: {command}")
+
+    env = dict(os.environ)
+
+    if tweak_env_for_nix:
+        # This is a workaround for an error message that is printed multiple times when the "shell" command starts e.g. with Ubuntu 22.04 Unity desktop:
+        # ERROR: ld.so: object 'libgtk3-nocsd.so.0' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+        # The reason is that under NIX, the lib's directory is not in the default linker path. Workaround: use full path for lib.
+        libname = "libgtk3-nocsd.so.0"
+        libdir = "/usr/lib/x86_64-linux-gnu/"
+        if "LD_PRELOAD" in env and libname in env["LD_PRELOAD"].split(" ") and os.path.isfile(libdir+libname):
+            env["LD_PRELOAD"] = env["LD_PRELOAD"].replace(libname, libdir+libname)
+
+        # This is a workaround for a warning message printed by Perl:
+        # perl: warning: Setting locale failed.
+        # perl: warning: Please check that your locale settings:
+        #     LANGUAGE = (unset),
+        #     LC_ALL = (unset),
+        #     ...
+        #     LANG = "en_US.UTF-8"
+        #     are supported and installed on your system.
+        # perl: warning: Falling back to the standard locale ("C").
+        env["LC_ALL"] = "C.utf8"
+
     result = subprocess.run(["bash", "-c", command],
+                            env=env,
                             stdout=subprocess.DEVNULL if quiet else sys.stdout,
                             stderr=subprocess.STDOUT if quiet else sys.stderr)
-    assert(result.returncode==0)
+    if check_exitcode:
+        assert(result.returncode==0)
+    return result
 
 class Workspace:
     def __init__(self, root_directory):

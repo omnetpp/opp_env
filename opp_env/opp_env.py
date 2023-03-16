@@ -264,11 +264,10 @@ class ProjectReference:
 
     @classmethod
     def parse(self, string):
-        parts = string.split("-")
-        return ProjectReference("-".join(parts[:-1]), parts[-1:][0])
+        return ProjectReference(*string.rsplit("-", 1)) if "-" in string else ProjectReference(string, "")
 
     def get_full_name(self):
-        return self.name + "-" + self.version
+        return self.name + "-" + self.version if self.version else self.name
 
 def compute_effective_project_descriptions(specified_project_descriptions):
     # 1. collect all required projects ignoring the project versions

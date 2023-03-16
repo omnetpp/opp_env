@@ -181,15 +181,17 @@ class Workspace:
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", **kwargs)
 
     def check_project_status(self, project_description):
-        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".txt")
-        md5_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
+        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
         if not os.path.exists(file_list_file_name):
-            run_command(f"find {self.get_project_root_directory(project_description)} -type f | egrep -v '(bin/|doc/|ide/|media/|out/|results/|\\.log|\\.a|\\.so|\\.metadata|\\.jar|\\.png|\\.jpg)' > {file_list_file_name}")
-            run_command(f"cat {file_list_file_name} | xargs -I ARG md5sum 'ARG' | sort | md5sum > {md5_file_name}")
-        run_command(f"cat {file_list_file_name} | xargs -I ARG md5sum 'ARG' | sort | md5sum > {md5_file_name}.new")
-        with open(md5_file_name, "r") as old_file:
-            with open(md5_file_name + ".new", "r") as new_file:
-                return green("UNMODIFIED") if old_file.read() == new_file.read() else red("MODIFIED")
+            ignore_files = "*.log *.a *.so *.jar *.png *.jpg".split() # TODO why jar, png and jpg?
+            ignore_dirs = ".metadata .git bin out doc results ide media".split()  #TODO why doc, ide and media?
+            filters = [f"-not -iname '{f}'" for f in ignore_files] + [f"-not -path '*/{d}/*'" for d in ignore_dirs]
+            run_command(f"find {self.get_project_root_directory(project_description)} -type f {' '.join(filters)} -print0 | xargs -0 md5sum > {file_list_file_name}")
+            return green("NEW")
+        else:
+            # note: this won't detect if extra files were added to the project
+            result = run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", quiet=True, check_exitcode=False)
+            return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
 class ProjectDescription:
     def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_command=None, patch_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):

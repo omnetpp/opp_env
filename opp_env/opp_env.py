@@ -171,6 +171,7 @@ class Workspace:
         if project_description.download_command:
             run_command(f"cd {self.root_directory} && {project_description.download_command}", **kwargs)
         elif project_description.download_url:
+            # TODO it seems to be science fiction to download using piping into tar, with progress bar but no final success report, HOWEVER showing errors from failed download such as 404 BUT not the consequence errors from "tar"
             os.makedirs(project_dir)
             run_command(f"cd {project_dir} && wget -O - -q -nv --show-progress {project_description.download_url} | tar --strip-components=1 -xzf -", **kwargs)
         else:

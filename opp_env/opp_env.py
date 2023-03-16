@@ -343,6 +343,9 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
                         # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)
                         export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}
 
+                        # modify prompt to distinguish an opp_env shell from a normal shell
+                        export PS1="\\[\\e[01;33m\\]@NAME@\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
+
                         @SCRIPT@
                     '';
                 };

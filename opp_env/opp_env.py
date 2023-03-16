@@ -165,7 +165,15 @@ class Workspace:
 
     def download_project(self, project_description, **kwargs):
         _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-        run_command(f"cd {self.root_directory} && {project_description.download_command}", **kwargs)
+        project_dir = self.root_directory + "/" + project_description.get_full_name()
+        if project_description.download_command:
+            run_command(f"cd {self.root_directory} && {project_description.download_command}", **kwargs)
+        elif project_description.download_url:
+            os.makedirs(project_dir)
+            run_command(f"cd {project_dir} && wget -O - -q -nv --show-progress {project_description.download_url} | tar --strip-components=1 -xzf -", **kwargs)
+        else:
+            raise Exception("no download_url or download_command in project description")
+
         # TODO run patch_command
 
     def configure_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
@@ -194,7 +202,7 @@ class Workspace:
             return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
 class ProjectDescription:
-    def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_command=None, patch_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):
+    def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_url=None, download_command=None, patch_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):
         self.name = name
         self.version = version
         self.description = description
@@ -202,12 +210,15 @@ class ProjectDescription:
         self.folder_name = folder_name or name
         self.required_projects = required_projects
         self.external_nix_packages = external_nix_packages
+        self.download_url = download_url
         self.download_command = download_command
         self.patch_command = patch_command
         self.setenv_command = setenv_command
         self.configure_command = configure_command
         self.build_command = build_command
         self.clean_command = clean_command
+        if download_url and download_command:
+            raise Exception(f"project {name}-{version}: download_url and download_command are mutually exclusive")
 
     def __repr__(self):
         return self.get_full_name()

@@ -530,7 +530,7 @@ def main():
             run_subcommand_main(**kwargs)
         else:
             raise Exception("Unknown subcommand")
-        _logger.debug(f"The {cyan(kwargs['subcommand'])} operation completed succesfully")
+        _logger.debug(f"The {cyan(kwargs['subcommand'])} operation completed successfully")
     except Exception as e:
         if kwargs["handle_exception"]:
             _logger.error(f"The {cyan(kwargs['subcommand'])} operation stopped with error: {str(e)}")

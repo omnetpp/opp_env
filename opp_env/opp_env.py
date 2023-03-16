@@ -166,6 +166,8 @@ class Workspace:
     def download_project(self, project_description, **kwargs):
         _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         project_dir = self.root_directory + "/" + project_description.get_full_name()
+        if os.path.exists(project_dir):
+            raise Exception("f{project_dir} already exists")
         if project_description.download_command:
             run_command(f"cd {self.root_directory} && {project_description.download_command}", **kwargs)
         elif project_description.download_url:
@@ -173,6 +175,8 @@ class Workspace:
             run_command(f"cd {project_dir} && wget -O - -q -nv --show-progress {project_description.download_url} | tar --strip-components=1 -xzf -", **kwargs)
         else:
             raise Exception("no download_url or download_command in project description")
+        if not os.path.exists(project_dir):
+            raise Exception(f"download process did not create {project_dir}")
 
         # TODO run patch_command
 

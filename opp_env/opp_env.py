@@ -180,6 +180,8 @@ class Workspace:
 
         # TODO run patch_command
 
+        self.check_project_status(project_description)  # for its side effect of creating the .md5 file
+
     def configure_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
         _logger.info(f"Configuring project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.configure_command}", **kwargs)

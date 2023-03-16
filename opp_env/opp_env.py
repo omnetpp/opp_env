@@ -354,8 +354,9 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
     nix_develop_flake_file_name = os.path.join(workspace_directory, ".opp_env/flake.nix")
     omnetpp_project_description = next(filter(lambda project_description: project_description.name == "omnetpp", effective_project_descriptions))
     with open(nix_develop_flake_file_name, "w") as f:
+        name = '+'.join([str(d) for d in reversed(effective_project_descriptions)])
         nix_develop_flake = nix_develop_flake.replace("@STDENV@", omnetpp_project_description.stdenv)
-        nix_develop_flake = nix_develop_flake.replace("@NAME@", f"{'+'.join(map(str, effective_project_descriptions))}")
+        nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", command)
         f.write(nix_develop_flake)

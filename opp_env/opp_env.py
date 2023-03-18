@@ -67,6 +67,7 @@ def parse_arguments():
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     parser_list = subparsers.add_parser("list", help="Lists all available projects")
+    parser_list.add_argument("-m", "--mode", dest="list_mode", choices=["flat", "grouped", "names"], default="grouped", help="Listing mode")
 
     parser_describe = subparsers.add_parser("describe", help="Describes the specified project")
     parser_describe.add_argument("project", help="The project name")
@@ -261,6 +262,12 @@ def get_all_project_descriptions():
         ]
     return all_project_descriptions
 
+def get_project_names():
+    return list(dict.fromkeys([p.name for p in get_all_project_descriptions()]))
+
+def get_project_versions(project_name):
+    return [p.version for p in get_all_project_descriptions() if p.name == project_name]
+
 def find_project_description(project_reference):
     project_descriptions = [x for x in get_all_project_descriptions() if x.name == project_reference.name and x.version == project_reference.version]
     if len(project_descriptions) == 0:
@@ -399,8 +406,20 @@ def setup_environment(projects=[], workspace_directory=os.getcwd(), **kwargs):
         project_setenv_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.setenv_command}")
     return effective_project_descriptions, external_nix_packages, project_setenv_commands
 
-def list_subcommand_main(**kwargs):
-    print("\n".join(map(str, get_all_project_descriptions())))
+def list_subcommand_main(list_mode, **kwargs):
+    projects = get_all_project_descriptions()
+    names = list(dict.fromkeys([p.name for p in projects]))
+    if list_mode == "flat":
+        for p in get_all_project_descriptions():
+            print(p.get_full_name())
+    elif list_mode == "grouped":
+        for name in get_project_names():
+            print(f"{name:<10} {'  '.join(get_project_versions(name))}")
+    elif list_mode == "names":
+        for name in get_project_names():
+            print(name)
+    else:
+        raise Exception(f"invalid list mode '{list_mode}'")
 
 def describe_subcommand_main(project, **kwargs):
     project_description = find_project_description(ProjectReference.parse(project))

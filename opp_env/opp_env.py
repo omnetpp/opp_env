@@ -268,10 +268,22 @@ def get_project_names():
 def get_project_versions(project_name):
     return [p.version for p in get_all_project_descriptions() if p.name == project_name]
 
+def get_project_latest_version(project_name):
+    versions = get_project_versions(project_name)
+    numbered_versions = [v for v in versions if v and v[0] in '0123456789']
+    return sorted(numbered_versions)[-1] if numbered_versions else None  # TODO use semantic version sorting, not plain alphanumeric; exclude 'git' etc!
+
 def find_project_description(project_reference):
+    if project_reference.name not in get_project_names():
+         raise Exception(f"Cannot resolve '{project_reference}': Unknown project '{project_reference.name}'")
+    if not project_reference.version:
+         raise Exception(f"Which version of '{project_reference.name}' do you mean? (Use '{project_reference.name}-latest' for latest version)")
+    if project_reference.version == "latest":
+        project_reference.version = get_project_latest_version(project_reference.name)
+
     project_descriptions = [x for x in get_all_project_descriptions() if x.name == project_reference.name and x.version == project_reference.version]
     if len(project_descriptions) == 0:
-         raise Exception("Project description not found for " + str(project_reference))
+         raise Exception(f"Project version '{project_reference}' not found")
     elif len(project_descriptions) > 1:
          raise Exception("More than one project descriptions were found for " + str(project_reference))
     else:

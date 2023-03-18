@@ -157,8 +157,8 @@ class Workspace:
     def get_project_root_directory(self, project_description):
         return os.path.join(self.root_directory, project_description.get_full_folder_name())
 
-    def print_project_status(self, project_description):
-        _logger.info(f"Project {project_description.get_full_name(colored=True)} is {self.check_project_status(project_description)}")
+    def print_project_state(self, project_description):
+        _logger.info(f"Project {project_description.get_full_name(colored=True)} is {self.check_project_state(project_description)}")
 
     def is_project_downloaded(self, project_description):
         return os.path.exists(self.get_project_root_directory(project_description))
@@ -181,7 +181,7 @@ class Workspace:
 
         # TODO run patch_command
 
-        self.check_project_status(project_description)  # for its side effect of creating the .md5 file
+        self.mark_project_state(project_description)
 
     def configure_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
         _logger.info(f"Configuring project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
@@ -195,18 +195,17 @@ class Workspace:
         _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", **kwargs)
 
-    def check_project_status(self, project_description):
+    def mark_project_state(self, project_description):
+        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
+        run_command(f"find {self.get_project_root_directory(project_description)} -type f -print0 | xargs -0 md5sum > {file_list_file_name}")
+
+    def check_project_state(self, project_description):
         file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
         if not os.path.exists(file_list_file_name):
-            ignore_files = "*.log *.a *.so *.jar *.png *.jpg".split() # TODO why jar, png and jpg?
-            ignore_dirs = ".metadata .git bin out doc results ide media".split()  #TODO why doc, ide and media?
-            filters = [f"-not -iname '{f}'" for f in ignore_files] + [f"-not -path '*/{d}/*'" for d in ignore_dirs]
-            run_command(f"find {self.get_project_root_directory(project_description)} -type f {' '.join(filters)} -print0 | xargs -0 md5sum > {file_list_file_name}")
-            return green("NEW")
-        else:
-            # note: this won't detect if extra files were added to the project
-            result = run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", quiet=True, check_exitcode=False)
-            return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
+            return red('UNKNOWN -- project state not yet marked')
+        # note: this won't detect if extra files were added to the project
+        result = run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", quiet=True, check_exitcode=False)
+        return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
 class ProjectDescription:
     def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_url=None, download_command=None, patch_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):
@@ -412,7 +411,7 @@ def download_subcommand_main(workspace_directory=os.getcwd(), **kwargs):
     effective_project_descriptions = resolve_projects(workspace_directory=workspace_directory, **kwargs)
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
-            workspace.print_project_status(project_description)
+            workspace.print_project_state(project_description)
         else:
             workspace.download_project(project_description, **kwargs)
 
@@ -422,7 +421,7 @@ def configure_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=T
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
-            workspace.print_project_status(project_description)
+            workspace.print_project_state(project_description)
         elif prepare_missing:
             workspace.download_project(project_description, **kwargs)
             downloaded_project_descriptions.append(project_description)
@@ -439,7 +438,7 @@ def build_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
-            workspace.print_project_status(project_description)
+            workspace.print_project_state(project_description)
         elif prepare_missing:
             workspace.download_project(project_description, **kwargs)
             downloaded_project_descriptions.append(project_description)
@@ -458,7 +457,7 @@ def clean_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
-            workspace.print_project_status(project_description)
+            workspace.print_project_state(project_description)
         elif prepare_missing:
             workspace.download_project(project_description, **kwargs)
             downloaded_project_descriptions.append(project_description)
@@ -475,7 +474,7 @@ def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
-            workspace.print_project_status(project_description)
+            workspace.print_project_state(project_description)
         elif prepare_missing:
             workspace.download_project(project_description, **kwargs)
             downloaded_project_descriptions.append(project_description)
@@ -495,7 +494,7 @@ def run_subcommand_main(command=None, workspace_directory=os.getcwd(), prepare_m
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
-            workspace.print_project_status(project_description)
+            workspace.print_project_state(project_description)
         elif prepare_missing:
             workspace.download_project(project_description, **kwargs)
             downloaded_project_descriptions.append(project_description)

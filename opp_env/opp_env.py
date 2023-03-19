@@ -114,7 +114,7 @@ def process_arguments():
         kwargs["workspace_directory"] = os.path.abspath(kwargs["workspace_directory"])
     return kwargs
 
-def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, **kwargs):
+def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, extra_env_vars=None, **kwargs):
     _logger.debug(f"Running command: {command}")
 
     env = dict(os.environ)
@@ -138,6 +138,9 @@ def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=Tru
         #     are supported and installed on your system.
         # perl: warning: Falling back to the standard locale ("C").
         env["LC_ALL"] = "C.utf8"
+
+    if extra_env_vars:
+        env.update(extra_env_vars)
 
     result = subprocess.run(["bash", "-c", command],
                             env=env,
@@ -383,6 +386,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
                         # modify prompt to distinguish an opp_env shell from a normal shell
                         export PS1="\\[\\e[01;33m\\]@NAME@\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
 
+                        @RESTORE_HOME@
                         @SCRIPT@
                     '';
                 };
@@ -398,11 +402,13 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", command)
+        nix_develop_flake = nix_develop_flake.replace("@RESTORE_HOME@", f"export HOME={os.environ['HOME']}"  if isolated else "")
         f.write(nix_develop_flake)
     isolation_options = '-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
     command = '' if interactive else '-c true'
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
-    run_command(nix_develop_command, quiet=not interactive and quiet, **kwargs)
+    #TODO explanation: why the quirk (we don't want to source the rc and profile scripts, and bash seems to have no way to disable it, so we mislead bash by setting a dir without such files as HOME)
+    run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":flake_dir} if isolated else None, **kwargs)
 
 def resolve_projects(projects=[], workspace_directory=os.getcwd(), **kwargs):
     specified_project_references = list(map(ProjectReference.parse, projects))
@@ -520,7 +526,7 @@ def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
         if downloaded_project_description.build_command:
             workspace.build_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Starting {green('isolated') if isolated else cyan('non-isolated')} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
-    nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, **kwargs)
+    nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, **kwargs)
 
 def run_subcommand_main(command=None, workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
     workspace = Workspace(workspace_directory)

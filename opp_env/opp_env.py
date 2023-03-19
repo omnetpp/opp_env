@@ -389,16 +389,19 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
             };
         });
 }"""
-    nix_develop_flake_file_name = os.path.join(workspace_directory, ".opp_env/flake.nix")
+    flake_dir = os.path.join(workspace_directory, '.opp_env')
+    flake_file_name = os.path.join(flake_dir, "flake.nix")
     omnetpp_project_description = next(filter(lambda project_description: project_description.name == "omnetpp", effective_project_descriptions))
-    with open(nix_develop_flake_file_name, "w") as f:
+    with open(flake_file_name, "w") as f:
         name = '+'.join([str(d) for d in reversed(effective_project_descriptions)])
         nix_develop_flake = nix_develop_flake.replace("@STDENV@", omnetpp_project_description.stdenv)
         nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", command)
         f.write(nix_develop_flake)
-    nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {'-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''} {os.path.join(workspace_directory, '.opp_env')} {'' if interactive else '-c true'}"
+    isolation_options = '-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
+    command = '' if interactive else '-c true'
+    nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
     run_command(nix_develop_command, quiet=not interactive and quiet, **kwargs)
 
 def resolve_projects(projects=[], workspace_directory=os.getcwd(), **kwargs):

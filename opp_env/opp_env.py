@@ -502,7 +502,7 @@ def clean_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
             workspace.clean_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
+def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, isolated=True, **kwargs):
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
@@ -519,7 +519,7 @@ def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
             workspace.configure_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
         if downloaded_project_description.build_command:
             workspace.build_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    _logger.info(f"Starting shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    _logger.info(f"Starting {green('isolated') if isolated else cyan('non-isolated')} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, **kwargs)
 
 def run_subcommand_main(command=None, workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):

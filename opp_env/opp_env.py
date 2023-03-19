@@ -389,7 +389,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
             };
         });
 }"""
-    flake_dir = os.path.join(workspace_directory, '.opp_env')
+    flake_dir = os.path.join(workspace_directory, '.opp_env') #TODO race condition (multiple invocations write the same file)
     flake_file_name = os.path.join(flake_dir, "flake.nix")
     omnetpp_project_description = next(filter(lambda project_description: project_description.name == "omnetpp", effective_project_descriptions))
     with open(flake_file_name, "w") as f:

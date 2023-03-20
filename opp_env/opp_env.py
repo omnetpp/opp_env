@@ -148,8 +148,8 @@ def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=Tru
                             env=env,
                             stdout=subprocess.DEVNULL if quiet else sys.stdout,
                             stderr=subprocess.STDOUT if quiet else sys.stderr)
-    if check_exitcode:
-        assert(result.returncode==0)
+    if check_exitcode and result.returncode != 0:
+        raise Exception(f"Shell finished with exit code {result.returncode}")
     return result
 
 class Workspace:
@@ -391,7 +391,7 @@ def compute_effective_project_descriptions(specified_project_descriptions):
             return selected_project_descriptions
     raise Exception("The specified set of project versions cannot be satisfied")
 
-def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, command, interactive=False, isolated=True, quiet=False, **kwargs):
+def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, command, interactive=False, isolated=True, check_exitcode=False, quiet=False, **kwargs):
     nix_develop_flake = """{
     inputs = {
         nixpkgs.url = "nixpkgs/nixos-22.11";
@@ -436,7 +436,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
     command = '' if interactive else '-c true'
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
     #TODO explanation: why the quirk (we don't want to source the rc and profile scripts, and bash seems to have no way to disable it, so we mislead bash by setting a dir without such files as HOME)
-    run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":flake_dir} if isolated else None, **kwargs)
+    run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":flake_dir} if isolated else None, check_exitcode=check_exitcode, **kwargs)
 
 def resolve_projects(projects=[], workspace_directory=None, **kwargs):
     specified_project_references = list(map(ProjectReference.parse, projects))

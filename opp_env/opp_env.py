@@ -72,6 +72,8 @@ def parse_arguments():
     parser_describe = subparsers.add_parser("describe", help="Describes the specified project")
     parser_describe.add_argument("project", help="The project name")
 
+    parser_init = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
+
     parser_download = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     parser_download.add_argument("projects", nargs="+", help="List of projects")
 
@@ -156,7 +158,27 @@ class Workspace:
         self.root_directory = root_directory
         opp_env_directory = os.path.join(self.root_directory, ".opp_env")
         if not os.path.exists(opp_env_directory):
-            os.mkdir(opp_env_directory)
+            raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn in into one")
+
+    @staticmethod
+    def find_workspace(from_dir=None):
+        dir = os.path.abspath(from_dir) if from_dir else os.getcwd()
+        while True:
+            if os.path.isdir(os.path.join(dir, ".opp_env")):
+                return dir
+            parent_dir = os.path.dirname(dir)
+            if parent_dir == dir:
+                break
+            dir = parent_dir
+        raise Exception(f"No opp_env workspace found in '{from_dir}' or its parent directories")
+        #return None
+
+    @staticmethod
+    def init_workspace(dir=None):
+        opp_env_dir = os.path.join(dir, ".opp_env")
+        if os.path.isdir(opp_env_dir):
+            raise Exception(f"'{dir}' is already an opp_env workspace")
+        os.mkdir(opp_env_dir)
 
     def get_project_root_directory(self, project_description):
         return os.path.join(self.root_directory, project_description.get_full_folder_name())
@@ -286,7 +308,7 @@ def find_project_description(project_reference):
 
     project_descriptions = [x for x in get_all_project_descriptions() if x.name == project_reference.name and x.version == project_reference.version]
     if len(project_descriptions) == 0:
-         raise Exception(f"Project version '{project_reference}' not found")
+         raise Exception(f"Project '{project_reference.name}' has no version '{project_reference.version}'")
     elif len(project_descriptions) > 1:
          raise Exception("More than one project descriptions were found for " + str(project_reference))
     else:
@@ -410,14 +432,19 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
     #TODO explanation: why the quirk (we don't want to source the rc and profile scripts, and bash seems to have no way to disable it, so we mislead bash by setting a dir without such files as HOME)
     run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":flake_dir} if isolated else None, **kwargs)
 
-def resolve_projects(projects=[], workspace_directory=os.getcwd(), **kwargs):
+def resolve_projects(projects=[], workspace_directory=None, **kwargs):
     specified_project_references = list(map(ProjectReference.parse, projects))
     specified_project_descriptions = list(map(find_project_description, specified_project_references))
     effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
     _logger.info(f"Using specified projects {cyan(str(specified_project_references))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     return effective_project_descriptions
 
-def setup_environment(projects=[], workspace_directory=os.getcwd(), **kwargs):
+def resolve_workspace(workspace_directory):
+    workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
+    return workspace_directory
+
+def setup_environment(projects=[], workspace_directory=None, **kwargs):
+    workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions = resolve_projects(projects=projects, workspace_directory=workspace_directory, **kwargs)
     external_nix_packages = []
@@ -442,11 +469,17 @@ def list_subcommand_main(list_mode, **kwargs):
     else:
         raise Exception(f"invalid list mode '{list_mode}'")
 
+def init_subcommand_main(**kwargs):
+    dir = os.getcwd()
+    Workspace.init_workspace(dir)
+    _logger.info(f"Workspace created in folder {cyan(dir)}")
+
 def describe_subcommand_main(project, **kwargs):
     project_description = find_project_description(ProjectReference.parse(project))
     print(repr(project_description))
 
-def download_subcommand_main(workspace_directory=os.getcwd(), **kwargs):
+def download_subcommand_main(workspace_directory=None, **kwargs):
+    workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions = resolve_projects(workspace_directory=workspace_directory, **kwargs)
     for project_description in effective_project_descriptions:
@@ -455,7 +488,8 @@ def download_subcommand_main(workspace_directory=os.getcwd(), **kwargs):
         else:
             workspace.download_project(project_description, **kwargs)
 
-def configure_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
+def configure_subcommand_main(workspace_directory=None, prepare_missing=True, **kwargs):
+    workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
@@ -472,7 +506,8 @@ def configure_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=T
             workspace.configure_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Configuration finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
-def build_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
+def build_subcommand_main(workspace_directory=None, prepare_missing=True, **kwargs):
+    workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
@@ -491,7 +526,8 @@ def build_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
             workspace.build_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
-def clean_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
+def clean_subcommand_main(workspace_directory=None, prepare_missing=True, **kwargs):
+    workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
@@ -508,7 +544,8 @@ def clean_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
             workspace.clean_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True, isolated=True, **kwargs):
+def shell_subcommand_main(workspace_directory=None, prepare_missing=True, isolated=True, **kwargs):
+    workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
@@ -528,7 +565,8 @@ def shell_subcommand_main(workspace_directory=os.getcwd(), prepare_missing=True,
     _logger.info(f"Starting {green('isolated') if isolated else cyan('non-isolated')} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, **kwargs)
 
-def run_subcommand_main(command=None, workspace_directory=os.getcwd(), prepare_missing=True, **kwargs):
+def run_subcommand_main(command=None, workspace_directory=None, prepare_missing=True, **kwargs):
+    workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
@@ -556,6 +594,8 @@ def main():
             list_subcommand_main(**kwargs)
         elif (kwargs["subcommand"] == "describe"):
             describe_subcommand_main(**kwargs)
+        elif (kwargs["subcommand"] == "init"):
+            init_subcommand_main(**kwargs)
         elif (kwargs["subcommand"] == "download"):
             download_subcommand_main(**kwargs)
         elif (kwargs["subcommand"] == "configure"):

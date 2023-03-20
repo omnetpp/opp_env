@@ -208,7 +208,8 @@ class Workspace:
         if not os.path.exists(project_dir):
             raise Exception(f"download process did not create {project_dir}")
 
-        # TODO run patch_command
+        if project_description.patch_command:
+            run_command(f"cd {project_dir} && {project_description.patch_command}", **kwargs)
 
         self.mark_project_state(project_description)
 

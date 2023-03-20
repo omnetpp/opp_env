@@ -577,7 +577,7 @@ def run_subcommand_main(command=None, workspace_directory=None, prepare_missing=
             workspace.download_project(project_description, **kwargs)
             downloaded_project_descriptions.append(project_description)
         else:
-            raise Exception("Project is missing")
+            raise Exception(f"Project {str(project_description)} is missing")
     for downloaded_project_description in downloaded_project_descriptions:
         if downloaded_project_description.configure_command:
             workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)

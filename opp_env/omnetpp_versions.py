@@ -61,6 +61,7 @@ def get_all_omnetpp_3_x_versions():
             "stdenv": "gcc7Stdenv",
             "external_nix_packages": [ "bison", "flex", "perl", "tk", "tcl", "expat" ],
             "download_url": "https://github.com/omnetpp/omnetpp/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz",
+            "patch_command": "sed -i '1s|.*|#!/bin/env perl|;2s|.*||' src/nedc/opp_msgc",
             "setenv_command": "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish)",
             "configure_command": "./configure",
             "build_command": "make MODE=release",

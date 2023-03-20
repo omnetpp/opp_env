@@ -73,7 +73,7 @@ def get_all_omnetpp_git_versions():
         {
             "name": "omnetpp", "version": "git",
             "external_nix_packages": ["ccache", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
-            "download_command": "git clone git@github.com:omnetpp/omnetpp.git",
+            "git_url": "git@github.com:omnetpp/omnetpp.git",
             "setenv_command": "source setenv",
             "configure_command": "./configure WITH_OSG=no",
             "build_command": "make -j$NIX_BUILD_CORES MODE=release",

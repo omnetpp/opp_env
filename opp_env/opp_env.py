@@ -200,6 +200,9 @@ class Workspace:
             # TODO it seems to be science fiction to download using piping into tar, with progress bar but no final success report, HOWEVER showing errors from failed download such as 404 BUT not the consequence errors from "tar"
             os.makedirs(project_dir)
             run_command(f"cd {project_dir} && wget -O - -q -nv --show-progress {project_description.download_url} | tar --strip-components=1 -xzf -", **kwargs)
+        elif project_description.git_url:
+            branch_option = "-b" + project_description.git_branch if project_description.git_branch else ""
+            run_command(f"git clone {branch_option} {project_description.git_url} {project_dir}")
         else:
             raise Exception("no download_url or download_command in project description")
         if not os.path.exists(project_dir):
@@ -234,7 +237,7 @@ class Workspace:
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
 class ProjectDescription:
-    def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_url=None, download_command=None, patch_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):
+    def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_url=None, git_url=None, git_branch=None, download_command=None, patch_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):
         self.name = name
         self.version = version
         self.description = description
@@ -243,14 +246,16 @@ class ProjectDescription:
         self.required_projects = required_projects
         self.external_nix_packages = external_nix_packages
         self.download_url = download_url
+        self.git_url = git_url
+        self.git_branch = git_branch
         self.download_command = download_command
         self.patch_command = patch_command
         self.setenv_command = setenv_command
         self.configure_command = configure_command
         self.build_command = build_command
         self.clean_command = clean_command
-        if download_url and download_command:
-            raise Exception(f"project {name}-{version}: download_url and download_command are mutually exclusive")
+        if bool(download_url) + bool(git_url) + bool(download_command) > 1:
+            raise Exception(f"project {name}-{version}: download_url, git_url, and download_command are mutually exclusive")
 
     def __repr__(self):
         return self.get_full_name()

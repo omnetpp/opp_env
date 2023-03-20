@@ -63,7 +63,7 @@ def parse_arguments():
     parser.add_argument("-q", "--quiet", action=argparse.BooleanOptionalAction, default=False, help="Suppress the standard output of executed commands")
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Verbose output mode")
     parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
-    parser.add_argument("-x", "--handle-exception", action=argparse.BooleanOptionalAction, default=True, help="Don't print exception stacktrace")
+    parser.add_argument("-p", "--print-stacktrace", default=False, action='store_true', help="Print stack trace on error")
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     parser_list = subparsers.add_parser("list", help="Lists all available projects")
@@ -618,7 +618,7 @@ def main():
             raise Exception("Unknown subcommand")
         _logger.debug(f"The {cyan(kwargs['subcommand'])} operation completed successfully")
     except Exception as e:
-        if kwargs["handle_exception"]:
+        if not kwargs["print_stacktrace"]:
             _logger.error(f"The {cyan(kwargs['subcommand'])} operation stopped with error: {str(e)}")
         else:
             raise e

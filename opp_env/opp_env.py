@@ -36,12 +36,11 @@ COLOR_CYAN = "\033[0;36m"
 COLOR_GREEN = "\033[0;32m"
 COLOR_RESET = "\033[0;0m"
 
-def cyan(x):
-    return COLOR_CYAN + str(x) + COLOR_RESET
-def green(x):
-    return COLOR_GREEN + str(x) + COLOR_RESET
-def red(x):
-    return COLOR_RED + str(x) + COLOR_RESET
+def gray(x): return COLOR_GRAY + str(x) + COLOR_RESET
+def red(x): return COLOR_RED + str(x) + COLOR_RESET
+def yellow(x): return COLOR_YELLOW + str(x) + COLOR_RESET
+def cyan(x): return COLOR_CYAN + str(x) + COLOR_RESET
+def green(x): return COLOR_GREEN + str(x) + COLOR_RESET
 
 class ColoredLoggingFormatter(logging.Formatter):
     COLORS = {
@@ -432,6 +431,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", command)
         nix_develop_flake = nix_develop_flake.replace("@RESTORE_HOME@", f"export HOME={os.environ['HOME']}"  if isolated else "")
         f.write(nix_develop_flake)
+    _logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
     isolation_options = '-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
     command = '' if interactive else '-c true'
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"

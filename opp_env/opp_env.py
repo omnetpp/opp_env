@@ -569,7 +569,7 @@ def shell_subcommand_main(workspace_directory=None, prepare_missing=True, isolat
         if downloaded_project_description.build_command:
             workspace.build_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Starting {green('isolated') if isolated else cyan('non-isolated')} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
-    nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, **kwargs)
+    nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
 def run_subcommand_main(command=None, workspace_directory=None, prepare_missing=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)

@@ -9,6 +9,7 @@ import os
 import shlex
 import subprocess
 import sys
+import re
 
 # Import omnetpp and inet versions.
 # Do it conditionally because we may be running either as a module with __package__ == "opp_env"
@@ -298,10 +299,15 @@ def get_project_names():
 def get_project_versions(project_name):
     return [p.version for p in get_all_project_descriptions() if p.name == project_name]
 
+def natsorted(l): # from https://stackoverflow.com/questions/4836710/is-there-a-built-in-function-for-string-natural-sort
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(l, key=alphanum_key)
+
 def get_project_latest_version(project_name):
     versions = get_project_versions(project_name)
-    numbered_versions = [v for v in versions if v and v[0] in '0123456789']
-    return sorted(numbered_versions)[-1] if numbered_versions else None  # TODO use semantic version sorting, not plain alphanumeric; exclude 'git' etc!
+    numbered_versions = [v for v in versions if v and v[0] in '0123456789']  # exclude versions named "git", etc.
+    return natsorted(numbered_versions)[-1] if numbered_versions else None  # almost as good as semantic version sorting
 
 def find_project_description(project_reference):
     if project_reference.name not in get_project_names():

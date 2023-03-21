@@ -437,7 +437,11 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
     isolation_options = '-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
     command = '' if interactive else '-c true'
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
-    #TODO explanation: why the quirk (we don't want to source the rc and profile scripts, and bash seems to have no way to disable it, so we mislead bash by setting a dir without such files as HOME)
+    # Note: Why do we set HOME=<flake_dir> in isolated mode? We want the bash shell to only execute the system-wide startup and
+    # initialization files (/etc/profile, /etc/bash.bashrc, etc) but skip the personal startup and initialization files such as
+    # ~/.bashrc, ~/.bash_profile, ~/.bash_login, or ~/.profile. bash does not offer such an option, so the workaround is to set
+    # HOME to a directory that doesn't contain such files (such as <flake_dir>) for the time bash starts up, and restore it
+    # after bash has already started. The latter is what @RESTORE_HOME@ above is for.
     run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":flake_dir} if isolated else None, check_exitcode=check_exitcode, **kwargs)
 
 def resolve_projects(projects=[], workspace_directory=None, **kwargs):

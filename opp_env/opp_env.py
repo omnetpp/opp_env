@@ -450,21 +450,20 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
     # after bash has already started. The latter is what @RESTORE_HOME@ above is for.
     run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":flake_dir} if isolated else None, check_exitcode=check_exitcode, **kwargs)
 
-def resolve_projects(projects=[], workspace_directory=None, **kwargs):
-    specified_project_references = list(map(ProjectReference.parse, projects))
-    specified_project_descriptions = list(map(find_project_description, specified_project_references))
-    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
-    _logger.info(f"Using specified projects {cyan(str(specified_project_references))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
-    return effective_project_descriptions
+def resolve_projects(projects):
+    project_descriptions = [find_project_description(ProjectReference.parse(p)) for p in projects]
+    return project_descriptions
 
 def resolve_workspace(workspace_directory):
     workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
     return workspace_directory
 
-def setup_environment(projects=[], workspace_directory=None, **kwargs):
+def setup_environment(projects, workspace_directory=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions = resolve_projects(projects=projects, workspace_directory=workspace_directory, **kwargs)
+    specified_project_descriptions = resolve_projects(projects)
+    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     external_nix_packages = []
     project_setenv_commands = []
     for project_description in effective_project_descriptions:
@@ -496,20 +495,22 @@ def describe_subcommand_main(project, **kwargs):
     project_description = find_project_description(ProjectReference.parse(project))
     print(repr(project_description))
 
-def download_subcommand_main(workspace_directory=None, **kwargs):
+def download_subcommand_main(projects, workspace_directory=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions = resolve_projects(workspace_directory=workspace_directory, **kwargs)
+    specified_project_descriptions = resolve_projects(projects)
+    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
             workspace.print_project_state(project_description)
         else:
             workspace.download_project(project_description, **kwargs)
 
-def configure_subcommand_main(workspace_directory=None, prepare_missing=True, **kwargs):
+def configure_subcommand_main(projects, workspace_directory=None, prepare_missing=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
@@ -524,10 +525,10 @@ def configure_subcommand_main(workspace_directory=None, prepare_missing=True, **
             workspace.configure_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Configuration finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
-def build_subcommand_main(workspace_directory=None, prepare_missing=True, **kwargs):
+def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
@@ -544,10 +545,10 @@ def build_subcommand_main(workspace_directory=None, prepare_missing=True, **kwar
             workspace.build_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
-def clean_subcommand_main(workspace_directory=None, prepare_missing=True, **kwargs):
+def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
@@ -562,10 +563,10 @@ def clean_subcommand_main(workspace_directory=None, prepare_missing=True, **kwar
             workspace.clean_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-def shell_subcommand_main(workspace_directory=None, prepare_missing=True, isolated=True, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
@@ -583,10 +584,10 @@ def shell_subcommand_main(workspace_directory=None, prepare_missing=True, isolat
     _logger.info(f"Starting {green('isolated') if isolated else cyan('non-isolated')} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(command=None, workspace_directory=None, prepare_missing=True, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
     downloaded_project_descriptions = []
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):

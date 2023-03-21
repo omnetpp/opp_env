@@ -93,7 +93,7 @@ def parse_arguments():
 
     parser_shell = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
     parser_shell.add_argument("projects", nargs="+", help="List of projects")
-    parser_shell.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+    parser_shell.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
     parser_shell.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
 
     parser_run = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
@@ -370,7 +370,7 @@ def compute_effective_project_descriptions(specified_project_descriptions):
     for combination in itertools.product(*sets):
         accept_combination = True
         selected_project_descriptions = []
-        # 4. for each required project version combination check if it mathces all specified and required project criteria
+        # 4. for each required project version combination check if it matches all specified and required project criteria
         for i in range(len(combination)):
             selected_project_name = f"{keys[i]}-{combination[i]}"
             selected_project_description = find_project_description(ProjectReference.parse(selected_project_name))

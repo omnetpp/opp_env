@@ -95,6 +95,7 @@ def parse_arguments():
     parser_shell.add_argument("projects", nargs="+", help="List of projects")
     parser_shell.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
     parser_shell.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
+    parser_shell.add_argument("--chdir", default=False, action='store_true', help="Change into the directory of the project")
 
     parser_run = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     parser_run.add_argument("projects", nargs="+", help="List of projects")
@@ -582,6 +583,12 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
         if downloaded_project_description.build_command:
             workspace.build_project(downloaded_project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Starting {green('isolated') if isolated else cyan('non-isolated')} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    if chdir and projects:
+        first_project_description = resolve_projects(projects)[0]
+        first_project_dir = os.path.join(workspace_directory, first_project_description.get_full_name())
+        _logger.debug(f"Changing into the first project's directory {cyan(first_project_dir)}")
+        os.chdir(first_project_dir)
+
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
 def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, **kwargs):

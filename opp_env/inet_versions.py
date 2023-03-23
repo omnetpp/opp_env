@@ -12,7 +12,7 @@ def get_all_inet_4_x_versions():
                 "git_branch": f"v{inet_version}",
                 "setenv_command": "source setenv -f",
                 "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
-                "clean_command": "make clean"
+                "clean_command": "[ ! -f src/Makefile ] || make clean"
             } for inet_version, omnetpp_versions in [["4.4.1", ["6.0.1", "6.0"]],
                                                      ["4.4.0", ["6.0.1", "6.0"]],
                                                      ["4.3.9", ["6.0.1", "6.0"]],
@@ -55,7 +55,7 @@ def get_all_inet_3_x_versions():
                 "git_branch": f"v{inet_version}",
                 "setenv_command": "source setenv -f",
                 "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
-                "clean_command": "make clean"
+                "clean_command": "[ ! -f src/Makefile ] || make clean"
             } for inet_version, omnetpp_versions in [["3.7.1", ["5.3"]],
                                                      ["3.7.0", ["5.3"]],
                                                      ["3.6.8", ["5.3"]],
@@ -92,7 +92,7 @@ def get_all_inet_2_x_versions():
                 "git_branch": f"v{inet_version}",
                 "setenv_command": "",
                 "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
-                "clean_command": "make clean"
+                "clean_command": "[ ! -f src/Makefile ] || make clean"
             } for inet_version, omnetpp_versions in [["2.6.0", ["4.4"]],
                                                      ["2.5.0", ["4.4"]],
                                                      ["2.4.0", ["4.3"]],
@@ -113,7 +113,7 @@ def get_all_inet_versions():
             "git_url": "git@github.com:inet-framework/inet.git",
             "setenv_command": "source setenv",
             "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
-            "clean_command": "make clean"
+            "clean_command": "[ ! -f src/Makefile ] || make clean"
         },
         *get_all_inet_4_x_versions(),
         *get_all_inet_3_x_versions(),

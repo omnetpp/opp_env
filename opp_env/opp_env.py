@@ -12,6 +12,14 @@ import sys
 import re
 import shutil
 
+# project states: downloaded, configured, built
+# NEW ---download--> DOWNLOADED
+# DOWNLOADED ---configure--> CONFIGURED
+# CONFIGURED ---build--> BUILT
+# CONFIGURED/BUILT ---clean--> CONFIGURED  ("clean" doesn't undo the result of "configure")
+# DOWNLOADED ---clean--> DOWNLOADED
+#
+
 # Import omnetpp and inet versions.
 # Do it conditionally because we may be running either as a module with __package__ == "opp_env"
 # or we may be running as the __main__ module (when opp_env was started by directly invoking opp_env.py
@@ -181,6 +189,12 @@ def download_and_unpack_tarball(download_url, target_folder):
         raise e
 
 class Workspace:
+    # project states
+    ABSENT = "ABSENT"
+    DOWNLOADED = "DOWNLOADED"
+    CONFIGURED = "CONFIGURED"
+    BUILT = "BUILT"
+
     def __init__(self, root_directory):
         assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
@@ -212,10 +226,31 @@ class Workspace:
         return os.path.join(self.root_directory, project_description.get_full_folder_name())
 
     def print_project_state(self, project_description):
-        _logger.info(f"Project {project_description.get_full_name(colored=True)} is {self.check_project_state(project_description)}")
+        _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green(self.get_project_state(project_description))}, {self.check_project_state(project_description)}")
 
     def is_project_downloaded(self, project_description):
         return os.path.exists(self.get_project_root_directory(project_description))
+
+    def read_project_state_file(self, project_description):
+        state_file_name = os.path.join(self.root_directory, ".opp_env", project_description.get_full_folder_name() + ".state")
+        if not os.path.isfile(state_file_name):
+            return {}
+        with open(state_file_name) as f:
+            return json.load(f)
+
+    def write_project_state_file(self, project_description, data):
+        state_file_name = os.path.join(self.root_directory, ".opp_env", project_description.get_full_folder_name() + ".state")
+        with open(state_file_name, "w") as f:
+            json.dump(data, f)
+
+    def get_project_state(self, project_description):
+        data = self.read_project_state_file(project_description)
+        return self.ABSENT if not self.is_project_downloaded(project_description) else data['state'] if 'state' in data else self.DOWNLOADED
+
+    def set_project_state(self, project_description, state):
+        data = self.read_project_state_file(project_description)
+        data['state'] = state
+        self.write_project_state_file(project_description, data)
 
     def download_project(self, project_description, **kwargs):
         _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
@@ -238,17 +273,27 @@ class Workspace:
             run_command(f"cd {project_dir} && {project_description.patch_command}")
 
         self.mark_project_state(project_description)
+        self.set_project_state(project_description, self.DOWNLOADED)
 
     def configure_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
+        assert(project_description.configure_command)
         _logger.info(f"Configuring project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.configure_command}", **kwargs)
+        self.set_project_state(project_description, self.CONFIGURED)
 
     def build_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
+        assert(project_description.build_command)
         _logger.info(f"Building project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.build_command}", **kwargs)
+        self.set_project_state(project_description, self.BUILT)
 
     def clean_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
+        assert(project_description.clean_command)
         _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
+        # A BUILT project becomes CONFIGURED, other states remain unchanged. Update the state *before* running the command,
+        # because even if it only does part of its job before running into an error, the project cannot be considered BUILT any more.
+        if self.get_project_state(project_description) == self.BUILT:
+            self.set_project_state(project_description, self.CONFIGURED)
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", **kwargs)
 
     def mark_project_state(self, project_description):
@@ -465,7 +510,9 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", shell_hook_script)
         nix_develop_flake = nix_develop_flake.replace("@RESTORE_HOME@", f"export HOME={os.environ['HOME']}"  if isolated else "")
         f.write(nix_develop_flake)
-    _logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
+
+    _logger.debug(f"Nix flake shellHook script: {yellow(shell_hook_script)}")
+    #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
     isolation_options = '-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
     command = '' if interactive else '-c true'
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
@@ -561,10 +608,10 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
         else:
             raise Exception(f"Project {project_description} is missing")
     for project_description in effective_project_descriptions:
-        if project_description.configure_command:
+        if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
             workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     for project_description in effective_project_descriptions:
-        if project_description.build_command:
+        if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
             workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
@@ -597,10 +644,10 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
             raise Exception(f"Project {project_description} is missing")
     try:
         for project_description in effective_project_descriptions:
-            if project_description.configure_command:
+            if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
                 workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
         for project_description in effective_project_descriptions:
-            if project_description.build_command:
+            if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
                 workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     except Exception as e:
         # print error but continue bringing up the shell to give user a chance to fix the problem
@@ -627,10 +674,10 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
         else:
             raise Exception(f"Project {project_description} is missing")
     for project_description in effective_project_descriptions:
-        if project_description.configure_command:
+        if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
             workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     for project_description in effective_project_descriptions:
-        if project_description.build_command:
+        if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
             workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", **dict(kwargs, quiet=False))

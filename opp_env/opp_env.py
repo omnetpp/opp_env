@@ -10,6 +10,7 @@ import shlex
 import subprocess
 import sys
 import re
+import shutil
 
 # Import omnetpp and inet versions.
 # Do it conditionally because we may be running either as a module with __package__ == "opp_env"
@@ -153,6 +154,31 @@ def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=Tru
         raise Exception(f"Shell finished with exit code {result.returncode}")
     return result
 
+def read_file_if_exists(fname):
+    try:
+        with open(fname) as f:
+            return f.read()
+    except:
+        return ""
+
+def download_and_unpack_tarball(download_url, target_folder):
+    os.makedirs(target_folder)
+    wget_log_file = os.path.join(target_folder, "wget.log")
+    tar_log_file = os.path.join(target_folder, "tar.log")
+    try:
+        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}")
+        os.remove(wget_log_file)
+        os.remove(tar_log_file)
+    except KeyboardInterrupt as e:
+        _logger.debug("Download and unpacking interrupted by user, cleaning up")
+        shutil.rmtree(target_folder)
+        raise e
+    except Exception as e:
+        print(read_file_if_exists(wget_log_file).strip())
+        print(read_file_if_exists(tar_log_file).strip())
+        shutil.rmtree(target_folder)  # clean up partial download
+        raise e
+
 class Workspace:
     def __init__(self, root_directory):
         assert(os.path.isabs(root_directory))
@@ -198,9 +224,7 @@ class Workspace:
         if project_description.download_command:
             run_command(f"cd {self.root_directory} && {project_description.download_command}", **kwargs)
         elif project_description.download_url:
-            # TODO it seems to be science fiction to download using piping into tar, with progress bar but no final success report, HOWEVER showing errors from failed download such as 404 BUT not the consequence errors from "tar"
-            os.makedirs(project_dir)
-            run_command(f"cd {project_dir} && wget -O - -q -nv --show-progress {project_description.download_url} | tar --strip-components=1 -xzf -", **kwargs)
+            download_and_unpack_tarball(project_description.download_url, project_dir)
         elif project_description.git_url:
             branch_option = "-b" + project_description.git_branch if project_description.git_branch else ""
             run_command(f"git clone {branch_option} {project_description.git_url} {project_dir}")

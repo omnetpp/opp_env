@@ -118,7 +118,7 @@ def process_arguments():
         kwargs["workspace_directory"] = os.path.abspath(kwargs["workspace_directory"])
     return kwargs
 
-def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, extra_env_vars=None, **kwargs):
+def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, extra_env_vars=None):
     _logger.debug(f"Running command: {command}")
 
     env = dict(os.environ)
@@ -150,8 +150,9 @@ def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=Tru
                             env=env,
                             stdout=subprocess.DEVNULL if quiet else sys.stdout,
                             stderr=subprocess.STDOUT if quiet else sys.stderr)
+    _logger.debug(f"Exit code: {result.returncode}")
     if check_exitcode and result.returncode != 0:
-        raise Exception(f"Shell finished with exit code {result.returncode}")
+        raise Exception(f"Child process exit code {result.returncode}")
     return result
 
 def read_file_if_exists(fname):
@@ -222,7 +223,7 @@ class Workspace:
         if os.path.exists(project_dir):
             raise Exception("f{project_dir} already exists")
         if project_description.download_command:
-            run_command(f"cd {self.root_directory} && {project_description.download_command}", **kwargs)
+            run_command(f"cd {self.root_directory} && {project_description.download_command}")
         elif project_description.download_url:
             download_and_unpack_tarball(project_description.download_url, project_dir)
         elif project_description.git_url:
@@ -234,7 +235,7 @@ class Workspace:
             raise Exception(f"download process did not create {project_dir}")
 
         if project_description.patch_command:
-            run_command(f"cd {project_dir} && {project_description.patch_command}", **kwargs)
+            run_command(f"cd {project_dir} && {project_description.patch_command}")
 
         self.mark_project_state(project_description)
 
@@ -421,7 +422,7 @@ def compute_effective_project_descriptions(specified_project_descriptions):
             return selected_project_descriptions
     raise Exception("The specified set of project versions cannot be satisfied")
 
-def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, command, interactive=False, isolated=True, check_exitcode=False, quiet=False, **kwargs):
+def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, shell_hook_script, interactive=False, isolated=True, check_exitcode=True, quiet=False, **kwargs):
     nix_develop_flake = """{
     inputs = {
         nixpkgs.url = "nixpkgs/nixos-22.11";
@@ -461,7 +462,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@STDENV@", omnetpp_project_description.stdenv)
         nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
-        nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", command)
+        nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", shell_hook_script)
         nix_develop_flake = nix_develop_flake.replace("@RESTORE_HOME@", f"export HOME={os.environ['HOME']}"  if isolated else "")
         f.write(nix_develop_flake)
     _logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
@@ -473,7 +474,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
     # ~/.bashrc, ~/.bash_profile, ~/.bash_login, or ~/.profile. bash does not offer such an option, so the workaround is to set
     # HOME to a directory that doesn't contain such files (such as <flake_dir>) for the time bash starts up, and restore it
     # after bash has already started. The latter is what @RESTORE_HOME@ above is for.
-    run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":flake_dir} if isolated else None, check_exitcode=check_exitcode, **kwargs)
+    run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":flake_dir} if isolated else None, check_exitcode=check_exitcode)
 
 def resolve_projects(projects):
     project_descriptions = [find_project_description(ProjectReference.parse(p)) for p in projects]

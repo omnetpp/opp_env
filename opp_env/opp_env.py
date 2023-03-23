@@ -493,7 +493,7 @@ def setup_environment(projects, workspace_directory=None, **kwargs):
     project_setenv_commands = []
     for project_description in effective_project_descriptions:
         external_nix_packages += project_description.external_nix_packages
-        project_setenv_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.setenv_command}")
+        project_setenv_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.setenv_command or 'true'}")
     return effective_project_descriptions, external_nix_packages, project_setenv_commands
 
 def list_subcommand_main(list_mode, **kwargs):

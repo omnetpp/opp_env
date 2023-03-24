@@ -448,7 +448,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
                         export PS1="\\[\\e[01;33m\\]@NAME@\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
 
                         @RESTORE_HOME@
-                        @SCRIPT@
+                        @SCRIPT@ || exit 1
                     '';
                 };
             };

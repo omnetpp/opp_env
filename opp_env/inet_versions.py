@@ -11,6 +11,7 @@ def get_all_inet_4_x_versions():
                 "git_url": "git@github.com:inet-framework/inet.git",
                 "git_branch": f"v{inet_version}",
                 "setenv_command": "source setenv -f",
+                "patch_command": "touch tutorials/package.ned" if inet_version <= "4.2.1" else "",
                 "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
                 "clean_command": "[ ! -f src/Makefile ] || make clean"
             } for inet_version, omnetpp_versions in [["4.4.1", ["6.0.1", "6.0"]],
@@ -54,6 +55,7 @@ def get_all_inet_3_x_versions():
                 "git_url": "git@github.com:inet-framework/inet.git",
                 "git_branch": f"v{inet_version}",
                 "setenv_command": "source setenv -f",
+                "patch_command": "touch tutorials/package.ned" if inet_version >= "3.6.0" else "",
                 "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
                 "clean_command": "[ ! -f src/Makefile ] || make clean"
             } for inet_version, omnetpp_versions in [["3.7.1", ["5.3"]],

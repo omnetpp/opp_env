@@ -269,8 +269,8 @@ class Workspace:
         elif project_description.download_url:
             download_and_unpack_tarball(project_description.download_url, project_dir)
         elif project_description.git_url:
-            branch_option = "-b" + project_description.git_branch if project_description.git_branch else ""
-            run_command(f"git clone {branch_option} {project_description.git_url} {project_dir}")
+            branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
+            run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}")
         else:
             raise Exception("no download_url or download_command in project description")
         if not os.path.exists(project_dir):

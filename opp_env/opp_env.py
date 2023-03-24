@@ -684,36 +684,37 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
 
 def main():
     kwargs = process_arguments()
+    subcommand = kwargs['subcommand']
     try:
-        _logger.debug(f"Starting {cyan(kwargs['subcommand'])} operation")
-        if (kwargs["subcommand"] == "list"):
+        _logger.debug(f"Starting {cyan(subcommand)} operation")
+        if subcommand == "list":
             list_subcommand_main(**kwargs)
-        elif (kwargs["subcommand"] == "describe"):
+        elif subcommand == "describe":
             describe_subcommand_main(**kwargs)
-        elif (kwargs["subcommand"] == "init"):
+        elif subcommand == "init":
             init_subcommand_main(**kwargs)
-        elif (kwargs["subcommand"] == "download"):
+        elif subcommand == "download":
             download_subcommand_main(**kwargs)
-        elif (kwargs["subcommand"] == "configure"):
+        elif subcommand == "configure":
             configure_subcommand_main(**kwargs)
-        elif (kwargs["subcommand"] == "build"):
+        elif subcommand == "build":
             build_subcommand_main(**kwargs)
-        elif (kwargs["subcommand"] == "clean"):
+        elif subcommand == "clean":
             clean_subcommand_main(**kwargs)
-        elif (kwargs["subcommand"] == "shell"):
+        elif subcommand == "shell":
             shell_subcommand_main(**kwargs)
-        elif (kwargs["subcommand"] == "run"):
+        elif subcommand == "run":
             run_subcommand_main(**kwargs)
         else:
-            raise Exception("Unknown subcommand")
-        _logger.debug(f"The {cyan(kwargs['subcommand'])} operation completed successfully")
+            raise Exception(f"Unknown subcommand '{subcommand}'")
+        _logger.debug(f"The {cyan(subcommand)} operation completed successfully")
     except Exception as e:
         if not kwargs["print_stacktrace"]:
-            _logger.error(f"The {cyan(kwargs['subcommand'])} operation stopped with error: {str(e)}")
+            _logger.error(f"The {cyan(subcommand)} operation stopped with error: {str(e)}")
         else:
             raise e
     except KeyboardInterrupt:
-        _logger.warning(f"The {cyan(kwargs['subcommand'])} operation was interrupted by the user")
+        _logger.error(f"The {cyan(subcommand)} operation was interrupted by the user")
 
     return 0
 

@@ -170,7 +170,7 @@ class Workspace:
             if parent_dir == dir:
                 break
             dir = parent_dir
-        raise Exception(f"No opp_env workspace found in '{from_dir}' or its parent directories")
+        raise Exception(f"No opp_env workspace found in '{from_dir}' or its parent directories, run 'opp_env init' to create one")
         #return None
 
     @staticmethod

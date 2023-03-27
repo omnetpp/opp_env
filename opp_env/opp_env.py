@@ -113,6 +113,7 @@ def parse_arguments():
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
+    #subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project if not already built")
     subparser.add_argument("--chdir", default=False, action='store_true', help="Change into the directory of the project")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
@@ -205,6 +206,21 @@ def download_and_unpack_tarball(download_url, target_folder):
         shutil.rmtree(target_folder)  # clean up partial download
         raise e
 
+def download_and_apply_patch(patch_url, target_folder):
+    wget_log_file = os.path.join(target_folder, "wget.log")
+    patching_log_file = os.path.join(target_folder, "patch.log")
+    try:
+        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {patch_url} | git apply - 2>{patching_log_file}")
+        os.remove(wget_log_file)
+        os.remove(patching_log_file)
+    except KeyboardInterrupt as e:
+        _logger.error(f"Downloading and applying patch interrupted by user -- project likely left partially unpatched")
+        raise e
+    except Exception as e:
+        print(read_file_if_exists(wget_log_file).strip())
+        print(read_file_if_exists(patching_log_file).strip())
+        raise e
+
 class Workspace:
     # project states
     ABSENT = "ABSENT"
@@ -265,6 +281,7 @@ class Workspace:
         return self.ABSENT if not self.is_project_downloaded(project_description) else data['state'] if 'state' in data else self.DOWNLOADED
 
     def set_project_state(self, project_description, state):
+        _logger.debug(f"Setting project {cyan(project_description.get_full_name())} state to {cyan(state)}")
         data = self.read_project_state_file(project_description)
         data['state'] = state
         self.write_project_state_file(project_description, data)
@@ -280,6 +297,7 @@ class Workspace:
             download_and_unpack_tarball(project_description.download_url, project_dir)
         elif project_description.git_url:
             branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
+            #TODO maybe optionally use --single-branch
             run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}")
         else:
             print(vars(project_description))
@@ -291,8 +309,14 @@ class Workspace:
         if not os.path.exists(project_dir):
             raise Exception(f"download process did not create {project_dir}")
 
-        if project_description.patch_command:
-            run_command(f"cd {project_dir} && {project_description.patch_command}")
+
+        if project_description.patch_command or project_description.patch_url:
+            _logger.info(f"Patching project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
+            if project_description.patch_command:
+                run_command(f"cd {project_dir} && {project_description.patch_command}")
+            if project_description.patch_url:
+                download_and_apply_patch(project_description.patch_url, project_dir)
+
 
         self.mark_project_state(project_description)
         self.set_project_state(project_description, self.DOWNLOADED)
@@ -334,7 +358,7 @@ class ProjectDescription:
     def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None,
                  required_projects={}, external_nix_packages=[],
                  download_url=None, git_url=None, git_branch=None, download_command=None,
-                 patch_command=None,
+                 patch_command=None, patch_url=None,
                  setenv_command=None, configure_command=None, build_command=None, clean_command=None,
                  options=None):
         self.name = name
@@ -349,6 +373,7 @@ class ProjectDescription:
         self.git_branch = git_branch
         self.download_command = download_command
         self.patch_command = patch_command
+        self.patch_url = patch_url
         self.setenv_command = setenv_command
         self.configure_command = configure_command
         self.build_command = build_command

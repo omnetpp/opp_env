@@ -44,7 +44,7 @@ def get_all_omnetpp_4_x_versions():
         *[
             {
                 "name": "omnetpp", "version": version,
-                "external_nix_packages": [ "bison", "flex", "perl", "tk", "tcl", "expat", "xdg-utils" ],
+                "external_nix_packages": [ "bison", "flex", "perl", "tk", "tcl", "libxml2", "expat", "xdg-utils" ],
                 "download_url": f"https://github.com/omnetpp/omnetpp/releases/download/omnetpp-{version}/omnetpp-{version}-src.tgz",
                 "setenv_command": "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish) && export HOSTNAME && export HOST",
                 "configure_command": "unset AR && ./configure",

@@ -404,6 +404,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
             devShells = rec {
                 default = pkgs.@STDENV@.mkDerivation {
                     name = "@NAME@";
+                    hardeningDisable = [ "all" ];
                     buildInputs = with pkgs; [ @PACKAGES@ ];
                     shellHook = ''
                         export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}

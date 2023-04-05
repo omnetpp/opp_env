@@ -36,9 +36,6 @@ except ImportError:
 
 _logger = logging.getLogger(__file__)
 
-def repr(object):
-    return f"{object.__class__.__name__}({', '.join([f'{prop}={value}' for prop, value in object.__dict__.items()])})"
-
 COLOR_GRAY = "\033[38;20m"
 COLOR_RED = "\033[1;31m"
 COLOR_YELLOW = "\033[1;33m"
@@ -573,7 +570,8 @@ def init_subcommand_main(**kwargs):
 
 def describe_subcommand_main(project, **kwargs):
     project_description = find_project_description(ProjectReference.parse(project))
-    print(repr(project_description))
+    for prop, value in vars(project_description).items():
+        print(cyan(prop) + " = " + repr(value))
 
 def download_subcommand_main(projects, workspace_directory=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)

@@ -89,32 +89,37 @@ def parse_arguments():
 
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     subparser.add_argument("projects", nargs="+", help="List of projects")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
 
     subparser = subparsers.add_parser("configure", help="Configures the specified projects for their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading them")
-    subparser.add_argument("-v", "--variant", action='append', metavar='name1,name2,...', help="Project variants to use; use 'opp_env describe' to see what variants a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
 
     subparser = subparsers.add_parser("build", help="Builds the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
     subparser.add_argument("--chdir", default=False, action='store_true', help="Change into the directory of the project")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
     subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
 
     return parser.parse_args(sys.argv[1:])
@@ -130,6 +135,12 @@ def process_arguments():
     kwargs = {k: v for k, v in vars(args).items() if v is not None}
     if "workspace_directory" in kwargs:
         kwargs["workspace_directory"] = os.path.abspath(kwargs["workspace_directory"])
+    if "options" in kwargs:
+        options = []
+        for arg in args.options:
+            options += arg.split(",")
+        kwargs["requested_options"] = options
+        del kwargs["options"]
     return kwargs
 
 def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, extra_env_vars=None):
@@ -271,6 +282,11 @@ class Workspace:
             branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
             run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}")
         else:
+            print(vars(project_description))
+            print(project_description.download_command)
+            print(vars(project_description)['download_command'])
+            for prop, value in vars(project_description).items():
+                print(cyan(prop) + " = " + repr(value))
             raise Exception("no download_url or download_command in project description")
         if not os.path.exists(project_dir):
             raise Exception(f"download process did not create {project_dir}")
@@ -315,7 +331,12 @@ class Workspace:
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
 class ProjectDescription:
-    def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None, required_projects={}, external_nix_packages=[], download_url=None, git_url=None, git_branch=None, download_command=None, patch_command=None, setenv_command=None, configure_command=None, build_command=None, clean_command=None):
+    def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None,
+                 required_projects={}, external_nix_packages=[],
+                 download_url=None, git_url=None, git_branch=None, download_command=None,
+                 patch_command=None,
+                 setenv_command=None, configure_command=None, build_command=None, clean_command=None,
+                 options=None):
         self.name = name
         self.version = version
         self.description = description
@@ -332,6 +353,7 @@ class ProjectDescription:
         self.configure_command = configure_command
         self.build_command = build_command
         self.clean_command = clean_command
+        self.options = options or {}
         if bool(download_url) + bool(git_url) + bool(download_command) > 1:
             raise Exception(f"project {name}-{version}: download_url, git_url, and download_command are mutually exclusive")
 
@@ -347,6 +369,22 @@ class ProjectDescription:
 
     def get_full_folder_name(self):
         return f"{self.folder_name}-{self.version}"
+
+    def get_supported_options(self):
+        return list(self.options.keys())
+
+    def get_with_options(self, requested_options):
+        fields = dict(vars(self))
+        if requested_options:
+            _logger.debug(f"Selecting options {requested_options} for project {self}")
+            for option in requested_options:
+                if option in self.options:
+                    option_fields = self.options[option]
+                    _logger.debug(f"option {option} updates the following fields: {list(option_fields.keys())}")
+                    fields.update(option_fields)
+                else:
+                    _logger.warning(f"Project {cyan(self)} does not support option {cyan(option)}")
+        return ProjectDescription(**fields)
 
 def get_all_omnetpp_project_descriptions():
     return [ProjectDescription(**e) for e in get_all_omnetpp_versions()]
@@ -420,7 +458,7 @@ class ProjectReference:
     def get_full_name(self):
         return self.name + "-" + self.version if self.version else self.name
 
-def compute_effective_project_descriptions(specified_project_descriptions):
+def compute_effective_project_descriptions(specified_project_descriptions, requested_options=None):
     # 1. collect all required projects ignoring the project versions
     required_project_names = []
     for specified_project_description in specified_project_descriptions:
@@ -470,6 +508,18 @@ def compute_effective_project_descriptions(specified_project_descriptions):
                     accept_combination = False
                     break
         if accept_combination:
+            # return selected_project_descriptions with the requested options activated
+            if requested_options:
+                # check requested options exist at all
+                all_supported_options = []
+                for desc in selected_project_descriptions:
+                    all_supported_options += desc.get_supported_options()
+                all_supported_options = list(set(all_supported_options))
+                for option in requested_options:
+                    if option not in all_supported_options:
+                        raise Exception(f"None of the selected projects supports option '{option}'")
+                # create and return updated project descriptions
+                selected_project_descriptions = [desc.get_with_options(requested_options) for desc in selected_project_descriptions]
             return selected_project_descriptions
     raise Exception("The specified set of project versions cannot be satisfied")
 
@@ -537,11 +587,11 @@ def resolve_workspace(workspace_directory):
     workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
     return workspace_directory
 
-def setup_environment(projects, workspace_directory=None, **kwargs):
+def setup_environment(projects, workspace_directory=None, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     specified_project_descriptions = resolve_projects(projects)
-    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
+    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     external_nix_packages = []
     project_setenv_commands = []
@@ -575,11 +625,11 @@ def describe_subcommand_main(project, **kwargs):
     for prop, value in vars(project_description).items():
         print(cyan(prop) + " = " + repr(value))
 
-def download_subcommand_main(projects, workspace_directory=None, **kwargs):
+def download_subcommand_main(projects, workspace_directory=None, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     specified_project_descriptions = resolve_projects(projects)
-    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions)
+    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
@@ -587,10 +637,10 @@ def download_subcommand_main(projects, workspace_directory=None, **kwargs):
         else:
             workspace.download_project(project_description, **kwargs)
 
-def configure_subcommand_main(projects, workspace_directory=None, prepare_missing=True, **kwargs):
+def configure_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
             workspace.print_project_state(project_description)
@@ -603,10 +653,10 @@ def configure_subcommand_main(projects, workspace_directory=None, prepare_missin
             workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Configuration finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
-def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, **kwargs):
+def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
             workspace.print_project_state(project_description)
@@ -622,10 +672,10 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
             workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
-def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, **kwargs):
+def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
             workspace.print_project_state(project_description)
@@ -638,10 +688,10 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
             workspace.clean_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
             workspace.print_project_state(project_description)
@@ -669,10 +719,10 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
 
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory=workspace_directory, **kwargs)
+    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         if workspace.is_project_downloaded(project_description):
             workspace.print_project_state(project_description)

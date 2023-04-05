@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-list=$(opp_env list --mode flat | grep 'inet-2\..*')
-echo "Testing: $list"
-for i in $list; do
-    echo "Testing $i"
-    opp_env build --options local $i 2>$i.err
-done

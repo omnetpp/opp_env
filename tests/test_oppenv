@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+
+import subprocess
+import sys
+import os
+import argparse
+import itertools
+
+parser = argparse.ArgumentParser(description="Run tests for a project.")
+parser.add_argument("--dry-run", default=False, action='store_true', help="Do not actually run the test program")
+parser.add_argument("--really", default=False, action='store_true', help="Do not be deterred if the number of test cases is too high")
+parser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
+parser.add_argument("--precmd", help="Command to run before each test case. Not affected by --dry-run.")
+parser.add_argument("--postcmd", help="Command to run after each test case. Not affected by --dry-run.")
+parser.add_argument("-f", "--testcase-file", help="File that contains one test case (one or more project filters) per line. These test cases will be done in addition to the ones specified on the command line.")
+parser.add_argument("command", help="opp_env subcommand to use for running the tests: download, build, etc.")
+parser.add_argument("project_filters", nargs="*", metavar="project-filter", help="""
+Projects to include in the test runs. Explicit project versions, project names, and their
+regular expressions are accepted (substring match is done). The Cartesian product of the expanded lists
+from each argument generate the test runs. Be sure to protect regexes with single quotes to prevent the
+shell from expanding them with the list of files/directories in the current directory.""".replace("\n", " "))
+
+args = parser.parse_args()
+
+# Set variables for program names
+command = args.command
+project_filters = args.project_filters
+dry_run = args.dry_run
+really = args.really
+mode = ",".join(args.mode) if args.mode else ""
+
+# Produce list of test cases
+def expand_project_filter(project_filter):
+    cmd = f"opp_env list --mode flat --latest-patchlevels | grep '{project_filter}'"
+    print(cmd, end="")
+    list = sorted(subprocess.check_output(cmd, shell=True, text=True).split())
+    print(" --> ", " ".join(list))
+    return list
+
+combinations = []
+
+if project_filters:
+    projects_with_versions = [ expand_project_filter(p) for p in project_filters ]
+    combinations = list(itertools.product(*projects_with_versions))
+    print(f"Generated {len(combinations)} combinations")
+    if len(combinations) > 100 and not really:
+        print(f"Too many combinations ({len(combinations)}), exiting, specify --really to force it", file=sys.stderr)
+        sys.exit(1)
+
+testcases_from_file = []
+
+if args.testcase_file: #TODO multiple args!
+    with open(args.testcase_file, 'r') as file:
+        lines = file.readlines()
+    testcases_from_file = [line.split() for line in lines if line.strip()]  #TODO expand these too, just like project_filters!
+    print(f"Read {len(testcases_from_file)} test cases from file")
+
+test_cases = combinations + testcases_from_file
+
+# Set variables for counts and failures
+total_runs = 0
+total_failures = 0
+failure_list = []
+
+os.makedirs("logs", exist_ok=True)
+
+# Run tests
+for project_list in test_cases:
+    test_name = "+".join(project_list)
+    projects_string = " ".join(project_list)
+
+    options = ""
+    if mode:
+        options += f" --mode {mode}"
+    if "cannot be installed in the standard way" in subprocess.check_output(f"opp_env info {projects_string}", shell=True, text=True):
+        options += " --options=source-archive"
+
+    test_command = f"opp_env -lDEBUG --no-pause {command} {options} {projects_string}"
+
+    print(f"Running #{total_runs} {test_command} : ", end="")
+    sys.stdout.flush()
+    if args.precmd:
+        subprocess.call(args.precmd, shell=True) if not dry_run else 0
+    with open(f"logs/{test_name}.out", "w") as out_file, open(f"logs/{test_name}.err", "w") as err_file:
+        exit_code = subprocess.call(f"{test_command}", shell=True, stdout=out_file, stderr=err_file) if not dry_run else 0
+    if exit_code == 130:
+        print()
+        print("Interrupted, bailing out")
+        break
+    elif exit_code != 0:
+        print(f"Error, exit code {exit_code}, log: logs/{test_name}.err")
+        failure_list.append(projects_string)
+        total_failures += 1
+    else:
+        print("OK")
+    if args.postcmd:
+        subprocess.call(args.postcmd, shell=True)
+    total_runs += 1
+
+# Output results
+print(f"Total: {total_runs}  Fail: {total_failures}")
+
+# Set exit code based on number of failures
+if total_failures == 0:
+    exit(0)
+else:
+    print(f"Failed test cases: {' '.join(failure_list)}")
+    exit(1)

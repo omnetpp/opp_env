@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-rm -rf test
-mkdir test
-opp_env list | xargs -I '{}' opp_env -w test download {}

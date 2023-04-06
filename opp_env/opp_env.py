@@ -46,11 +46,17 @@ COLOR_CYAN = "\033[0;36m"
 COLOR_GREEN = "\033[0;32m"
 COLOR_RESET = "\033[0;0m"
 
-def gray(x): return COLOR_GRAY + str(x) + COLOR_RESET
-def red(x): return COLOR_RED + str(x) + COLOR_RESET
-def yellow(x): return COLOR_YELLOW + str(x) + COLOR_RESET
-def cyan(x): return COLOR_CYAN + str(x) + COLOR_RESET
-def green(x): return COLOR_GREEN + str(x) + COLOR_RESET
+coloring_enabled = sys.stdout.isatty() and sys.stderr.isatty()
+
+def colored(color, x):
+    global coloring_enabled
+    return color + str(x) + COLOR_RESET if coloring_enabled else str(x)
+
+def gray(x): return colored(COLOR_GRAY, x)
+def red(x): return colored(COLOR_RED, x)
+def yellow(x): return colored(COLOR_YELLOW, x)
+def cyan(x): return colored(COLOR_CYAN, x)
+def green(x): return colored(COLOR_GREEN, x)
 
 class ColoredLoggingFormatter(logging.Formatter):
     COLORS = {
@@ -62,7 +68,8 @@ class ColoredLoggingFormatter(logging.Formatter):
     }
 
     def format(self, record):
-        format = self.COLORS.get(record.levelno) + "%(levelname)s " + COLOR_RESET + "%(message)s"
+        color = self.COLORS.get(record.levelno)
+        format = colored(color, "%(levelname)s") + " %(message)s"
         formatter = logging.Formatter(format)
         return formatter.format(record)
 

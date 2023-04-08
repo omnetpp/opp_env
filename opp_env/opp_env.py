@@ -542,6 +542,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
                     shellHook = ''
                         export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}
                         export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2"
+                        export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.cairo}/lib" # for tkpath in omnetpp-5.x Tkenv
                         # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)
                         export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}
 

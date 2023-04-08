@@ -90,7 +90,7 @@ def get_all_omnetpp_patched_release_versions():
                 "name": "omnetpp",
                 "version": dotx(version),
                 "external_nix_packages": ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version.startswith("6.") else
-                                         ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "tk", "tcl" ] if version.startswith("5.") else
+                                         ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "tk", "tcl", "cairo" ] if version.startswith("5.") else
                                          [ "bison", "flex", "perl", "tk", "tcl", "libxml2", "expat", "xdg-utils" ] if version.startswith("4.") else
                                          [ "bison", "flex", "perl", "tk", "tcl", "libxml2", "expat" ] if version.startswith("3.") else [],
                 "download_url": f"https://github.com/omnetpp/omnetpp/releases/download/omnetpp-{version}/omnetpp-{version}-linux-x86_64.tgz" if version.startswith("6.") or version == "5.7" else

@@ -1,17 +1,17 @@
 description = "INET Framework is an open-source OMNeT++ model suite for wired, wireless and mobile networks."
 
-def get_all_inet_4_x_versions():
+def get_all_inet_released_versions():
     return [
-        *[
             {
                 "name": "inet", "version": inet_version, "description": description,
                 "folder_name": "inet",
                 "required_projects": {"omnetpp": omnetpp_versions},
-                "external_nix_packages": ["python3", "z3"],
+                "external_nix_packages": ["python3", "z3"] if inet_version.startswith("4.") else
+                                         ["python3"]  if inet_version.startswith("3.") else [],
                 "git_url": "git@github.com:inet-framework/inet.git",
                 "git_branch": f"v{inet_version}",
-                "setenv_command": "source setenv -f",
-                "patch_command": "touch tutorials/package.ned" if inet_version <= "4.2.1" else "",
+                "setenv_command": "source setenv -f" if inet_version.startswith("4.") else "",
+                "patch_command": "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
                 "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
                 "clean_command": "[ ! -f src/Makefile ] || make clean"
             } for inet_version, omnetpp_versions in [["4.4.1", ["6.0.1", "6.0"]],
@@ -40,25 +40,9 @@ def get_all_inet_4_x_versions():
                                                      ["4.1.2", ["5.4.1"]],
                                                      ["4.1.1", ["5.4.1"]],
                                                      ["4.1.0", ["5.4.1"]],
-                                                     ["4.0.0", ["5.4.1"]]]
-        ],
-    ]
+                                                     ["4.0.0", ["5.4.1"]],
 
-def get_all_inet_3_x_versions():
-    return [
-        *[
-            {
-                "name": "inet", "version": inet_version, "description": description,
-                "folder_name": "inet",
-                "required_projects": {"omnetpp": omnetpp_versions},
-                "external_nix_packages": ["python3"],
-                "git_url": "git@github.com:inet-framework/inet.git",
-                "git_branch": f"v{inet_version}",
-                "setenv_command": "source setenv -f",
-                "patch_command": "touch tutorials/package.ned" if inet_version >= "3.6.0" else "",
-                "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
-                "clean_command": "[ ! -f src/Makefile ] || make clean"
-            } for inet_version, omnetpp_versions in [["3.7.1", ["5.3"]],
+                                                     ["3.7.1", ["5.3"]],
                                                      ["3.7.0", ["5.3"]],
                                                      ["3.6.8", ["5.3"]],
                                                      ["3.6.7", ["5.3"]],
@@ -79,30 +63,15 @@ def get_all_inet_3_x_versions():
                                                      ["3.2.0", ["4.6"]],
                                                      ["3.1.1", ["4.6"]],
                                                      ["3.1.0", ["4.6"]],
-                                                     ["3.0.0", ["4.6"]]]
-        ]
-    ]
+                                                     ["3.0.0", ["4.6"]],
 
-def get_all_inet_2_x_versions():
-    return [
-        *[
-            {
-                "name": "inet", "version": inet_version, "description": description,
-                "folder_name": "inet",
-                "required_projects": {"omnetpp": omnetpp_versions},
-                "git_url": "git@github.com:inet-framework/inet.git",
-                "git_branch": f"v{inet_version}",
-                "setenv_command": "",
-                "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
-                "clean_command": "[ ! -f src/Makefile ] || make clean"
-            } for inet_version, omnetpp_versions in [["2.6.0", ["4.4"]],
+                                                     ["2.6.0", ["4.4"]],
                                                      ["2.5.0", ["4.4"]],
                                                      ["2.4.0", ["4.3"]],
                                                      ["2.3.0", ["4.3"]],
                                                      ["2.2.0", ["4.2"]],
                                                      ["2.1.0", ["4.2"]],
                                                      ["2.0.0", ["4.2"]]]
-        ]
     ]
 
 def get_all_inet_versions():
@@ -117,7 +86,5 @@ def get_all_inet_versions():
             "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
             "clean_command": "[ ! -f src/Makefile ] || make clean"
         },
-        *get_all_inet_4_x_versions(),
-        *get_all_inet_3_x_versions(),
-        *get_all_inet_2_x_versions(),
+        *get_all_inet_released_versions()
     ]

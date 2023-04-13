@@ -211,7 +211,7 @@ def download_and_apply_patch(patch_url, target_folder):
     wget_log_file = os.path.join(target_folder, "wget.log")
     patching_log_file = os.path.join(target_folder, "patch.log")
     try:
-        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {patch_url} | git apply - 2>{patching_log_file}")
+        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}")
         os.remove(wget_log_file)
         os.remove(patching_log_file)
     except KeyboardInterrupt as e:

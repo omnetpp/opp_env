@@ -595,7 +595,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
 
     _logger.debug(f"Nix flake shellHook script: {yellow(shell_hook_script)}")
     #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
-    isolation_options = '-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
+    isolation_options = '-i -k HOME -k DISPLAY -k XAUTHORITY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
     command = '-c bash --norc' if interactive else '-c true'
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
     # Note: Why do we set HOME=<flake_dir> in isolated mode? We want the bash shell to only execute the system-wide startup and

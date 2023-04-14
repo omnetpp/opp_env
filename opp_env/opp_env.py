@@ -11,6 +11,7 @@ import subprocess
 import sys
 import re
 import shutil
+import tempfile
 
 # project states: downloaded, configured, built
 # NEW ---download--> DOWNLOADED
@@ -593,10 +594,13 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
 
     _logger.debug(f"Nix flake shellHook script: {yellow(shell_hook_script)}")
     #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
-    isolation_options = '-i -k DISPLAY -k XAUTHORITY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
+    temp_home = tempfile.mkdtemp() if isolated else None
+    isolation_options = '-i -k HOME -k TERM -k COLORTERM -k DISPLAY -k XAUTHORITY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
     command = '-c bash --norc' if interactive else '-c true'
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
-    run_command(nix_develop_command, quiet=not interactive and quiet, check_exitcode=check_exitcode)
+    run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":temp_home} if isolated else None, check_exitcode=check_exitcode)
+    if temp_home:
+        shutil.rmtree(temp_home)
 
 def resolve_projects(projects):
     project_descriptions = [find_project_description(ProjectReference.parse(p)) for p in projects]

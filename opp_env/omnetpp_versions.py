@@ -102,7 +102,7 @@ def get_all_omnetpp_patched_release_versions():
                 "patch_command": f"wget -O configure https://github.com/omnetpp/omnetpp/raw/omnetpp-{version}/configure && " +
                                  f"wget -O configure.in https://github.com/omnetpp/omnetpp/raw/omnetpp-{version}/configure.in && " +
                                  f"wget -O patchfile.diff https://github.com/omnetpp/omnetpp/compare/omnetpp-{version}...omnetpp-{dotx(version)}.patch && " +
-                                 f"git apply --whitespace=nowarn patchfile.diff",
+                                 f"git apply --whitespace=nowarn --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
                 "setenv_command": "source setenv",
                 "configure_command": "./configure WITH_OSG=no" if version.startswith("6.") else
                                      "./configure WITH_OSG=no WITH_OSGEARTH=no QT_VERSION=5" if version == "5.0" else

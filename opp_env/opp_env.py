@@ -360,7 +360,8 @@ class ProjectDescription:
                  required_projects={}, external_nix_packages=[],
                  download_url=None, git_url=None, git_branch=None, download_command=None,
                  patch_command=None, patch_url=None,
-                 setenv_command=None, configure_command=None, build_command=None, clean_command=None,
+                 shell_hook_command = None, setenv_command=None,
+                 configure_command=None, build_command=None, clean_command=None,
                  options=None):
         self.name = name
         self.version = version
@@ -375,6 +376,7 @@ class ProjectDescription:
         self.download_command = download_command
         self.patch_command = patch_command
         self.patch_url = patch_url
+        self.shell_hook_command = shell_hook_command
         self.setenv_command = setenv_command
         self.configure_command = configure_command
         self.build_command = build_command
@@ -566,6 +568,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
                     hardeningDisable = [ "all" ];
                     buildInputs = with pkgs; [ @PACKAGES@ bashInteractive vim ];
                     shellHook = ''
+                        @SHELL_HOOK_COMMANDS@
                         export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}
                         export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2"
                         export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${pkgs.cairo}/lib" # for tkpath in omnetpp-5.x Tkenv
@@ -581,6 +584,9 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
             };
         });
 }"""
+
+    shell_hook_commands = "\n".join([p.shell_hook_command for p in effective_project_descriptions])
+
     flake_dir = os.path.join(workspace_directory, '.opp_env') #TODO race condition (multiple invocations write the same file)
     flake_file_name = os.path.join(flake_dir, "flake.nix")
     omnetpp_project_description = next(filter(lambda project_description: project_description.name == "omnetpp", effective_project_descriptions))
@@ -589,6 +595,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@STDENV@", omnetpp_project_description.stdenv)
         nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
+        nix_develop_flake = nix_develop_flake.replace("@SHELL_HOOK_COMMANDS@", shell_hook_commands)
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", shell_hook_script)
         f.write(nix_develop_flake)
 

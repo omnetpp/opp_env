@@ -356,7 +356,8 @@ class Workspace:
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
 class ProjectDescription:
-    def __init__(self, name, version, description=None, stdenv="llvmPackages_14.stdenv", folder_name=None,
+    def __init__(self, name, version, description=None,
+                 nixos=None, stdenv=None, folder_name=None,
                  required_projects={}, external_nix_packages=[],
                  download_url=None, git_url=None, git_branch=None, download_command=None,
                  patch_command=None, patch_url=None,
@@ -366,6 +367,7 @@ class ProjectDescription:
         self.name = name
         self.version = version
         self.description = description
+        self.nixos = nixos
         self.stdenv = stdenv
         self.folder_name = folder_name or name
         self.required_projects = required_projects
@@ -551,10 +553,19 @@ def compute_effective_project_descriptions(specified_project_descriptions, reque
             return selected_project_descriptions
     raise Exception("The specified set of project versions cannot be satisfied")
 
+def get_unique_project_attribute(project_descriptions, attr_name):
+    values = set([getattr(p, attr_name) for p in project_descriptions if getattr(p, attr_name)])
+    if not values:
+        raise Exception(f"None of the projects specify the '{attr_name}' attribute")
+    elif len(values) > 1:
+        raise Exception(f"The projects disagree on the choice of '{attr_name}': {values}")
+    else:
+        return list(values)[0]
+
 def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, shell_hook_script, interactive=False, isolated=True, check_exitcode=True, quiet=False, **kwargs):
     nix_develop_flake = """{
     inputs = {
-        nixpkgs.url = "nixpkgs/nixos-22.11";
+        nixpkgs.url = "nixpkgs/@NIXOS@";
         flake-utils.url = "github:numtide/flake-utils";
     };
     outputs = { self, nixpkgs, flake-utils }:
@@ -585,14 +596,16 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         });
 }"""
 
-    shell_hook_commands = "\n".join([p.shell_hook_command for p in effective_project_descriptions])
+    nixos = get_unique_project_attribute(effective_project_descriptions, "nixos")
+    stdenv = get_unique_project_attribute(effective_project_descriptions, "stdenv")
+    shell_hook_commands = "\n".join([p.shell_hook_command for p in effective_project_descriptions if p.shell_hook_command])
 
     flake_dir = os.path.join(workspace_directory, '.opp_env') #TODO race condition (multiple invocations write the same file)
     flake_file_name = os.path.join(flake_dir, "flake.nix")
-    omnetpp_project_description = next(filter(lambda project_description: project_description.name == "omnetpp", effective_project_descriptions))
     with open(flake_file_name, "w") as f:
         name = '+'.join([str(d) for d in reversed(effective_project_descriptions)])
-        nix_develop_flake = nix_develop_flake.replace("@STDENV@", omnetpp_project_description.stdenv)
+        nix_develop_flake = nix_develop_flake.replace("@NIXOS@", nixos)
+        nix_develop_flake = nix_develop_flake.replace("@STDENV@", stdenv)
         nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
         nix_develop_flake = nix_develop_flake.replace("@SHELL_HOOK_COMMANDS@", shell_hook_commands)

@@ -5,6 +5,8 @@ def get_all_omnetpp_6_x_versions():
         *[
             {
                 "name": "omnetpp", "version": version,
+                "nixos": "nixos-22.11",
+                "stdenv": "llvmPackages_14.stdenv",
                 "external_nix_packages": ["ccache", "which", "bison", "flex", "perl", "which", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
                 "download_url": f"https://github.com/omnetpp/omnetpp/releases/download/omnetpp-{version}/omnetpp-{version}-linux-x86_64.tgz",
                 "setenv_command": "source setenv",
@@ -20,6 +22,8 @@ def get_all_omnetpp_5_x_versions():
         *[
             {
                 "name": "omnetpp", "version": version,
+                "nixos": "nixos-22.11",
+                "stdenv": "llvmPackages_14.stdenv",
                 "external_nix_packages": ["ccache", "bison", "flex", "perl", "which", "xdg-utils", "python3", "tk", "tcl", "qt5.qtbase", "qt5.qtsvg" ],
                 "download_url": f"https://github.com/omnetpp/omnetpp/releases/download/omnetpp-{version}/omnetpp-{version}-linux-x86_64.tgz" if version == "5.7" else
                                 f"https://github.com/omnetpp/omnetpp/releases/download/omnetpp-{version}/omnetpp-{version}-src.tgz" if version == "5.0" else
@@ -37,6 +41,7 @@ def get_all_omnetpp_4_x_versions():
         *[
             {
                 "name": "omnetpp", "version": version,
+                "nixos": "nixos-22.11",
                 "stdenv": "gcc7Stdenv",
                 "external_nix_packages": [ "bison", "flex", "perl", "tk", "tcl", "libxml2", "expat", "xdg-utils" ],
                 "download_url": f"https://github.com/omnetpp/omnetpp/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if version == '4.0p1' else
@@ -53,6 +58,7 @@ def get_all_omnetpp_3_x_versions():
     return [
         {
             "name": "omnetpp", "version": "3.3p1",
+            "nixos": "nixos-22.11",
             "stdenv": "gcc7Stdenv",
             "external_nix_packages": [ "bison", "flex", "perl", "tk", "tcl", "libxml2", "expat" ],
             "download_url": "https://github.com/omnetpp/omnetpp/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz",
@@ -67,6 +73,8 @@ def get_all_omnetpp_git_versions():
     return [
         {
             "name": "omnetpp", "version": "git",
+            "nixos": "nixos-22.11",
+            "stdenv": "llvmPackages_14.stdenv",
             "external_nix_packages": ["ccache", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"],
             "git_url": "git@github.com:omnetpp/omnetpp.git",
             "setenv_command": "source setenv",
@@ -82,13 +90,15 @@ def get_all_omnetpp_patched_release_versions():
         return re.sub("(\\d\\.\\d)[\\.p]\\d", "\\1", version) + ".x"
 
     downloads_dir = "/home/andras/projects/opp_env_downloads"
-    local_omnetpp_git_repo = "/home/andras/projects/xxx/omnetpp-patches"
+    local_omnetpp_git_repo = "/home/andras/projects/opp_env_workspaces/xxx/omnetpp-patches"
 
     return [
         *[
             {
                 "name": "omnetpp",
                 "version": dotx(version),
+                "nixos": "nixos-22.11",
+                "stdenv": "llvmPackages_14.stdenv",
                 "external_nix_packages": ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version.startswith("6.") else
                                          ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "tk", "tcl", "cairo" ] if version.startswith("5.") else
                                          ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "tk", "tcl", "libxml2", "expat" ] if version.startswith("4.") else

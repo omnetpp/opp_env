@@ -113,9 +113,16 @@ def get_all_omnetpp_patched_release_versions():
                                  f"wget -O configure.in https://github.com/omnetpp/omnetpp/raw/omnetpp-{version}/configure.in && " +
                                  f"wget -O patchfile.diff https://github.com/omnetpp/omnetpp/compare/omnetpp-{version}...omnetpp-{dotx(version)}.patch && " +
                                  f"git apply --whitespace=nowarn --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+                "shell_hook_command": ("export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"\n") +
+                                      ("export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.cairo}/lib\"\n" if version.startswith("5.") else "") + # for tkpath in omnetpp-5.x Tkenv
+                                      ("""
+                                        export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}
+                                        # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)
+                                        export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}
+                                       """ if version.startswith("5.") or version.startswith("6.") else ""),
                 "setenv_command": "source setenv",
                 "configure_command": "./configure WITH_OSG=no" if version.startswith("6.") else
-                                     "./configure WITH_OSG=no WITH_OSGEARTH=no QT_VERSION=5" if version == "5.0" else
+                                     "./configure WITH_OSG=no WITH_OSGEARTH=no QT_VERSION=5" if version == "5.0" else  #TODO configure.user-t kene patchelni!
                                      "./configure WITH_OSG=no WITH_OSGEARTH=no" if version.startswith("5.") else
                                      "./configure",
                 "build_command": "make -j$NIX_BUILD_CORES MODE=release",

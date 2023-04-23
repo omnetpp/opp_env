@@ -407,14 +407,22 @@ class ProjectDescription:
     def get_with_options(self, requested_options):
         fields = dict(vars(self))
         if requested_options:
-            _logger.debug(f"Selecting options {requested_options} for project {self}")
+            _logger.debug(f"Selecting options {cyan(requested_options)} for project {cyan(self)}")
             for option in requested_options:
                 if option in self.options:
                     option_fields = self.options[option]
-                    _logger.debug(f"option {option} updates the following fields: {list(option_fields.keys())}")
+                    conflicts_with = option_fields["conflicts_with"] or []
+                    if conflicts_with is str:
+                        conflicts_with = [conflicts_with]
+                    conflicting_options = list(set(conflicts_with).intersection(set(requested_options)))
+                    if conflicting_options:
+                        raise Exception(f"Option '{option}' conflicts with the following option(s): {conflicting_options}")
+                    _logger.debug(f"option {option} has the following fields: {list(option_fields.keys())}")
                     fields.update(option_fields)
                 else:
                     _logger.warning(f"Project {cyan(self)} does not support option {cyan(option)}")
+        fields.pop("option_description", None)
+        fields.pop("conflicts_with", None)
         return ProjectDescription(**fields)
 
 def get_all_omnetpp_project_descriptions():

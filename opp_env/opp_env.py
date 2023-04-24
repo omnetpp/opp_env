@@ -677,10 +677,21 @@ def init_subcommand_main(**kwargs):
     Workspace.init_workspace(dir)
     _logger.info(f"Workspace created in folder {cyan(dir)}")
 
-def describe_subcommand_main(project, **kwargs):
+#TODO raw
+def describe_subcommand_main(project, raw=False, **kwargs):
     project_description = find_project_description(ProjectReference.parse(project))
-    for prop, value in vars(project_description).items():
-        print(cyan(prop) + " = " + repr(value))
+    if raw:
+        print(json.dumps(vars(project_description), indent=4))
+    else:
+        print(project_description.get_full_name())
+        if project_description.description:
+            print(project_description.description)
+        if project_description.warning:
+            print(project_description.warning)
+        if (project_description.options):
+            print("Available options:")
+            for option_name, option in project_description.options.items():
+                print(f"- {option_name}: {option.get('option_description', '-')}")
 
 def download_subcommand_main(projects, workspace_directory=None, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)

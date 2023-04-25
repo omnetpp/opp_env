@@ -118,7 +118,7 @@ def parse_arguments():
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
     subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project if not already built")
-    subparser.add_argument("--chdir", default=False, action='store_true', help="Change into the directory of the project")
+    subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help="Whether to change into the directory of the project. The default action is to change into the project root only if the current working directory is outside the project")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -763,6 +763,10 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
             workspace.clean_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
+def is_subdirectory(child_dir, parent_dir):
+    # Check if a directory is a subdirectory of another directory.
+    return os.path.commonpath([child_dir, parent_dir]) == parent_dir
+
 def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, requested_options=None, build=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
@@ -782,11 +786,17 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
             _logger.error(f"An error occurred while building affected projects: {red(e)}")
 
     _logger.info(f"Starting {green('isolated') if isolated else cyan('non-isolated')} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+
     if chdir and projects:
         first_project_description = resolve_projects(projects)[0]
         first_project_dir = os.path.join(workspace_directory, first_project_description.get_full_name())
-        _logger.debug(f"Changing into the first project's directory {cyan(first_project_dir)}")
-        os.chdir(first_project_dir)
+        if chdir == "if-outside":
+            chdir = not is_subdirectory(os.getcwd(), first_project_dir)  # "is outside the project dir"
+        if chdir:
+            _logger.debug(f"Changing into the first project's directory {cyan(first_project_dir)}")
+            os.chdir(first_project_dir)
+        else:
+            _logger.debug(f"No need to change directory, wd={cyan(os.getcwd())} is already under the first project's directory {cyan(first_project_dir)}")
 
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 

@@ -93,6 +93,7 @@ def parse_arguments():
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
+    subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
 
     subparser = subparsers.add_parser("configure", help="Configures the specified projects for their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -116,7 +117,7 @@ def parse_arguments():
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
-    #subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project if not already built")
+    subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project if not already built")
     subparser.add_argument("--chdir", default=False, action='store_true', help="Change into the directory of the project")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
@@ -124,6 +125,7 @@ def parse_arguments():
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
+    subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project before running the command if not already built")
     subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
 
     return parser.parse_args(sys.argv[1:])
@@ -199,14 +201,9 @@ def download_and_unpack_tarball(download_url, target_folder):
         run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}")
         os.remove(wget_log_file)
         os.remove(tar_log_file)
-    except KeyboardInterrupt as e:
-        _logger.debug("Download and unpacking interrupted by user, cleaning up")
-        shutil.rmtree(target_folder)
-        raise e
     except Exception as e:
         print(read_file_if_exists(wget_log_file).strip())
         print(read_file_if_exists(tar_log_file).strip())
-        shutil.rmtree(target_folder)  # clean up partial download
         raise e
 
 def download_and_apply_patch(patch_url, target_folder):
@@ -216,9 +213,6 @@ def download_and_apply_patch(patch_url, target_folder):
         run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}")
         os.remove(wget_log_file)
         os.remove(patching_log_file)
-    except KeyboardInterrupt as e:
-        _logger.error(f"Downloading and applying patch interrupted by user -- project likely left partially unpatched")
-        raise e
     except Exception as e:
         print(read_file_if_exists(wget_log_file).strip())
         print(read_file_if_exists(patching_log_file).strip())
@@ -290,34 +284,46 @@ class Workspace:
         data['state'] = state
         self.write_project_state_file(project_description, data)
 
-    def download_project(self, project_description, **kwargs):
+    def download_project(self, project_description, cleanup, **kwargs):
         _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         project_dir = self.root_directory + "/" + project_description.get_full_name()
         if os.path.exists(project_dir):
             raise Exception("f{project_dir} already exists")
-        if project_description.download_command:
-            run_command(f"cd {self.root_directory} && {project_description.download_command}")
-        elif project_description.download_url:
-            download_and_unpack_tarball(project_description.download_url, project_dir)
-        elif project_description.git_url:
-            branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
-            #TODO maybe optionally use --single-branch
-            run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}")
-        else:
-            raise Exception("no download_url or download_command in project description")
-        if not os.path.exists(project_dir):
-            raise Exception(f"download process did not create {project_dir}")
+        try:
+            if project_description.download_command:
+                run_command(f"cd {self.root_directory} && {project_description.download_command}")
+            elif project_description.download_url:
+                download_and_unpack_tarball(project_description.download_url, project_dir)
+            elif project_description.git_url:
+                branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
+                #TODO maybe optionally use --single-branch
+                run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}")
+            else:
+                raise Exception(f"{project_description}: No download_url or download_command in project description -- check project options for alternative download means (enter 'opp_env info {project_description}')")
+            if not os.path.exists(project_dir):
+                raise Exception(f"{project_description}: Download process did not create {project_dir}")
 
-        if project_description.patch_command or project_description.patch_url:
-            _logger.info(f"Patching project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-            if project_description.patch_command:
-                run_command(f"cd {project_dir} && {project_description.patch_command}")
-            if project_description.patch_url:
-                download_and_apply_patch(project_description.patch_url, project_dir)
+            if project_description.patch_command or project_description.patch_url:
+                _logger.info(f"Patching project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
+                if project_description.patch_command:
+                    run_command(f"cd {project_dir} && {project_description.patch_command}")
+                if project_description.patch_url:
+                    download_and_apply_patch(project_description.patch_url, project_dir)
 
-
-        self.mark_project_state(project_description)
-        self.set_project_state(project_description, self.DOWNLOADED)
+            self.mark_project_state(project_description)
+            self.set_project_state(project_description, self.DOWNLOADED)
+        except KeyboardInterrupt as e:
+            if cleanup:
+                _logger.info("Download interrupted by user, cleaning up")
+                if os.path.isdir(project_dir):
+                    shutil.rmtree(project_dir)
+            raise e
+        except Exception as e:
+            if cleanup:
+                _logger.info("Error during download, cleaning up")
+                if os.path.isdir(project_dir):
+                    shutil.rmtree(project_dir)
+            raise e
 
     def configure_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
         assert(project_description.configure_command)
@@ -652,12 +658,12 @@ def setup_environment(projects, workspace_directory=None, requested_options=None
         project_setenv_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.setenv_command or 'true'}")
     return effective_project_descriptions, external_nix_packages, project_setenv_commands
 
-def download_project_if_needed(workspace, project_description, prepare_missing=True, **kwargs):
+def download_project_if_needed(workspace, project_description, prepare_missing=True, cleanup=True, **kwargs):
     project_state = workspace.get_project_state(project_description)
     if not prepare_missing and project_state in [Workspace.ABSENT, Workspace.INCOMPLETE]:
         raise Exception(f"Project '{project_description}' is missing or incomplete")
     elif project_state == Workspace.ABSENT:
-        workspace.download_project(project_description, **kwargs)
+        workspace.download_project(project_description, cleanup, **kwargs)
     elif project_state == Workspace.INCOMPLETE:
         raise Exception(f"Cannot download '{project_description}': Directory already exists")
     else:
@@ -757,22 +763,23 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
             workspace.clean_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, requested_options=None, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, requested_options=None, build=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
-    try:
-        for project_description in effective_project_descriptions:
-            if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
-                workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-        for project_description in effective_project_descriptions:
-            if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
-                workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    except Exception as e:
-        # print error but continue bringing up the shell to give user a chance to fix the problem
-        _logger.error(f"An error occurred while building affected projects: {red(e)}")
+    if build:
+        try:
+            for project_description in effective_project_descriptions:
+                if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
+                    workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
+            for project_description in effective_project_descriptions:
+                if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
+                    workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
+        except Exception as e:
+            # print error but continue bringing up the shell to give user a chance to fix the problem
+            _logger.error(f"An error occurred while building affected projects: {red(e)}")
 
     _logger.info(f"Starting {green('isolated') if isolated else cyan('non-isolated')} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     if chdir and projects:
@@ -783,18 +790,19 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
 
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, build=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
-    for project_description in effective_project_descriptions:
-        if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
-            workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    for project_description in effective_project_descriptions:
-        if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
-            workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
+    if build:
+        for project_description in effective_project_descriptions:
+            if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
+                workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
+        for project_description in effective_project_descriptions:
+            if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
+                workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", **dict(kwargs, quiet=False))
 

@@ -111,6 +111,10 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i '/^PERL =/i CFLAGS += -std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations' Makefile.inc.in" if not is_modernized and version.startswith("4.") else None,
     ]
 
+    # More recent releases can handle parallel build
+    allow_parallel_build = version.startswith("5.") or version.startswith("6.") or is_modernized
+    num_build_cores = '$NIX_BUILD_CORES' if allow_parallel_build else '1'
+
     return {
         "name": "omnetpp",
         "version": version,
@@ -156,11 +160,7 @@ def make_omnetpp_project_description(version, base_version=None):
             "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish)" if version == "3.3p1" else
             "source setenv -f" if base_version.startswith("5.") else  # -f allows setenv to be called from scripts
             "source setenv",
-        "configure_command":
-            "./configure",
-        "build_command":
-            "make -j$NIX_BUILD_CORES" if version.startswith("5.") or version.startswith("6.") or is_modernized else # these can handle parallel build
-            "make -j1", # use sequential build
+        "build_command": f"[ -f config.status ] || ./configure && make -j{num_build_cores}",
         "clean_command": "make clean",
         "options": {
             "gcc7": {
@@ -176,16 +176,12 @@ def make_omnetpp_project_description(version, base_version=None):
             "debug": {
                 "option_description": "Build debug mode binaries",
                 "conflicts_with": ["release"],
-                "build_command":
-                    "make -j$NIX_BUILD_CORES MODE=debug" if version.startswith("5.") or version.startswith("6.") or is_modernized else # these can handle parallel build
-                    "make -j1 MODE=debug",
+                "build_command": f"[ -f config.status ] || ./configure && make -j{num_build_cores} MODE=debug",
             },
             "release": {
                 "option_description": "Build release mode binaries",
                 "conflicts_with": ["debug"],
-                "build_command":
-                        "make -j$NIX_BUILD_CORES MODE=release" if version.startswith("5.") or version.startswith("6.") or is_modernized else # these can handle parallel build
-                        "make -j1 MODE=release",
+                "build_command": f"[ -f config.status ] || ./configure && make -j{num_build_cores} MODE=release",
             },
             "source-archive": {
                 "option_description": "Install from source archive on github",

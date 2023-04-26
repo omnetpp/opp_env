@@ -53,8 +53,8 @@ def make_omnetpp_project_description(version, base_version=None):
             "llvmPackages_14.stdenv",
         "external_nix_packages":
             ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version.startswith("6.") else
-            ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "tk", "tcl", "cairo" ] if version.startswith("5.") else
-            ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "tk-8_5", "tcl-8_5", "libxml2", "expat" ] if version.startswith("4.") else
+            ["temurin-jre-bin-8", "gtk2", "xorg.libXtst", "ccache", "which", "bison", "flex", "perl", "xdg-utils", "qt5.qtbase", "qt5.qtsvg", "python3", "tk", "tcl", "cairo" ] if version.startswith("5.") else
+            ["temurin-jre-bin-8", "gtk2", "xorg.libXtst", "ccache", "which", "bison", "flex", "perl", "xdg-utils", "tk-8_5", "tcl-8_5", "libxml2", "expat" ] if version.startswith("4.") else
             ["ccache", "which", "bison", "flex", "perl", "xdg-utils", "tk", "tcl", "libxml2", "expat" ] if version.startswith("3.") else [],
         "download_url":
             "" if version in missing_releases else
@@ -102,6 +102,8 @@ def make_omnetpp_project_description(version, base_version=None):
             """ if version.startswith("5.") or version.startswith("6.") else None,
             "export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"",
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.cairo}/lib\"" if version.startswith("5.") else None, # for tkpath in omnetpp-5.x Tkenv
+            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.gtk2}/lib\"" if version.startswith("5.") or version.startswith("4.") else None,
+            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.xorg.libXtst}/lib\"" if version.startswith("5.") or version.startswith("4.") else None,
             "export TK_LIBRARY=\"${pkgs.tk-8_5}/lib/tk8.5\"", #TODO whenever tk8.5 is used
             "export AR=    # due to the 'ar rs' problem" if not is_modernized else None,
         ]),

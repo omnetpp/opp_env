@@ -13,11 +13,6 @@ import re
 import shutil
 import tempfile
 
-# project states:
-# NEW ---download--> DOWNLOADED
-# DOWNLOADED ---build--> BUILT
-# BUILT ---clean--> DOWNLOADED
-#
 
 # Import omnetpp and inet versions.
 # Do it conditionally because we may be running either as a module with __package__ == "opp_env"
@@ -221,7 +216,6 @@ class Workspace:
     ABSENT = "ABSENT"
     INCOMPLETE = "INCOMPLETE"
     DOWNLOADED = "DOWNLOADED"
-    BUILT = "BUILT"
 
     def __init__(self, root_directory):
         assert(os.path.isabs(root_directory))
@@ -329,15 +323,10 @@ class Workspace:
         assert(project_description.build_command)
         _logger.info(f"Building project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.build_command}", **kwargs)
-        self.set_project_state(project_description, self.BUILT)
 
     def clean_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
         assert(project_description.clean_command)
         _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-        # A BUILT project becomes DOWNLOADED, other states remain unchanged. Update the state *before* running the command,
-        # because even if it only does part of its job before running into an error, the project cannot be considered BUILT any more.
-        if self.get_project_state(project_description) == self.BUILT:
-            self.set_project_state(project_description, self.DOWNLOADED)
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", **kwargs)
 
     def mark_project_state(self, project_description):
@@ -669,6 +658,7 @@ def download_project_if_needed(workspace, project_description, prepare_missing=T
         raise Exception(f"Cannot download '{project_description}': Directory already exists")
     else:
         workspace.print_project_state(project_description)
+    assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
 
 def list_subcommand_main(project_names=None, list_mode="grouped", **kwargs):
     projects = get_all_project_descriptions()
@@ -738,11 +728,13 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in effective_project_descriptions:
-        if project_description.build_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
+        assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
+        if project_description.build_command:
             workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
 def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
+    #TODO shouldn't there be a "realclean" command that deletes all files NOT in the file list??
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
@@ -766,7 +758,8 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
     if build:
         try:
             for project_description in effective_project_descriptions:
-                if project_description.build_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
+                assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
+                if project_description.build_command:
                     workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
         except Exception as e:
             # print error but continue bringing up the shell to give user a chance to fix the problem
@@ -795,8 +788,10 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     if build:
         for project_description in effective_project_descriptions:
-            if project_description.build_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
+            assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
+            if project_description.build_command:
                 workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
+            #TODO what about INCOMPLETE projects?
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", **dict(kwargs, quiet=False))
 

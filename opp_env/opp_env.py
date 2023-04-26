@@ -13,12 +13,10 @@ import re
 import shutil
 import tempfile
 
-# project states: downloaded, configured, built
+# project states:
 # NEW ---download--> DOWNLOADED
-# DOWNLOADED ---configure--> CONFIGURED
-# CONFIGURED ---build--> BUILT
-# CONFIGURED/BUILT ---clean--> CONFIGURED  ("clean" doesn't undo the result of "configure")
-# DOWNLOADED ---clean--> DOWNLOADED
+# DOWNLOADED ---build--> BUILT
+# BUILT ---clean--> DOWNLOADED
 #
 
 # Import omnetpp and inet versions.
@@ -95,11 +93,6 @@ def parse_arguments():
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
     subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
-
-    subparser = subparsers.add_parser("configure", help="Configures the specified projects for their environment")
-    subparser.add_argument("projects", nargs="+", help="List of projects")
-    subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading them")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
 
     subparser = subparsers.add_parser("build", help="Builds the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -224,7 +217,6 @@ class Workspace:
     ABSENT = "ABSENT"
     INCOMPLETE = "INCOMPLETE"
     DOWNLOADED = "DOWNLOADED"
-    CONFIGURED = "CONFIGURED"
     BUILT = "BUILT"
 
     def __init__(self, root_directory):
@@ -326,12 +318,6 @@ class Workspace:
                     shutil.rmtree(project_dir)
             raise e
 
-    def configure_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
-        assert(project_description.configure_command)
-        _logger.info(f"Configuring project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-        nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.configure_command}", **kwargs)
-        self.set_project_state(project_description, self.CONFIGURED)
-
     def build_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
         assert(project_description.build_command)
         _logger.info(f"Building project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
@@ -341,10 +327,10 @@ class Workspace:
     def clean_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
         assert(project_description.clean_command)
         _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-        # A BUILT project becomes CONFIGURED, other states remain unchanged. Update the state *before* running the command,
+        # A BUILT project becomes DOWNLOADED, other states remain unchanged. Update the state *before* running the command,
         # because even if it only does part of its job before running into an error, the project cannot be considered BUILT any more.
         if self.get_project_state(project_description) == self.BUILT:
-            self.set_project_state(project_description, self.CONFIGURED)
+            self.set_project_state(project_description, self.DOWNLOADED)
         nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", **kwargs)
 
     def mark_project_state(self, project_description):
@@ -366,7 +352,7 @@ class ProjectDescription:
                  download_url=None, git_url=None, git_branch=None, download_command=None,
                  patch_command=None, patch_url=None,
                  shell_hook_command = None, setenv_command=None,
-                 configure_command=None, build_command=None, clean_command=None,
+                 build_command=None, clean_command=None,
                  options=None):
         self.name = name
         self.version = version
@@ -385,7 +371,6 @@ class ProjectDescription:
         self.patch_url = patch_url
         self.shell_hook_command = shell_hook_command
         self.setenv_command = setenv_command
-        self.configure_command = configure_command
         self.build_command = build_command
         self.clean_command = clean_command
         self.options = options or {}
@@ -730,17 +715,6 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, **kwargs)
 
-def configure_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
-    workspace_directory = resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory)
-    effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
-    for project_description in effective_project_descriptions:
-        download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
-    for project_description in effective_project_descriptions:
-        if project_description.configure_command:
-            workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    _logger.info(f"Configuration finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
-
 def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
@@ -748,10 +722,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in effective_project_descriptions:
-        if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
-            workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-    for project_description in effective_project_descriptions:
-        if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
+        if project_description.build_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
             workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
@@ -779,10 +750,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
     if build:
         try:
             for project_description in effective_project_descriptions:
-                if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
-                    workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-            for project_description in effective_project_descriptions:
-                if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
+                if project_description.build_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
                     workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
         except Exception as e:
             # print error but continue bringing up the shell to give user a chance to fix the problem
@@ -811,10 +779,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     if build:
         for project_description in effective_project_descriptions:
-            if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
-                workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-        for project_description in effective_project_descriptions:
-            if project_description.build_command and workspace.get_project_state(project_description) in [Workspace.DOWNLOADED, Workspace.CONFIGURED]:
+            if project_description.build_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
                 workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", **dict(kwargs, quiet=False))
@@ -832,8 +797,6 @@ def main():
             init_subcommand_main(**kwargs)
         elif subcommand == "download":
             download_subcommand_main(**kwargs)
-        elif subcommand == "configure":
-            configure_subcommand_main(**kwargs)
         elif subcommand == "build":
             build_subcommand_main(**kwargs)
         elif subcommand == "clean":

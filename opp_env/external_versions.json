@@ -18,9 +18,10 @@
     },
     {
         "name": "simulte", "version": "1.2.0",
-        "required_projects": {"inet": ["4.2.10", "4.2.5"], "omnetpp": ["5.7", "5.6.2"]},
+        "required_projects": {"inet": ["4.2.10", "4.2.5"], "omnetpp": ["5.7", "5.6.x"]},
         "external_nix_packages": ["sumo"],
-        "download_command": "wget  -q -nv --show-progress https://github.com/inet-framework/simulte/releases/download/v1.2.0/simulte-1.2.0-src.tgz && tar xzf simulte-1.2.0-src.tgz && rm simulte-1.2.0-src.tgz && mv simulte simulte-1.2.0",
+        "download_url": "https://github.com/inet-framework/simulte/releases/download/v1.2.0/simulte-1.2.0-src.tgz",
+        "patch_command": "sed -i 's|-KINET_PROJ=\\.\\./\\.\\./inet4|-KINET_PROJ=$(INET_ROOT)|' Makefile",
         "setenv_command": "true",
         "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
         "clean_command": "make clean"
@@ -29,7 +30,7 @@
         "name": "simu5g", "version": "1.2.1",
         "required_projects": {"inet": ["4.4.1"], "omnetpp": ["6.0.1"]},
         "external_nix_packages": ["sumo"],
-        "download_command": "wget  -q -nv --show-progress https://github.com/Unipisa/Simu5G/archive/refs/tags/v1.2.1.tar.gz && tar xzf v1.2.1.tar.gz && rm v1.2.1.tar.gz && mv Simu5G-1.2.1 simu5g-1.2.1",
+        "download_command": "https://github.com/Unipisa/Simu5G/archive/refs/tags/v1.2.1.tar.gz",
         "setenv_command": "source setenv -f",
         "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
         "clean_command": "make clean"

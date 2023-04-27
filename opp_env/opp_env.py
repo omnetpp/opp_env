@@ -346,7 +346,7 @@ class Workspace:
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
 class ProjectDescription:
-    def __init__(self, name, version, description=None, warning=None,
+    def __init__(self, name, version, description=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
                  required_projects={}, external_nix_packages=[],
                  download_url=None, git_url=None, git_branch=None, download_command=None,
@@ -357,7 +357,7 @@ class ProjectDescription:
         self.name = name
         self.version = version
         self.description = description
-        self.warning = warning
+        self.warnings = warnings
         self.nixos = nixos
         self.stdenv = stdenv
         self.folder_name = folder_name or name
@@ -552,11 +552,15 @@ def compute_effective_project_descriptions(specified_project_descriptions, reque
             return selected_project_descriptions
     raise Exception("The specified set of project versions cannot be satisfied")
 
-def print_project_warnings(project_descriptions):
+def print_project_warnings(project_descriptions, pause_after_warnings=True):
+    have_warnings = False
     for p in project_descriptions:
-        if p.warning:
-            _logger.warning(f"Project {cyan(p)}: {red(p.warning)}")
-    #TODO let user confirm continuing?
+        if p.warnings:
+            for warning in p.warnings:
+                have_warnings = True
+                _logger.warning(f"Project {cyan(p)}: {warning}")
+    if pause_after_warnings and have_warnings and sys.stdin.isatty():
+        input("Press Enter to continue, or Ctrl+C to abort ")
 
 def get_unique_project_attribute(project_descriptions, attr_name):
     values = set([getattr(p, attr_name) for p in project_descriptions if getattr(p, attr_name)])
@@ -691,10 +695,11 @@ def describe_subcommand_main(projects, raw=False, requested_options=None, **kwar
             print(json.dumps(vars(project_description), indent=4))
         else:
             print(cyan(project_description.get_full_name()) + (" - " + project_description.description if project_description.description else ""))
-            if project_description.warning:
-                print(yellow("WARNING: " + project_description.warning))
+            if project_description.warnings:
+                for warning in project_description.warnings:
+                    print(yellow("\nWARNING: ") + warning)
             if (project_description.options):
-                print("Available options:")
+                print("\nAvailable options:")
                 for option_name, option in project_description.options.items():
                     option_description = option.get('option_description')
                     if option_description:

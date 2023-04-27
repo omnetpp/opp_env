@@ -588,6 +588,8 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
                     hardeningDisable = [ "all" ];
                     buildInputs = with pkgs; [ @PACKAGES@ bashInteractive vim ];
                     shellHook = ''
+                        @PROJECTDIR_VARS@
+
                         @SHELL_HOOK_COMMANDS@
 
                         # modify prompt to distinguish an opp_env shell from a normal shell
@@ -603,6 +605,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
     nixos = get_unique_project_attribute(effective_project_descriptions, "nixos")
     stdenv = get_unique_project_attribute(effective_project_descriptions, "stdenv")
     shell_hook_commands = "\n".join([p.shell_hook_command for p in effective_project_descriptions if p.shell_hook_command])
+    projectdir_var_assignments = "\n".join([f"export {p.name.upper()}_ROOT={os.path.join(workspace_directory, p.get_full_name())}" for p in effective_project_descriptions])
 
     flake_dir = os.path.join(workspace_directory, '.opp_env') #TODO race condition (multiple invocations write the same file)
     flake_file_name = os.path.join(flake_dir, "flake.nix")
@@ -612,6 +615,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@STDENV@", stdenv)
         nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
+        nix_develop_flake = nix_develop_flake.replace("@PROJECTDIR_VARS@", projectdir_var_assignments)
         nix_develop_flake = nix_develop_flake.replace("@SHELL_HOOK_COMMANDS@", shell_hook_commands)
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", shell_hook_script)
         f.write(nix_develop_flake)

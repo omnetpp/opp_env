@@ -109,7 +109,7 @@ def get_all_inet_versions():
         {
             "name": "inet", "version": "git", "description": description,
             "folder_name": "inet",
-            "required_projects": {"omnetpp": ["git"]},
+            "required_projects": {"omnetpp": ["master"]},
             "external_nix_packages": ["python3", "z3"],
             "git_url": "git@github.com:inet-framework/inet.git",
             "setenv_command": "source setenv",

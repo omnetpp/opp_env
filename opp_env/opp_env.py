@@ -92,12 +92,14 @@ def parse_arguments():
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
+    subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
 
     subparser = subparsers.add_parser("build", help="Builds the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
+    subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
@@ -112,6 +114,7 @@ def parse_arguments():
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
     subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project if not already built")
+    subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help="Whether to change into the directory of the project. The default action is to change into the project root only if the current working directory is outside the project")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
@@ -120,6 +123,7 @@ def parse_arguments():
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
     subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project before running the command if not already built")
+    subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
 
     return parser.parse_args(sys.argv[1:])
@@ -277,7 +281,7 @@ class Workspace:
         data['state'] = state
         self.write_project_state_file(project_description, data)
 
-    def download_project(self, project_description, cleanup, **kwargs):
+    def download_project(self, project_description, patch, cleanup, **kwargs):
         _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         project_dir = self.root_directory + "/" + project_description.get_full_name()
         if os.path.exists(project_dir):
@@ -297,11 +301,14 @@ class Workspace:
                 raise Exception(f"{project_description}: Download process did not create {project_dir}")
 
             if project_description.patch_command or project_description.patch_url:
-                _logger.info(f"Patching project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-                if project_description.patch_command:
-                    run_command(f"cd {project_dir} && {project_description.patch_command}")
-                if project_description.patch_url:
-                    download_and_apply_patch(project_description.patch_url, project_dir)
+                if patch:
+                    _logger.info(f"Patching project {cyan(project_description.get_full_name())}")
+                    if project_description.patch_command:
+                        run_command(f"cd {project_dir} && {project_description.patch_command}")
+                    if project_description.patch_url:
+                        download_and_apply_patch(project_description.patch_url, project_dir)
+                else:
+                    _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
 
             self.mark_project_state(project_description)
             self.set_project_state(project_description, self.DOWNLOADED)
@@ -652,12 +659,12 @@ def setup_environment(projects, workspace_directory=None, requested_options=None
         project_setenv_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.setenv_command or 'true'}")
     return effective_project_descriptions, external_nix_packages, project_setenv_commands
 
-def download_project_if_needed(workspace, project_description, prepare_missing=True, cleanup=True, **kwargs):
+def download_project_if_needed(workspace, project_description, prepare_missing=True, patch=True, cleanup=True, **kwargs):
     project_state = workspace.get_project_state(project_description)
     if not prepare_missing and project_state in [Workspace.ABSENT, Workspace.INCOMPLETE]:
         raise Exception(f"Project '{project_description}' is missing or incomplete")
     elif project_state == Workspace.ABSENT:
-        workspace.download_project(project_description, cleanup, **kwargs)
+        workspace.download_project(project_description, patch, cleanup, **kwargs)
     elif project_state == Workspace.INCOMPLETE:
         raise Exception(f"Cannot download '{project_description}': Directory already exists")
     else:

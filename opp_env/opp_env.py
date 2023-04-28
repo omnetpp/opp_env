@@ -95,12 +95,14 @@ def parse_arguments():
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
+    subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
+    subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
@@ -109,6 +111,7 @@ def parse_arguments():
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
     subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project if not already built")
+    subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help="Whether to change into the directory of the project. The default action is to change into the project root only if the current working directory is outside the project")
 
@@ -118,6 +121,7 @@ def parse_arguments():
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
     subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project before running the command if not already built")
+    subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
 
@@ -319,15 +323,17 @@ class Workspace:
                     shutil.rmtree(project_dir)
             raise e
 
-    def build_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
+    def build_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs):
         assert(project_description.build_command)
-        _logger.info(f"Building project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-        nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.build_command}", **kwargs)
+        for build_mode in build_modes:
+            _logger.info(f"Building project {cyan(project_description.get_full_name())} in {cyan(build_mode)} mode in workspace {cyan(self.root_directory)}")
+            nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.build_command}", build_mode=build_mode, **kwargs)
 
-    def clean_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs):
+    def clean_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs):
         assert(project_description.clean_command)
-        _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-        nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", **kwargs)
+        for build_mode in build_modes:
+            _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in {cyan(build_mode)} in workspace {cyan(self.root_directory)}")
+            nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", build_mode=build_mode, **kwargs)
 
     def mark_project_state(self, project_description):
         file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
@@ -567,7 +573,7 @@ def get_unique_project_attribute(project_descriptions, attr_name):
     else:
         return list(values)[0]
 
-def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, shell_hook_script, interactive=False, isolated=True, check_exitcode=True, quiet=False, **kwargs):
+def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, shell_hook_script, interactive=False, isolated=True, check_exitcode=True, quiet=False, build_mode=None, **kwargs):
     nix_develop_flake = """{
     inputs = {
         nixpkgs.url = "nixpkgs/@NIXOS@";
@@ -584,6 +590,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
                     hardeningDisable = [ "all" ];
                     buildInputs = with pkgs; [ @PACKAGES@ bashInteractive vim ];
                     shellHook = ''
+                        BUILD_MODE=@BUILD_MODE@
                         @PROJECTDIR_VARS@
 
                         @SHELL_HOOK_COMMANDS@
@@ -611,6 +618,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@STDENV@", stdenv)
         nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
+        nix_develop_flake = nix_develop_flake.replace("@BUILD_MODE@", build_mode or "")
         nix_develop_flake = nix_develop_flake.replace("@PROJECTDIR_VARS@", projectdir_var_assignments)
         nix_develop_flake = nix_develop_flake.replace("@SHELL_HOOK_COMMANDS@", shell_hook_commands)
         nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", shell_hook_script)
@@ -721,35 +729,37 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, **kwargs)
 
-def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
+def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
+    build_modes = mode if mode else ["debug", "release"]
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in effective_project_descriptions:
         assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
         if project_description.build_command:
-            workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
+            workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
-def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
+def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, **kwargs):
     #TODO shouldn't there be a "realclean" command that deletes all files NOT in the file list??
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
+    build_modes = mode if mode else ["debug", "release"]
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in reversed(effective_project_descriptions):
         if project_description.clean_command:
-            workspace.clean_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
+            workspace.clean_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs)
     _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
 def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
-def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, requested_options=None, build=True, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, requested_options=None, build=True, mode=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
@@ -757,10 +767,11 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     if build:
         try:
+            build_modes = mode if mode else ["debug", "release"]
             for project_description in effective_project_descriptions:
                 assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
                 if project_description.build_command:
-                    workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
+                    workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs)
         except Exception as e:
             # print error but continue bringing up the shell to give user a chance to fix the problem
             _logger.error(f"An error occurred while building affected projects: {red(e)}")
@@ -780,18 +791,18 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
 
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, build=True, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, build=True, mode=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     if build:
+        build_modes = mode if mode else ["debug", "release"]
         for project_description in effective_project_descriptions:
             assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
             if project_description.build_command:
-                workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
-            #TODO what about INCOMPLETE projects?
+                workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs)
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", **dict(kwargs, quiet=False))
 

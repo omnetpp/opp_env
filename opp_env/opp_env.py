@@ -28,6 +28,11 @@ try:
 except ImportError:
     from inet_versions import get_all_inet_versions
 
+try:
+    from opp_env.veins_versions import get_all_veins_versions
+except ImportError:
+    from veins_versions import get_all_veins_versions
+
 _logger = logging.getLogger(__file__)
 
 COLOR_GRAY = "\033[38;20m"
@@ -423,6 +428,10 @@ def get_all_omnetpp_project_descriptions():
 def get_all_inet_project_descriptions():
     return [ProjectDescription(**e) for e in get_all_inet_versions()]
 
+
+def get_all_veins_project_descriptions():
+    return [ProjectDescription(**e) for e in get_all_veins_versions()]
+
 def get_all_external_project_descriptions():
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "external_versions.json")) as f:
         return [ProjectDescription(**e) for e in json.load(f)]
@@ -435,6 +444,7 @@ def get_all_project_descriptions():
         all_project_descriptions = [
             *get_all_omnetpp_project_descriptions(),
             *get_all_inet_project_descriptions(),
+            *get_all_veins_project_descriptions(),
             *get_all_external_project_descriptions(),
         ]
     return all_project_descriptions

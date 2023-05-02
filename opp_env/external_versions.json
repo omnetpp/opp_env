@@ -8,15 +8,6 @@
         "clean_command": "make clean"
     },
     {
-        "name": "veins", "version": "5.2",
-        "required_projects": {"inet": ["4.4.1"], "omnetpp": ["6.0.1"]},
-        "external_nix_packages": ["sumo"],
-        "download_command": "wget  -q -nv --show-progress https://veins.car2x.org/download/veins-5.2.zip && unzip veins-5.2.zip && rm veins-5.2.zip && mv veins-veins-5.2 veins-5.2",
-        "setenv_command": "source setenv",
-        "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
-        "clean_command": "make clean"
-    },
-    {
         "name": "simulte", "version": "1.2.0",
         "required_projects": {"inet": ["4.2.10", "4.2.5"], "omnetpp": ["5.7", "5.6.x"]},
         "external_nix_packages": ["sumo"],

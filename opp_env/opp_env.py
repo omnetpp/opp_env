@@ -81,6 +81,7 @@ def parse_arguments():
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     subparser = subparsers.add_parser("list", help="Lists all available projects")
+    subparser.add_argument("project_names", nargs="*", metavar="project-name", help="Names of projects to list (omit to list all)")
     subparser.add_argument("-m", "--mode", dest="list_mode", choices=["flat", "grouped", "names"], default="grouped", help="Listing mode")
 
     subparser = subparsers.add_parser("info", help="Describes the specified project")
@@ -451,8 +452,8 @@ def get_all_project_descriptions():
         ]
     return all_project_descriptions
 
-def get_project_names():
-    return list(dict.fromkeys([p.name for p in get_all_project_descriptions()]))
+def get_project_names(project_descriptions=None):
+    return list(dict.fromkeys([p.name for p in project_descriptions or get_all_project_descriptions()]))
 
 def get_project_versions(project_name):
     return [p.version for p in get_all_project_descriptions() if p.name == project_name]
@@ -669,17 +670,19 @@ def download_project_if_needed(workspace, project_description, prepare_missing=T
     else:
         workspace.print_project_state(project_description)
 
-def list_subcommand_main(list_mode, **kwargs):
+def list_subcommand_main(project_names=None, list_mode="grouped", **kwargs):
     projects = get_all_project_descriptions()
+    if project_names:
+        projects = [p for p in projects if p.name in project_names]
     names = list(dict.fromkeys([p.name for p in projects]))
     if list_mode == "flat":
-        for p in get_all_project_descriptions():
+        for p in projects:
             print(p.get_full_name())
     elif list_mode == "grouped":
-        for name in get_project_names():
+        for name in names:
             print(f"{name:<10} {'  '.join(get_project_versions(name))}")
     elif list_mode == "names":
-        for name in get_project_names():
+        for name in names:
             print(name)
     else:
         raise Exception(f"invalid list mode '{list_mode}'")

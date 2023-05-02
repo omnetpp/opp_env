@@ -500,17 +500,23 @@ class ProjectReference:
         return self.name + "-" + self.version if self.version else self.name
 
 def compute_effective_project_descriptions(specified_project_descriptions, requested_options=None):
+    _logger.debug(f"Computing list of effective projects for {specified_project_descriptions}")
     # 1. collect all required projects ignoring the project versions
     required_project_names = []
-    for specified_project_description in specified_project_descriptions:
-        required_project_names.append(specified_project_description.name)
-        for project_name, project_versions in specified_project_description.required_projects.items():
+    todo_list = specified_project_descriptions.copy()
+    while todo_list:
+        project_description = todo_list.pop(0)
+        required_project_names.append(project_description.name)
+        for project_name, project_versions in project_description.required_projects.items():
             # maintains the proper ordering of required projects
             if project_name in required_project_names:
                 required_project_names = [e for e in required_project_names if e != project_name]
+            else:
+                todo_list.append(find_project_description(ProjectReference.parse(project_name + "-" + project_versions[0])))
             required_project_names.append(project_name)
     required_project_names.reverse()
-    # print(required_project_names)
+    # _logger.debug(f"{required_project_names=}")
+
     # 2. collect all available project versions for all required projects separately
     available_project_versions = {}
     for required_project_name in required_project_names:
@@ -519,11 +525,13 @@ def compute_effective_project_descriptions(specified_project_descriptions, reque
             if project_description.name == required_project_name:
                 project_versions.append(project_description.version)
         available_project_versions[required_project_name] = project_versions
-    # print(available_project_versions)
+    # _logger.debug(f"{available_project_versions=}")
+
     # 3. iterate over all combinations of the available project versions for the different required projects
     sets = available_project_versions.values()
     keys = list(available_project_versions.keys())
     for combination in itertools.product(*sets):
+        # _logger.debug(f"checking combination: {combination=}")
         accept_combination = True
         selected_project_descriptions = []
         # 4. for each required project version combination check if it matches all specified and required project criteria
@@ -531,14 +539,16 @@ def compute_effective_project_descriptions(specified_project_descriptions, reque
             selected_project_name = f"{keys[i]}-{combination[i]}"
             selected_project_description = find_project_description(ProjectReference.parse(selected_project_name))
             selected_project_descriptions.append(selected_project_description)
-        # print(selected_project_descriptions)
+        # _logger.debug(f"checking combination: {selected_project_descriptions=}")
         # 5. check if the specified project versions are included in the project version combination
         for specified_project_description in specified_project_descriptions:
             if not specified_project_description in selected_project_descriptions:
+                # _logger.debug(f"  rejecting because {specified_project_description} is not in {selected_project_descriptions}")
                 accept_combination = False
                 break
         # 6. check if one of the required project versions are included in the project version combination for all project versions
         for selected_project_description in selected_project_descriptions:
+            # _logger.debug(f"  checking {selected_project_description}")
             for required_project_name, required_project_versions in selected_project_description.required_projects.items():
                 accept_selected_project_description = False
                 for required_project_version in required_project_versions:
@@ -546,6 +556,7 @@ def compute_effective_project_descriptions(specified_project_descriptions, reque
                     if required_project_description in selected_project_descriptions:
                         accept_selected_project_description = True
                 if not accept_selected_project_description:
+                    # _logger.debug(f"  rejecting {required_project_name} {required_project_versions}")
                     accept_combination = False
                     break
         if accept_combination:

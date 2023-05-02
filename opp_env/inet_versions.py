@@ -11,7 +11,7 @@ def get_all_inet_released_versions():
             {
                 "name": "inet", "version": inet_version, "description": description,
                 "folder_name": "inet",
-                "required_projects": {"omnetpp": list(set([dotx(v) for v in omnetpp_versions]))},
+                "required_projects": {"omnetpp": omnetpp_versions}, # list(set([dotx(v) for v in omnetpp_versions]))},
                 "external_nix_packages": ["python3", "z3"] if inet_version.startswith("4.") else
                                          ["python3"]  if inet_version.startswith("3.") else [],
                 "git_url": "git@github.com:inet-framework/inet.git",

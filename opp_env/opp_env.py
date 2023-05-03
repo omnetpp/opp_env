@@ -83,8 +83,10 @@ def parse_arguments():
     subparser = subparsers.add_parser("list", help="Lists all available projects")
     subparser.add_argument("-m", "--mode", dest="list_mode", choices=["flat", "grouped", "names"], default="grouped", help="Listing mode")
 
-    subparser = subparsers.add_parser("describe", help="Describes the specified project")
-    subparser.add_argument("project", help="The project name")
+    subparser = subparsers.add_parser("info", help="Describes the specified project")
+    subparser.add_argument("projects", nargs="+", help="The project(s) to get info about")
+    subparser.add_argument("--raw", action=argparse.BooleanOptionalAction, default=False, help="Print the project description in JSON format")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Print the project description as if the given project options were selected")
 
     subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
 
@@ -302,11 +304,6 @@ class Workspace:
             #TODO maybe optionally use --single-branch
             run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}")
         else:
-            print(vars(project_description))
-            print(project_description.download_command)
-            print(vars(project_description)['download_command'])
-            for prop, value in vars(project_description).items():
-                print(cyan(prop) + " = " + repr(value))
             raise Exception("no download_url or download_command in project description")
         if not os.path.exists(project_dir):
             raise Exception(f"download process did not create {project_dir}")
@@ -423,6 +420,7 @@ class ProjectDescription:
                     _logger.warning(f"Project {cyan(self)} does not support option {cyan(option)}")
         fields.pop("option_description", None)
         fields.pop("conflicts_with", None)
+        fields.pop("options", None)
         return ProjectDescription(**fields)
 
 def get_all_omnetpp_project_descriptions():
@@ -685,21 +683,34 @@ def init_subcommand_main(**kwargs):
     Workspace.init_workspace(dir)
     _logger.info(f"Workspace created in folder {cyan(dir)}")
 
-#TODO raw
-def describe_subcommand_main(project, raw=False, **kwargs):
-    project_description = find_project_description(ProjectReference.parse(project))
-    if raw:
-        print(json.dumps(vars(project_description), indent=4))
-    else:
-        print(project_description.get_full_name())
-        if project_description.description:
-            print(project_description.description)
-        if project_description.warning:
-            print(project_description.warning)
-        if (project_description.options):
-            print("Available options:")
-            for option_name, option in project_description.options.items():
-                print(f"- {option_name}: {option.get('option_description', '-')}")
+def describe_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
+    first = True
+    for project in projects:
+        if first:
+            first = False
+        else:
+            print()
+        project_description = find_project_description(ProjectReference.parse(project))
+        if requested_options:
+            project_description = project_description.get_with_options(requested_options)
+        if raw:
+            print(json.dumps(vars(project_description), indent=4))
+        else:
+            print(cyan(project_description.get_full_name()) + (" - " + project_description.description if project_description.description else ""))
+            if project_description.warning:
+                print(yellow("WARNING: " + project_description.warning))
+            if (project_description.options):
+                print("Available options:")
+                for option_name, option in project_description.options.items():
+                    option_description = option.get('option_description')
+                    if option_description:
+                        print(f"- {cyan(option_name)}: {option.get('option_description', 'n/a')}")
+                    else:
+                        print(f"- {cyan(option_name)}")
+            if (project_description.required_projects):
+                print(f"\nRequires:")
+                for name, versions in project_description.required_projects.items():
+                    print(f"- {cyan(name)}: {versions}")
 
 def download_subcommand_main(projects, workspace_directory=None, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
@@ -794,7 +805,7 @@ def main():
         _logger.debug(f"Starting {cyan(subcommand)} operation")
         if subcommand == "list":
             list_subcommand_main(**kwargs)
-        elif subcommand == "describe":
+        elif subcommand == "info":
             describe_subcommand_main(**kwargs)
         elif subcommand == "init":
             init_subcommand_main(**kwargs)

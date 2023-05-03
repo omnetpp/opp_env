@@ -224,6 +224,7 @@ def download_and_apply_patch(patch_url, target_folder):
 class Workspace:
     # project states
     ABSENT = "ABSENT"
+    INCOMPLETE = "INCOMPLETE"
     DOWNLOADED = "DOWNLOADED"
     CONFIGURED = "CONFIGURED"
     BUILT = "BUILT"
@@ -261,24 +262,24 @@ class Workspace:
     def print_project_state(self, project_description):
         _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green(self.get_project_state(project_description))}, {self.check_project_state(project_description)}")
 
-    def is_project_downloaded(self, project_description):
-        return os.path.exists(self.get_project_root_directory(project_description))
-
     def read_project_state_file(self, project_description):
-        state_file_name = os.path.join(self.root_directory, ".opp_env", project_description.get_full_folder_name() + ".state")
+        state_file_name = os.path.join(self.get_project_root_directory(project_description), ".opp_env_state")
         if not os.path.isfile(state_file_name):
             return {}
         with open(state_file_name) as f:
             return json.load(f)
 
     def write_project_state_file(self, project_description, data):
-        state_file_name = os.path.join(self.root_directory, ".opp_env", project_description.get_full_folder_name() + ".state")
+        state_file_name = os.path.join(self.get_project_root_directory(project_description), ".opp_env_state")
         with open(state_file_name, "w") as f:
             json.dump(data, f)
 
     def get_project_state(self, project_description):
+        project_directory = self.get_project_root_directory(project_description)
         data = self.read_project_state_file(project_description)
-        return self.ABSENT if not self.is_project_downloaded(project_description) else data['state'] if 'state' in data else self.DOWNLOADED
+        return self.ABSENT if not os.path.isdir(project_directory) else \
+               self.INCOMPLETE if not data or 'state' not in data else \
+               data['state']
 
     def set_project_state(self, project_description, state):
         _logger.debug(f"Setting project {cyan(project_description.get_full_name())} state to {cyan(state)}")
@@ -308,7 +309,6 @@ class Workspace:
             raise Exception("no download_url or download_command in project description")
         if not os.path.exists(project_dir):
             raise Exception(f"download process did not create {project_dir}")
-
 
         if project_description.patch_command or project_description.patch_url:
             _logger.info(f"Patching project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
@@ -596,7 +596,7 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
     _logger.debug(f"Nix flake shellHook script: {yellow(shell_hook_script)}")
     #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
     isolation_options = '-i -k HOME -k DISPLAY -k XDG_RUNTIME_DIR -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
-    command = '' if interactive else '-c true'
+    command = '-c bash --norc' if interactive else '-c true'
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
     # Note: Why do we set HOME=<flake_dir> in isolated mode? We want the bash shell to only execute the system-wide startup and
     # initialization files (/etc/profile, /etc/bash.bashrc, etc) but skip the personal startup and initialization files such as
@@ -625,6 +625,17 @@ def setup_environment(projects, workspace_directory=None, requested_options=None
         external_nix_packages += project_description.external_nix_packages
         project_setenv_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.setenv_command or 'true'}")
     return effective_project_descriptions, external_nix_packages, project_setenv_commands
+
+def download_project_if_needed(workspace, project_description, prepare_missing=True, **kwargs):
+    project_state = workspace.get_project_state(project_description)
+    if not prepare_missing and project_state in [Workspace.ABSENT, Workspace.INCOMPLETE]:
+        raise Exception(f"Project '{project_description}' is missing or incomplete")
+    elif project_state == Workspace.ABSENT:
+        workspace.download_project(project_description, **kwargs)
+    elif project_state == Workspace.INCOMPLETE:
+        raise Exception(f"Cannot download '{project_description}': Directory already exists")
+    else:
+        workspace.print_project_state(project_description)
 
 def list_subcommand_main(list_mode, **kwargs):
     projects = get_all_project_descriptions()
@@ -658,22 +669,14 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
     effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     for project_description in effective_project_descriptions:
-        if workspace.is_project_downloaded(project_description):
-            workspace.print_project_state(project_description)
-        else:
-            workspace.download_project(project_description, **kwargs)
+        download_project_if_needed(workspace, project_description, **kwargs)
 
 def configure_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
-        if workspace.is_project_downloaded(project_description):
-            workspace.print_project_state(project_description)
-        elif prepare_missing:
-            workspace.download_project(project_description, **kwargs)
-        else:
-            raise Exception(f"Project {project_description} is missing")
+        download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in effective_project_descriptions:
         if project_description.configure_command:
             workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
@@ -684,12 +687,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
-        if workspace.is_project_downloaded(project_description):
-            workspace.print_project_state(project_description)
-        elif prepare_missing:
-            workspace.download_project(project_description, **kwargs)
-        else:
-            raise Exception(f"Project {project_description} is missing")
+        download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in effective_project_descriptions:
         if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
             workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
@@ -703,12 +701,7 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
-        if workspace.is_project_downloaded(project_description):
-            workspace.print_project_state(project_description)
-        elif prepare_missing:
-            workspace.download_project(project_description, **kwargs)
-        else:
-            raise Exception(f"Project {project_description} is missing")
+        download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in reversed(effective_project_descriptions):
         if project_description.clean_command:
             workspace.clean_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)
@@ -719,12 +712,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
-        if workspace.is_project_downloaded(project_description):
-            workspace.print_project_state(project_description)
-        elif prepare_missing:
-            workspace.download_project(project_description, **kwargs)
-        else:
-            raise Exception(f"Project {project_description} is missing")
+        download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     try:
         for project_description in effective_project_descriptions:
             if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
@@ -750,12 +738,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
-        if workspace.is_project_downloaded(project_description):
-            workspace.print_project_state(project_description)
-        elif prepare_missing:
-            workspace.download_project(project_description, **kwargs)
-        else:
-            raise Exception(f"Project {project_description} is missing")
+        download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in effective_project_descriptions:
         if project_description.configure_command and workspace.get_project_state(project_description) == Workspace.DOWNLOADED:
             workspace.configure_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, **kwargs)

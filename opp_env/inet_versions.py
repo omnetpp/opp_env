@@ -6,6 +6,7 @@ def dotx(version):
     return re.sub("(\\d\\.\\d)[\\.p]\\d", "\\1", version) + ".x"
 
 def get_all_inet_released_versions():
+    local_inet_git_repo = "/home/andras/projects/inet"
     return [
             {
                 "name": "inet", "version": inet_version, "description": description,
@@ -18,7 +19,14 @@ def get_all_inet_released_versions():
                 "setenv_command": "source setenv -f" if inet_version.startswith("4.") else "",
                 "patch_command": "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
                 "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
-                "clean_command": "[ ! -f src/Makefile ] || make clean"
+                "clean_command": "[ ! -f src/Makefile ] || make clean",
+                "options": {
+                    "local": {
+                        "download_command": f"git clone -l {local_inet_git_repo} inet-{inet_version} --branch v{inet_version}",
+                        "download_url": "",
+                        "git_url": ""
+                    }
+                }
             } for inet_version, omnetpp_versions in [["4.4.1", ["6.0.1", "6.0"]],
                                                      ["4.4.0", ["6.0.1", "6.0"]],
                                                      ["4.3.9", ["6.0.1", "6.0"]],
@@ -62,16 +70,20 @@ def get_all_inet_released_versions():
                                                      ["3.6.2", ["5.3"]],
                                                      ["3.6.1", ["5.3"]],
                                                      ["3.6.0", ["5.3"]],
+                                                     ["3.5.x", ["5.1"]],
                                                      ["3.5.0", ["5.1"]],
                                                      ["3.4.0", ["5.0"]],
                                                      ["3.3.0", ["4.6"]],
+                                                     ["3.2.x", ["4.6"]],
                                                      ["3.2.4", ["4.6"]],
                                                      ["3.2.3", ["4.6"]],
                                                      ["3.2.2", ["4.6"]],
                                                      ["3.2.1", ["4.6"]],
                                                      ["3.2.0", ["4.6"]],
+                                                     ["3.1.x", ["4.6"]],
                                                      ["3.1.1", ["4.6"]],
                                                      ["3.1.0", ["4.6"]],
+                                                     ["3.0.x", ["4.6"]],
                                                      ["3.0.0", ["4.6"]],
 
                                                      ["2.6.0", ["4.4"]],
@@ -80,7 +92,16 @@ def get_all_inet_released_versions():
                                                      ["2.3.0", ["4.3"]],
                                                      ["2.2.0", ["4.2"]],
                                                      ["2.1.0", ["4.2"]],
-                                                     ["2.0.0", ["4.2"]]]
+                                                     ["2.0.0", ["4.2"]],
+
+                                                     ["2.6.x", ["4.4"]],
+                                                     ["2.5.x", ["4.4"]],
+                                                     ["2.4.x", ["4.3"]],
+                                                     ["2.3.x", ["4.3"]],
+                                                     ["2.2.x", ["4.2"]],
+                                                     ["2.1.x", ["4.2"]],
+                                                     ["2.0.x", ["4.2"]]]
+
     ]
 
 def get_all_inet_versions():

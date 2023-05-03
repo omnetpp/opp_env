@@ -8,6 +8,9 @@ def dotx(base_version):
 def join_nonempty_items(sep, list):
     return sep.join([x for x in list if x])
 
+def remove_blanks(list):
+    return [x for x in list if x]
+
 def trim_lines(text):
     trimmed_lines = [line.trim() for line in text.splitlines()]
     return '\n'.join(trimmed_lines)
@@ -42,7 +45,12 @@ def make_omnetpp_project_description(version, base_version=None):
     # It doesn't work in omnetpp-4.0 and 4.1, because it would require an older JRE version that is not present in the Nix repo.
     # A problem component is the embedded Webkit library, used as HTML widget in Eclipse (help, some tooltips, etc.)
     # It doesn't work for version 5.7 and 6.0 (due to some incompatible change in Webkit), but other versions should work.
-    ide_packages = ["temurin-jre-bin-8", "gtk2", "xorg.libXtst"] if version >= "4.0" else []
+    ide_packages = [
+        "temurin-jre-bin-8" if version < "5.7" else None,  # 5.7, 6.0 and up have bundled JREs (JustJ)
+        "gtk2", # SWT
+        "xorg.libXtst",
+        "stdenv.cc.cc.lib" if version < "4.6" else None  # for libstdc++.so used by our nativelibs; in 4.6 and up, it's statically linked
+    ] if version >= "4.0" else []
 
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
@@ -53,10 +61,10 @@ def make_omnetpp_project_description(version, base_version=None):
     # Tkenv was updated for Tcl 8.6 in version omnetpp-4.3. omnetpp-3.3p1 has no problem with 8.6, as it was updated for Tcl 8.6 earlier.
     # Cairo is required for the Tkpath plugin bundled with omnetpp in 5.x versions (those with cCanvas support).
     # Tkenv was removed in 6.0, Tcl/Tk is not required above that.
-    tcltk_packages = [] if version >= "6.0" else ["tk", "tcl", "cairo"] if is_modernized or version >= "4.3" else ["tk-8_5", "tcl-8_5"]
+    tcltk_packages = [] if version >= "6.0" else ["tk", "tcl", "cairo"] if version >= "5.0" else ["tk", "tcl"] if is_modernized or version >= "4.3" else ["tk-8_5", "tcl-8_5"]
 
     # Various tools and libs required by / for building omnetpp. Note that we only started using Python in version 5.0.
-    other_packages = ["bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "ccache", "vim"] + (["python3"] if version > "5.0" else [])
+    other_packages = ["bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "ccache", "vim", ("python3" if version > "5.0" else None)]
 
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version >= "6.0" else []
@@ -88,6 +96,8 @@ def make_omnetpp_project_description(version, base_version=None):
 
         "sed -i '1s|.*|#!/bin/env perl|;2s|.*||' src/nedc/opp_msgc" if version == "3.3p1" else None, # otherwise calling msgc from a Makefile fails
 
+        "sed -i 's/\\$(QMAKE)/$(QMAKE) -spec linux-clang' src/qtenv/Makefile" if version == "5.0" else None,
+
         "sed -i '/#include <stdlib.h>/a #include <unistd.h> // added by opp_env' src/utils/abspath.cc" if not is_modernized and version >= "4.0" and version < "4.3" else None, # add missing include in unpatched 4.0/4.1/4.2
         "sed -i 's|static inline int64 abs(int64 x)|//static inline int64 abs(int64 x)|' src/common/bigdecimal.cc" if not is_modernized and version >= "4.0" and version < "4.2" else None,
         "sed -i 's|int64 val = abs(this->intVal);|int64 val = this->intVal < 0 ? -this->intVal : this->intVal;|' src/common/bigdecimal.cc" if not is_modernized and version >= "4.0" and version < "4.2" else None,
@@ -107,7 +117,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "[ ! -f configure.user ] && [ -f configure.user.dist ] && cp configure.user.dist configure.user", # create default configure.user from configure.user.dist unless already exists
         "sed -i 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
         "sed -i 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
-        "sed -i 's|^QT_VERSION=4|QT_VERSION=5|' configure.user" if version=="5.0" else None,
+        "sed -i 's|^QT_VERSION=4|QT_VERSION=5|' configure.user" if version.startswith("5.0") else None, # 5.0.x too!
         "sed -i '/^PERL =/i CFLAGS += -std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations' Makefile.inc.in" if not is_modernized and version.startswith("4.") else None,
     ]
 
@@ -119,19 +129,21 @@ def make_omnetpp_project_description(version, base_version=None):
         "name": "omnetpp",
         "version": version,
         "description": "OMNeT++ base system",
-        "warning": join_nonempty_items(" ", [
-            f"This version cannot be installed in the standard way, because the release tarball is no longer available. To install it from a source archive (which doesn't include the pre-built IDE), specify `--options=source-archive` on the command line." if version in missing_releases else None,
-            f"This version is likely to compile with lots of warnings, not compile at all, or work incorrectly due to bit rotting (changes in the software environment)-- use the corresponding patch branch 'omnetpp-{dotx(version)}' for better results." if not is_modernized else None,
-            "Specifically, this version compiles, but most simulation models won't work due to the original coroutine library being broken due to changes in the standard setjmp()/longjmp() implementation. (This has been resolved in the modernized patch branch and release.)" if not is_modernized and version.startswith("3.") else None,
-            "Specifically, this version will not build due to various issues: incompatible changes from Bison 2.x to 3.x, changes in the Tcl/Tk C API from version 8.5 to 8.6 (interp->result), etc." if not is_modernized and version >= "4.0" and version < "4.3" else None,
-            "Specifically, Qtenv in this version will not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None,
+        "warnings": remove_blanks([
+            f"INSTALLATION: This version cannot be installed in the standard way, because the release tarball is no longer available. To install it from a source archive (which doesn't include the pre-built IDE), specify '--options=source-archive' on the command line." if version in missing_releases else None,
+            join_nonempty_items(" ", [
+                f"BETTER VERSION EXISTS: This version is likely to compile with lots of warnings, not compile at all, or work incorrectly due to bit rotting (changes in the software environment) -- use the corresponding patch branch 'omnetpp-{dotx(version)}' for better results." if not is_modernized else None,
+                "Specifically, most simulation models won't work, because they use activity(), and the coroutine library in this release has become broken due to changes in the standard C library implementation of setjmp()/longjmp(). This issue has been resolved in the modernized patch branch and release.)" if not is_modernized and version.startswith("3.") else None,
+                "Specifically, this version could only be made to compile with the combination of compiler options (C++03, permissiveness, warning suppression, etc.), patching (e.g. due to changes in Bison), and using an older Tcl/Tk library." if not is_modernized and version >= "4.0" and version < "4.3" else None,
+                "Specifically, Qtenv in this version will not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None
+            ])
         ]),
         "nixos": "nixos-22.11",
         "stdenv":
-            "gcc7Stdenv" if version.startswith("3.") or version.startswith("4.") else
+            "gcc7Stdenv" if not is_modernized and (version.startswith("3.") or version.startswith("4.")) else
             "llvmPackages_14.stdenv",
         "external_nix_packages":
-            [*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages],
+            remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
         "download_url":
             "" if version in missing_releases else
             f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
@@ -152,6 +164,7 @@ def make_omnetpp_project_description(version, base_version=None):
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.cairo}/lib\"" if "cairo" in tcltk_packages else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.gtk2}/lib\"" if "gtk2" in ide_packages else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.xorg.libXtst}/lib\"" if "xorg.libXtst" in ide_packages else None,
+            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.stdenv.cc.cc.lib}/lib\"" if "stdenv.cc.cc.lib" in ide_packages else None,
             "export TK_LIBRARY=\"${pkgs.tk-8_5}/lib/tk8.5\"" if "tcl-8_5" in tcltk_packages else None,
             "export AR=    # Older/unpatched omnetpp versions require AR to be defined as 'ar rs' (not just 'ar'), so rather undefine it" if not is_modernized else None,
             # alternative: "AR=\"${AR:-ar} cr\""

@@ -356,7 +356,7 @@ class Workspace:
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
 class ProjectDescription:
-    def __init__(self, name, version, description=None,
+    def __init__(self, name, version, description=None, warning=None,
                  nixos=None, stdenv=None, folder_name=None,
                  required_projects={}, external_nix_packages=[],
                  download_url=None, git_url=None, git_branch=None, download_command=None,
@@ -367,6 +367,7 @@ class ProjectDescription:
         self.name = name
         self.version = version
         self.description = description
+        self.warning = warning
         self.nixos = nixos
         self.stdenv = stdenv
         self.folder_name = folder_name or name
@@ -553,6 +554,12 @@ def compute_effective_project_descriptions(specified_project_descriptions, reque
             return selected_project_descriptions
     raise Exception("The specified set of project versions cannot be satisfied")
 
+def print_project_warnings(project_descriptions):
+    for p in project_descriptions:
+        if p.warning:
+            _logger.warning(f"Project {cyan(p)}: {red(p.warning)}")
+    #TODO let user confirm continuing?
+
 def get_unique_project_attribute(project_descriptions, attr_name):
     values = set([getattr(p, attr_name) for p in project_descriptions if getattr(p, attr_name)])
     if not values:
@@ -631,6 +638,7 @@ def setup_environment(projects, workspace_directory=None, requested_options=None
     specified_project_descriptions = resolve_projects(projects)
     effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    print_project_warnings(effective_project_descriptions)
     external_nix_packages = []
     project_setenv_commands = []
     for project_description in effective_project_descriptions:

@@ -45,12 +45,12 @@ def make_omnetpp_project_description(version, base_version=None):
     # Packages required by the IDE to work. The IDE can be started and is usable for most versions.
     # It doesn't work in omnetpp-4.0 and 4.1, because it would require an older JRE version that is not present in the Nix repo.
     # A problem component is the embedded Webkit library, used as HTML widget in Eclipse (help, some tooltips, etc.)
-    # It doesn't work for version 5.7 and 6.0 (due to some incompatible change in Webkit), but other versions should work.
+    # It doesn't work for version 5.6 and below (due to some incompatible change in Webkit), but newer versions should work.
     ide_packages = [
         "temurin-jre-bin-8" if version < "5.7" else None,  # 5.7, 6.0 and up have bundled JREs (JustJ)
         "gtk2", # SWT
         "xorg.libXtst",
-        "stdenv.cc.cc.lib" if version < "4.6" else None  # for libstdc++.so used by our nativelibs; in 4.6 and up, it's statically linked
+        "stdenv.cc.cc.lib" if version < "5.2" else None  # for libstdc++.so used by our nativelibs; in 5.2 and up, it's statically linked
     ] if version >= "4.0" else []
 
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).

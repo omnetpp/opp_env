@@ -193,23 +193,23 @@ def make_omnetpp_project_description(version, base_version=None):
         "options": {  #TODO git master doesn't have all these download options
             "gcc7": {
                 "option_description": "Use the GCC 7.5 compiler toolchain for the build",
-                "conflicts_with": ["clang14"],
+                "category": "compiler",
                 "stdenv": "gcc7Stdenv",
             },
             "clang14": {
                 "option_description": "Use the Clang 14 compiler toolchain for the build",
-                "conflicts_with": ["gcc7"],
+                "category": "compiler",
                 "stdenv": "llvmPackages_14.stdenv",
             },
             "source-archive": {
                 "option_description": "Install from source archive on github",
-                "conflicts_with": ["git", "local", "local-git"],
+                "category": "download",
                 "download_url": f"https://github.com/omnetpp/omnetpp/archive/refs/{'heads' if is_git_branch else 'tags'}/omnetpp-{version}.tar.gz", #TODO fix branch name
                 "download_command": ""
             },
             "git": {
                 "option_description": "Install from git repo on github",
-                "conflicts_with": ["source-archive", "local", "local-git"],
+                "category": "download",
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
                 "git_branch": f"omnetpp-{version}" if version[0].isdigit() else version, # TODO branch names like "master" don't need to be prefixed
                 "download_command": "",
@@ -217,7 +217,7 @@ def make_omnetpp_project_description(version, base_version=None):
             },
             "local": {
                 "option_description": "Install from tarballs (and potentially, git repo) on local disk",
-                "conflicts_with": ["source-archive", "git", "local-git"],
+                "category": "download",
                 "download_command": f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
                                     f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else
                                     f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
@@ -232,7 +232,7 @@ def make_omnetpp_project_description(version, base_version=None):
             },
             "local-git": {
                 "option_description": "Install from git repo on local disk",
-                "conflicts_with": ["source-archive", "git", "local"],
+                "category": "download",
                 "download_command": f"git clone -l {local_omnetpp_git_repo} omnetpp-{version} --branch omnetpp-{version}", #TODO unless version="master"
                 "download_url": "",
             }

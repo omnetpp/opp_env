@@ -91,6 +91,7 @@ def parse_arguments():
 
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     subparser.add_argument("projects", nargs="+", help="List of projects")
+    subparser.add_argument("-j", "--skip-dependencies", default=False, action='store_true', help="Download just the specified projects, skip downloading the projects they depend on")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
@@ -563,19 +564,22 @@ def compute_effective_project_descriptions(specified_project_descriptions, reque
                     break
         if accept_combination:
             # return selected_project_descriptions with the requested options activated
-            if requested_options:
-                # check requested options exist at all
-                all_supported_options = []
-                for desc in selected_project_descriptions:
-                    all_supported_options += desc.get_supported_options()
-                all_supported_options = list(set(all_supported_options))
-                for option in requested_options:
-                    if option not in all_supported_options:
-                        raise Exception(f"None of the selected projects supports option '{option}'")
-                # create and return updated project descriptions
-                selected_project_descriptions = [desc.get_with_options(requested_options) for desc in selected_project_descriptions]
-            return selected_project_descriptions
+            return get_projects_with_options(selected_project_descriptions, requested_options)
     raise Exception("The specified set of project versions cannot be satisfied")
+
+def get_projects_with_options(project_descriptions, requested_options):
+    if not requested_options:
+        return project_descriptions
+    # check requested options exist at all
+    all_supported_options = []
+    for desc in project_descriptions:
+        all_supported_options += desc.get_supported_options()
+    all_supported_options = list(set(all_supported_options))
+    for option in requested_options:
+        if option not in all_supported_options:
+            raise Exception(f"None of the selected projects supports option '{option}'")
+    # create and return updated project descriptions
+    return [desc.get_with_options(requested_options) for desc in project_descriptions]
 
 def print_project_warnings(project_descriptions, pause_after_warnings=True):
     have_warnings = False
@@ -743,12 +747,15 @@ def describe_subcommand_main(projects, raw=False, requested_options=None, **kwar
                 for name, versions in project_description.required_projects.items():
                     print(f"- {cyan(name)}: {versions}")
 
-def download_subcommand_main(projects, workspace_directory=None, requested_options=None, **kwargs):
+def download_subcommand_main(projects, workspace_directory=None, requested_options=None, skip_dependencies=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     specified_project_descriptions = resolve_projects(projects)
-    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    if skip_dependencies:
+        effective_project_descriptions = get_projects_with_options(specified_project_descriptions, requested_options)
+    else:
+        effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
+        _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, **kwargs)
 

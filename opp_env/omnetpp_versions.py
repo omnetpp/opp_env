@@ -110,6 +110,11 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i '/void yyerror (const char \\*s);/a void yyerror (void *statePtr, const char *s) {yyerror(s);}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
     ]
 
+    # Early 4.x versions need flags such as -std=c++03 -fpermissive to compile
+    cflags_for_4x = "-std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations" if version < "4.3" else \
+                    "-fpermissive -Wno-deprecated-declarations -Wno-literal-suffix"
+
+
     # Adjust settings in configure.user so that a simple ./configure will do in the configuration phase.
     # Note the CFLAGS can only be specified in a convenient way by patching Makefile.inc.
     configuration_patch_commands = [
@@ -118,7 +123,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
         "sed -i 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
         "sed -i 's|^QT_VERSION=4|QT_VERSION=5|' configure.user" if version.startswith("5.0") else None, # 5.0.x too!
-        "sed -i '/^PERL =/i CFLAGS += -std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations' Makefile.inc.in" if not is_modernized and version.startswith("4.") else None,
+        f"sed -i '/^PERL =/i CFLAGS += {cflags_for_4x}' Makefile.inc.in" if not is_modernized and version.startswith("4.") else None
     ]
 
     # More recent releases can handle parallel build

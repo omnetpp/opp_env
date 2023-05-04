@@ -69,6 +69,15 @@ class ColoredLoggingFormatter(logging.Formatter):
         formatter = logging.Formatter(format)
         return formatter.format(record)
 
+def natural_sort_key(text):
+    return [int(part) if part.isdigit() else part.lower() for part in re.split('([0-9]+)', text)]
+
+def natural_less(a, b):
+    return natural_sort_key(a) < natural_sort_key(b)
+
+def natural_sorted(list):
+    return sorted(list, key=natural_sort_key)
+
 def parse_arguments():
     description = "Sets up the development environment for OMNeT++ projects"
     parser = argparse.ArgumentParser(prog="opp_env", description=description)
@@ -151,6 +160,23 @@ def process_arguments():
         kwargs["requested_options"] = options
         del kwargs["options"]
     return kwargs
+
+def detect_nix():
+    # check nix is installed
+    try:
+        _logger.debug(f"Running nix --version")
+        result = subprocess.run(['nix', '--version'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        output = result.stdout.decode('utf-8')
+    except Exception as ex:
+        _logger.debug(f"Error: {ex}")
+        raise Exception("Nix does not seem to be installed. You can install it from https://nixos.org/download.html, or using your system's package manager.")
+    # check it is recent enough
+    nix_version = output.strip().split()[-1]
+    if not re.match("^[0-9.]+$", nix_version):
+        raise Exception("Cannot parse Nix version number: Output of 'nix --version' diverges from expected format")
+    minimum_nix_version = "2.4"  # Nix flakes were introduced in version 2.4
+    if natural_less(nix_version, minimum_nix_version):
+        raise Exception(f"Your Nix installation of version {nix_version} is too old! At least version {minimum_nix_version} is required.")
 
 def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, extra_env_vars=None):
     _logger.debug(f"Running command: {command}")
@@ -468,15 +494,10 @@ def get_project_names(project_descriptions=None):
 def get_project_versions(project_name):
     return [p.version for p in get_all_project_descriptions() if p.name == project_name]
 
-def natsorted(l): # from https://stackoverflow.com/questions/4836710/is-there-a-built-in-function-for-string-natural-sort
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-    return sorted(l, key=alphanum_key)
-
 def get_project_latest_version(project_name):
     versions = get_project_versions(project_name)
     numbered_versions = [v for v in versions if v and v[0] in '0123456789']  # exclude versions named "git", etc.
-    return natsorted(numbered_versions)[-1] if numbered_versions else None  # almost as good as semantic version sorting
+    return natural_sorted(numbered_versions)[-1] if numbered_versions else None  # almost as good as semantic version sorting
 
 def find_project_description(project_reference):
     if project_reference.name not in get_project_names():
@@ -783,6 +804,7 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
         download_project_if_needed(workspace, project_description, **kwargs)
 
 def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, **kwargs):
+    detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
@@ -797,6 +819,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
 
 def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, **kwargs):
     #TODO shouldn't there be a "realclean" command that deletes all files NOT in the file list??
+    detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
@@ -813,6 +836,7 @@ def is_subdirectory(child_dir, parent_dir):
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
 def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, requested_options=None, build=True, mode=None, **kwargs):
+    detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)
@@ -845,6 +869,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
     nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
 def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, build=True, mode=None, **kwargs):
+    detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     effective_project_descriptions, external_nix_packages, project_setenv_commands = setup_environment(projects, workspace_directory, requested_options, **kwargs)

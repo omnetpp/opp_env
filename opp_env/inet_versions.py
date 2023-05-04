@@ -18,7 +18,7 @@ def get_all_inet_released_versions():
                 "git_branch": f"v{inet_version}",
                 "setenv_command": "source setenv -f" if inet_version.startswith("4.") else "",
                 "patch_command": "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
-                "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
+                "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
                 "clean_command": "[ ! -f src/Makefile ] || make clean",
                 "options": {
                     "local": {
@@ -113,7 +113,7 @@ def get_all_inet_versions():
             "external_nix_packages": ["python3", "z3"],
             "git_url": "git@github.com:inet-framework/inet.git",
             "setenv_command": "source setenv",
-            "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=release",
+            "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
             "clean_command": "[ ! -f src/Makefile ] || make clean"
         },
         *get_all_inet_released_versions()

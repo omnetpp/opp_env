@@ -173,9 +173,12 @@ def make_omnetpp_project_description(version, base_version=None):
             "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish)" if version == "3.3p1" else
             "source setenv -f" if base_version.startswith("5.") else  # -f allows setenv to be called from scripts
             "source setenv",
-        "build_command": f"[ -f config.status ] || ./configure && make -j{num_build_cores}",
-        "clean_command": "make clean",
-        "options": {
+        "build_command":
+            # "./configure && make" on steroids: magic "[" command ensures that ./configure is run whenever config.status is missing or is older than configure.user
+            f"[ config.status -nt configure.user ] || ./configure && make -j{num_build_cores} MODE=$BUILD_MODE",
+        "clean_command":
+            "make clean MODE=$BUILD_MODE",
+        "options": {  #TODO git master doesn't have all these download options
             "gcc7": {
                 "option_description": "Use the GCC 7.5 compiler toolchain for the build",
                 "conflicts_with": ["clang14"],
@@ -185,16 +188,6 @@ def make_omnetpp_project_description(version, base_version=None):
                 "option_description": "Use the Clang 14 compiler toolchain for the build",
                 "conflicts_with": ["gcc7"],
                 "stdenv": "llvmPackages_14.stdenv",
-            },
-            "debug": {
-                "option_description": "Build debug mode binaries",
-                "conflicts_with": ["release"],
-                "build_command": f"[ -f config.status ] || ./configure && make -j{num_build_cores} MODE=debug",
-            },
-            "release": {
-                "option_description": "Build release mode binaries",
-                "conflicts_with": ["debug"],
-                "build_command": f"[ -f config.status ] || ./configure && make -j{num_build_cores} MODE=release",
             },
             "source-archive": {
                 "option_description": "Install from source archive on github",

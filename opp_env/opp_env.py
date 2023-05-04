@@ -408,21 +408,30 @@ class ProjectDescription:
         fields = dict(vars(self))
         if requested_options:
             _logger.debug(f"Selecting options {cyan(requested_options)} for project {cyan(self)}")
+            category_to_option = dict()
             for option in requested_options:
                 if option in self.options:
+                    # check for conflicts by "conflicts_with"
                     option_fields = self.options[option]
-                    conflicts_with = option_fields["conflicts_with"] or []
+                    conflicts_with = option_fields.get("conflicts_with", [])
                     if conflicts_with is str:
                         conflicts_with = [conflicts_with]
                     conflicting_options = list(set(conflicts_with).intersection(set(requested_options)))
                     if conflicting_options:
                         raise Exception(f"Option '{option}' conflicts with the following option(s): {conflicting_options}")
+                    # check for conflicts by the "category" field
+                    option_category = option_fields.get("category")
+                    if option_category in category_to_option:
+                        raise Exception(f"Option '{option}' conflicts with option '{category_to_option[option_category]}' due to both belonging in the category '{option_category}' (Note that options in the same category are exclusive)")
+                    category_to_option[option_category] = option
+                    # update project description with entries in the option
                     _logger.debug(f"option {option} has the following fields: {list(option_fields.keys())}")
                     fields.update(option_fields)
                 else:
                     _logger.warning(f"Project {cyan(self)} does not support option {cyan(option)}")
         fields.pop("option_description", None)
         fields.pop("conflicts_with", None)
+        fields.pop("category", None)
         fields.pop("options", None)
         return ProjectDescription(**fields)
 

@@ -248,6 +248,8 @@ class Workspace:
 
     @staticmethod
     def init_workspace(dir=None):
+        if not os.path.isdir(dir):
+            raise Exception(f"Directory does not exist: {dir}")
         opp_env_dir = os.path.join(dir, ".opp_env")
         if os.path.isdir(opp_env_dir):
             raise Exception(f"'{dir}' is already an opp_env workspace")
@@ -706,10 +708,10 @@ def list_subcommand_main(project_names=None, list_mode="grouped", **kwargs):
     else:
         raise Exception(f"invalid list mode '{list_mode}'")
 
-def init_subcommand_main(**kwargs):
-    dir = os.getcwd()
-    Workspace.init_workspace(dir)
-    _logger.info(f"Workspace created in folder {cyan(dir)}")
+def init_subcommand_main(workspace_directory=None, **kwargs):
+    workspace_directory = workspace_directory or os.getcwd()
+    Workspace.init_workspace(workspace_directory)
+    _logger.info(f"Workspace created in folder {cyan(workspace_directory)}")
 
 def describe_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
     first = True

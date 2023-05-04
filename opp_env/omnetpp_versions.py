@@ -64,7 +64,7 @@ def make_omnetpp_project_description(version, base_version=None):
     tcltk_packages = [] if version >= "6.0" else ["tk", "tcl", "cairo"] if version >= "5.0" else ["tk", "tcl"] if is_modernized or version >= "4.3" else ["tk-8_5", "tcl-8_5"]
 
     # Various tools and libs required by / for building omnetpp. Note that we only started using Python in version 5.0.
-    other_packages = ["bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "ccache", "vim", ("python3" if version > "5.0" else None)]
+    other_packages = ["bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "ccache", "gdb", "vim", ("python3" if version > "5.0" else None)]
 
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version >= "6.0" else []

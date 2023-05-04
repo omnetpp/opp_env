@@ -83,7 +83,7 @@ def parse_arguments():
     subparser.add_argument("-m", "--mode", dest="list_mode", choices=["flat", "grouped", "names"], default="grouped", help="Listing mode")
 
     subparser = subparsers.add_parser("info", help="Describes the specified project")
-    subparser.add_argument("projects", nargs="+", help="The project(s) to get info about")
+    subparser.add_argument("projects", nargs="*", help="The list of projects to describe. You can specify exact versions like 'inet-4.0' or project names like 'inet'. The latter will print info on all versions of the project. An empty list prints info on all projects.")
     subparser.add_argument("--raw", action=argparse.BooleanOptionalAction, default=False, help="Print the project description in JSON format")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Print the project description as if the given project options were selected")
 
@@ -92,7 +92,7 @@ def parse_arguments():
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-j", "--skip-dependencies", default=False, action='store_true', help="Download just the specified projects, skip downloading the projects they depend on")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
 
@@ -102,20 +102,20 @@ def parse_arguments():
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project if not already built")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
@@ -125,7 +125,7 @@ def parse_arguments():
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading, configuring, and building them")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env describe' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--build", action=argparse.BooleanOptionalAction, default=True, help="Build project before running the command if not already built")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
@@ -718,14 +718,27 @@ def init_subcommand_main(workspace_directory=None, **kwargs):
     Workspace.init_workspace(workspace_directory)
     _logger.info(f"Workspace created in folder {cyan(workspace_directory)}")
 
-def describe_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
+def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
+    # resolve project list
+    if not projects:
+        project_descriptions = get_all_project_descriptions()
+    else:
+        project_descriptions = []
+        for project in projects:
+            if '-' in project:
+                project_descriptions += [find_project_description(ProjectReference.parse(project))]
+            elif project in get_project_names():
+                project_descriptions += [find_project_description(ProjectReference(project, version)) for version in get_project_versions(project)]
+            else:
+                raise Exception(f"Unknown project name '{project}'")
+
+    # print info for each
     first = True
-    for project in projects:
+    for project_description in project_descriptions:
         if first:
             first = False
         else:
             print()
-        project_description = find_project_description(ProjectReference.parse(project))
         if requested_options:
             project_description = project_description.get_with_options(requested_options)
         if raw:
@@ -845,7 +858,7 @@ def main():
         if subcommand == "list":
             list_subcommand_main(**kwargs)
         elif subcommand == "info":
-            describe_subcommand_main(**kwargs)
+            info_subcommand_main(**kwargs)
         elif subcommand == "init":
             init_subcommand_main(**kwargs)
         elif subcommand == "download":

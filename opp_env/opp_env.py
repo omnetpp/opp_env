@@ -344,8 +344,9 @@ class Workspace:
             nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", build_mode=build_mode, **kwargs)
 
     def mark_project_state(self, project_description):
+        # exclude the Simulation IDE's directory from the md5sum, because ./configure and eclipse itself modifies stuff in it
         file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
-        run_command(f"find {self.get_project_root_directory(project_description)} -type f -print0 | xargs -0 md5sum > {file_list_file_name}")
+        run_command(f"find {self.get_project_root_directory(project_description)} -type f -a -not -path './ide/*' -print0 | xargs -0 md5sum > {file_list_file_name}")
 
     def check_project_state(self, project_description):
         file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")

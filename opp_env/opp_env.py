@@ -85,6 +85,7 @@ def parse_arguments():
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Verbose output mode")
     parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
     parser.add_argument("-p", "--print-stacktrace", default=False, action='store_true', help="Print stack trace on error")
+    parser.add_argument("-n", "--no-pause", dest="pause_after_warnings", default=True, action='store_false', help="Do not pause after printing warnings")
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     subparser = subparsers.add_parser("list", help="Lists all available projects")
@@ -700,13 +701,13 @@ def resolve_workspace(workspace_directory):
     workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
     return workspace_directory
 
-def setup_environment(projects, workspace_directory=None, requested_options=None, **kwargs):
+def setup_environment(projects, workspace_directory=None, requested_options=None, pause_after_warnings=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     specified_project_descriptions = resolve_projects(projects)
     effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
-    print_project_warnings(effective_project_descriptions)
+    print_project_warnings(effective_project_descriptions, pause_after_warnings)
     external_nix_packages = []
     project_setenv_commands = []
     for project_description in effective_project_descriptions:

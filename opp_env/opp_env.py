@@ -909,15 +909,17 @@ def main():
         else:
             raise Exception(f"Unknown subcommand '{subcommand}'")
         _logger.debug(f"The {cyan(subcommand)} operation completed successfully")
+        return 0
     except Exception as e:
         if not kwargs["print_stacktrace"]:
             _logger.error(f"The {cyan(subcommand)} operation stopped with error: {str(e)}")
+            return 1
         else:
             raise e
     except KeyboardInterrupt:
         _logger.error(f"The {cyan(subcommand)} operation was interrupted by the user")
+        return 130 # = 128 + SIGINT
 
-    return 0
 
 if __name__ == '__main__':
     sys.exit(main())

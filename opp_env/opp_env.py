@@ -488,16 +488,18 @@ def get_all_project_descriptions():
             *get_all_veins_project_descriptions(),
             *get_all_external_project_descriptions(),
         ]
+        # expand to wildcard versions such as "4.2.*" to list of matching versions
+        all_project_descriptions = [expand_wildcards_in_project_dependencies(p, all_project_descriptions) for p in all_project_descriptions]
     return all_project_descriptions
 
 def get_project_names(project_descriptions=None):
     return list(dict.fromkeys([p.name for p in project_descriptions or get_all_project_descriptions()]))
 
-def get_project_versions(project_name):
-    return [p.version for p in get_all_project_descriptions() if p.name == project_name]
+def get_project_versions(project_name, project_descriptions=None):
+    return [p.version for p in project_descriptions or get_all_project_descriptions() if p.name == project_name]
 
-def get_project_latest_version(project_name):
-    versions = get_project_versions(project_name)
+def get_project_latest_version(project_name, project_descriptions=None):
+    versions = get_project_versions(project_name, project_descriptions)
     numbered_versions = [v for v in versions if v and v[0] in '0123456789']  # exclude versions named "git", etc.
     return natural_sorted(numbered_versions)[-1] if numbered_versions else None  # almost as good as semantic version sorting
 
@@ -516,6 +518,24 @@ def find_project_description(project_reference):
          raise Exception("More than one project descriptions were found for " + str(project_reference))
     else:
         return project_descriptions[0]
+
+def expand_wildcards_in_project_dependencies(project_description, all_project_descriptions):
+    def expand(project_name, version, all_project_descriptions):
+        if not '*' in version:
+            return [ version ]
+        candidates = get_project_versions(project_name, all_project_descriptions)
+        return [ candidate for candidate in candidates if version_matches(version, candidate) ]
+
+    def expand_all(project_name, versions, all_project_descriptions):
+        result = []
+        for version in versions:
+            result += expand(project_name, version, all_project_descriptions)
+        return result
+
+    project_description.required_projects = { project_name: expand_all(project_name, versions, all_project_descriptions)
+        for project_name, versions in project_description.required_projects.items() }
+
+    return project_description
 
 class ProjectReference:
     def __init__(self, name, version):
@@ -755,6 +775,15 @@ def is_latest_patchlevel(project_description, among_project_descriptions):
             if name == p.name and major == p_major and minor == p_minor and patch < p_patch:
                 return False
     return True
+
+def version_matches(wildcard_version, version):
+    if not re.match(r"^[^*?]+(\.\*)?$", wildcard_version):
+        raise Exception(f"Unsupported version pattern '{wildcard_version}', only '.*' is allowed at the end")
+    if wildcard_version.endswith(".*"):
+        truncated = wildcard_version[0:-2]
+        return version == truncated or version.startswith(truncated+".") or version.startswith(truncated+"p") # "3.3.*" should match "3.3p1" too
+    else:
+        return wildcard_version == version
 
 def list_subcommand_main(project_names=None, list_mode="grouped", latest_patchlevels=False, **kwargs):
     projects = get_all_project_descriptions()

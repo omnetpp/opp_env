@@ -1,5 +1,6 @@
 import re
 
+#TODO warning: 4.0 does not build
 #TODO make version="master" work
 
 def dotx(base_version):
@@ -110,10 +111,16 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i '/void yyerror (const char \\*s);/a void yyerror (void *statePtr, const char *s) {yyerror(s);}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
     ]
 
-    # Early 4.x versions need flags such as -std=c++03 -fpermissive to compile
-    cflags_for_4x = "-std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations" if version < "4.3" else \
-                    "-fpermissive -Wno-deprecated-declarations -Wno-literal-suffix"
-
+    # Early 4.x versions need flags such as -std=c++03 -fpermissive to compile.
+    # Note: technically, omnetpp itself would not need "-std=c++03" from version 4.3 on,
+    # but inet versions from that time period (early 2.x) don't compile without it.
+    # Note: -Wno-string-plus-int is for silencing tons of warnings in INET emitted for CASE() macros that
+    # expand to expressions like ("TCP_I_TIMED_OUT"+6) where +6 serves to remove the "TCP_I_" prefix.
+    # TODO -Wno-string-plus-int should probably be moved into INET.
+    extra_cflags = (
+        "-Wno-string-plus-int" if is_modernized else
+        "-std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations -Wno-string-plus-int" if version >= "4.0" and version < "4.6" else
+        "-Wno-deprecated-declarations -Wno-string-plus-int" if version >= "4.6" and version < "5.7" else "")
 
     # Adjust settings in configure.user so that a simple ./configure will do in the configuration phase.
     # Note the CFLAGS can only be specified in a convenient way by patching Makefile.inc.
@@ -123,7 +130,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
         "sed -i 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
         "sed -i 's|^QT_VERSION=4|QT_VERSION=5|' configure.user" if version.startswith("5.0") else None, # 5.0.x too!
-        f"sed -i '/^PERL =/i CFLAGS += {cflags_for_4x}' Makefile.inc.in" if not is_modernized and version.startswith("4.") else None
+        f"sed -i '/^PERL =/i CFLAGS += {extra_cflags}' Makefile.inc.in" if extra_cflags else None
     ]
 
     # More recent releases can handle parallel build
@@ -140,7 +147,7 @@ def make_omnetpp_project_description(version, base_version=None):
                 f"BETTER VERSION EXISTS: This version is likely to compile with lots of warnings, not compile at all, or work incorrectly due to bit rotting (changes in the software environment) -- use the corresponding patch branch 'omnetpp-{dotx(version)}' for better results." if not is_modernized else None,
                 "Specifically, most simulation models won't work, because they use activity(), and the coroutine library in this release has become broken due to changes in the standard C library implementation of setjmp()/longjmp(). This issue has been resolved in the modernized patch branch and release.)" if not is_modernized and version.startswith("3.") else None,
                 "Specifically, this version could only be made to compile with the combination of compiler options (C++03, permissiveness, warning suppression, etc.), patching (e.g. due to changes in Bison), and using an older Tcl/Tk library." if not is_modernized and version >= "4.0" and version < "4.3" else None,
-                "Specifically, Qtenv in this version will not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None
+                "Specifically, Qtenv in this version will not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None #TODO false
             ])
         ]),
         "nixos": "nixos-22.11",

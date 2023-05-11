@@ -12,7 +12,7 @@ import sys
 import re
 import shutil
 import tempfile
-
+import pkg_resources
 
 # Import omnetpp and inet versions.
 # Do it conditionally because we may be running either as a module with __package__ == "opp_env"
@@ -86,6 +86,7 @@ def parse_arguments():
     parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
     parser.add_argument("-p", "--print-stacktrace", default=False, action='store_true', help="Print stack trace on error")
     parser.add_argument("-n", "--no-pause", dest="pause_after_warnings", default=True, action='store_false', help="Do not pause after printing warnings")
+    parser.add_argument("-v", "--version", action='version', version=get_version(), help="Print version information and exit")
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     subparser = subparsers.add_parser("list", help="Lists all available projects")
@@ -162,6 +163,13 @@ def process_arguments():
         kwargs["requested_options"] = options
         del kwargs["options"]
     return kwargs
+
+def get_version():
+    try:
+        version = pkg_resources.get_distribution("opp-env").version
+    except pkg_resources.DistributionNotFound:
+        version = "unknown"
+    return version
 
 def detect_nix():
     # check nix is installed

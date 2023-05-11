@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "opp_env"
 authors = [
+    {name = "András Varga", email = "andras@omnetpp.org"},
     {name = "Levente Mészáros", email = "levy@omnetpp.org"},
     {name = "Rudolf Hornig", email = "rudi@omnetpp.org"},
 ]

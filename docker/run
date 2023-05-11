@@ -1,1 +1,1 @@
-docker run -it --rm --user opp_env ghcr.io/omnetpp/opp_env:latest
+docker run -it --rm ghcr.io/omnetpp/opp_env:latest $*

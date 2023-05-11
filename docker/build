@@ -1,1 +1,1 @@
-docker build -t ghcr.io/omnetpp/opp_env:20230509 -t ghcr.io/omnetpp/opp_env:latest .
+DOCKER_BUILDKIT=1 docker build -t ghcr.io/omnetpp/opp_env:latest .

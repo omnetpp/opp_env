@@ -12,7 +12,7 @@ import sys
 import re
 import shutil
 import tempfile
-import pkg_resources
+import importlib.util
 
 # Import omnetpp and inet versions.
 # Do it conditionally because we may be running either as a module with __package__ == "opp_env"
@@ -165,11 +165,13 @@ def process_arguments():
     return kwargs
 
 def get_version():
-    try:
-        version = pkg_resources.get_distribution("opp-env").version
-    except pkg_resources.DistributionNotFound:
-        version = "unknown"
-    return version
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    version_file_path = os.path.join(current_dir, "_version.py")
+
+    version_module = importlib.util.spec_from_file_location("_version", version_file_path)
+    version = importlib.util.module_from_spec(version_module)
+    version_module.loader.exec_module(version)
+    return version.version
 
 def detect_nix():
     # check nix is installed

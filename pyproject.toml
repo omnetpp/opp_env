@@ -26,5 +26,8 @@ dynamic = ["version"]
 [project.scripts]
 opp_env = "opp_env.opp_env:main"
 
+[tool.setuptools]
+packages = ["opp_env"]
+
 [tool.setuptools_scm]
 write_to = "opp_env/_version.py"

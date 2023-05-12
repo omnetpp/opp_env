@@ -566,6 +566,13 @@ class ProjectReference:
         return self.name + "-" + self.version if self.version else self.name
 
 def compute_effective_project_descriptions(specified_project_descriptions, requested_options=None):
+    selected_project_descriptions = expand_dependencies(specified_project_descriptions)
+    if not selected_project_descriptions:
+        raise Exception("The specified set of project versions cannot be satisfied")
+    return get_projects_with_options(selected_project_descriptions, requested_options)
+
+
+def expand_dependencies(specified_project_descriptions, return_all=False):
     _logger.debug(f"Computing list of effective projects for {specified_project_descriptions}")
     # 1. collect all required projects ignoring the project versions
     required_project_names = []
@@ -594,6 +601,7 @@ def compute_effective_project_descriptions(specified_project_descriptions, reque
     # _logger.debug(f"{available_project_versions=}")
 
     # 3. iterate over all combinations of the available project versions for the different required projects
+    result = []
     sets = available_project_versions.values()
     keys = list(available_project_versions.keys())
     for combination in itertools.product(*sets):
@@ -626,9 +634,11 @@ def compute_effective_project_descriptions(specified_project_descriptions, reque
                     accept_combination = False
                     break
         if accept_combination:
-            # return selected_project_descriptions with the requested options activated
-            return get_projects_with_options(selected_project_descriptions, requested_options)
-    raise Exception("The specified set of project versions cannot be satisfied")
+            if return_all:
+                result.append(selected_project_descriptions)
+            else:
+                return selected_project_descriptions
+    return result
 
 def get_projects_with_options(project_descriptions, requested_options):
     if not requested_options:

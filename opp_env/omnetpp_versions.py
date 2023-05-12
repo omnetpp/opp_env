@@ -48,8 +48,8 @@ def make_omnetpp_project_description(version, base_version=None):
     # It doesn't work for version 5.6 and below (due to some incompatible change in Webkit), but newer versions should work.
     ide_packages = [
         "temurin-jre-bin-8" if version < "5.7" else None,  # 5.7, 6.0 and up have bundled JREs (JustJ)
-        "gtk2", # SWT
-        "xorg.libXtst",
+        "gtk2" if version < "5.2" else "gtk3", # SWT (eclipse 4.7 and up is using gtk3)
+        "glib", "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender", "gsettings-desktop-schemas", "webkitgtk",
         "stdenv.cc.cc.lib" if version < "5.2" else None  # for libstdc++.so used by our nativelibs; in 5.2 and up, it's statically linked
     ] if version >= "4.0" else []
 
@@ -173,10 +173,17 @@ def make_omnetpp_project_description(version, base_version=None):
             "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if qt_packages else None,
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,
             "export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"" if "libxml2.dev" in other_packages else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.cairo}/lib\"" if "cairo" in tcltk_packages else None,
+            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.cairo}/lib\"" if "cairo" in (tcltk_packages + ide_packages) else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.gtk2}/lib\"" if "gtk2" in ide_packages else None,
+            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.gtk3}/lib\"" if "gtk3" in ide_packages else None,
+            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.glib.out}/lib\"" if "glib" in ide_packages else None,
+            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.libsecret}/lib\"" if "libsecret" in ide_packages else None,
+            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.webkitgtk}/lib\"" if "webkitgtk" in ide_packages else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.xorg.libXtst}/lib\"" if "xorg.libXtst" in ide_packages else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.stdenv.cc.cc.lib}/lib\"" if "stdenv.cc.cc.lib" in ide_packages else None,
+            "export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH",
+            "export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules",
+            "export GDK_BACKEND=x11",
             "export TK_LIBRARY=\"${pkgs.tk-8_5}/lib/tk8.5\"" if "tcl-8_5" in tcltk_packages else None,
             "export AR=    # Older/unpatched omnetpp versions require AR to be defined as 'ar rs' (not just 'ar'), so rather undefine it" if not is_modernized else None,
             # alternative: "AR=\"${AR:-ar} cr\""

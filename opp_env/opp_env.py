@@ -78,6 +78,15 @@ def natural_less(a, b):
 def natural_sorted(list):
     return sorted(list, key=natural_sort_key)
 
+def natural_sort_key(text):
+    return [int(part) if part.isdigit() else part.lower() for part in re.split('([0-9]+)', text)]
+
+def project_natural_sort_key(project_description):
+    return natural_sort_key(project_description.get_full_name())
+
+def sorted_projects(project_description_list):
+    return sorted(project_description_list, key=project_natural_sort_key)
+
 def parse_arguments():
     description = "Sets up the development environment for OMNeT++ projects"
     parser = argparse.ArgumentParser(prog="opp_env", description=description)
@@ -90,9 +99,9 @@ def parse_arguments():
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     subparser = subparsers.add_parser("list", help="Lists all available projects")
-    subparser.add_argument("project_names", nargs="*", metavar="project-name", help="Names of projects to list (omit to list all)")
+    subparser.add_argument("project_name_patterns", nargs="*", metavar="project-name-or-pattern", help="Names of projects to list (omit to list all)")
     subparser.add_argument("-l", "--latest-patchlevels", default=False, action='store_true', help="Print the latest patchlevels of each major/minor version only")
-    subparser.add_argument("-m", "--mode", dest="list_mode", choices=["flat", "grouped", "names"], default="grouped", help="Listing mode")
+    subparser.add_argument("-m", "--mode", dest="list_mode", choices=["flat", "grouped", "names", "expand", "combinations"], default="grouped", help="Listing mode")
 
     subparser = subparsers.add_parser("info", help="Describes the specified project")
     subparser.add_argument("projects", nargs="*", help="The list of projects to describe. You can specify exact versions like 'inet-4.0' or project names like 'inet'. The latter will print info on all versions of the project. An empty list prints info on all projects.")
@@ -805,12 +814,19 @@ def version_matches(wildcard_version, version):
     else:
         return wildcard_version == version
 
-def list_subcommand_main(project_names=None, list_mode="grouped", latest_patchlevels=False, **kwargs):
+def list_subcommand_main(project_name_patterns=None, list_mode="grouped", latest_patchlevels=False, **kwargs):
     projects = get_all_project_descriptions()
-    if project_names:
-        projects = [p for p in projects if p.name in project_names]
     if latest_patchlevels:
         projects = [p for p in projects if is_latest_patchlevel(p,projects)]
+    if project_name_patterns:
+        tmp = []
+        for project_name_pattern in project_name_patterns:
+            matching_projects = [p for p in projects if re.match(project_name_pattern, p.get_full_name())]
+            if not matching_projects:
+                raise Exception(f"Name/pattern '{project_name_pattern}' does not match any project")
+            tmp += matching_projects
+        projects = sorted_projects(list(set(tmp)))
+
     names = list(dict.fromkeys([p.name for p in projects]))
     if list_mode == "flat":
         for p in projects:
@@ -822,6 +838,22 @@ def list_subcommand_main(project_names=None, list_mode="grouped", latest_patchle
     elif list_mode == "names":
         for name in names:
             print(name)
+    elif list_mode == "expand":
+        for project in projects:
+            expanded = expand_dependencies([project])
+            print(project, "-->", expanded)
+    elif list_mode == "combinations":
+        grouped = False #TODO
+        if grouped:
+            for project in projects:
+                combinations_list = expand_dependencies([project], return_all=True)
+                print(project, "-->", combinations_list)
+        else:
+            for project in projects:
+                combinations_list = expand_dependencies([project], return_all=True)
+                for combination in combinations_list:
+                    print(" ".join([p.get_full_name() for p in reversed(combination)]))
+
     else:
         raise Exception(f"invalid list mode '{list_mode}'")
 

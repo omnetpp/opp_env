@@ -192,7 +192,7 @@ def get_all_inet_released_versions():
         ["2.0.x", ["4.2.*", "4.3.*", "4.4.*", "4.5.*", "4.6.*"]]
     ]]
 
-def get_all_inet_versions():
+def get_project_descriptions():
     return [
         {
             "name": "inet", "version": "git", "description": description,

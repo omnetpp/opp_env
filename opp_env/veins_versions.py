@@ -45,7 +45,7 @@ def get_all_veins_released_versions():
             ]
     ]
 
-def get_all_veins_versions():
+def get_project_descriptions():
     return [
         # {
         #     "name": "veins", "version": "git", "description": description,

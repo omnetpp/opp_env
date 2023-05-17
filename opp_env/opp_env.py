@@ -12,26 +12,9 @@ import sys
 import re
 import shutil
 import tempfile
+import importlib
 import importlib.util
 
-# Import omnetpp and inet versions.
-# Do it conditionally because we may be running either as a module with __package__ == "opp_env"
-# or we may be running as the __main__ module (when opp_env was started by directly invoking opp_env.py
-# or python -m opp_env)
-try:
-    from opp_env.omnetpp_versions import get_all_omnetpp_versions
-except ImportError:
-    from omnetpp_versions import get_all_omnetpp_versions
-
-try:
-    from opp_env.inet_versions import get_all_inet_versions
-except ImportError:
-    from inet_versions import get_all_inet_versions
-
-try:
-    from opp_env.veins_versions import get_all_veins_versions
-except ImportError:
-    from veins_versions import get_all_veins_versions
 
 _logger = logging.getLogger(__file__)
 
@@ -482,33 +465,37 @@ class ProjectDescription:
         fields.pop("options", None)
         return ProjectDescription(**fields)
 
-def get_all_omnetpp_project_descriptions():
-    return [ProjectDescription(**e) for e in get_all_omnetpp_versions()]
-
-def get_all_inet_project_descriptions():
-    return [ProjectDescription(**e) for e in get_all_inet_versions()]
-
-
-def get_all_veins_project_descriptions():
-    return [ProjectDescription(**e) for e in get_all_veins_versions()]
-
-def get_all_external_project_descriptions():
-    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "external_versions.json")) as f:
-        return [ProjectDescription(**e) for e in json.load(f)]
-
-all_project_descriptions = None
+all_project_descriptions = []
 
 def get_all_project_descriptions():
     global all_project_descriptions
-    if not all_project_descriptions:
-        all_project_descriptions = [
-            *get_all_omnetpp_project_descriptions(),
-            *get_all_inet_project_descriptions(),
-            *get_all_veins_project_descriptions(),
-            *get_all_external_project_descriptions(),
-        ]
-        # expand to wildcard versions such as "4.2.*" to list of matching versions
-        all_project_descriptions = [expand_wildcards_in_project_dependencies(p, all_project_descriptions) for p in all_project_descriptions]
+    if all_project_descriptions:
+        return all_project_descriptions
+
+    python_files = [
+        "omnetpp_versions",
+        "inet_versions",
+        "veins_versions",
+        # "simulte_versions",
+        # "sim5g_versions",
+    ]
+
+    json_files = [
+        "external_versions.json"
+    ]
+
+    for fname in python_files:
+        module = importlib.import_module("opp_env." + fname)
+        raw_project_descriptions = module.get_project_descriptions()
+        project_descriptions = [ProjectDescription(**e) for e in raw_project_descriptions]
+        all_project_descriptions += project_descriptions
+
+    for fname in json_files:
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), fname)) as f:
+            all_project_descriptions += [ProjectDescription(**e) for e in json.load(f)]
+
+    # expand to wildcard versions such as "4.2.*" to list of matching versions
+    all_project_descriptions = [expand_wildcards_in_project_dependencies(p, all_project_descriptions) for p in all_project_descriptions]
     return all_project_descriptions
 
 def get_project_names(project_descriptions=None):

@@ -258,7 +258,7 @@ def get_all_omnetpp_patch_branches():
 
     return [make_omnetpp_project_description(dotx(base_version), base_version) for base_version in base_versions_for_patch_branches]
 
-def get_all_omnetpp_versions():
+def get_project_descriptions():
     return [
         *get_all_omnetpp_released_versions(),
         *get_all_omnetpp_patch_branches(),

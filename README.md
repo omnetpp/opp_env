@@ -7,28 +7,38 @@ well as currently selected versions of Veins, SimuLTE, and Simu5G. We are workin
 towards expanding its database with more models, and we are open to suggestions
 and contributions.
 
-`opp_env` is based on Nix, a powerful package manager that provides isolation
+`opp_env` relies on Nix, a powerful package manager that provides isolation
 between different versions of dependencies and allows for reproducible builds.
 By leveraging the power of Nix, `opp_env` ensures that each installation is
 consistent and can be easily replicated on different machines.
 
+`opp_env` currently supports Linux systems.
+
 ### Usage
 
 Using `opp_env` is simple. To install a specific version of a simulation framework
-and its dependencies, simply run the following command:
+and its dependencies, first create a workspace:
+
+```
+mkdir workspace
+cd workspace
+opp_env init
+```
+
+Then run the following command:
 
 ```
 opp_env shell <framework-version>
 ```
 
-For example, to install SimuLTE version 1.2.0, run the following command:
+For example, to install Simu5G version 1.2.1, run the following command:
 
 ```
-opp_env shell simulte-1.2.0
+opp_env shell simu5g-1.2.1
 ```
 
-This will download the SimuLTE, the matching INET and OMNeT++, compile them, and
-open a shell prompt set up to work with them.
+This will download Simu5G, the matching INET and OMNeT++ packages, compile
+them, and open a shell prompt set up to work with them.
 
 To see the list of available packages, type the following:
 
@@ -51,26 +61,34 @@ any researcher or developer working with OMNeT++ simulation frameworks:
 - Customizable configuration options that allow for advanced control over the
   installation process.
 
-### Getting Started
+### Installation
 
 To get started with `opp_env`, you first need to have Nix installed on your
 machine. You can download and install Nix from
-[here](https://nixos.org/download.html). Once you have Nix installed, you can
-install `opp_env` using `pip`.
+[here](https://nixos.org/download). `opp_env` also needs several smaller utility
+programs like `wget`, `tar`, `gzip`, and also `git` for the installation of certain packages or package versions.
+
+Once you have the prerequisites, you can install `opp_env` using `pip`.
 
 #### Installing opp_env with pip
 
 In the future, end users will be able to install `opp_env` using the following command:
 
 ```
-pip install opp_env
+pip install --user opp_env
 ```
 
 For now, clone the git repo, change into its root directory, and run the
 following command:
 
 ```
-pip install .
+pip install --user .
+```
+
+Or you can install directly from GitHub:
+
+```
+pip3 install --user git+https://github.com/omnetpp/opp_env.git
 ```
 
 When you install `opp_env` using pip, it installs the `opp_env` Python module,
@@ -85,7 +103,7 @@ source code for any reason, you can install the package in editable mode using
 the following command:
 
 ```
-pip install --editable .
+pip install --user --editable .
 ```
 
 This will install the Python module and the `opp_env` command, but with the

@@ -105,7 +105,7 @@ def parse_arguments():
 
     subparser = subparsers.add_parser("info", help="Describes the specified project")
     subparser.add_argument("projects", nargs="*", help="The list of projects to describe. You can specify exact versions like 'inet-4.0' or project names like 'inet'. The latter will print info on all versions of the project. An empty list prints info on all projects.")
-    subparser.add_argument("--raw", action=argparse.BooleanOptionalAction, default=False, help="Print the project description in JSON format")
+    subparser.add_argument("--raw", action=argparse.BooleanOptionalAction, default=False, help="Print the project descriptions in a raw form. The output is well-formed JSON, so you can use tools like 'jq' to further query it and extract the desired data.")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Print the project description as if the given project options were selected")
 
     subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
@@ -876,6 +876,11 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
             else:
                 raise Exception(f"Unknown project name '{project}'")
 
+    if raw:
+        serializable = [vars(p) for p in project_descriptions]
+        print(json.dumps(serializable, indent=4))
+        return
+
     # print info for each
     first = True
     for project_description in project_descriptions:
@@ -885,25 +890,22 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
             print()
         if requested_options:
             project_description = project_description.get_with_options(requested_options)
-        if raw:
-            print(json.dumps(vars(project_description), indent=4))
-        else:
-            print(cyan(project_description.get_full_name()) + (" - " + project_description.description if project_description.description else ""))
-            if project_description.warnings:
-                for warning in project_description.warnings:
-                    print(yellow("\nWARNING: ") + warning)
-            if (project_description.options):
-                print("\nAvailable options:")
-                for option_name, option in project_description.options.items():
-                    option_description = option.get('option_description')
-                    if option_description:
-                        print(f"- {cyan(option_name)}: {option.get('option_description', 'n/a')}")
-                    else:
-                        print(f"- {cyan(option_name)}")
-            if (project_description.required_projects):
-                print(f"\nRequires:")
-                for name, versions in project_description.required_projects.items():
-                    print(f"- {cyan(name)}: {versions}")
+        print("* " + project_description.get_full_name() + (" - " + project_description.description if project_description.description else ""))
+        if project_description.warnings:
+            for warning in project_description.warnings:
+                print(yellow("\nWARNING: ") + warning)
+        if (project_description.options):
+            print("\navailable options:")
+            for option_name, option in project_description.options.items():
+                option_description = option.get('option_description')
+                if option_description:
+                    print(f"- {cyan(option_name)}: {option.get('option_description', 'n/a')}")
+                else:
+                    print(f"- {cyan(option_name)}")
+        if (project_description.required_projects):
+            print(f"\nrequires:")
+            for name, versions in project_description.required_projects.items():
+                print(f"- {cyan(name)}: {'/'.join(versions)}")
 
 def download_subcommand_main(projects, workspace_directory=None, requested_options=None, skip_dependencies=True, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)

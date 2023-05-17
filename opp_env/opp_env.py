@@ -476,8 +476,8 @@ def get_all_project_descriptions():
         "omnetpp_versions",
         "inet_versions",
         "veins_versions",
-        # "simulte_versions",
-        # "sim5g_versions",
+        "simulte_versions",
+        "simu5g_versions",
     ]
 
     json_files = [

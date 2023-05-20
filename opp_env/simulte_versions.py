@@ -7,14 +7,14 @@ def get_simulte_project_description(simulte_version, inet_versions, omnetpp_vers
         "download_url":
             f"https://github.com/inet-framework/simulte/releases/download/v{simulte_version}/simulte-{simulte_version}-src.tgz" if simulte_version == "1.2.0" else
             f"https://github.com/inet-framework/simulte/archive/refs/tags/v{simulte_version}.tar.gz",
-        "patch_command": "\n".join([
+        "patch_commands": [
             "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
             "sed -i -E 's|^INET_DIR=.*|INET_DIR=$INET_ROOT/src|' src/run_lte",
             "find . -name omnetpp.ini | xargs -n1 sed -i -E 's|^image-path|#image-path|'", # we use OMNETPP_IMAGE_PATH instead
-        ]),
-        "setenv_command": None,
-        "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
-        "clean_command": "make clean"
+        ],
+        "setenv_commands": None,
+        "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
+        "clean_commands": [ "make clean" ]
     }
 
 def get_project_descriptions():

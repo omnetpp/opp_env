@@ -33,8 +33,8 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             f"https://github.com/inet-framework/inet/archive/refs/tags/v{inet_version}.tar.gz" if inet_version in missing_releases else
             f"https://github.com/inet-framework/inet/releases/download/v{inet_version}/inet-{inet_version}-src.tgz" if not is_git_branch else
             f"https://github.com/inet-framework/inet/archive/refs/heads/v{inet_version}.tar.gz",
-        "setenv_command": "source setenv -f" if inet_version.startswith("4.") else "",
-        "patch_command": join_nonempty_items("\n", [
+        "setenv_commands": [ "source setenv -f" if inet_version.startswith("4.") else "" ],
+        "patch_commands": [
             "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
 
             # fix up shebang line in inet_featuretool (python -> python2)
@@ -88,9 +88,9 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             # fix IPv6Address.cc:185: non-constant-expression cannot be narrowed from type 'unsigned int' to 'int' in initializer list in inet-2.1.0
             "sed -i 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
             "sed -i 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
-            ]),
-        "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
-        "clean_command": "[ ! -f src/Makefile ] || make clean",
+            ],
+        "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
+        "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
         "options": {
             "git": {
                 "option_description": "Install from git repo on github",
@@ -102,13 +102,13 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "local": {
                 "option_description": "Install from tarballs on local disk",
                 "category": "download",
-                "download_command": f"mkdir inet-{inet_version} && cd inet-{inet_version} && tar --strip-components=1 -xzf {downloads_dir}/inet-{inet_version}.tar.gz",
+                "download_commands": f"mkdir inet-{inet_version} && cd inet-{inet_version} && tar --strip-components=1 -xzf {downloads_dir}/inet-{inet_version}.tar.gz",
                 "download_url": "",
             },
             "local-git": {
                 "option_description": "Install from git repo on local disk",
                 "category": "download",
-                "download_command": f"git clone -l {local_inet_git_repo} inet-{inet_version} --branch v{inet_version}",
+                "download_commands": f"git clone -l {local_inet_git_repo} inet-{inet_version} --branch v{inet_version}",
                 "download_url": "",
             }
         }
@@ -200,9 +200,9 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["master"]},
             "external_nix_packages": ["python3", "z3"],
             "git_url": "git@github.com:inet-framework/inet.git",
-            "setenv_command": "source setenv",
-            "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
-            "clean_command": "[ ! -f src/Makefile ] || make clean"
+            "setenv_commands": [ "source setenv" ],
+            "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
+            "clean_commands": "[ ! -f src/Makefile ] || make clean"
         },
         *get_all_inet_released_versions()
     ]

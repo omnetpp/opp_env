@@ -165,12 +165,12 @@ def make_omnetpp_project_description(version, base_version=None):
             f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else
             f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
             f"{github_url}/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else "",
-        "patch_command": join_nonempty_items("\n", [
+        "patch_commands": [
             *apply_release_patch_from_github_commands,
             *source_patch_commands,
             *configuration_patch_commands
-        ]),
-        "shell_hook_command": join_nonempty_items("\n", [
+        ],
+        "shell_hook_commands": [
             "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if qt_packages else None,
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,
             "export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"" if "libxml2.dev" in other_packages else None,
@@ -188,16 +188,19 @@ def make_omnetpp_project_description(version, base_version=None):
             "export TK_LIBRARY=\"${pkgs.tk-8_5}/lib/tk8.5\"" if "tcl-8_5" in tcltk_packages else None,
             "export AR=    # Older/unpatched omnetpp versions require AR to be defined as 'ar rs' (not just 'ar'), so rather undefine it" if not is_modernized else None,
             # alternative: "AR=\"${AR:-ar} cr\""
-        ]),
-        "setenv_command":
+        ],
+        "setenv_commands": [
             "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish)" if version == "3.3p1" else
             "source setenv -f" if base_version.startswith("5.") else  # -f allows setenv to be called from scripts
-            "source setenv",
-        "build_command":
+            "source setenv"
+        ],
+        "build_commands": [
             # "./configure && make" on steroids: magic "[" command ensures that ./configure is run whenever config.status is missing or is older than configure.user
-            f"[ config.status -nt configure.user ] || ./configure && make -j{num_build_cores} MODE=$BUILD_MODE",
-        "clean_command":
-            "make clean MODE=$BUILD_MODE",
+            f"[ config.status -nt configure.user ] || ./configure && make -j{num_build_cores} MODE=$BUILD_MODE"
+        ],
+        "clean_commands": [
+            "make clean MODE=$BUILD_MODE"
+        ],
         "options": {  #TODO git master doesn't have all these download options
             "gcc7": {
                 "option_description": "Use the GCC 7.5 compiler toolchain for the build",
@@ -213,35 +216,37 @@ def make_omnetpp_project_description(version, base_version=None):
                 "option_description": "Install from source archive on github",
                 "category": "download",
                 "download_url": f"https://github.com/omnetpp/omnetpp/archive/refs/{'heads' if is_git_branch else 'tags'}/omnetpp-{version}.tar.gz", #TODO fix branch name
-                "download_command": ""
+                "download_commands": None
             },
             "git": {
                 "option_description": "Install from git repo on github",
                 "category": "download",
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
                 "git_branch": f"omnetpp-{version}" if version[0].isdigit() else version, # TODO branch names like "master" don't need to be prefixed
-                "download_command": "",
+                "download_commands": None,
                 "download_url": "",
             },
             "local": {
                 "option_description": "Install from tarballs (and potentially, git repo) on local disk",
                 "category": "download",
-                "download_command": f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
-                                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else
-                                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
-                                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
-                                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else "",
+                "download_commands": [
+                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
+                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else
+                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
+                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
+                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else ""
+                ],
                 "download_url": "",
-                "patch_command": join_nonempty_items("\n", [
+                "patch_commands": [
                     *apply_release_patch_from_local_repo_commands,
                     *source_patch_commands,
                     *configuration_patch_commands
-                ]),
+                ],
             },
             "local-git": {
                 "option_description": "Install from git repo on local disk",
                 "category": "download",
-                "download_command": f"git clone -l {local_omnetpp_git_repo} omnetpp-{version} --branch omnetpp-{version}", #TODO unless version="master"
+                "download_commands": [ f"git clone -l {local_omnetpp_git_repo} omnetpp-{version} --branch omnetpp-{version}" ], #TODO unless version="master"
                 "download_url": "",
             }
         }

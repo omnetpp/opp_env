@@ -13,16 +13,16 @@ def get_all_veins_released_versions():
                 "description": "The open source vehicular network simulation framework.",
                 "required_projects": {"omnetpp": omnetpp_versions},  #list(set([dotx(v) for v in omnetpp_versions]))},
                 "external_nix_packages": ["sumo"] if veins_version >= "5.1" else ["sumo", "python2"],
-                # currently unused: "download_command": "wget  -q -nv --show-progress https://veins.car2x.org/download/veins-5.2.zip && unzip veins-5.2.zip && rm veins-5.2.zip && mv veins-veins-5.2 veins-5.2",
+                # currently unused: "download_commands": [ "wget  -q -nv --show-progress https://veins.car2x.org/download/veins-5.2.zip && unzip veins-5.2.zip && rm veins-5.2.zip && mv veins-veins-5.2 veins-5.2" ],
                 "git_url": "git@github.com:sommer/veins.git",
                 "git_branch": f"veins-{veins_version}",
-                "patch_command": "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if veins_version<="4.6" else "",
-                "setenv_command": "source setenv" if veins_version >= "5.1" else "",
-                "build_command": "./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
-                "clean_command": "[ ! -f src/Makefile ] || make clean",
+                "patch_commands": [ "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if veins_version<="4.6" else "" ],
+                "setenv_commands": [ "source setenv" if veins_version >= "5.1" else "" ],
+                "build_commands": [ "./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
+                "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
                 # "options": {
                 #     "local": {
-                #         "download_command": f"git clone -l {local_veins_git_repo} veins-{veins_version} --branch veins-{veins_version}",
+                #         "download_commands": f"git clone -l {local_veins_git_repo} veins-{veins_version} --branch veins-{veins_version}",
                 #         "download_url": "",
                 #         "git_url": ""
                 #     }
@@ -53,9 +53,9 @@ def get_project_descriptions():
         #     "required_projects": {"omnetpp": ["master"]},
         #     "external_nix_packages": ["python3", "z3"],
         #     "git_url": "git@github.com:veins-framework/veins.git",
-        #     "setenv_command": "source setenv",
-        #     "build_command": "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
-        #     "clean_command": "[ ! -f src/Makefile ] || make clean"
+        #     "setenv_commands": [ "source setenv" ],
+        #     "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
+        #     "clean_commands": "[ ! -f src/Makefile ] || make clean"
         # },
         *get_all_veins_released_versions()
     ]

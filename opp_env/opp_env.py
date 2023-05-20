@@ -70,6 +70,17 @@ def project_natural_sort_key(project_description):
 def sorted_projects(project_description_list):
     return sorted(project_description_list, key=project_natural_sort_key)
 
+def indent(txt, indent="    "):
+    return indent + txt.replace("\n", "\n" + indent)
+
+def join_lines(lines):
+    assert type(lines) is list
+    return "\n".join([li for li in lines if li])
+
+def join_commands(commands):
+    assert type(commands) is list
+    return "\n".join([cmd for cmd in commands if cmd])  # using ";" as separator also works, " && " should too (script runs on 'set -e' anyway) but doesn't
+
 def parse_arguments():
     description = "Sets up the development environment for OMNeT++ projects"
     parser = argparse.ArgumentParser(prog="opp_env", description=description)
@@ -182,8 +193,11 @@ def detect_nix():
     if natural_less(nix_version, minimum_nix_version):
         raise Exception(f"Your Nix installation of version {nix_version} is too old! At least version {minimum_nix_version} is required.")
 
-def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, extra_env_vars=None):
-    _logger.debug(f"Running command: {command}")
+def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, extra_env_vars=None, tracing=False):
+    if "\n" not in command:
+        _logger.debug(f"Running command: {command}")
+    else:
+        _logger.debug(f"Running command:\n{indent(command)}")
 
     env = dict(os.environ)
 
@@ -209,6 +223,10 @@ def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=Tru
 
     if extra_env_vars:
         env.update(extra_env_vars)
+
+    # make the script exit on first error, and also on errors in piped commands
+    options = "-exo pipefail" if tracing else "-eo pipefail"
+    command = f"set {options}; {command}"
 
     result = subprocess.run(["bash", "-c", command],
                             env=env,
@@ -323,8 +341,8 @@ class Workspace:
         if os.path.exists(project_dir):
             raise Exception("f{project_dir} already exists")
         try:
-            if project_description.download_command:
-                run_command(f"cd {self.root_directory} && {project_description.download_command}")
+            if project_description.download_commands:
+                run_command(join_commands([f"cd '{self.root_directory}'", *project_description.download_commands]))
             elif project_description.download_url:
                 download_and_unpack_tarball(project_description.download_url, project_dir)
             elif project_description.git_url:
@@ -332,15 +350,15 @@ class Workspace:
                 #TODO maybe optionally use --single-branch
                 run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}")
             else:
-                raise Exception(f"{project_description}: No download_url or download_command in project description -- check project options for alternative download means (enter 'opp_env info {project_description}')")
+                raise Exception(f"{project_description}: No download_url or download_commands in project description -- check project options for alternative download means (enter 'opp_env info {project_description}')")
             if not os.path.exists(project_dir):
                 raise Exception(f"{project_description}: Download process did not create {project_dir}")
 
-            if project_description.patch_command or project_description.patch_url:
+            if project_description.patch_commands or project_description.patch_url:
                 if patch:
                     _logger.info(f"Patching project {cyan(project_description.get_full_name())}")
-                    if project_description.patch_command:
-                        run_command(f"cd {project_dir} && {project_description.patch_command}")
+                    if project_description.patch_commands:
+                        run_command(join_commands([f"cd '{project_dir}'", *project_description.patch_commands]))
                     if project_description.patch_url:
                         download_and_apply_patch(project_description.patch_url, project_dir)
                 else:
@@ -362,16 +380,26 @@ class Workspace:
             raise e
 
     def build_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs):
-        assert(project_description.build_command)
+        assert(project_description.build_commands)
         for build_mode in build_modes:
             _logger.info(f"Building project {cyan(project_description.get_full_name())} in {cyan(build_mode)} mode in workspace {cyan(self.root_directory)}")
-            nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.build_command}", build_mode=build_mode, **kwargs)
+            commands = [
+                *project_setenv_commands,
+                f"cd '{self.get_project_root_directory(project_description)}'",
+                *project_description.build_commands
+            ]
+            nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, commands, build_mode=build_mode, **kwargs)
 
     def clean_project(self, project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs):
-        assert(project_description.clean_command)
+        assert(project_description.clean_commands)
         for build_mode in build_modes:
             _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in {cyan(build_mode)} in workspace {cyan(self.root_directory)}")
-            nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {self.get_project_root_directory(project_description)} && {project_description.clean_command}", build_mode=build_mode, **kwargs)
+            commands = [
+                *project_setenv_commands,
+                f"cd '{self.get_project_root_directory(project_description)}'",
+                *project_description.clean_commands
+            ]
+            nix_develop(self.root_directory, effective_project_descriptions, external_nix_packages, commands, build_mode=build_mode, **kwargs)
 
     def mark_project_state(self, project_description):
         # exclude the Simulation IDE's directory from the md5sum, because ./configure and eclipse itself modifies stuff in it
@@ -390,10 +418,10 @@ class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
                  required_projects={}, external_nix_packages=[],
-                 download_url=None, git_url=None, git_branch=None, download_command=None,
-                 patch_command=None, patch_url=None,
-                 shell_hook_command = None, setenv_command=None,
-                 build_command=None, clean_command=None,
+                 download_url=None, git_url=None, git_branch=None, download_commands=None,
+                 patch_commands=[], patch_url=None,
+                 shell_hook_commands=[], setenv_commands=[],
+                 build_commands=[], clean_commands=[],
                  options=None):
         self.name = name
         self.version = version
@@ -407,16 +435,16 @@ class ProjectDescription:
         self.download_url = download_url
         self.git_url = git_url
         self.git_branch = git_branch
-        self.download_command = download_command
-        self.patch_command = patch_command
+        self.download_commands = download_commands
+        self.patch_commands = patch_commands
         self.patch_url = patch_url
-        self.shell_hook_command = shell_hook_command
-        self.setenv_command = setenv_command
-        self.build_command = build_command
-        self.clean_command = clean_command
+        self.shell_hook_commands = shell_hook_commands
+        self.setenv_commands = setenv_commands
+        self.build_commands = build_commands
+        self.clean_commands = clean_commands
         self.options = options or {}
-        if bool(download_url) + bool(git_url) + bool(download_command) > 1:
-            raise Exception(f"project {name}-{version}: download_url, git_url, and download_command are mutually exclusive")
+        if bool(download_url) + bool(git_url) + bool(download_commands) > 1:
+            raise Exception(f"project {name}-{version}: download_url, git_url, and download_commands are mutually exclusive")
 
     def __repr__(self):
         return self.get_full_name()
@@ -669,7 +697,7 @@ def get_unique_project_attribute(project_descriptions, attr_name):
     else:
         return list(values)[0]
 
-def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, shell_hook_script, interactive=False, isolated=True, check_exitcode=True, quiet=False, build_mode=None, **kwargs):
+def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, hook_commands, interactive=False, isolated=True, check_exitcode=True, quiet=False, build_mode=None, tracing=False, **kwargs):
     nix_develop_flake = """{
     inputs = {
         nixpkgs.url = "nixpkgs/@NIXOS@";
@@ -686,15 +714,16 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
                     hardeningDisable = [ "all" ];
                     buildInputs = with pkgs; [ @PACKAGES@ bashInteractive vim ];
                     shellHook = ''
+                        @SET_SHELL_OPTIONS@
                         BUILD_MODE=@BUILD_MODE@
                         @PROJECTDIR_VARS@
 
-                        @SHELL_HOOK_COMMANDS@
+                        @PROJECT_SHELL_HOOK_COMMANDS@
 
                         # modify prompt to distinguish an opp_env shell from a normal shell
                         export PS1="\\[\\e[01;33m\\]@NAME@\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
 
-                        @SCRIPT@ || exit 1
+                        @HOOK_COMMANDS@
                     '';
                 };
             };
@@ -703,8 +732,9 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
 
     nixos = get_unique_project_attribute(effective_project_descriptions, "nixos")
     stdenv = get_unique_project_attribute(effective_project_descriptions, "stdenv")
-    shell_hook_commands = "\n".join([p.shell_hook_command for p in effective_project_descriptions if p.shell_hook_command])
-    projectdir_var_assignments = "\n".join([f"export {p.name.upper()}_ROOT={os.path.join(workspace_directory, p.get_full_name())}" for p in effective_project_descriptions])
+    shell_options_command = "set -exo pipefail" if tracing else "set -eo pipefail"
+    project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
+    projectdir_var_assignments = [f"export {p.name.upper()}_ROOT={os.path.join(workspace_directory, p.get_full_name())}" for p in effective_project_descriptions]
 
     flake_dir = os.path.join(workspace_directory, '.opp_env') #TODO race condition (multiple invocations write the same file)
     flake_file_name = os.path.join(flake_dir, "flake.nix")
@@ -714,13 +744,16 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         nix_develop_flake = nix_develop_flake.replace("@STDENV@", stdenv)
         nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
         nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
+        nix_develop_flake = nix_develop_flake.replace("@SET_SHELL_OPTIONS@", shell_options_command)
+
+
         nix_develop_flake = nix_develop_flake.replace("@BUILD_MODE@", build_mode or "")
-        nix_develop_flake = nix_develop_flake.replace("@PROJECTDIR_VARS@", projectdir_var_assignments)
-        nix_develop_flake = nix_develop_flake.replace("@SHELL_HOOK_COMMANDS@", shell_hook_commands)
-        nix_develop_flake = nix_develop_flake.replace("@SCRIPT@", shell_hook_script)
+        nix_develop_flake = nix_develop_flake.replace("@PROJECTDIR_VARS@", join_lines(projectdir_var_assignments))
+        nix_develop_flake = nix_develop_flake.replace("@PROJECT_SHELL_HOOK_COMMANDS@", join_lines(project_shell_hook_commands))
+        nix_develop_flake = nix_develop_flake.replace("@HOOK_COMMANDS@", join_lines(hook_commands))
         f.write(nix_develop_flake)
 
-    _logger.debug(f"Nix flake shellHook script: {yellow(shell_hook_script)}")
+    _logger.debug(f"Nix flake shellHook script: {yellow(hook_commands)}")
     #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
     temp_home = tempfile.mkdtemp() if isolated else None
     isolation_options = '-i -k HOME -k TERM -k COLORTERM -k DISPLAY -k XAUTHORITY -k XDG_RUNTIME_DIR -k XDG_DATA_DIRS -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
@@ -745,11 +778,8 @@ def setup_environment(projects, workspace_directory=None, requested_options=None
     effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     print_project_warnings(effective_project_descriptions, pause_after_warnings)
-    external_nix_packages = []
-    project_setenv_commands = []
-    for project_description in effective_project_descriptions:
-        external_nix_packages += project_description.external_nix_packages
-        project_setenv_commands.append(f"cd {workspace.get_project_root_directory(project_description)} && {project_description.setenv_command or 'true'}")
+    external_nix_packages = sum([p.external_nix_packages for p in effective_project_descriptions], [])
+    project_setenv_commands = sum([[f"cd {workspace.get_project_root_directory(p)}", *p.setenv_commands] for p in effective_project_descriptions], [])
     return effective_project_descriptions, external_nix_packages, project_setenv_commands
 
 def download_project_if_needed(workspace, project_description, prepare_missing=True, patch=True, cleanup=True, **kwargs):
@@ -916,7 +946,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in effective_project_descriptions:
         assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
-        if project_description.build_command:
+        if project_description.build_commands:
             workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
@@ -930,7 +960,7 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     for project_description in effective_project_descriptions:
         download_project_if_needed(workspace, project_description, prepare_missing, **kwargs)
     for project_description in reversed(effective_project_descriptions):
-        if project_description.clean_command:
+        if project_description.clean_commands:
             workspace.clean_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs)
     _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
@@ -950,7 +980,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
             build_modes = mode if mode else ["debug", "release"]
             for project_description in effective_project_descriptions:
                 assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
-                if project_description.build_command:
+                if project_description.build_commands:
                     workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs)
         except Exception as e:
             # print error but continue bringing up the shell to give user a chance to fix the problem
@@ -969,7 +999,8 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
         else:
             _logger.debug(f"No need to change directory, wd={cyan(os.getcwd())} is already under the first project's directory {cyan(first_project_dir)}")
 
-    nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"pushd . > /dev/null && {' && '.join(project_setenv_commands)} && popd > /dev/null", interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
+    commands = ["pushd . > /dev/null", *project_setenv_commands, "popd > /dev/null"]
+    nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, commands, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
 def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, build=True, mode=None, **kwargs):
     detect_nix()
@@ -982,10 +1013,11 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
         build_modes = mode if mode else ["debug", "release"]
         for project_description in effective_project_descriptions:
             assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
-            if project_description.build_command:
+            if project_description.build_commands:
                 workspace.build_project(project_description, effective_project_descriptions, external_nix_packages, project_setenv_commands, build_modes, **kwargs)
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
-    nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, f"{' && '.join(project_setenv_commands)} && cd {workspace_directory} && {command}", **dict(kwargs, quiet=False))
+    commands = [*project_setenv_commands, f"cd '{workspace_directory}'", command]
+    nix_develop(workspace_directory, effective_project_descriptions, external_nix_packages, commands, **dict(kwargs, quiet=False))
 
 def main():
     kwargs = process_arguments()

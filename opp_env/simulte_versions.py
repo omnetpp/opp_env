@@ -19,7 +19,7 @@ def get_simulte_project_description(simulte_version, inet_versions, omnetpp_vers
 
 def get_project_descriptions():
     return [ get_simulte_project_description(simulte_version, inet_versions, omnetpp_versions) for simulte_version, inet_versions, omnetpp_versions in [
-        ["1.2.0", ["4.2.10", "4.2.5"], ["5.7", "5.7.x"]], # Contains the integration code required to work with Veins.
-        ["1.1.0", ["3.6.6"], ["5.5.1", "5.5.x"]], # Contains the integration code required to work with Veins. Tested on Ubuntu 18.04. It is NOT compatible with INET 4.x.
-        ["0.9.1", ["3.4.0"], ["5.0", "5.0.x"]], # It DOES NOT contain support for the Veins simulator. Tested on Ubuntu 14.04.
+        ["1.2.0", ["4.2.10", "4.2.5"], ["5.7.*"]], # Contains the integration code required to work with Veins.
+        ["1.1.0", ["3.6.6"], ["5.5.*"]], # Contains the integration code required to work with Veins. Tested on Ubuntu 18.04. It is NOT compatible with INET 4.x.
+        ["0.9.1", ["3.4.0"], ["5.1.*"]], # It DOES NOT contain support for the Veins simulator. Note: Release notes lists omnetpp-5.0 as dependency, but inet-3.4.0 requires omnetpp-5.1.
     ]]

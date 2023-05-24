@@ -43,7 +43,7 @@ def get_all_veins_released_versions():
                 ["4.7.1", ["5.3", "5.2.1", "5.2", "5.1.1"]],
                 ["4.7", ["5.3", "5.2.1", "5.2", "5.1.1"]],
                 ["4.6", ["5.3", "5.2.1", "5.2", "5.1.1", "5.0"]],
-                ["4.5", ["5.0"]],  # note: with  omnetpp-4.6, compilation error is c++ language related -- maybe just requires newer c++ standard, e.g. c++11?
+                ["4.5", ["5.0"]],  # note: does not compile with omnetpp-4.6 -- missing type cRandom
                 ["4.4", ["5.0","4.6", "4.5", "4.4.1"]],
                 ["4.3", ["4.6", "4.5", "4.4.1", "4.3", "4.2.2"]],
                 ["3.0", ["4.4.1", "4.3", "4.2.2"]],

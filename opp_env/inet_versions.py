@@ -34,11 +34,21 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             f"https://github.com/inet-framework/inet/releases/download/v{inet_version}/inet-{inet_version}-src.tgz" if not is_git_branch else
             f"https://github.com/inet-framework/inet/archive/refs/heads/v{inet_version}.tar.gz",
         "setenv_commands": [
+            'export NEDPATH="$NEDPATH:$INET_ROOT/src:$INET_ROOT/examples:$INET_ROOT/showcases:$INET_ROOT/tutorials"',
             'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',
             "source setenv -f" if inet_version.startswith("4.") else "", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
         ],
         "patch_commands": [
             "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
+
+            # wipe out the "-n" (NED path) options from run scripts, as we prefer using the NEDPATH environment variable
+            #TODO this might be unnecessary
+            "sed -i -E 's|-n [^ ]+||' src/run_inet" if inet_version < "4.0" else "",
+            "sed -i -E 's|-n [^ ]+||' bin/inet" if inet_version >= "4.0" else "",
+
+            # also wipe out the explicit "--image-path=" option, as we use OMNETPP_IMAGE_PATH instead
+            #TODO this might be unnecessary
+            "sed -i -E 's|--image-path=[^ ]+||' src/run_inet" if inet_version < "4.0" else "",
 
             # fix up shebang line in inet_featuretool (python -> python2)
             "sed -i 's| python$| python2|' inet_featuretool" if inet_version >= "3.0" and inet_version < "3.6.7" else "",
@@ -91,7 +101,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             # fix IPv6Address.cc:185: non-constant-expression cannot be narrowed from type 'unsigned int' to 'int' in initializer list in inet-2.1.0
             "sed -i 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
             "sed -i 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
-            ],
+        ],
         "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
         "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
         "options": {

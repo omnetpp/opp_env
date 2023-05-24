@@ -16,8 +16,13 @@ def get_all_veins_released_versions():
                 # currently unused: "download_commands": [ "wget  -q -nv --show-progress https://veins.car2x.org/download/veins-5.2.zip && unzip veins-5.2.zip && rm veins-5.2.zip && mv veins-veins-5.2 veins-5.2" ],
                 "git_url": "git@github.com:sommer/veins.git",
                 "git_branch": f"veins-{veins_version}",
-                "patch_commands": [ "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if veins_version<="4.6" else "" ],
-                "setenv_commands": [ "source setenv" if veins_version >= "5.1" else "" ],
+                "patch_commands": [
+                    "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if veins_version<="4.6" else ""
+                ],
+                "setenv_commands": [
+                    'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images"',
+                    "source setenv" if veins_version >= "5.1" else ""
+                ],
                 "build_commands": [ "./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
                 "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
                 # "options": {

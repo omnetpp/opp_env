@@ -9,9 +9,11 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
             "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
             "sed -i -E 's|^INET_SRC=.*|INET_SRC=$INET_ROOT/src|' bin/simu5g",
             "find . -name omnetpp.ini | xargs -n1 sed -i -E 's|^image-path|#image-path|'", # we use OMNETPP_IMAGE_PATH instead
-            "sed -i '/export PATH=/a\\    export OMNETPP_IMAGE_PATH=\"$OMNETPP_IMAGE_PATH:$SIMU5G_ROOT/images\"' setenv",
         ],
-        "setenv_commands": [ "source setenv -f" ],
+        "setenv_commands": [
+            'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$SIMU5G_ROOT/images"',
+            "source setenv -f"
+        ],
         "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
         "clean_commands": [ "make clean" ]
     }

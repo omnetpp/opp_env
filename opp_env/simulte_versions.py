@@ -12,7 +12,10 @@ def get_simulte_project_description(simulte_version, inet_versions, omnetpp_vers
             "sed -i -E 's|^INET_DIR=.*|INET_DIR=$INET_ROOT/src|' src/run_lte",
             "find . -name omnetpp.ini | xargs -n1 sed -i -E 's|^image-path|#image-path|'", # we use OMNETPP_IMAGE_PATH instead
         ],
-        "setenv_commands": None,
+        "setenv_commands": [
+            'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$SIMULTE_ROOT/images"',
+            # Note: no setenv script in SimuLTE
+        ],
         "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
         "clean_commands": [ "make clean" ]
     }

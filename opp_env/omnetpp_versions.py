@@ -190,9 +190,12 @@ def make_omnetpp_project_description(version, base_version=None):
             # alternative: "AR=\"${AR:-ar} cr\""
         ],
         "setenv_commands": [
+            # need to set OMNETPP_IMAGE_PATH explicitly, otherwise any model that sets it will silently make stock omnetpp images inaccessible;
+            # unfortunately omnetpp setenv scripts don't set OMNETPP_IMAGE_PATH, so do it here
+            "export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$(pwd)/images",
+
             "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish)" if version == "3.3p1" else
-            "source setenv -f" if base_version.startswith("5.") else  # -f allows setenv to be called from scripts
-            "source setenv"
+            "source setenv" + (" -f" if base_version.startswith("5.") else "") # -f allows setenv to be called from scripts
         ],
         "build_commands": [
             # "./configure && make" on steroids: magic "[" command ensures that ./configure is run whenever config.status is missing or is older than configure.user

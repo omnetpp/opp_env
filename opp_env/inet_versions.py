@@ -33,7 +33,10 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             f"https://github.com/inet-framework/inet/archive/refs/tags/v{inet_version}.tar.gz" if inet_version in missing_releases else
             f"https://github.com/inet-framework/inet/releases/download/v{inet_version}/inet-{inet_version}-src.tgz" if not is_git_branch else
             f"https://github.com/inet-framework/inet/archive/refs/heads/v{inet_version}.tar.gz",
-        "setenv_commands": [ "source setenv -f" if inet_version.startswith("4.") else "" ],
+        "setenv_commands": [
+            'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',
+            "source setenv -f" if inet_version.startswith("4.") else "", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
+        ],
         "patch_commands": [
             "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
 

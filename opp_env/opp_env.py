@@ -18,6 +18,10 @@ import importlib.util
 
 _logger = logging.getLogger(__file__)
 
+#TODO eliminate global vars
+use_nix = True # project ops
+via_nix = False # other commands
+
 COLOR_GRAY = "\033[38;20m"
 COLOR_RED = "\033[1;31m"
 COLOR_YELLOW = "\033[1;33m"
@@ -110,6 +114,8 @@ def parse_arguments():
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--all-nix", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
 
     subparser = subparsers.add_parser("build", help="Builds the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -118,6 +124,8 @@ def parse_arguments():
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--all-nix", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -125,6 +133,8 @@ def parse_arguments():
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--all-nix", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -135,6 +145,8 @@ def parse_arguments():
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help="Whether to change into the directory of the project. The default action is to change into the project root only if the current working directory is outside the project")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--all-nix", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -145,6 +157,8 @@ def parse_arguments():
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--all-nix", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
 
     return parser.parse_args(sys.argv[1:])
 
@@ -193,50 +207,6 @@ def detect_nix():
     if natural_less(nix_version, minimum_nix_version):
         raise Exception(f"Your Nix installation of version {nix_version} is too old! At least version {minimum_nix_version} is required.")
 
-def run_command(command, quiet=False, check_exitcode=True, tweak_env_for_nix=True, extra_env_vars=None, tracing=False):
-    if "\n" not in command:
-        _logger.debug(f"Running command: {command}")
-    else:
-        _logger.debug(f"Running command:\n{indent(command)}")
-
-    env = dict(os.environ)
-
-    if tweak_env_for_nix:
-        # This is a workaround for an error message that is printed multiple times when the "shell" command starts e.g. with Ubuntu 22.04 Unity desktop:
-        # ERROR: ld.so: object 'libgtk3-nocsd.so.0' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
-        # The reason is that under NIX, the lib's directory is not in the default linker path. Workaround: use full path for lib.
-        libname = "libgtk3-nocsd.so.0"
-        libdir = "/usr/lib/x86_64-linux-gnu/"
-        if "LD_PRELOAD" in env and libname in env["LD_PRELOAD"].split(" ") and os.path.isfile(libdir+libname):
-            env["LD_PRELOAD"] = env["LD_PRELOAD"].replace(libname, libdir+libname)
-
-        # This is a workaround for a warning message printed by Perl:
-        # perl: warning: Setting locale failed.
-        # perl: warning: Please check that your locale settings:
-        #     LANGUAGE = (unset),
-        #     LC_ALL = (unset),
-        #     ...
-        #     LANG = "en_US.UTF-8"
-        #     are supported and installed on your system.
-        # perl: warning: Falling back to the standard locale ("C").
-        env["LC_ALL"] = "C.utf8"
-
-    if extra_env_vars:
-        env.update(extra_env_vars)
-
-    # make the script exit on first error, and also on errors in piped commands
-    options = "-exo pipefail" if tracing else "-eo pipefail"
-    command = f"set {options}; {command}"
-
-    result = subprocess.run(["bash", "-c", command],
-                            env=env,
-                            stdout=subprocess.DEVNULL if quiet else sys.stdout,
-                            stderr=subprocess.STDOUT if quiet else sys.stderr)
-    _logger.debug(f"Exit code: {result.returncode}")
-    if check_exitcode and result.returncode != 0:
-        raise Exception(f"Child process exit code {result.returncode}")
-    return result
-
 def read_file_if_exists(fname):
     try:
         with open(fname) as f:
@@ -244,12 +214,12 @@ def read_file_if_exists(fname):
     except:
         return ""
 
-def download_and_unpack_tarball(download_url, target_folder):
+def download_and_unpack_tarball(download_url, target_folder, workspace):
     os.makedirs(target_folder)
     wget_log_file = os.path.join(target_folder, "wget.log")
     tar_log_file = os.path.join(target_folder, "tar.log")
     try:
-        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}")
+        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}", workspace)
         os.remove(wget_log_file)
         os.remove(tar_log_file)
     except Exception as e:
@@ -257,11 +227,11 @@ def download_and_unpack_tarball(download_url, target_folder):
         print(read_file_if_exists(tar_log_file).strip())
         raise e
 
-def download_and_apply_patch(patch_url, target_folder):
+def download_and_apply_patch(patch_url, target_folder, workspace):
     wget_log_file = os.path.join(target_folder, "wget.log")
     patching_log_file = os.path.join(target_folder, "patch.log")
     try:
-        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}")
+        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}", workspace)
         os.remove(wget_log_file)
         os.remove(patching_log_file)
     except Exception as e:
@@ -342,13 +312,13 @@ class Workspace:
             raise Exception("f{project_dir} already exists")
         try:
             if project_description.download_commands:
-                run_command(join_commands([f"cd '{self.root_directory}'", *project_description.download_commands]))
+                run_command(join_commands([f"cd '{self.root_directory}'", *project_description.download_commands]), self)
             elif project_description.download_url:
-                download_and_unpack_tarball(project_description.download_url, project_dir)
+                download_and_unpack_tarball(project_description.download_url, project_dir, self)
             elif project_description.git_url:
                 branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
                 #TODO maybe optionally use --single-branch
-                run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}")
+                run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}", self)
             else:
                 raise Exception(f"{project_description}: No download_url or download_commands in project description -- check project options for alternative download means (enter 'opp_env info {project_description}')")
             if not os.path.exists(project_dir):
@@ -358,9 +328,9 @@ class Workspace:
                 if patch:
                     _logger.info(f"Patching project {cyan(project_description.get_full_name())}")
                     if project_description.patch_commands:
-                        run_command(join_commands([f"cd '{project_dir}'", *project_description.patch_commands]))
+                        run_command(join_commands([f"cd '{project_dir}'", *project_description.patch_commands]), self)
                     if project_description.patch_url:
-                        download_and_apply_patch(project_description.patch_url, project_dir)
+                        download_and_apply_patch(project_description.patch_url, project_dir, self)
                 else:
                     _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
 
@@ -396,14 +366,14 @@ class Workspace:
     def mark_project_state(self, project_description):
         # exclude the Simulation IDE's directory from the md5sum, because ./configure and eclipse itself modifies stuff in it
         file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
-        run_command(f"find {self.get_project_root_directory(project_description)} -type f -a -not -path './ide/*' -print0 | xargs -0 md5sum > {file_list_file_name}")
+        run_command(f"find {self.get_project_root_directory(project_description)} -type f -a -not -path './ide/*' -print0 | xargs -0 md5sum > {file_list_file_name}", self)
 
     def check_project_state(self, project_description):
         file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
         if not os.path.exists(file_list_file_name):
             return red('UNKNOWN -- project state not yet marked')
         # note: this won't detect if extra files were added to the project
-        result = run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", quiet=True, check_exitcode=False)
+        result = run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", self, quiet=True, check_exitcode=False)
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
 class ProjectDescription:
@@ -527,9 +497,20 @@ def get_project_versions(project_name, project_descriptions=None):
     return [p.version for p in project_descriptions or get_all_project_descriptions() if p.name == project_name]
 
 def get_project_latest_version(project_name, project_descriptions=None):
+    if project_descriptions is None:
+        project_descriptions = get_all_project_descriptions()
     versions = get_project_versions(project_name, project_descriptions)
+    if not versions:
+        raise Exception(f"Unknown project '{project_name}'")
+    #TODO why not just a plain loop over all project descriptions
     numbered_versions = [v for v in versions if v and v[0] in '0123456789']  # exclude versions named "git", etc.
-    return natural_sorted(numbered_versions)[-1] if numbered_versions else None  # almost as good as semantic version sorting
+    if not numbered_versions:
+        raise Exception(f"Cannot determine latest version for project '{project_name}': version numbers do not start with a number")
+    latest_version = natural_sorted(numbered_versions)[-1] if numbered_versions else None  # almost as good as semantic version sorting
+    assert latest_version
+    matching = [p for p in project_descriptions if p.name == project_name and p.version == latest_version]
+    assert len(matching) == 1  # must be no duplicate
+    return project_descriptions[0]
 
 def find_project_description(project_reference):
     if project_reference.name not in get_project_names():
@@ -537,7 +518,7 @@ def find_project_description(project_reference):
     if not project_reference.version:
          raise Exception(f"Which version of '{project_reference.name}' do you mean? (Use '{project_reference.name}-latest' for latest version)")
     if project_reference.version == "latest":
-        project_reference.version = get_project_latest_version(project_reference.name)
+        return get_project_latest_version(project_reference.name)
 
     project_descriptions = [x for x in get_all_project_descriptions() if x.name == project_reference.name and x.version == project_reference.version]
     if len(project_descriptions) == 0:
@@ -692,6 +673,8 @@ def get_unique_project_attribute(project_descriptions, attr_name):
         return list(values)[0]
 
 def nix_develop(workspace, effective_project_descriptions, working_directory=None, commands=[], run_setenv=True, interactive=False, isolated=True, check_exitcode=True, quiet=False, build_mode=None, tracing=False, **kwargs):
+    global use_nix  #TODO turn it into a field of Workspace
+
     flake_dir = os.path.join(workspace.root_directory, '.opp_env') #TODO possible race condition? (multiple invocations write the same file, e.g. from different terminal sessions)
     nixos = get_unique_project_attribute(effective_project_descriptions, "nixos")
     stdenv = get_unique_project_attribute(effective_project_descriptions, "stdenv")
@@ -702,11 +685,15 @@ def nix_develop(workspace, effective_project_descriptions, working_directory=Non
     project_setenv_commands = sum([[f"cd '{workspace.get_project_root_directory(p)}'", *p.setenv_commands] for p in effective_project_descriptions], [])
     project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={workspace.get_project_root_directory(p)}" for p in effective_project_descriptions]
 
+    # a custom prompt spec to help users distinguish an opp_env shell from a normal terminal session
+    prompt = f"\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
+
     shell_hook_lines = [
         f"export BUILD_MODE={build_mode or ''}",
         *project_root_environment_variable_assignments,
-        *project_shell_hook_commands,
-        f'export PS1="\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "', # modify prompt to distinguish an opp_env shell from a normal shell
+        *(project_shell_hook_commands if use_nix else []),
+        "export NIX_BUILD_CORES=8" if not use_nix else None, #TODO hack
+        f"export PS1='{prompt}'" if interactive and use_nix else None,
         *(["pushd . > /dev/null", *project_setenv_commands, "popd > /dev/null"] if run_setenv else []),
         f"cd '{working_directory}'" if working_directory else None,
         *commands
@@ -714,9 +701,16 @@ def nix_develop(workspace, effective_project_descriptions, working_directory=Non
 
     script = join_lines(shell_hook_lines)
 
-    do_nix_develop(flake_dir=flake_dir, nixos=nixos, stdenv=stdenv, nix_packages=project_nix_packages,
-                   session_name=session_name, script=script, interactive=interactive,
-                   isolated=isolated, check_exitcode=check_exitcode, quiet=quiet, tracing=tracing)
+    if use_nix:
+        do_nix_develop(flake_dir=flake_dir, nixos=nixos, stdenv=stdenv, nix_packages=project_nix_packages,
+                    session_name=session_name, script=script, interactive=interactive,
+                    isolated=isolated, check_exitcode=check_exitcode, quiet=quiet, tracing=tracing)
+    else:
+        if interactive:
+            # launch an interactive bash session; setting PROMPT_COMMAND ensures the custom prompt
+            # takes effect despite PS1 normally being overwritten by the user's profile and rc files
+            script += f"\nPROMPT_COMMAND=\"PS1='{prompt}'\" bash -i"
+        return do_run_command(script, quiet=quiet, check_exitcode=check_exitcode, tracing=tracing)
 
 def do_nix_develop(flake_dir, nixos, stdenv, nix_packages=[], session_name="", script="", interactive=False, isolated=True, check_exitcode=True, quiet=False, tracing=False):
     nix_develop_flake = """{
@@ -758,13 +752,69 @@ def do_nix_develop(flake_dir, nixos, stdenv, nix_packages=[], session_name="", s
 
     _logger.debug(f"Nix flake shellHook script: {yellow(script)}")
     #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
-    temp_home = tempfile.mkdtemp() if isolated else None
     isolation_options = '-i -k HOME -k TERM -k COLORTERM -k DISPLAY -k XAUTHORITY -k XDG_RUNTIME_DIR -k XDG_DATA_DIRS -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
     command = '-c bash --norc' if interactive else '-c true'
     nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
-    run_command(nix_develop_command, quiet=not interactive and quiet, extra_env_vars={"HOME":temp_home} if isolated else None, check_exitcode=check_exitcode)
-    if temp_home:
+
+    env = dict(os.environ)
+
+    if isolated:
+        # some programs prefer the home directory to exist and be writable
+        temp_home = tempfile.mkdtemp()
+        env["HOME"] = temp_home
+
+    # This is a workaround for an error message that is printed multiple times when the "shell" command starts e.g. with Ubuntu 22.04 Unity desktop:
+    # ERROR: ld.so: object 'libgtk3-nocsd.so.0' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+    # The reason is that under NIX, the lib's directory is not in the default linker path. Workaround: use full path for lib.
+    gtk3_lib_fname = "libgtk3-nocsd.so.0"
+    gtk3_lib_dir = "/usr/lib/x86_64-linux-gnu/"
+    if "LD_PRELOAD" in env and gtk3_lib_fname in env["LD_PRELOAD"].split(":") and os.path.isfile(gtk3_lib_dir + gtk3_lib_fname):
+        def replace_in_list(list, old_value, new_value):
+            return [new_value if x == old_value else x for x in list]
+        env["LD_PRELOAD"] = ":".join(replace_in_list(env["LD_PRELOAD"].split(":"), gtk3_lib_fname, gtk3_lib_dir + gtk3_lib_fname))
+
+    # This is a workaround for the following warning printed by Perl:
+    # perl: warning: Setting locale failed. / Please check that your locale settings: / LANGUAGE = (unset), / LC_ALL = (unset), ... / Falling back to the standard locale ("C").
+    env["LC_ALL"] = "C.utf8"
+
+    result = do_run_command(nix_develop_command, env=env, quiet=not interactive and quiet, check_exitcode=check_exitcode)
+
+    # cleanup: remove temporary home dir, as we don't want it to interfere with subsequent sessions
+    if isolated:
         shutil.rmtree(temp_home)
+    return result
+
+def run_command(command, workspace, quiet=False, check_exitcode=True, tracing=False):
+    global via_nix  #TODO turn it into a field of Workspace
+    if via_nix:
+        reference_project_description = get_project_latest_version("omnetpp")
+        return do_nix_develop(flake_dir=os.path.join(workspace.root_directory, ".opp_env"),
+                              nixos=reference_project_description.nixos or "22.04",
+                              stdenv=reference_project_description.stdenv or "llvmPackages_14.stdenv",
+                              nix_packages=["git", "openssh", "wget"], # md5sum is in the core packages
+                              session_name="run_command", script=command,
+                              interactive=False, isolated=True, quiet=quiet, check_exitcode=check_exitcode, tracing=tracing)
+    else:
+        return do_run_command(command, quiet=quiet, check_exitcode=check_exitcode, tracing=tracing)
+
+def do_run_command(command, env=None, quiet=False, check_exitcode=True, tracing=False):
+    if "\n" not in command:
+        _logger.debug(f"Running command: {command}")
+    else:
+        _logger.debug(f"Running command:\n{indent(command)}")
+
+    # make the script exit on first error, and also on errors in piped commands
+    options = "-exo pipefail" if tracing else "-eo pipefail"
+    command = f"set {options}; {command}"
+
+    result = subprocess.run(["bash", "-c", command],
+                            env=env,
+                            stdout=subprocess.DEVNULL if quiet else sys.stdout,
+                            stderr=subprocess.STDOUT if quiet else sys.stderr)
+    _logger.debug(f"Exit code: {result.returncode}")
+    if check_exitcode and result.returncode != 0:
+        raise Exception(f"Child process exit code {result.returncode}")
+    return result
 
 def resolve_projects(projects):
     project_descriptions = [find_project_description(ProjectReference.parse(p)) for p in projects]
@@ -1021,6 +1071,13 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
 def main():
     kwargs = process_arguments()
     subcommand = kwargs['subcommand']
+
+    #TODO this is a hack, these should go into each subcommand via args
+    global use_nix, via_nix
+    use_nix = not kwargs['nixless'] if 'nixless' in kwargs else None
+    via_nix = kwargs['all_nix'] if 'all_nix' in kwargs else None
+    print(f"{use_nix=} {via_nix=}")
+
     try:
         _logger.debug(f"Starting {cyan(subcommand)} operation")
         if subcommand == "list":

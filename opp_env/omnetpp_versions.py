@@ -31,6 +31,8 @@ def make_omnetpp_project_description(version, base_version=None):
     # Github automatically makes source archives available under a different URL for tags and branches.
     is_git_branch = version.endswith(".x") or version=="master"
 
+    git_branch_or_tag_name = f"omnetpp-{version}" if version[0].isdigit() else version
+
     # It is possible to install from locally downloaded tarballs and repo, using the  "local" or "local-git" options.
     # This is used mainly for testing. The following are the locations of the local files.
     downloads_dir = "~/projects/opp_env_downloads"
@@ -145,7 +147,8 @@ def make_omnetpp_project_description(version, base_version=None):
                 f"This version is not the latest patchlevel. It may compile with warnings or work incorrectly due to bit rotting. We recommend to use the corresponding patch branch 'omnetpp-{dotx(version)}', which has also been updated to build with an up-to-date C++ compiler." if not is_modernized and version < "5.0" else None,
                 "Specifically, most simulation models won't work, because they use activity(), and the coroutine library in this release has become broken due to changes in the standard C library implementation of setjmp()/longjmp(). This issue has been resolved in the modernized patch branch and release.)" if not is_modernized and version.startswith("3.") else None,
                 "Specifically, this version could only be made to compile with the combination of compiler options (C++03, permissiveness, warning suppression, etc.), patching (e.g. due to changes in Bison), and using an older Tcl/Tk library." if not is_modernized and version >= "4.0" and version < "4.3" else None,
-                "Specifically, Qtenv in this version will not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None #TODO false
+                "Specifically, Qtenv in this version may not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None,
+                "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None
             ])
         ]),
         "nixos": "nixos-22.11",
@@ -155,7 +158,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "external_nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
         "download_url":
-            "" if version in missing_releases else
+            f"{github_url}/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz" if version in missing_releases or version == "master" else
             f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
             f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else
             f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
@@ -201,7 +204,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "clean_commands": [
             "make clean MODE=$BUILD_MODE"
         ],
-        "options": {  #TODO git master doesn't have all these download options
+        "options": {  # note: git master doesn't have all these download options
             "gcc7": {
                 "option_description": "Use the GCC 7.5 compiler toolchain for the build",
                 "category": "compiler",
@@ -215,14 +218,14 @@ def make_omnetpp_project_description(version, base_version=None):
             "source-archive": {
                 "option_description": "Install from source archive on github",
                 "category": "download",
-                "download_url": f"https://github.com/omnetpp/omnetpp/archive/refs/{'heads' if is_git_branch else 'tags'}/omnetpp-{version}.tar.gz", #TODO fix branch name
+                "download_url": f"https://github.com/omnetpp/omnetpp/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz",
                 "download_commands": None
             },
             "git": {
                 "option_description": "Install from git repo on github",
                 "category": "download",
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
-                "git_branch": f"omnetpp-{version}" if version[0].isdigit() else version, # TODO branch names like "master" don't need to be prefixed
+                "git_branch": git_branch_or_tag_name,
                 "download_commands": None,
                 "download_url": "",
             },
@@ -246,7 +249,7 @@ def make_omnetpp_project_description(version, base_version=None):
             "local-git": {
                 "option_description": "Install from git repo on local disk",
                 "category": "download",
-                "download_commands": [ f"git clone -l {local_omnetpp_git_repo} omnetpp-{version} --branch omnetpp-{version}" ], #TODO unless version="master"
+                "download_commands": [ f"git clone -l {local_omnetpp_git_repo} omnetpp-{version} --branch {git_branch_or_tag_name}" ],
                 "download_url": "",
             }
         }
@@ -275,5 +278,5 @@ def get_project_descriptions():
     return [
         *get_all_omnetpp_released_versions(),
         *get_all_omnetpp_patch_branches(),
-        make_omnetpp_project_description("master", "omnetpp-6.0.1")
+        make_omnetpp_project_description("master")
     ]

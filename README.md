@@ -63,7 +63,7 @@ any researcher or developer working with OMNeT++ simulation frameworks:
 
 ### Installation
 
-To get started with `opp_env`, you first need to have Nix installed on your
+To get started with `opp_env`, you need to have Python3, pip and Nix installed on your
 machine. You can download and install Nix from
 [here](https://nixos.org/download). `opp_env` also needs several smaller utility
 programs like `wget`, `tar`, `gzip`, and also `git` for the installation of certain packages or package versions.
@@ -71,6 +71,12 @@ programs like `wget`, `tar`, `gzip`, and also `git` for the installation of cert
 Once you have the prerequisites, you can install `opp_env` using `pip`.
 
 #### Installing opp_env with pip
+
+First, make sure that `pip` is the latest version:
+
+```
+pip install --upgrade pip
+```
 
 In the future, end users will be able to install `opp_env` using the following command:
 

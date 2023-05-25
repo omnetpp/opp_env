@@ -700,6 +700,29 @@ def get_unique_project_attribute(project_descriptions, attr_name):
         return list(values)[0]
 
 def nix_develop(workspace_directory, effective_project_descriptions, nix_packages, hook_commands, interactive=False, isolated=True, check_exitcode=True, quiet=False, build_mode=None, tracing=False, **kwargs):
+    flake_dir = os.path.join(workspace_directory, '.opp_env') #TODO possible race condition? (multiple invocations write the same file, e.g. from different terminal sessions)
+    nixos = get_unique_project_attribute(effective_project_descriptions, "nixos")
+    stdenv = get_unique_project_attribute(effective_project_descriptions, "stdenv")
+
+    session_name = '+'.join([str(d) for d in reversed(effective_project_descriptions)])
+    project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
+    project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={os.path.join(workspace_directory, p.get_full_name())}" for p in effective_project_descriptions]
+
+    shell_hook_lines = [
+        f"export BUILD_MODE={build_mode or ''}",
+        *project_root_environment_variable_assignments,
+        *project_shell_hook_commands,
+        f'export PS1="\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "', # modify prompt to distinguish an opp_env shell from a normal shell
+        *hook_commands
+    ]
+
+    script = join_lines(shell_hook_lines)
+
+    do_nix_develop(flake_dir=flake_dir, nixos=nixos, stdenv=stdenv, nix_packages=nix_packages,
+                   session_name=session_name, script=script, interactive=interactive,
+                   isolated=isolated, check_exitcode=check_exitcode, quiet=quiet, tracing=tracing)
+
+def do_nix_develop(flake_dir, nixos, stdenv, nix_packages=[], session_name="", script="", interactive=False, isolated=True, check_exitcode=True, quiet=False, tracing=False):
     nix_develop_flake = """{
     inputs = {
         nixpkgs.url = "nixpkgs/@NIXOS@";
@@ -712,50 +735,32 @@ def nix_develop(workspace_directory, effective_project_descriptions, nix_package
         in rec {
             devShells = rec {
                 default = pkgs.@STDENV@.mkDerivation {
-                    name = "@NAME@";
+                    name = "@SESSION_NAME@";
                     hardeningDisable = [ "all" ];
                     buildInputs = with pkgs; [ @PACKAGES@ bashInteractive vim ];
                     shellHook = ''
-                        @SET_SHELL_OPTIONS@
-                        BUILD_MODE=@BUILD_MODE@
-                        @PROJECTDIR_VARS@
-
-                        @PROJECT_SHELL_HOOK_COMMANDS@
-
-                        # modify prompt to distinguish an opp_env shell from a normal shell
-                        export PS1="\\[\\e[01;33m\\]@NAME@\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
-
-                        @HOOK_COMMANDS@
+                        set @SHELL_OPTIONS@
+                        @SCRIPT@
                     '';
                 };
             };
         });
 }"""
 
-    nixos = get_unique_project_attribute(effective_project_descriptions, "nixos")
-    stdenv = get_unique_project_attribute(effective_project_descriptions, "stdenv")
-    shell_options_command = "set -exo pipefail" if tracing else "set -eo pipefail"
-    project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
-    projectdir_var_assignments = [f"export {p.name.upper()}_ROOT={os.path.join(workspace_directory, p.get_full_name())}" for p in effective_project_descriptions]
-
-    flake_dir = os.path.join(workspace_directory, '.opp_env') #TODO race condition (multiple invocations write the same file)
+    shell_options = "-exo pipefail" if tracing else "-eo pipefail"
     flake_file_name = os.path.join(flake_dir, "flake.nix")
     with open(flake_file_name, "w") as f:
-        name = '+'.join([str(d) for d in reversed(effective_project_descriptions)])
-        nix_develop_flake = nix_develop_flake.replace("@NIXOS@", nixos)
-        nix_develop_flake = nix_develop_flake.replace("@STDENV@", stdenv)
-        nix_develop_flake = nix_develop_flake.replace("@NAME@", name)
-        nix_develop_flake = nix_develop_flake.replace("@PACKAGES@", " ".join(nix_packages))
-        nix_develop_flake = nix_develop_flake.replace("@SET_SHELL_OPTIONS@", shell_options_command)
-
-
-        nix_develop_flake = nix_develop_flake.replace("@BUILD_MODE@", build_mode or "")
-        nix_develop_flake = nix_develop_flake.replace("@PROJECTDIR_VARS@", join_lines(projectdir_var_assignments))
-        nix_develop_flake = nix_develop_flake.replace("@PROJECT_SHELL_HOOK_COMMANDS@", join_lines(project_shell_hook_commands))
-        nix_develop_flake = nix_develop_flake.replace("@HOOK_COMMANDS@", join_lines(hook_commands))
+        nix_develop_flake = (nix_develop_flake
+            .replace("@NIXOS@", nixos)
+            .replace("@STDENV@", stdenv)
+            .replace("@SESSION_NAME@", session_name)
+            .replace("@PACKAGES@", " ".join(nix_packages))
+            .replace("@SHELL_OPTIONS@", shell_options)
+            .replace("@SCRIPT@", script)
+        )
         f.write(nix_develop_flake)
 
-    _logger.debug(f"Nix flake shellHook script: {yellow(hook_commands)}")
+    _logger.debug(f"Nix flake shellHook script: {yellow(script)}")
     #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
     temp_home = tempfile.mkdtemp() if isolated else None
     isolation_options = '-i -k HOME -k TERM -k COLORTERM -k DISPLAY -k XAUTHORITY -k XDG_RUNTIME_DIR -k XDG_DATA_DIRS -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''

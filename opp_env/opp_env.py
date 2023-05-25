@@ -383,21 +383,15 @@ class Workspace:
         assert(project_description.build_commands)
         for build_mode in build_modes:
             _logger.info(f"Building project {cyan(project_description.get_full_name())} in {cyan(build_mode)} mode in workspace {cyan(self.root_directory)}")
-            commands = [
-                f"cd '{self.get_project_root_directory(project_description)}'",
-                *project_description.build_commands
-            ]
-            nix_develop(self, effective_project_descriptions, commands, build_mode=build_mode, **kwargs)
+            project_dir = self.get_project_root_directory(project_description)
+            nix_develop(self, effective_project_descriptions, project_dir, project_description.build_commands, build_mode=build_mode, **kwargs)
 
     def clean_project(self, project_description, effective_project_descriptions, build_modes, **kwargs):
         assert(project_description.clean_commands)
         for build_mode in build_modes:
             _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in {cyan(build_mode)} in workspace {cyan(self.root_directory)}")
-            commands = [
-                f"cd '{self.get_project_root_directory(project_description)}'",
-                *project_description.clean_commands
-            ]
-            nix_develop(self, effective_project_descriptions, commands, build_mode=build_mode, **kwargs)
+            project_dir = self.get_project_root_directory(project_description)
+            nix_develop(self, effective_project_descriptions, project_dir, project_description.clean_commands, build_mode=build_mode, **kwargs)
 
     def mark_project_state(self, project_description):
         # exclude the Simulation IDE's directory from the md5sum, because ./configure and eclipse itself modifies stuff in it
@@ -697,7 +691,7 @@ def get_unique_project_attribute(project_descriptions, attr_name):
     else:
         return list(values)[0]
 
-def nix_develop(workspace, effective_project_descriptions, hook_commands, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, quiet=False, build_mode=None, tracing=False, **kwargs):
+def nix_develop(workspace, effective_project_descriptions, working_directory=None, commands=[], run_setenv=True, interactive=False, isolated=True, check_exitcode=True, quiet=False, build_mode=None, tracing=False, **kwargs):
     flake_dir = os.path.join(workspace.root_directory, '.opp_env') #TODO possible race condition? (multiple invocations write the same file, e.g. from different terminal sessions)
     nixos = get_unique_project_attribute(effective_project_descriptions, "nixos")
     stdenv = get_unique_project_attribute(effective_project_descriptions, "stdenv")
@@ -714,7 +708,8 @@ def nix_develop(workspace, effective_project_descriptions, hook_commands, run_se
         *project_shell_hook_commands,
         f'export PS1="\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "', # modify prompt to distinguish an opp_env shell from a normal shell
         *(["pushd . > /dev/null", *project_setenv_commands, "popd > /dev/null"] if run_setenv else []),
-        *hook_commands
+        f"cd '{working_directory}'" if working_directory else None,
+        *commands
     ]
 
     script = join_lines(shell_hook_lines)
@@ -1005,7 +1000,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
         else:
             _logger.debug(f"No need to change directory, wd={cyan(os.getcwd())} is already under the first project's directory {cyan(first_project_dir)}")
 
-    nix_develop(workspace, effective_project_descriptions, [], interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
+    nix_develop(workspace, effective_project_descriptions, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
 def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, build=True, mode=None, **kwargs):
     detect_nix()
@@ -1021,7 +1016,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
             if project_description.build_commands:
                 workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
-    nix_develop(workspace, effective_project_descriptions, [f"cd '{workspace_directory}'", command], **dict(kwargs, quiet=False))
+    nix_develop(workspace, effective_project_descriptions, workspace_directory, [command], **dict(kwargs, quiet=False))
 
 def main():
     kwargs = process_arguments()

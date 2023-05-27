@@ -423,25 +423,27 @@ class ProjectDescription:
                  shell_hook_commands=[], setenv_commands=[],
                  build_commands=[], clean_commands=[],
                  options=None):
+        def remove_empty(list):
+            return [x for x in list if x] if list else []
         self.name = name
         self.version = version
         self.description = description
-        self.warnings = warnings
+        self.warnings = remove_empty(warnings)
         self.nixos = nixos
         self.stdenv = stdenv
         self.folder_name = folder_name or name
         self.required_projects = required_projects
-        self.external_nix_packages = external_nix_packages
+        self.external_nix_packages = remove_empty(external_nix_packages)
         self.download_url = download_url
         self.git_url = git_url
         self.git_branch = git_branch
-        self.download_commands = download_commands
-        self.patch_commands = patch_commands
+        self.download_commands = remove_empty(download_commands)
+        self.patch_commands = remove_empty(patch_commands)
         self.patch_url = patch_url
-        self.shell_hook_commands = shell_hook_commands
-        self.setenv_commands = setenv_commands
-        self.build_commands = build_commands
-        self.clean_commands = clean_commands
+        self.shell_hook_commands = remove_empty(shell_hook_commands)
+        self.setenv_commands = remove_empty(setenv_commands)
+        self.build_commands = remove_empty(build_commands)
+        self.clean_commands = remove_empty(clean_commands)
         self.options = options or {}
         if bool(download_url) + bool(git_url) + bool(download_commands) > 1:
             raise Exception(f"project {name}-{version}: download_url, git_url, and download_commands are mutually exclusive")

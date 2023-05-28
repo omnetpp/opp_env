@@ -207,175 +207,6 @@ def detect_nix():
     if natural_less(nix_version, minimum_nix_version):
         raise Exception(f"Your Nix installation of version {nix_version} is too old! At least version {minimum_nix_version} is required.")
 
-def read_file_if_exists(fname):
-    try:
-        with open(fname) as f:
-            return f.read()
-    except:
-        return ""
-
-def download_and_unpack_tarball(download_url, target_folder, workspace):
-    os.makedirs(target_folder)
-    wget_log_file = os.path.join(target_folder, "wget.log")
-    tar_log_file = os.path.join(target_folder, "tar.log")
-    try:
-        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}", workspace)
-        os.remove(wget_log_file)
-        os.remove(tar_log_file)
-    except Exception as e:
-        print(read_file_if_exists(wget_log_file).strip())
-        print(read_file_if_exists(tar_log_file).strip())
-        raise e
-
-def download_and_apply_patch(patch_url, target_folder, workspace):
-    wget_log_file = os.path.join(target_folder, "wget.log")
-    patching_log_file = os.path.join(target_folder, "patch.log")
-    try:
-        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}", workspace)
-        os.remove(wget_log_file)
-        os.remove(patching_log_file)
-    except Exception as e:
-        print(read_file_if_exists(wget_log_file).strip())
-        print(read_file_if_exists(patching_log_file).strip())
-        raise e
-
-class Workspace:
-    # project states
-    ABSENT = "ABSENT"
-    INCOMPLETE = "INCOMPLETE"
-    DOWNLOADED = "DOWNLOADED"
-
-    def __init__(self, root_directory):
-        assert(os.path.isabs(root_directory))
-        self.root_directory = root_directory
-        opp_env_directory = os.path.join(self.root_directory, ".opp_env")
-        if not os.path.exists(opp_env_directory):
-            raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn in into one")
-
-    @staticmethod
-    def find_workspace(from_dir=None):
-        dir = os.path.abspath(from_dir) if from_dir else os.getcwd()
-        while True:
-            if os.path.isdir(os.path.join(dir, ".opp_env")):
-                return dir
-            parent_dir = os.path.dirname(dir)
-            if parent_dir == dir:
-                break
-            dir = parent_dir
-        raise Exception(f"No opp_env workspace found in '{from_dir}' or its parent directories, run 'opp_env init' to create one")
-        #return None
-
-    @staticmethod
-    def init_workspace(dir=None):
-        if not os.path.isdir(dir):
-            raise Exception(f"Directory does not exist: {dir}")
-        opp_env_dir = os.path.join(dir, ".opp_env")
-        if os.path.isdir(opp_env_dir):
-            raise Exception(f"'{dir}' is already an opp_env workspace")
-        os.mkdir(opp_env_dir)
-
-    def get_project_root_directory(self, project_description):
-        return os.path.join(self.root_directory, project_description.get_full_folder_name())
-
-    def print_project_state(self, project_description):
-        _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green(self.get_project_state(project_description))}, {self.check_project_state(project_description)}")
-
-    def read_project_state_file(self, project_description):
-        state_file_name = os.path.join(self.get_project_root_directory(project_description), ".opp_env_state")
-        if not os.path.isfile(state_file_name):
-            return {}
-        with open(state_file_name) as f:
-            return json.load(f)
-
-    def write_project_state_file(self, project_description, data):
-        state_file_name = os.path.join(self.get_project_root_directory(project_description), ".opp_env_state")
-        with open(state_file_name, "w") as f:
-            json.dump(data, f)
-
-    def get_project_state(self, project_description):
-        project_directory = self.get_project_root_directory(project_description)
-        data = self.read_project_state_file(project_description)
-        return self.ABSENT if not os.path.isdir(project_directory) else \
-               self.INCOMPLETE if not data or 'state' not in data else \
-               data['state']
-
-    def set_project_state(self, project_description, state):
-        _logger.debug(f"Setting project {cyan(project_description.get_full_name())} state to {cyan(state)}")
-        data = self.read_project_state_file(project_description)
-        data['state'] = state
-        self.write_project_state_file(project_description, data)
-
-    def download_project(self, project_description, patch, cleanup, **kwargs):
-        _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-        project_dir = self.root_directory + "/" + project_description.get_full_name()
-        if os.path.exists(project_dir):
-            raise Exception("f{project_dir} already exists")
-        try:
-            if project_description.download_commands:
-                run_command(join_commands([f"cd '{self.root_directory}'", *project_description.download_commands]), self)
-            elif project_description.download_url:
-                download_and_unpack_tarball(project_description.download_url, project_dir, self)
-            elif project_description.git_url:
-                branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
-                #TODO maybe optionally use --single-branch
-                run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}", self)
-            else:
-                raise Exception(f"{project_description}: No download_url or download_commands in project description -- check project options for alternative download means (enter 'opp_env info {project_description}')")
-            if not os.path.exists(project_dir):
-                raise Exception(f"{project_description}: Download process did not create {project_dir}")
-
-            if project_description.patch_commands or project_description.patch_url:
-                if patch:
-                    _logger.info(f"Patching project {cyan(project_description.get_full_name())}")
-                    if project_description.patch_commands:
-                        run_command(join_commands([f"cd '{project_dir}'", *project_description.patch_commands]), self)
-                    if project_description.patch_url:
-                        download_and_apply_patch(project_description.patch_url, project_dir, self)
-                else:
-                    _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
-
-            self.mark_project_state(project_description)
-            self.set_project_state(project_description, self.DOWNLOADED)
-        except KeyboardInterrupt as e:
-            if cleanup:
-                _logger.info("Download interrupted by user, cleaning up")
-                if os.path.isdir(project_dir):
-                    shutil.rmtree(project_dir)
-            raise e
-        except Exception as e:
-            if cleanup:
-                _logger.info("Error during download, cleaning up")
-                if os.path.isdir(project_dir):
-                    shutil.rmtree(project_dir)
-            raise e
-
-    def build_project(self, project_description, effective_project_descriptions, build_modes, **kwargs):
-        assert(project_description.build_commands)
-        for build_mode in build_modes:
-            _logger.info(f"Building project {cyan(project_description.get_full_name())} in {cyan(build_mode)} mode in workspace {cyan(self.root_directory)}")
-            project_dir = self.get_project_root_directory(project_description)
-            nix_develop(self, effective_project_descriptions, project_dir, project_description.build_commands, build_mode=build_mode, **kwargs)
-
-    def clean_project(self, project_description, effective_project_descriptions, build_modes, **kwargs):
-        assert(project_description.clean_commands)
-        for build_mode in build_modes:
-            _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in {cyan(build_mode)} in workspace {cyan(self.root_directory)}")
-            project_dir = self.get_project_root_directory(project_description)
-            nix_develop(self, effective_project_descriptions, project_dir, project_description.clean_commands, build_mode=build_mode, **kwargs)
-
-    def mark_project_state(self, project_description):
-        # exclude the Simulation IDE's directory from the md5sum, because ./configure and eclipse itself modifies stuff in it
-        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
-        run_command(f"find {self.get_project_root_directory(project_description)} -type f -a -not -path './ide/*' -print0 | xargs -0 md5sum > {file_list_file_name}", self)
-
-    def check_project_state(self, project_description):
-        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
-        if not os.path.exists(file_list_file_name):
-            return red('UNKNOWN -- project state not yet marked')
-        # note: this won't detect if extra files were added to the project
-        result = run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", self, quiet=True, check_exitcode=False)
-        return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
-
 class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
@@ -653,6 +484,152 @@ def get_projects_with_options(project_descriptions, requested_options):
     # create and return updated project descriptions
     return [desc.get_with_options(requested_options) for desc in project_descriptions]
 
+class Workspace:
+    # project states
+    ABSENT = "ABSENT"
+    INCOMPLETE = "INCOMPLETE"
+    DOWNLOADED = "DOWNLOADED"
+
+    def __init__(self, root_directory):
+        assert(os.path.isabs(root_directory))
+        self.root_directory = root_directory
+        opp_env_directory = os.path.join(self.root_directory, ".opp_env")
+        if not os.path.exists(opp_env_directory):
+            raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn in into one")
+
+    @staticmethod
+    def find_workspace(from_dir=None):
+        dir = os.path.abspath(from_dir) if from_dir else os.getcwd()
+        while True:
+            if os.path.isdir(os.path.join(dir, ".opp_env")):
+                return dir
+            parent_dir = os.path.dirname(dir)
+            if parent_dir == dir:
+                break
+            dir = parent_dir
+        raise Exception(f"No opp_env workspace found in '{from_dir}' or its parent directories, run 'opp_env init' to create one")
+        #return None
+
+    @staticmethod
+    def init_workspace(dir=None):
+        if not os.path.isdir(dir):
+            raise Exception(f"Directory does not exist: {dir}")
+        opp_env_dir = os.path.join(dir, ".opp_env")
+        if os.path.isdir(opp_env_dir):
+            raise Exception(f"'{dir}' is already an opp_env workspace")
+        os.mkdir(opp_env_dir)
+
+    def get_project_root_directory(self, project_description):
+        return os.path.join(self.root_directory, project_description.get_full_folder_name())
+
+    def print_project_state(self, project_description):
+        _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green(self.get_project_state(project_description))}, {self.check_project_state(project_description)}")
+
+    def read_project_state_file(self, project_description):
+        state_file_name = os.path.join(self.get_project_root_directory(project_description), ".opp_env_state")
+        if not os.path.isfile(state_file_name):
+            return {}
+        with open(state_file_name) as f:
+            return json.load(f)
+
+    def write_project_state_file(self, project_description, data):
+        state_file_name = os.path.join(self.get_project_root_directory(project_description), ".opp_env_state")
+        with open(state_file_name, "w") as f:
+            json.dump(data, f)
+
+    def get_project_state(self, project_description):
+        project_directory = self.get_project_root_directory(project_description)
+        data = self.read_project_state_file(project_description)
+        return self.ABSENT if not os.path.isdir(project_directory) else \
+               self.INCOMPLETE if not data or 'state' not in data else \
+               data['state']
+
+    def set_project_state(self, project_description, state):
+        _logger.debug(f"Setting project {cyan(project_description.get_full_name())} state to {cyan(state)}")
+        data = self.read_project_state_file(project_description)
+        data['state'] = state
+        self.write_project_state_file(project_description, data)
+
+    def download_project(self, project_description, patch, cleanup, **kwargs):
+        _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
+        project_dir = self.root_directory + "/" + project_description.get_full_name()
+        if os.path.exists(project_dir):
+            raise Exception("f{project_dir} already exists")
+        try:
+            if project_description.download_commands:
+                run_command(join_commands([f"cd '{self.root_directory}'", *project_description.download_commands]), self)
+            elif project_description.download_url:
+                download_and_unpack_tarball(project_description.download_url, project_dir, self)
+            elif project_description.git_url:
+                branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
+                #TODO maybe optionally use --single-branch
+                run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}", self)
+            else:
+                raise Exception(f"{project_description}: No download_url or download_commands in project description -- check project options for alternative download means (enter 'opp_env info {project_description}')")
+            if not os.path.exists(project_dir):
+                raise Exception(f"{project_description}: Download process did not create {project_dir}")
+
+            if project_description.patch_commands or project_description.patch_url:
+                if patch:
+                    _logger.info(f"Patching project {cyan(project_description.get_full_name())}")
+                    if project_description.patch_commands:
+                        run_command(join_commands([f"cd '{project_dir}'", *project_description.patch_commands]), self)
+                    if project_description.patch_url:
+                        download_and_apply_patch(project_description.patch_url, project_dir, self)
+                else:
+                    _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
+
+            self.mark_project_state(project_description)
+            self.set_project_state(project_description, self.DOWNLOADED)
+        except KeyboardInterrupt as e:
+            if cleanup:
+                _logger.info("Download interrupted by user, cleaning up")
+                if os.path.isdir(project_dir):
+                    shutil.rmtree(project_dir)
+            raise e
+        except Exception as e:
+            if cleanup:
+                _logger.info("Error during download, cleaning up")
+                if os.path.isdir(project_dir):
+                    shutil.rmtree(project_dir)
+            raise e
+
+    def build_project(self, project_description, effective_project_descriptions, build_modes, **kwargs):
+        assert(project_description.build_commands)
+        for build_mode in build_modes:
+            _logger.info(f"Building project {cyan(project_description.get_full_name())} in {cyan(build_mode)} mode in workspace {cyan(self.root_directory)}")
+            project_dir = self.get_project_root_directory(project_description)
+            nix_develop(self, effective_project_descriptions, project_dir, project_description.build_commands, build_mode=build_mode, **kwargs)
+
+    def clean_project(self, project_description, effective_project_descriptions, build_modes, **kwargs):
+        assert(project_description.clean_commands)
+        for build_mode in build_modes:
+            _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in {cyan(build_mode)} in workspace {cyan(self.root_directory)}")
+            project_dir = self.get_project_root_directory(project_description)
+            nix_develop(self, effective_project_descriptions, project_dir, project_description.clean_commands, build_mode=build_mode, **kwargs)
+
+    def mark_project_state(self, project_description):
+        # exclude the Simulation IDE's directory from the md5sum, because ./configure and eclipse itself modifies stuff in it
+        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
+        run_command(f"find {self.get_project_root_directory(project_description)} -type f -a -not -path './ide/*' -print0 | xargs -0 md5sum > {file_list_file_name}", self)
+
+    def check_project_state(self, project_description):
+        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
+        if not os.path.exists(file_list_file_name):
+            return red('UNKNOWN -- project state not yet marked')
+        # note: this won't detect if extra files were added to the project
+        result = run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", self, quiet=True, check_exitcode=False)
+        return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
+
+def setup_environment(projects, workspace_directory=None, requested_options=None, pause_after_warnings=True, **kwargs):
+    workspace_directory = resolve_workspace(workspace_directory)
+    workspace = Workspace(workspace_directory)
+    specified_project_descriptions = resolve_projects(projects)
+    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    print_project_warnings(effective_project_descriptions, pause_after_warnings)
+    return effective_project_descriptions
+
 def print_project_warnings(project_descriptions, pause_after_warnings=True):
     have_warnings = False
     for p in project_descriptions:
@@ -671,6 +648,50 @@ def get_unique_project_attribute(project_descriptions, attr_name):
         raise Exception(f"The projects disagree on the choice of '{attr_name}': {values}")
     else:
         return list(values)[0]
+
+def download_project_if_needed(workspace, project_description, prepare_missing=True, patch=True, cleanup=True, **kwargs):
+    project_state = workspace.get_project_state(project_description)
+    if not prepare_missing and project_state in [Workspace.ABSENT, Workspace.INCOMPLETE]:
+        raise Exception(f"Project '{project_description}' is missing or incomplete")
+    elif project_state == Workspace.ABSENT:
+        workspace.download_project(project_description, patch, cleanup, **kwargs)
+    elif project_state == Workspace.INCOMPLETE:
+        raise Exception(f"Cannot download '{project_description}': Directory already exists")
+    else:
+        workspace.print_project_state(project_description)
+    assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
+
+def read_file_if_exists(fname):
+    try:
+        with open(fname) as f:
+            return f.read()
+    except:
+        return ""
+
+def download_and_unpack_tarball(download_url, target_folder, workspace):
+    os.makedirs(target_folder)
+    wget_log_file = os.path.join(target_folder, "wget.log")
+    tar_log_file = os.path.join(target_folder, "tar.log")
+    try:
+        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}", workspace)
+        os.remove(wget_log_file)
+        os.remove(tar_log_file)
+    except Exception as e:
+        print(read_file_if_exists(wget_log_file).strip())
+        print(read_file_if_exists(tar_log_file).strip())
+        raise e
+
+def download_and_apply_patch(patch_url, target_folder, workspace):
+    wget_log_file = os.path.join(target_folder, "wget.log")
+    patching_log_file = os.path.join(target_folder, "patch.log")
+    try:
+        run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}", workspace)
+        os.remove(wget_log_file)
+        os.remove(patching_log_file)
+    except Exception as e:
+        print(read_file_if_exists(wget_log_file).strip())
+        print(read_file_if_exists(patching_log_file).strip())
+        raise e
 
 def nix_develop(workspace, effective_project_descriptions, working_directory=None, commands=[], run_setenv=True, interactive=False, isolated=True, check_exitcode=True, quiet=False, build_mode=None, tracing=False, **kwargs):
     global use_nix  #TODO turn it into a field of Workspace
@@ -823,27 +844,6 @@ def resolve_projects(projects):
 def resolve_workspace(workspace_directory):
     workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
     return workspace_directory
-
-def setup_environment(projects, workspace_directory=None, requested_options=None, pause_after_warnings=True, **kwargs):
-    workspace_directory = resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory)
-    specified_project_descriptions = resolve_projects(projects)
-    effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
-    print_project_warnings(effective_project_descriptions, pause_after_warnings)
-    return effective_project_descriptions
-
-def download_project_if_needed(workspace, project_description, prepare_missing=True, patch=True, cleanup=True, **kwargs):
-    project_state = workspace.get_project_state(project_description)
-    if not prepare_missing and project_state in [Workspace.ABSENT, Workspace.INCOMPLETE]:
-        raise Exception(f"Project '{project_description}' is missing or incomplete")
-    elif project_state == Workspace.ABSENT:
-        workspace.download_project(project_description, patch, cleanup, **kwargs)
-    elif project_state == Workspace.INCOMPLETE:
-        raise Exception(f"Cannot download '{project_description}': Directory already exists")
-    else:
-        workspace.print_project_state(project_description)
-    assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
 
 def is_semver(version):
     # supported formats: "3.2", "3.2.1", "3.2p1"

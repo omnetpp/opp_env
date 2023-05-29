@@ -288,6 +288,24 @@ class ProjectDescription:
         fields.pop("options", None)
         return ProjectDescription(**fields)
 
+class ProjectReference:
+    def __init__(self, name, version):
+        self.name = name
+        self.version = version
+
+    def __repr__(self):
+        return self.get_full_name()
+
+    def __str__(self):
+        return self.get_full_name()
+
+    @classmethod
+    def parse(self, string):
+        return ProjectReference(*string.rsplit("-", 1)) if "-" in string else ProjectReference(string, "")
+
+    def get_full_name(self):
+        return self.name + "-" + self.version if self.version else self.name
+
 all_project_descriptions = []
 
 def get_all_project_descriptions():
@@ -376,24 +394,6 @@ def expand_wildcards_in_project_dependencies(project_description, all_project_de
         for project_name, versions in project_description.required_projects.items() }
 
     return project_description
-
-class ProjectReference:
-    def __init__(self, name, version):
-        self.name = name
-        self.version = version
-
-    def __repr__(self):
-        return self.get_full_name()
-
-    def __str__(self):
-        return self.get_full_name()
-
-    @classmethod
-    def parse(self, string):
-        return ProjectReference(*string.rsplit("-", 1)) if "-" in string else ProjectReference(string, "")
-
-    def get_full_name(self):
-        return self.name + "-" + self.version if self.version else self.name
 
 def compute_effective_project_descriptions(specified_project_descriptions, requested_options=None):
     selected_project_descriptions = expand_dependencies(specified_project_descriptions)

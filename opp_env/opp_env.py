@@ -306,169 +306,170 @@ class ProjectReference:
     def get_full_name(self):
         return self.name + "-" + self.version if self.version else self.name
 
-all_project_descriptions = []
+class ProjectRegistry:
+    def __init__(self):
+        self.all_project_descriptions = self.collect_project_descriptions()
 
-def get_all_project_descriptions():
-    global all_project_descriptions
-    if all_project_descriptions:
-        return all_project_descriptions
+    def collect_project_descriptions(self):
+        python_files = [
+            "omnetpp_versions",
+            "inet_versions",
+            "veins_versions",
+            "simulte_versions",
+            "simu5g_versions",
+        ]
 
-    python_files = [
-        "omnetpp_versions",
-        "inet_versions",
-        "veins_versions",
-        "simulte_versions",
-        "simu5g_versions",
-    ]
+        json_files = [
+            "external_versions.json"
+        ]
 
-    json_files = [
-        "external_versions.json"
-    ]
+        all_project_descriptions = []
+        for fname in python_files:
+            module = importlib.import_module("opp_env." + fname)
+            raw_project_descriptions = module.get_project_descriptions()
+            project_descriptions = [ProjectDescription(**e) for e in raw_project_descriptions]
+            all_project_descriptions += project_descriptions
 
-    for fname in python_files:
-        module = importlib.import_module("opp_env." + fname)
-        raw_project_descriptions = module.get_project_descriptions()
-        project_descriptions = [ProjectDescription(**e) for e in raw_project_descriptions]
-        all_project_descriptions += project_descriptions
+        for fname in json_files:
+            with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), fname)) as f:
+                all_project_descriptions += [ProjectDescription(**e) for e in json.load(f)]
 
-    for fname in json_files:
-        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), fname)) as f:
-            all_project_descriptions += [ProjectDescription(**e) for e in json.load(f)]
+        # expand to wildcard versions such as "4.2.*" to list of matching versions
+        return [self.expand_wildcards_in_project_dependencies(p, all_project_descriptions) for p in all_project_descriptions]
 
-    # expand to wildcard versions such as "4.2.*" to list of matching versions
-    all_project_descriptions = [expand_wildcards_in_project_dependencies(p, all_project_descriptions) for p in all_project_descriptions]
-    return all_project_descriptions
+    def get_all_project_descriptions(self):
+        return self.all_project_descriptions
 
-def get_project_names(project_descriptions=None):
-    return list(dict.fromkeys([p.name for p in project_descriptions or get_all_project_descriptions()]))
+    def get_project_names(self, project_descriptions=None):
+        return list(dict.fromkeys([p.name for p in project_descriptions or self.get_all_project_descriptions()]))
 
-def get_project_versions(project_name, project_descriptions=None):
-    return [p.version for p in project_descriptions or get_all_project_descriptions() if p.name == project_name]
+    def get_project_versions(self, project_name, project_descriptions=None):
+        return [p.version for p in project_descriptions or self.get_all_project_descriptions() if p.name == project_name]
 
-def get_project_latest_version(project_name, project_descriptions=None):
-    if project_descriptions is None:
-        project_descriptions = get_all_project_descriptions()
-    versions = get_project_versions(project_name, project_descriptions)
-    if not versions:
-        raise Exception(f"Unknown project '{project_name}'")
-    #TODO why not just a plain loop over all project descriptions
-    numbered_versions = [v for v in versions if v and v[0] in '0123456789']  # exclude versions named "git", etc.
-    if not numbered_versions:
-        raise Exception(f"Cannot determine latest version for project '{project_name}': version numbers do not start with a number")
-    latest_version = natural_sorted(numbered_versions)[-1] if numbered_versions else None  # almost as good as semantic version sorting
-    assert latest_version
-    matching = [p for p in project_descriptions if p.name == project_name and p.version == latest_version]
-    assert len(matching) == 1  # must be no duplicate
-    return project_descriptions[0]
-
-def find_project_description(project_reference):
-    if project_reference.name not in get_project_names():
-         raise Exception(f"Cannot resolve '{project_reference}': Unknown project '{project_reference.name}'")
-    if not project_reference.version:
-         raise Exception(f"Which version of '{project_reference.name}' do you mean? (Use '{project_reference.name}-latest' for latest version)")
-    if project_reference.version == "latest":
-        return get_project_latest_version(project_reference.name)
-
-    project_descriptions = [x for x in get_all_project_descriptions() if x.name == project_reference.name and x.version == project_reference.version]
-    if len(project_descriptions) == 0:
-         raise Exception(f"Project '{project_reference.name}' has no version '{project_reference.version}'")
-    elif len(project_descriptions) > 1:
-         raise Exception("More than one project descriptions were found for " + str(project_reference))
-    else:
+    def get_project_latest_version(self, project_name, project_descriptions=None):
+        if project_descriptions is None:
+            project_descriptions = self.get_all_project_descriptions()
+        versions = self.get_project_versions(project_name, project_descriptions)
+        if not versions:
+            raise Exception(f"Unknown project '{project_name}'")
+        #TODO why not just a plain loop over all project descriptions
+        numbered_versions = [v for v in versions if v and v[0] in '0123456789']  # exclude versions named "git", etc.
+        if not numbered_versions:
+            raise Exception(f"Cannot determine latest version for project '{project_name}': version numbers do not start with a number")
+        latest_version = natural_sorted(numbered_versions)[-1] if numbered_versions else None  # almost as good as semantic version sorting
+        assert latest_version
+        matching = [p for p in project_descriptions if p.name == project_name and p.version == latest_version]
+        assert len(matching) == 1  # must be no duplicate
         return project_descriptions[0]
 
-def expand_wildcards_in_project_dependencies(project_description, all_project_descriptions):
-    def expand(project_name, version, all_project_descriptions):
-        if not '*' in version:
-            return [ version ]
-        candidates = get_project_versions(project_name, all_project_descriptions)
-        return [ candidate for candidate in candidates if version_matches(version, candidate) ]
+    def find_project_description(self, project_reference):
+        if project_reference.name not in self.get_project_names():
+            raise Exception(f"Cannot resolve '{project_reference}': Unknown project '{project_reference.name}'")
+        if not project_reference.version:
+            raise Exception(f"Which version of '{project_reference.name}' do you mean? (Use '{project_reference.name}-latest' for latest version)")
+        if project_reference.version == "latest":
+            return self.get_project_latest_version(project_reference.name)
 
-    def expand_all(project_name, versions, all_project_descriptions):
+        project_descriptions = [x for x in self.get_all_project_descriptions() if x.name == project_reference.name and x.version == project_reference.version]
+        if len(project_descriptions) == 0:
+            raise Exception(f"Project '{project_reference.name}' has no version '{project_reference.version}'")
+        elif len(project_descriptions) > 1:
+            raise Exception("More than one project descriptions were found for " + str(project_reference))
+        else:
+            return project_descriptions[0]
+
+    def expand_wildcards_in_project_dependencies(self, project_description, all_project_descriptions):
+        def expand(project_name, version, all_project_descriptions):
+            if not '*' in version:
+                return [ version ]
+            candidates = self.get_project_versions(project_name, all_project_descriptions)
+            return [ candidate for candidate in candidates if version_matches(version, candidate) ]
+
+        def expand_all(project_name, versions, all_project_descriptions):
+            result = []
+            for version in versions:
+                result += expand(project_name, version, all_project_descriptions)
+            return result
+
+        project_description.required_projects = { project_name: expand_all(project_name, versions, all_project_descriptions)
+            for project_name, versions in project_description.required_projects.items() }
+
+        return project_description
+
+    def compute_effective_project_descriptions(self, specified_project_descriptions, requested_options=None):
+        selected_project_descriptions = self.expand_dependencies(specified_project_descriptions)
+        if not selected_project_descriptions:
+            raise Exception("The specified set of project versions cannot be satisfied")
+        return get_projects_with_options(selected_project_descriptions, requested_options)
+
+
+    def expand_dependencies(self, specified_project_descriptions, return_all=False):
+        _logger.debug(f"Computing list of effective projects for {specified_project_descriptions}")
+        # 1. collect all required projects ignoring the project versions
+        required_project_names = []
+        todo_list = specified_project_descriptions.copy()
+        while todo_list:
+            project_description = todo_list.pop(0)
+            required_project_names.append(project_description.name)
+            for project_name, project_versions in project_description.required_projects.items():
+                # maintains the proper ordering of required projects
+                if project_name in required_project_names:
+                    required_project_names = [e for e in required_project_names if e != project_name]
+                else:
+                    todo_list.append(self.find_project_description(ProjectReference.parse(project_name + "-" + project_versions[0])))
+                required_project_names.append(project_name)
+        required_project_names.reverse()
+        # _logger.debug(f"{required_project_names=}")
+
+        # 2. collect all available project versions for all required projects separately
+        available_project_versions = {}
+        for required_project_name in required_project_names:
+            project_versions = []
+            for project_description in self.get_all_project_descriptions():
+                if project_description.name == required_project_name:
+                    project_versions.append(project_description.version)
+            available_project_versions[required_project_name] = project_versions
+        # _logger.debug(f"{available_project_versions=}")
+
+        # 3. iterate over all combinations of the available project versions for the different required projects
         result = []
-        for version in versions:
-            result += expand(project_name, version, all_project_descriptions)
-        return result
-
-    project_description.required_projects = { project_name: expand_all(project_name, versions, all_project_descriptions)
-        for project_name, versions in project_description.required_projects.items() }
-
-    return project_description
-
-def compute_effective_project_descriptions(specified_project_descriptions, requested_options=None):
-    selected_project_descriptions = expand_dependencies(specified_project_descriptions)
-    if not selected_project_descriptions:
-        raise Exception("The specified set of project versions cannot be satisfied")
-    return get_projects_with_options(selected_project_descriptions, requested_options)
-
-
-def expand_dependencies(specified_project_descriptions, return_all=False):
-    _logger.debug(f"Computing list of effective projects for {specified_project_descriptions}")
-    # 1. collect all required projects ignoring the project versions
-    required_project_names = []
-    todo_list = specified_project_descriptions.copy()
-    while todo_list:
-        project_description = todo_list.pop(0)
-        required_project_names.append(project_description.name)
-        for project_name, project_versions in project_description.required_projects.items():
-            # maintains the proper ordering of required projects
-            if project_name in required_project_names:
-                required_project_names = [e for e in required_project_names if e != project_name]
-            else:
-                todo_list.append(find_project_description(ProjectReference.parse(project_name + "-" + project_versions[0])))
-            required_project_names.append(project_name)
-    required_project_names.reverse()
-    # _logger.debug(f"{required_project_names=}")
-
-    # 2. collect all available project versions for all required projects separately
-    available_project_versions = {}
-    for required_project_name in required_project_names:
-        project_versions = []
-        for project_description in get_all_project_descriptions():
-            if project_description.name == required_project_name:
-                project_versions.append(project_description.version)
-        available_project_versions[required_project_name] = project_versions
-    # _logger.debug(f"{available_project_versions=}")
-
-    # 3. iterate over all combinations of the available project versions for the different required projects
-    result = []
-    sets = available_project_versions.values()
-    keys = list(available_project_versions.keys())
-    for combination in itertools.product(*sets):
-        # _logger.debug(f"checking combination: {combination=}")
-        accept_combination = True
-        selected_project_descriptions = []
-        # 4. for each required project version combination check if it matches all specified and required project criteria
-        for i in range(len(combination)):
-            selected_project_name = f"{keys[i]}-{combination[i]}"
-            selected_project_description = find_project_description(ProjectReference.parse(selected_project_name))
-            selected_project_descriptions.append(selected_project_description)
-        # _logger.debug(f"checking combination: {selected_project_descriptions=}")
-        # 5. check if the specified project versions are included in the project version combination
-        for specified_project_description in specified_project_descriptions:
-            if not specified_project_description in selected_project_descriptions:
-                # _logger.debug(f"  rejecting because {specified_project_description} is not in {selected_project_descriptions}")
-                accept_combination = False
-                break
-        # 6. check if one of the required project versions are included in the project version combination for all project versions
-        for selected_project_description in selected_project_descriptions:
-            # _logger.debug(f"  checking {selected_project_description}")
-            for required_project_name, required_project_versions in selected_project_description.required_projects.items():
-                accept_selected_project_description = False
-                for required_project_version in required_project_versions:
-                    required_project_description = find_project_description(ProjectReference.parse(required_project_name + "-" + required_project_version))
-                    if required_project_description in selected_project_descriptions:
-                        accept_selected_project_description = True
-                if not accept_selected_project_description:
-                    # _logger.debug(f"  rejecting {required_project_name} {required_project_versions}")
+        sets = available_project_versions.values()
+        keys = list(available_project_versions.keys())
+        for combination in itertools.product(*sets):
+            # _logger.debug(f"checking combination: {combination=}")
+            accept_combination = True
+            selected_project_descriptions = []
+            # 4. for each required project version combination check if it matches all specified and required project criteria
+            for i in range(len(combination)):
+                selected_project_name = f"{keys[i]}-{combination[i]}"
+                selected_project_description = self.find_project_description(ProjectReference.parse(selected_project_name))
+                selected_project_descriptions.append(selected_project_description)
+            # _logger.debug(f"checking combination: {selected_project_descriptions=}")
+            # 5. check if the specified project versions are included in the project version combination
+            for specified_project_description in specified_project_descriptions:
+                if not specified_project_description in selected_project_descriptions:
+                    # _logger.debug(f"  rejecting because {specified_project_description} is not in {selected_project_descriptions}")
                     accept_combination = False
                     break
-        if accept_combination:
-            if return_all:
-                result.append(selected_project_descriptions)
-            else:
-                return selected_project_descriptions
-    return result
+            # 6. check if one of the required project versions are included in the project version combination for all project versions
+            for selected_project_description in selected_project_descriptions:
+                # _logger.debug(f"  checking {selected_project_description}")
+                for required_project_name, required_project_versions in selected_project_description.required_projects.items():
+                    accept_selected_project_description = False
+                    for required_project_version in required_project_versions:
+                        required_project_description = self.find_project_description(ProjectReference.parse(required_project_name + "-" + required_project_version))
+                        if required_project_description in selected_project_descriptions:
+                            accept_selected_project_description = True
+                    if not accept_selected_project_description:
+                        # _logger.debug(f"  rejecting {required_project_name} {required_project_versions}")
+                        accept_combination = False
+                        break
+            if accept_combination:
+                if return_all:
+                    result.append(selected_project_descriptions)
+                else:
+                    return selected_project_descriptions
+        return result
 
 def get_projects_with_options(project_descriptions, requested_options):
     if not requested_options:
@@ -622,8 +623,9 @@ class Workspace:
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
     def setup_environment(self, projects, requested_options=None, pause_after_warnings=True, **kwargs):
+        global project_registry
         specified_project_descriptions = resolve_projects(projects)
-        effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
+        effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(self.root_directory)}")
         Workspace._print_project_warnings(effective_project_descriptions, pause_after_warnings)
         return effective_project_descriptions
@@ -805,8 +807,9 @@ class Workspace:
 
     def run_command(self, command, quiet=False, check_exitcode=True, tracing=False):
         global via_nix  #TODO turn it into a field of Workspace
+        global project_registry
         if via_nix:
-            reference_project_description = get_project_latest_version("omnetpp")
+            reference_project_description = project_registry.get_project_latest_version("omnetpp")
             return self._do_nix_develop(nixos=reference_project_description.nixos or "22.04",
                         stdenv=reference_project_description.stdenv or "llvmPackages_14.stdenv",
                         nix_packages=["git", "openssh", "wget"], # md5sum is in the core packages
@@ -834,8 +837,9 @@ class Workspace:
             raise Exception(f"Child process exit code {result.returncode}")
         return result
 
-def resolve_projects(projects):
-    project_descriptions = [find_project_description(ProjectReference.parse(p)) for p in projects]
+def resolve_projects(project_full_names):
+    global project_registry
+    project_descriptions = [project_registry.find_project_description(ProjectReference.parse(p)) for p in project_full_names]
     return project_descriptions
 
 def resolve_workspace(workspace_directory):
@@ -880,7 +884,8 @@ def version_matches(wildcard_version, version):
         return wildcard_version == version
 
 def list_subcommand_main(project_name_patterns=None, list_mode="grouped", latest_patchlevels=False, **kwargs):
-    projects = get_all_project_descriptions()
+    global project_registry
+    projects = project_registry.get_all_project_descriptions()
     if latest_patchlevels:
         projects = [p for p in projects if is_latest_patchlevel(p,projects)]
     if project_name_patterns:
@@ -905,17 +910,17 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", latest
             print(name)
     elif list_mode == "expand":
         for project in projects:
-            expanded = expand_dependencies([project])
+            expanded = project_registry.expand_dependencies([project])
             print(project, "-->", expanded)
     elif list_mode == "combinations":
         grouped = False #TODO
         if grouped:
             for project in projects:
-                combinations_list = expand_dependencies([project], return_all=True)
+                combinations_list = project_registry.expand_dependencies([project], return_all=True)
                 print(project, "-->", combinations_list)
         else:
             for project in projects:
-                combinations_list = expand_dependencies([project], return_all=True)
+                combinations_list = project_registry.expand_dependencies([project], return_all=True)
                 for combination in combinations_list:
                     print(" ".join([p.get_full_name() for p in reversed(combination)]))
 
@@ -929,15 +934,16 @@ def init_subcommand_main(workspace_directory=None, **kwargs):
 
 def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
     # resolve project list
+    global project_registry
     if not projects:
-        project_descriptions = get_all_project_descriptions()
+        project_descriptions = project_registry.get_all_project_descriptions()
     else:
         project_descriptions = []
         for project in projects:
             if '-' in project:
-                project_descriptions += [find_project_description(ProjectReference.parse(project))]
-            elif project in get_project_names():
-                project_descriptions += [find_project_description(ProjectReference(project, version)) for version in get_project_versions(project)]
+                project_descriptions += [project_registry.find_project_description(ProjectReference.parse(project))]
+            elif project in project_registry.get_project_names():
+                project_descriptions += [project_registry.find_project_description(ProjectReference(project, version)) for version in project_registry.get_project_versions(project)]
             else:
                 raise Exception(f"Unknown project name '{project}'")
 
@@ -973,13 +979,14 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
                 print(f"- {cyan(name)}: {'/'.join(versions)}")
 
 def download_subcommand_main(projects, workspace_directory=None, requested_options=None, skip_dependencies=True, **kwargs):
+    global project_registry
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory)
     specified_project_descriptions = resolve_projects(projects)
     if skip_dependencies:
         effective_project_descriptions = get_projects_with_options(specified_project_descriptions, requested_options)
     else:
-        effective_project_descriptions = compute_effective_project_descriptions(specified_project_descriptions, requested_options)
+        effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, **kwargs)
@@ -1106,6 +1113,8 @@ def main():
     except KeyboardInterrupt:
         _logger.error(f"The {cyan(subcommand)} operation was interrupted by the user")
         return 130 # = 128 + SIGINT
+
+project_registry = ProjectRegistry()
 
 
 if __name__ == '__main__':

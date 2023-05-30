@@ -257,6 +257,13 @@ class ProjectDescription:
         self.build_commands = remove_empty(build_commands)
         self.clean_commands = remove_empty(clean_commands)
         self.options = options or {}
+
+        # remove null elements from lists inside options, too
+        for option_name, option_entries in self.options.items():
+            for field_name, field_value in option_entries.items():
+                if type(field_value) is list:
+                    field_value[:] = [x for x in field_value if x]
+
         if bool(download_url) + bool(git_url) + bool(download_commands) > 1:
             raise Exception(f"project {name}-{version}: download_url, git_url, and download_commands are mutually exclusive")
 

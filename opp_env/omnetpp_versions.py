@@ -1,6 +1,5 @@
 import re
 
-#TODO warning: 4.0 does not build
 #TODO make version="master" work
 
 def dotx(base_version):
@@ -71,22 +70,20 @@ def make_omnetpp_project_description(version, base_version=None):
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version >= "6.0" else []
 
     # Unreleased patch versions are produced by downloading the preceding release, then applying the diff downloaded from github.
-    apply_release_patch_from_github_commands = [
-        f"""# apply diff between omnetpp-{base_version} and omnetpp-{version}
-        wget -O configure {github_url}/raw/omnetpp-{base_version}/configure &&
-        wget -O configure.in {github_url}/raw/omnetpp-{base_version}/configure.in &&
-        wget -O patchfile.diff {github_url}/compare/omnetpp-{base_version}...omnetpp-{version}.patch &&
-        git apply --whitespace=nowarn --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff
-        """ if version != base_version else None,
+    apply_release_patch_from_github_commands = [] if version == base_version else [
+        f"# apply diff between omnetpp-{base_version} and omnetpp-{version}",
+        f"wget -O configure {github_url}/raw/omnetpp-{base_version}/configure",
+        f"wget -O configure.in {github_url}/raw/omnetpp-{base_version}/configure.in",
+        f"wget -O patchfile.diff {github_url}/compare/omnetpp-{base_version}...omnetpp-{version}.patch",
+        f"git apply --whitespace=nowarn --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
     ]
 
-    apply_release_patch_from_local_repo_commands = [
-        f"""# apply diff between omnetpp-{base_version} and omnetpp-{version}
-        git --git-dir={local_omnetpp_git_repo}/.git show omnetpp-{base_version}:configure >configure &&
-        git --git-dir={local_omnetpp_git_repo}/.git show omnetpp-{base_version}:configure.in >configure.in &&
-        git --git-dir={local_omnetpp_git_repo}/.git diff omnetpp-{base_version}..omnetpp-{version} --patch > patchfile.diff &&
-        git apply --whitespace=nowarn --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff
-        """ if version != base_version else None,
+    apply_release_patch_from_local_repo_commands = [] if version == base_version else [
+        f"# apply diff between omnetpp-{base_version} and omnetpp-{version}",
+        f"git --git-dir={local_omnetpp_git_repo}/.git show omnetpp-{base_version}:configure >configure",
+        f"git --git-dir={local_omnetpp_git_repo}/.git show omnetpp-{base_version}:configure.in >configure.in",
+        f"git --git-dir={local_omnetpp_git_repo}/.git diff omnetpp-{base_version}..omnetpp-{version} --patch > patchfile.diff",
+        f"git apply --whitespace=nowarn --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
     ]
 
     # Vanilla 4.x releases need to be patched to compile under Nix.

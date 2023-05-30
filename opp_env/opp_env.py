@@ -1046,7 +1046,8 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
             # print error but continue bringing up the shell to give user a chance to fix the problem
             _logger.error(f"An error occurred while building affected projects: {red(e)}")
 
-    _logger.info(f"Starting {green('isolated') if isolated else cyan('non-isolated')} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    kind = "nixless" if nixless_projects else "isolated" if isolated else "non-isolated"
+    _logger.info(f"Starting {cyan(kind)} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
     if chdir and projects:
         first_project_description = resolve_projects(projects)[0]
@@ -1074,7 +1075,8 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
             assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
             if project_description.build_commands:
                 workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
-    _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    kind = "nixless" if nixless_projects else "isolated" if isolated else "non-isolated"
+    _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)} in {cyan(kind)} mode")
     workspace.nix_develop(effective_project_descriptions, workspace_directory, [command], **dict(kwargs, quiet=False))
 
 def main():

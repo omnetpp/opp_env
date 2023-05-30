@@ -85,6 +85,29 @@ def join_commands(commands):
     assert type(commands) is list
     return "\n".join([cmd for cmd in commands if cmd])  # using ";" as separator also works, " && " should too (script runs on 'set -e' anyway) but doesn't
 
+def is_semver(version):
+    # supported formats: "3.2", "3.2.1", "3.2p1"
+    pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?$'
+    return re.match(pattern, version) is not None
+
+def parse_semver(version):
+    # supported formats: "3.2", "3.2.1", "3.2p1"
+    pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?$'
+    match = re.match(pattern, version)
+    if match is None:
+        raise ValueError('Invalid version string: ' + version)
+    major, minor, patch = match.groups()
+    return int(major), int(minor), int(patch) if patch is not None else 0
+
+def version_matches(wildcard_version, version):
+    if not re.match(r"^[^*?]+(\.\*)?$", wildcard_version):
+        raise Exception(f"Unsupported version pattern '{wildcard_version}', only '.*' is allowed at the end")
+    if wildcard_version.endswith(".*"):
+        truncated = wildcard_version[0:-2]
+        return version == truncated or version.startswith(truncated+".") or version.startswith(truncated+"p") # "3.3.*" should match "3.3p1" too
+    else:
+        return wildcard_version == version
+
 def parse_arguments():
     description = "Sets up the development environment for OMNeT++ projects"
     parser = argparse.ArgumentParser(prog="opp_env", description=description)
@@ -361,6 +384,19 @@ class ProjectRegistry:
         matching = [p for p in project_descriptions if p.name == project_name and p.version == latest_version]
         assert len(matching) == 1  # must be no duplicate
         return project_descriptions[0]
+
+    def is_latest_patchlevel(self, project_description, among_project_descriptions=None):
+        name = project_description.name
+        if not is_semver(project_description.version):
+            return True  # TODO debatable
+
+        major, minor, patch = parse_semver(project_description.version)
+        for p in among_project_descriptions or self.get_all_project_descriptions():
+            if is_semver(p.version):
+                p_major, p_minor, p_patch = parse_semver(p.version)
+                if name == p.name and major == p_major and minor == p_minor and patch < p_patch:
+                    return False
+        return True
 
     def find_project_description(self, project_reference):
         if project_reference.name not in self.get_project_names():
@@ -846,48 +882,11 @@ def resolve_workspace(workspace_directory):
     workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
     return workspace_directory
 
-def is_semver(version):
-    # supported formats: "3.2", "3.2.1", "3.2p1"
-    pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?$'
-    return re.match(pattern, version) is not None
-
-def parse_semver(version):
-    # supported formats: "3.2", "3.2.1", "3.2p1"
-    pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?$'
-    match = re.match(pattern, version)
-    if match is None:
-        raise ValueError('Invalid version string: ' + version)
-    major, minor, patch = match.groups()
-    return int(major), int(minor), int(patch) if patch is not None else 0
-
-def is_latest_patchlevel(project_description, among_project_descriptions):
-    name = project_description.name
-    if is_semver(project_description.version):
-        major, minor, patch = parse_semver(project_description.version)
-    else:
-        return True
-
-    for p in among_project_descriptions:
-        if is_semver(p.version):
-            p_major, p_minor, p_patch = parse_semver(p.version)
-            if name == p.name and major == p_major and minor == p_minor and patch < p_patch:
-                return False
-    return True
-
-def version_matches(wildcard_version, version):
-    if not re.match(r"^[^*?]+(\.\*)?$", wildcard_version):
-        raise Exception(f"Unsupported version pattern '{wildcard_version}', only '.*' is allowed at the end")
-    if wildcard_version.endswith(".*"):
-        truncated = wildcard_version[0:-2]
-        return version == truncated or version.startswith(truncated+".") or version.startswith(truncated+"p") # "3.3.*" should match "3.3p1" too
-    else:
-        return wildcard_version == version
-
 def list_subcommand_main(project_name_patterns=None, list_mode="grouped", latest_patchlevels=False, **kwargs):
     global project_registry
     projects = project_registry.get_all_project_descriptions()
     if latest_patchlevels:
-        projects = [p for p in projects if is_latest_patchlevel(p,projects)]
+        projects = [p for p in projects if project_registry.is_latest_patchlevel(p,projects)]
     if project_name_patterns:
         tmp = []
         for project_name_pattern in project_name_patterns:

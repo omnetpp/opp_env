@@ -133,8 +133,7 @@ def parse_arguments():
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
-    subparser.add_argument("--nixless", dest="nixless_projects", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
-    subparser.add_argument("--all-nix", dest="nixful_commands", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
 
     subparser = subparsers.add_parser("build", help="Builds the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -143,8 +142,7 @@ def parse_arguments():
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
-    subparser.add_argument("--nixless", dest="nixless_projects", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
-    subparser.add_argument("--all-nix", dest="nixful_commands", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -152,8 +150,7 @@ def parse_arguments():
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
-    subparser.add_argument("--nixless", dest="nixless_projects", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
-    subparser.add_argument("--all-nix", dest="nixful_commands", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -164,8 +161,7 @@ def parse_arguments():
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help="Whether to change into the directory of the project. The default action is to change into the project root only if the current working directory is outside the project")
-    subparser.add_argument("--nixless", dest="nixless_projects", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
-    subparser.add_argument("--all-nix", dest="nixful_commands", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -176,8 +172,7 @@ def parse_arguments():
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
-    subparser.add_argument("--nixless", dest="nixless_projects", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
-    subparser.add_argument("--all-nix", dest="nixful_commands", default=False, action='store_true', help="Run all commands (project download, patching, etc.) under Nix. Use this mode if your system does not have sufficiently up-to-date versions of the tools installed that opp_env requires (wget, tar, git, md5hash, sed, etc.)")
+    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
 
     return parser.parse_args(sys.argv[1:])
 
@@ -530,15 +525,14 @@ class Workspace:
     INCOMPLETE = "INCOMPLETE"
     DOWNLOADED = "DOWNLOADED"
 
-    def __init__(self, root_directory, nixless_projects=False, nixful_commands=False):
+    def __init__(self, root_directory, nixless=False):
         assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
-        self.nixless_projects = nixless_projects
-        self.nixful_commands = nixful_commands
+        self.nixless = nixless
         opp_env_directory = os.path.join(self.root_directory, ".opp_env")
         if not os.path.exists(opp_env_directory):
             raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn in into one")
-        _logger.debug(f"Workspace created, {root_directory=}, {nixless_projects=}, {nixful_commands=}")
+        _logger.debug(f"Workspace created, {root_directory=}, {nixless=}")
 
     @staticmethod
     def find_workspace(from_dir=None):
@@ -748,13 +742,13 @@ class Workspace:
         # a custom prompt spec to help users distinguish an opp_env shell from a normal terminal session
         prompt = f"\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
 
-        nixful = not self.nixless_projects
+        nixful = not self.nixless
 
         shell_hook_lines = [
             f"export BUILD_MODE={build_mode or ''}",
             *project_root_environment_variable_assignments,
             *(project_shell_hook_commands if nixful else []),
-            "export NIX_BUILD_CORES=8" if not nixful else None, #TODO hack
+            "export NIX_BUILD_CORES=8" if self.nixless else None, #TODO hack
             f"export PS1='{prompt}'" if interactive and nixful else None,
             *(["pushd . > /dev/null", *project_setenv_commands, "popd > /dev/null"] if run_setenv else []),
             f"cd '{working_directory}'" if working_directory else None,
@@ -813,7 +807,7 @@ class Workspace:
             )
             f.write(nix_develop_flake)
 
-        _logger.debug(f"Nix flake shellHook script: {yellow(script)}")
+        _logger.debug(f"Nix flake shellHook script:\n{indent(script)}")
         #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
         isolation_options = '-i -k HOME -k TERM -k COLORTERM -k DISPLAY -k XAUTHORITY -k XDG_RUNTIME_DIR -k XDG_DATA_DIRS -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
         command = '-c bash --norc' if interactive else '-c true'
@@ -849,7 +843,7 @@ class Workspace:
 
     def run_command(self, command, quiet=False, check_exitcode=True, tracing=False):
         global project_registry
-        if self.nixful_commands:
+        if not self.nixless:
             reference_project_description = project_registry.get_project_latest_version("omnetpp")
             return self._do_nix_develop(nixos=reference_project_description.nixos or "22.04",
                         stdenv=reference_project_description.stdenv or "llvmPackages_14.stdenv",
@@ -982,10 +976,10 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
             for name, versions in project_description.required_projects.items():
                 print(f"- {cyan(name)}: {'/'.join(versions)}")
 
-def download_subcommand_main(projects, workspace_directory=None, requested_options=None, skip_dependencies=True, nixless_projects=False, nixful_commands=False, **kwargs):
+def download_subcommand_main(projects, workspace_directory=None, requested_options=None, skip_dependencies=True, nixless=False, **kwargs):
     global project_registry
     workspace_directory = resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory, nixless_projects, nixful_commands)
+    workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if skip_dependencies:
         effective_project_descriptions = get_projects_with_options(specified_project_descriptions, requested_options)
@@ -995,10 +989,10 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, **kwargs)
 
-def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, nixless_projects=False, nixful_commands=False, **kwargs):
+def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, nixless=False, **kwargs):
     detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory, nixless_projects, nixful_commands)
+    workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
     build_modes = mode if mode else ["debug", "release"]
     for project_description in effective_project_descriptions:
@@ -1009,11 +1003,11 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
             workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
-def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, nixless_projects=False, nixful_commands=False, **kwargs):
+def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, nixless=False, **kwargs):
     #TODO shouldn't there be a "realclean" command that deletes all files NOT in the file list??
     detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory, nixless_projects, nixful_commands)
+    workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
     build_modes = mode if mode else ["debug", "release"]
     for project_description in effective_project_descriptions:
@@ -1027,11 +1021,10 @@ def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
-def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, isolated=True, chdir=False, requested_options=None, build=True, mode=None, nixless_projects=False, nixful_commands=False, **kwargs):
-    _logger.debug(f"shell_subcommand_main {workspace_directory=}, {nixless_projects=}, {nixful_commands=}")
+def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, build=True, mode=None, nixless=False, isolated=True, **kwargs):
     detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory, nixless_projects, nixful_commands)
+    workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, prepare_missing, **kwargs)
@@ -1046,7 +1039,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
             # print error but continue bringing up the shell to give user a chance to fix the problem
             _logger.error(f"An error occurred while building affected projects: {red(e)}")
 
-    kind = "nixless" if nixless_projects else "isolated" if isolated else "non-isolated"
+    kind = "nixless" if nixless else "isolated" if isolated else "non-isolated"
     _logger.info(f"Starting {cyan(kind)} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
     if chdir and projects:
@@ -1062,10 +1055,10 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
 
     workspace.nix_develop(effective_project_descriptions, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, build=True, mode=None, nixless_projects=False, nixful_commands=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True,requested_options=None, build=True, mode=None, nixless=False,  isolated=True, **kwargs):
     detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory, nixless_projects, nixful_commands)
+    workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, prepare_missing, **kwargs)
@@ -1075,7 +1068,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
             assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
             if project_description.build_commands:
                 workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
-    kind = "nixless" if nixless_projects else "isolated" if isolated else "non-isolated"
+    kind = "nixless" if nixless else "isolated" if isolated else "non-isolated"
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)} in {cyan(kind)} mode")
     workspace.nix_develop(effective_project_descriptions, workspace_directory, [command], **dict(kwargs, quiet=False))
 

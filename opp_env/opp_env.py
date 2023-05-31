@@ -107,7 +107,7 @@ def version_matches(wildcard_version, version):
 def parse_arguments():
     description = "Sets up the development environment for OMNeT++ projects"
     parser = argparse.ArgumentParser(prog="opp_env", description=description)
-    parser.add_argument("-q", "--quiet", action=argparse.BooleanOptionalAction, default=False, help="Suppress the standard output of executed commands")
+    parser.add_argument("-q", "--quiet", dest="suppress_stdout", action=argparse.BooleanOptionalAction, default=False, help="Suppress the standard output of executed commands")
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Verbose output mode")
     parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
     parser.add_argument("-p", "--print-stacktrace", default=False, action='store_true', help="Print stack trace on error")
@@ -657,7 +657,7 @@ class Workspace:
         if not os.path.exists(file_list_file_name):
             return red('UNKNOWN -- project state not yet marked')
         # note: this won't detect if extra files were added to the project
-        result = self.run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", quiet=True, check_exitcode=False)
+        result = self.run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", suppress_stdout=True, check_exitcode=False)
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
     def setup_environment(self, projects, requested_options=None, pause_after_warnings=True, **kwargs):
@@ -731,7 +731,7 @@ class Workspace:
             print(self._read_file_if_exists(patching_log_file).strip())
             raise e
 
-    def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], run_setenv=True, interactive=False, isolated=True, check_exitcode=True, quiet=False, build_mode=None, tracing=False, **kwargs):
+    def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_mode=None, tracing=False, **kwargs):
         nixos = Workspace._get_unique_project_attribute(effective_project_descriptions, "nixos")
         stdenv = Workspace._get_unique_project_attribute(effective_project_descriptions, "stdenv")
 
@@ -762,15 +762,15 @@ class Workspace:
         if nixful:
             return self._do_nix_develop(nixos=nixos, stdenv=stdenv, nix_packages=project_nix_packages,
                         session_name=session_name, script=script, interactive=interactive,
-                        isolated=isolated, check_exitcode=check_exitcode, quiet=quiet, tracing=tracing)
+                        isolated=isolated, check_exitcode=check_exitcode, suppress_stdout=suppress_stdout, tracing=tracing)
         else:
             if interactive:
                 # launch an interactive bash session; setting PROMPT_COMMAND ensures the custom prompt
                 # takes effect despite PS1 normally being overwritten by the user's profile and rc files
                 script += f"\nPROMPT_COMMAND=\"PS1='{prompt}'\" bash -i"
-            return self._do_run_command(script, quiet=quiet, check_exitcode=check_exitcode, tracing=tracing)
+            return self._do_run_command(script, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
 
-    def _do_nix_develop(self, nixos, stdenv, nix_packages=[], session_name="", script="", interactive=False, isolated=True, check_exitcode=True, quiet=False, tracing=False):
+    def _do_nix_develop(self, nixos, stdenv, nix_packages=[], session_name="", script="", interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, tracing=False):
         nix_develop_flake = """{
         inputs = {
             nixpkgs.url = "nixpkgs/@NIXOS@";
@@ -836,14 +836,14 @@ class Workspace:
         # perl: warning: Setting locale failed. / Please check that your locale settings: / LANGUAGE = (unset), / LC_ALL = (unset), ... / Falling back to the standard locale ("C").
         env["LC_ALL"] = "C.utf8"
 
-        result = self._do_run_command(nix_develop_command, env=env, quiet=not interactive and quiet, check_exitcode=check_exitcode)
+        result = self._do_run_command(nix_develop_command, env=env, suppress_stdout=not interactive and suppress_stdout, check_exitcode=check_exitcode)
 
         # cleanup: remove temporary home dir, as we don't want it to interfere with subsequent sessions
         if isolated:
             shutil.rmtree(temp_home)
         return result
 
-    def run_command(self, command, quiet=False, check_exitcode=True, tracing=False):
+    def run_command(self, command, suppress_stdout=False, check_exitcode=True, tracing=False):
         global project_registry
         if not self.nixless:
             reference_project_description = project_registry.get_project_latest_version("omnetpp")
@@ -851,11 +851,11 @@ class Workspace:
                         stdenv=reference_project_description.stdenv or "llvmPackages_14.stdenv",
                         nix_packages=["bashInteractive", "git", "openssh", "wget", "gzip", "which", "gnused", "gnutar", "findutils", "coreutils"], # md5sum is in the core packages
                         session_name="run_command", script=command,
-                        interactive=False, isolated=True, quiet=quiet, check_exitcode=check_exitcode, tracing=tracing)
+                        interactive=False, isolated=True, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
         else:
-            return self._do_run_command(command, quiet=quiet, check_exitcode=check_exitcode, tracing=tracing)
+            return self._do_run_command(command, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
 
-    def _do_run_command(self, command, env=None, quiet=False, check_exitcode=True, tracing=False):
+    def _do_run_command(self, command, env=None, suppress_stdout=False, check_exitcode=True, tracing=False):
         if "\n" not in command:
             _logger.debug(f"Running command: {command}")
         else:
@@ -867,8 +867,8 @@ class Workspace:
 
         result = subprocess.run(["bash", "-c", command],
                                 env=env,
-                                stdout=subprocess.DEVNULL if quiet else sys.stdout,
-                                stderr=subprocess.STDOUT if quiet else sys.stderr)
+                                stdout=subprocess.DEVNULL if suppress_stdout else sys.stdout,
+                                stderr=subprocess.STDOUT if suppress_stdout else sys.stderr)
         _logger.debug(f"Exit code: {result.returncode}")
         if check_exitcode and result.returncode != 0:
             raise Exception(f"Child process exit code {result.returncode}")
@@ -1068,7 +1068,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
                 workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
     kind = "nixless" if nixless else "isolated" if isolated else "non-isolated"
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)} in {cyan(kind)} mode")
-    workspace.nix_develop(effective_project_descriptions, workspace_directory, [command], **dict(kwargs, quiet=False))
+    workspace.nix_develop(effective_project_descriptions, workspace_directory, [command], **dict(kwargs, suppress_stdout=False))
 
 def main():
     kwargs = process_arguments()

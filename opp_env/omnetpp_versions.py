@@ -1,6 +1,5 @@
 import re
-
-#TODO make version="master" work
+import platform
 
 def dotx(base_version):
     return re.sub("(\\d\\.\\d)[\\.p]\\d", "\\1", base_version) + ".x"  # 4.2, 4.2.1, 4.2p1 -> 4.2.x
@@ -43,16 +42,22 @@ def make_omnetpp_project_description(version, base_version=None):
     # https://github.com/omnetpp/omnetpp/archive/refs/tags/omnetpp-<version>.tar.gz
     missing_releases = ["4.0", "4.2", "4.2.1", "4.4", "5.1", "5.2", "5.4", "5.5"]
 
+    # Some downloads have the OS (Linux or macOS) in the file name; we only care about these two, because Windows doesn't have Nix
+    is_macos = platform.system().lower() == "darwin"
+
     # Packages required by the IDE to work. The IDE can be started and is usable for most versions.
     # It doesn't work in omnetpp-4.0 and 4.1, because it would require an older JRE version that is not present in the Nix repo.
     # A problem component is the embedded Webkit library, used as HTML widget in Eclipse (help, some tooltips, etc.)
     # It doesn't work for version 5.6 and below (due to some incompatible change in Webkit), but newer versions should work.
-    ide_packages = [
-        "temurin-jre-bin-8" if version < "5.7" else None,  # 5.7, 6.0 and up have bundled JREs (JustJ)
+    linux_ide_packages = [
         "gtk2" if version < "5.2" else "gtk3", # SWT (eclipse 4.7 and up is using gtk3)
         "glib", "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender", "gsettings-desktop-schemas", "webkitgtk",
         "stdenv.cc.cc.lib" if version < "5.2" else None  # for libstdc++.so used by our nativelibs; in 5.2 and up, it's statically linked
-    ] if version >= "4.0" else []
+    ]
+    # 5.7, 6.0 and up have bundled JREs (JustJ)
+    jre_package = "temurin-jre-bin-8" if version < "5.7" else None
+
+    ide_packages = [jre_package] + (linux_ide_packages if not is_macos else []) if version >= "4.0" else []
 
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
@@ -66,7 +71,7 @@ def make_omnetpp_project_description(version, base_version=None):
     tcltk_packages = [] if version >= "6.0" else ["tk", "tcl", "cairo"] if version >= "5.0" else ["tk", "tcl"] if is_modernized or version >= "4.3" else ["tk-8_5", "tcl-8_5"]
 
     # Various tools and libs required by / for building omnetpp. Note that we only started using Python in version 5.0.
-    other_packages = ["bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "ccache", "gdb", "vim", ("python3" if version > "5.0" else None)]
+    other_packages = ["bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "ccache", ("gdb" if not is_macos else None), "vim", ("python3" if version > "5.0" else None)]
 
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version >= "6.0" else []
@@ -91,6 +96,7 @@ def make_omnetpp_project_description(version, base_version=None):
     # Vanilla 4.x releases need to be patched to compile under Nix.
     # Compiling with '-std=c++03 -fpermissive' helps, but is not enough.
     source_patch_commands = [
+        "rm -rf tools/", # because of macOS
         "sed -i 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
 
@@ -159,8 +165,10 @@ def make_omnetpp_project_description(version, base_version=None):
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
         "download_url":
             f"{github_url}/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz" if version in missing_releases or version == "master" else
+            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-macos-x86_64.tgz" if is_macos and (base_version.startswith("6.") or base_version == "5.7") else
             f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
-            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else
+            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-macosx.tgz" if is_macos and base_version.startswith("5.") else
+            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else # only macOS has an OS-specific download
             f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
             f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else
             f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
@@ -182,9 +190,9 @@ def make_omnetpp_project_description(version, base_version=None):
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.webkitgtk}/lib\"" if "webkitgtk" in ide_packages else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.xorg.libXtst}/lib\"" if "xorg.libXtst" in ide_packages else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.stdenv.cc.cc.lib}/lib\"" if "stdenv.cc.cc.lib" in ide_packages else None,
-            "export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH",
-            "export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules",
-            "export GDK_BACKEND=x11",
+            "export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH" if not is_macos else None,
+            "export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules" if "gtk3" in ide_packages else None,
+            "export GDK_BACKEND=x11" if "gtk3" in ide_packages else None,
             "export TK_LIBRARY=\"${pkgs.tk-8_5}/lib/tk8.5\"" if "tcl-8_5" in tcltk_packages else None,
             "export AR=    # Older/unpatched omnetpp versions require AR to be defined as 'ar rs' (not just 'ar'), so rather undefine it" if not is_modernized else None,
             # alternative: "AR=\"${AR:-ar} cr\""

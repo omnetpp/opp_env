@@ -212,14 +212,14 @@ def detect_nix():
         output = result.stdout.decode('utf-8')
     except Exception as ex:
         _logger.debug(f"Error: {ex}")
-        raise Exception("Nix does not seem to be installed. You can install it from https://nixos.org/download.html, or using your system's package manager.")
+        raise Exception("Nix does not seem to be installed. You can install it from https://nixos.org/download.html or using your system's package manager, or try using opp_env with the --nixless option.")
     # check it is recent enough
     nix_version = output.strip().split()[-1]
     if not re.match("^[0-9.]+$", nix_version):
         raise Exception("Cannot parse Nix version number: Output of 'nix --version' diverges from expected format")
     minimum_nix_version = "2.4"  # Nix flakes were introduced in version 2.4
     if natural_less(nix_version, minimum_nix_version):
-        raise Exception(f"Your Nix installation of version {nix_version} is too old! At least version {minimum_nix_version} is required.")
+        raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. Upgrade it, or try using opp_env with the --nixless option.")
 
 class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],
@@ -529,6 +529,8 @@ class Workspace:
         assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
         self.nixless = nixless
+        if not nixless:
+            detect_nix()
         opp_env_directory = os.path.join(self.root_directory, ".opp_env")
         if not os.path.exists(opp_env_directory):
             raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn in into one")
@@ -990,7 +992,6 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
         workspace.download_project_if_needed(project_description, **kwargs)
 
 def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, nixless=False, **kwargs):
-    detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
@@ -1005,7 +1006,6 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
 
 def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, nixless=False, **kwargs):
     #TODO shouldn't there be a "realclean" command that deletes all files NOT in the file list??
-    detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
@@ -1022,7 +1022,6 @@ def is_subdirectory(child_dir, parent_dir):
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
 def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, build=True, mode=None, nixless=False, isolated=True, **kwargs):
-    detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
@@ -1056,7 +1055,6 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
     workspace.nix_develop(effective_project_descriptions, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
 def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True,requested_options=None, build=True, mode=None, nixless=False,  isolated=True, **kwargs):
-    detect_nix()
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)

@@ -789,7 +789,7 @@ class Workspace:
                     default = pkgs.@STDENV@.mkDerivation {
                         name = "@SESSION_NAME@";
                         hardeningDisable = [ "all" ];
-                        buildInputs = with pkgs; [ @PACKAGES@ bashInteractive vim ];
+                        buildInputs = with pkgs; [ @PACKAGES@ bashInteractive ];
                         shellHook = ''
                             set @SHELL_OPTIONS@
                             @SCRIPT@
@@ -853,7 +853,7 @@ class Workspace:
             reference_project_description = project_registry.get_project_latest_version("omnetpp")
             return self._do_nix_develop(nixos=reference_project_description.nixos or "22.04",
                         stdenv=reference_project_description.stdenv or "llvmPackages_14.stdenv",
-                        nix_packages=["git", "openssh", "wget"], # md5sum is in the core packages
+                        nix_packages=["bashInteractive", "git", "openssh", "wget", "gzip", "which", "gnused", "gnutar", "findutils", "coreutils"], # md5sum is in the core packages
                         session_name="run_command", script=command,
                         interactive=False, isolated=True, quiet=quiet, check_exitcode=check_exitcode, tracing=tracing)
         else:

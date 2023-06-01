@@ -257,7 +257,7 @@ class ProjectDescription:
         for option_name, option_entries in self.options.items():
             for field_name, field_value in option_entries.items():
                 if type(field_value) is list:
-                    field_value[:] = [x for x in field_value if x]
+                    field_value[:] = remove_empty(field_value)
 
         if bool(download_url) + bool(git_url) + bool(download_commands) > 1:
             raise Exception(f"project {name}-{version}: download_url, git_url, and download_commands are mutually exclusive")
@@ -278,36 +278,38 @@ class ProjectDescription:
     def get_supported_options(self):
         return list(self.options.keys())
 
-    def get_with_options(self, requested_options):
-        fields = dict(vars(self))
-        if requested_options:
+    def get_default_options(self):
+        return [option_name for option_name, option_entries in self.options.items() if option_entries.get("is_default")]
+
+    def activate_project_options(self, requested_options, activate_default_options=True):
+        def get_conflicting_options(the_option_name, option_names):
+            return [o for o in option_names if the_option_name != o and self.options[o].get("category") == self.options[the_option_name].get("category")]
+
+        # activate requested options, and those of the default options that don't conflict with the requested ones
+        effective_options = []
+        for option in requested_options or []:
+            if option in self.options:
+                conflicting_options = get_conflicting_options(option, effective_options)
+                if conflicting_options:
+                    raise Exception(f"Option '{option}' conflicts with option '{conflicting_options[0]}' due to both belonging in the category '{self.options[option].get('category')}' (Note that options in the same category are exclusive)")
+                effective_options.append(option)
+        if activate_default_options:
+            for option in self.get_default_options():
+                if not get_conflicting_options(option, effective_options):
+                    effective_options.append(option)
+
+        new_project_description = copy.deepcopy(self)
+
+        if effective_options:
             _logger.debug(f"Selecting options {cyan(requested_options)} for project {cyan(self)}")
-            category_to_option = dict()
-            for option in requested_options:
+            for option in effective_options:
                 if option in self.options:
-                    # check for conflicts by "conflicts_with"
-                    option_fields = self.options[option]
-                    conflicts_with = option_fields.get("conflicts_with", [])
-                    if conflicts_with is str:
-                        conflicts_with = [conflicts_with]
-                    conflicting_options = list(set(conflicts_with).intersection(set(requested_options)))
-                    if conflicting_options:
-                        raise Exception(f"Option '{option}' conflicts with the following option(s): {conflicting_options}")
-                    # check for conflicts by the "category" field
-                    option_category = option_fields.get("category")
-                    if option_category in category_to_option:
-                        raise Exception(f"Option '{option}' conflicts with option '{category_to_option[option_category]}' due to both belonging in the category '{option_category}' (Note that options in the same category are exclusive)")
-                    category_to_option[option_category] = option
-                    # update project description with entries in the option
-                    _logger.debug(f"option {option} has the following fields: {list(option_fields.keys())}")
-                    fields.update(option_fields)
+                    for field_name, field_value in self.options[option].items():
+                        if field_name not in ["option_description", "category", "is_default"]: # option metadata fields
+                            setattr(new_project_description, field_name, field_value)
                 else:
                     _logger.warning(f"Project {cyan(self)} does not support option {cyan(option)}")
-        fields.pop("option_description", None)
-        fields.pop("conflicts_with", None)
-        fields.pop("category", None)
-        fields.pop("options", None)
-        return ProjectDescription(**fields)
+        return new_project_description
 
 class ProjectReference:
     def __init__(self, name, version):
@@ -434,8 +436,7 @@ class ProjectRegistry:
         selected_project_descriptions = self.expand_dependencies(specified_project_descriptions)
         if not selected_project_descriptions:
             raise Exception("The specified set of project versions cannot be satisfied")
-        return get_projects_with_options(selected_project_descriptions, requested_options)
-
+        return activate_project_options(selected_project_descriptions, requested_options)
 
     def expand_dependencies(self, specified_project_descriptions, return_all=False):
         _logger.debug(f"Computing list of effective projects for {specified_project_descriptions}")
@@ -505,19 +506,17 @@ class ProjectRegistry:
                     return selected_project_descriptions
         return result
 
-def get_projects_with_options(project_descriptions, requested_options):
-    if not requested_options:
-        return project_descriptions
+def activate_project_options(project_descriptions, requested_options):
     # check requested options exist at all
     all_supported_options = []
     for desc in project_descriptions:
         all_supported_options += desc.get_supported_options()
     all_supported_options = list(set(all_supported_options))
-    for option in requested_options:
+    for option in requested_options or []:
         if option not in all_supported_options:
             raise Exception(f"None of the selected projects supports option '{option}'")
     # create and return updated project descriptions
-    return [desc.get_with_options(requested_options) for desc in project_descriptions]
+    return [desc.activate_project_options(requested_options) for desc in project_descriptions]
 
 class Workspace:
     # project states
@@ -846,7 +845,7 @@ class Workspace:
     def run_command(self, command, suppress_stdout=False, check_exitcode=True, tracing=False):
         global project_registry
         if not self.nixless:
-            reference_project_description = project_registry.get_project_latest_version("omnetpp")
+            reference_project_description = project_registry.get_project_latest_version("omnetpp").activate_project_options([])
             return self._do_nix_develop(nixos=reference_project_description.nixos or "22.04",
                         stdenv=reference_project_description.stdenv or "llvmPackages_14.stdenv",
                         nix_packages=["bashInteractive", "git", "openssh", "wget", "gzip", "which", "gnused", "gnutar", "findutils", "coreutils"], # md5sum is in the core packages
@@ -948,13 +947,14 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
                 raise Exception(f"Unknown project name '{project}'")
 
     if raw:
-        serializable = [vars(p) for p in project_descriptions]
+        serializable = [vars(p.activate_project_options(requested_options)) for p in project_descriptions]
         print(json.dumps(serializable, indent=4))
         return
 
     # print info for each
     first = True
     for project_description in project_descriptions:
+        project_description = project_description.activate_project_options(requested_options)
         if first:
             first = False
         else:
@@ -969,10 +969,11 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
             print("\navailable options:")
             for option_name, option in project_description.options.items():
                 option_description = option.get('option_description')
+                default_mark = "*" if option.get('is_default') else "";
                 if option_description:
-                    print(f"- {cyan(option_name)}: {option.get('option_description', 'n/a')}")
+                    print(f"- {cyan(option_name)}{default_mark}: {option_description}")
                 else:
-                    print(f"- {cyan(option_name)}")
+                    print(f"- {cyan(option_name)}{default_mark}")
         if (project_description.required_projects):
             print(f"\nrequires:")
             for name, versions in project_description.required_projects.items():
@@ -984,7 +985,7 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if skip_dependencies:
-        effective_project_descriptions = get_projects_with_options(specified_project_descriptions, requested_options)
+        effective_project_descriptions = activate_project_options(specified_project_descriptions, requested_options)
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")

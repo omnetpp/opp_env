@@ -9,13 +9,10 @@ def join_nonempty_items(sep, list):
     return sep.join([x for x in list if x])
 
 def make_inet_project_description(inet_version, omnetpp_versions):
-    # It is possible to install from locally downloaded tarballs and repo, using the  "local" or "local-git" options.
-    # This is used mainly for testing. The following are the locations of the local files.
-    downloads_dir = "~/projects/opp_env_downloads"
-    local_inet_git_repo = "~/projects/inet"
-
     is_git_branch = inet_version == "master" or inet_version.endswith(".x")
     is_modernized = inet_version == "master" or inet_version.endswith(".x") # TODO and the patch-release tags on .x branches
+
+    git_branch_or_tag_name = f"v{inet_version}" if inet_version[0].isdigit() else inet_version
 
     # Some version tags have no entry on the Releases page
     missing_releases = [ "3.2.2", "3.1.0" ]
@@ -23,20 +20,13 @@ def make_inet_project_description(inet_version, omnetpp_versions):
     return {
         "name": "inet", "version": inet_version, "description": description,
         "folder_name": "inet",
+        # TODO "catalog_url": "https://omnetpp.org/download-items/Antnet.html",
         "required_projects": {"omnetpp": omnetpp_versions}, # list(set([dotx(v) for v in omnetpp_versions]))},
         "external_nix_packages":
             ["z3"] if inet_version >= "4.4" else
             [] if inet_version >= "4.0" else # inet-4.x uses omnetpp-6.x, so python3 doesn't need to be spelled out
             ["python3"] if inet_version >= "3.6.7" or is_modernized else
             ["python2"], # up to inet-3.6.6, inet_featuretool uses python2 in original, and python3 in modernized versions
-        "download_url":
-            f"https://github.com/inet-framework/inet/archive/refs/tags/v{inet_version}.tar.gz" if inet_version in missing_releases else
-            f"https://github.com/inet-framework/inet/releases/download/v{inet_version}/inet-{inet_version}-src.tgz" if not is_git_branch else
-            f"https://github.com/inet-framework/inet/archive/refs/heads/v{inet_version}.tar.gz",
-        "setenv_commands": [
-            'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',
-            "source setenv -f" if inet_version.startswith("4.") else "", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
-        ],
         "patch_commands": [
             "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
 
@@ -92,27 +82,49 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "sed -i.bak 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
             "sed -i.bak 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
             ],
+        "setenv_commands": [
+            'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',
+            "source setenv -f" if inet_version.startswith("4.") else "", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
+        ],
         "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
         "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
         "options": {
-            "git": {
-                "option_description": "Install from git repo on github",
+            "from-release": {
+                "option_description": "Install from release tarball on GitHub",
                 "category": "download",
+                "is_default": inet_version not in missing_releases and not is_git_branch,
+                "download_url": f"https://github.com/inet-framework/inet/releases/download/v{inet_version}/inet-{inet_version}-src.tgz" if inet_version not in missing_releases and not is_git_branch else None,
+            },
+            "from-source-archive": {
+                "option_description": "Install from source archive on GitHub",
+                "category": "download",
+                "is_default": inet_version in missing_releases,
+                "download_url": f"https://github.com/inet-framework/inet/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz",
+            },
+            "from-git": {
+                "option_description": "Install from git repo on GitHub",
+                "category": "download",
+                "is_default": is_git_branch,
                 "git_url": "git@github.com:inet-framework/inet.git",
-                "git_branch": f"v{inet_version}",
-                "download_url": "",
+                "git_branch": git_branch_or_tag_name,
             },
-            "local": {
-                "option_description": "Install from tarballs on local disk",
+            "from-local": {
+                "option_description": f"Install from release tarball on local disk ($DOWNLOADS_DIR)",
                 "category": "download",
-                "download_commands": f"mkdir inet-{inet_version} && cd inet-{inet_version} && tar --strip-components=1 -xzf {downloads_dir}/inet-{inet_version}.tar.gz",
-                "download_url": "",
+                "vars_to_keep": [ "DOWNLOADS_DIR" ],
+                "download_commands": [
+                    '[ -d "$DOWNLOADS_DIR" ] || error "Error: DOWNLOADS_DIR=$DOWNLOADS_DIR is not set or does not point to an existing directory"',
+                    f"mkdir inet-{inet_version} && cd inet-{inet_version} && tar --strip-components=1 -xzf $DOWNLOADS_DIR/inet-{inet_version}-src.tgz"
+                ],
             },
-            "local-git": {
-                "option_description": "Install from git repo on local disk",
+            "from-local-git": {
+                "option_description": f"Install from git repo on local disk ($INET_REPO)",
                 "category": "download",
-                "download_commands": f"git clone -l {local_inet_git_repo} inet-{inet_version} --branch v{inet_version}",
-                "download_url": "",
+                "vars_to_keep": [ "INET_REPO" ],
+                "download_commands": [
+                    '[ -d $INET_REPO/.git ] || error "Error: INET_REPO=$INET_REPO is not set or does not point to a git repository on the local disk"',
+                    f"git clone -l $INET_REPO inet-{inet_version} --branch {git_branch_or_tag_name}"
+                ],
             }
         }
     }
@@ -197,15 +209,6 @@ def get_all_inet_released_versions():
 
 def get_project_descriptions():
     return [
-        {
-            "name": "inet", "version": "git", "description": description,
-            "folder_name": "inet",
-            "required_projects": {"omnetpp": ["master"]},
-            "external_nix_packages": ["python3", "z3"],
-            "git_url": "git@github.com:inet-framework/inet.git",
-            "setenv_commands": [ "source setenv" ],
-            "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
-            "clean_commands": "[ ! -f src/Makefile ] || make clean"
-        },
+        make_inet_project_description("master", ["6.0.*"]),
         *get_all_inet_released_versions()
     ]

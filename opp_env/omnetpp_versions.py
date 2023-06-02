@@ -116,6 +116,9 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i '/void yyerror (const char \\*s);/a void yyerror (void *statePtr, const char *s) {yyerror(s);}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
     ]
 
+    # for older versions we use gcc7 (although a recent compiler with -std=c++03 -fpermissive would also do? -- TODO check)
+    use_gcc7 = not is_modernized and (version.startswith("3.") or version.startswith("4."))
+
     # Early 4.x versions need flags such as -std=c++03 -fpermissive to compile.
     # Note: technically, omnetpp itself would not need "-std=c++03" from version 4.3 on,
     # but inet versions from that time period (early 2.x) don't compile without it.
@@ -147,32 +150,19 @@ def make_omnetpp_project_description(version, base_version=None):
         "version": version,
         "description": "OMNeT++ base system",
         "warnings": remove_blanks([
-            f"INSTALLATION: This version cannot be installed in the standard way, because the release tarball is no longer available. To install it from a source archive (which doesn't include the pre-built IDE), specify '--options=source-archive' on the command line." if version in missing_releases else None,
             join_nonempty_items(" ", [
                 f"This version is not the latest patchlevel. We recommend that you use the corresponding patch branch 'omnetpp-{dotx(version)}' instead." if not is_modernized and version >= "5.0" else None,
                 f"This version is not the latest patchlevel. It may compile with warnings or work incorrectly due to bit rotting. We recommend to use the corresponding patch branch 'omnetpp-{dotx(version)}', which has also been updated to build with an up-to-date C++ compiler." if not is_modernized and version < "5.0" else None,
                 "Specifically, most simulation models won't work, because they use activity(), and the coroutine library in this release has become broken due to changes in the standard C library implementation of setjmp()/longjmp(). This issue has been resolved in the modernized patch branch and release.)" if not is_modernized and version.startswith("3.") else None,
                 "Specifically, this version could only be made to compile with the combination of compiler options (C++03, permissiveness, warning suppression, etc.), patching (e.g. due to changes in Bison), and using an older Tcl/Tk library." if not is_modernized and version >= "4.0" and version < "4.3" else None,
                 "Specifically, Qtenv in this version may not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None,
-                "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None
-            ])
+            ]),
+            "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None
         ]),
         "nixos": "nixos-22.11",
-        "stdenv":
-            "gcc7Stdenv" if not is_modernized and (version.startswith("3.") or version.startswith("4.")) else
-            "llvmPackages_14.stdenv",
+        "stdenv": None, # defined as default option
         "external_nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
-        "download_url":
-            f"{github_url}/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz" if version in missing_releases or version == "master" else
-            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-macos-x86_64.tgz" if is_macos and (base_version.startswith("6.") or base_version == "5.7") else
-            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
-            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-macosx.tgz" if is_macos and base_version.startswith("5.") else
-            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else # only macOS has an OS-specific download
-            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
-            f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else
-            f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
-            f"{github_url}/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else "",
         "patch_commands": [
             *apply_release_patch_from_github_commands,
             *source_patch_commands,
@@ -216,49 +206,64 @@ def make_omnetpp_project_description(version, base_version=None):
             "gcc7": {
                 "option_description": "Use the GCC 7.5 compiler toolchain for the build",
                 "category": "compiler",
+                "is_default": use_gcc7,
                 "stdenv": "gcc7Stdenv",
             },
             "clang14": {
                 "option_description": "Use the Clang 14 compiler toolchain for the build",
                 "category": "compiler",
+                "is_default": not use_gcc7,
                 "stdenv": "llvmPackages_14.stdenv",
             },
-            "source-archive": {
-                "option_description": "Install from source archive on github",
+            "from-release": {
+                "option_description": "Install from release tarball on GitHub",
                 "category": "download",
-                "download_url": f"https://github.com/omnetpp/omnetpp/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz",
-                "download_commands": None
+                "is_default": version not in missing_releases and version != "master",
+                "download_url":
+                    "" if version in missing_releases or version == "master" else
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-macos-x86_64.tgz" if is_macos and (base_version.startswith("6.") or base_version == "5.7") else
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-macosx.tgz" if is_macos and base_version.startswith("5.") else
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else # only macOS has an OS-specific download
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
+                    f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
+                    f"{github_url}/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else "",
             },
-            "git": {
-                "option_description": "Install from git repo on github",
+            "from-source-archive": {
+                "option_description": "Install from source archive on GitHub (IDE will not be available)",
                 "category": "download",
+                "is_default": version in missing_releases,
+                "download_url": f"https://github.com/omnetpp/omnetpp/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz",
+            },
+            "from-git": {
+                "option_description": "Install from git repo on GitHub (IDE will not be available)",
+                "category": "download",
+                "is_default": version == "master",
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
                 "git_branch": git_branch_or_tag_name,
-                "download_commands": None,
-                "download_url": "",
             },
-            "local": {
-                "option_description": "Install from tarballs (and potentially, git repo) on local disk",
+            "from-local": {
+                "option_description": f"Install from release tarball (and git repo) on local disk ({downloads_dir})",
                 "category": "download",
                 "download_commands": [
+                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src.tgz" if version == "master" else
                     f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
                     f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else
                     f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
                     f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
                     f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf {downloads_dir}/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else ""
                 ],
-                "download_url": "",
                 "patch_commands": [
                     *apply_release_patch_from_local_repo_commands,
                     *source_patch_commands,
                     *configuration_patch_commands
                 ],
             },
-            "local-git": {
-                "option_description": "Install from git repo on local disk",
+            "from-local-git": {
+                "option_description": f"Install from git repo on local disk at {local_omnetpp_git_repo} (IDE will not be available)",
                 "category": "download",
                 "download_commands": [ f"git clone -l {local_omnetpp_git_repo} omnetpp-{version} --branch {git_branch_or_tag_name}" ],
-                "download_url": "",
             }
         }
     }

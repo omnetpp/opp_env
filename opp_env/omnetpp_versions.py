@@ -40,7 +40,7 @@ def make_omnetpp_project_description(version, base_version=None):
     # Some versions have no release tarballs on github, some don't even have an entry on the Releases page (5.4, 5.5, 5.7).
     # Source tarballs that github automatically makes are still available at URLs of the form
     # https://github.com/omnetpp/omnetpp/archive/refs/tags/omnetpp-<version>.tar.gz
-    missing_releases = ["4.0", "4.2", "4.2.1", "4.4", "5.1", "5.2", "5.4", "5.5"]
+    missing_releases = ["5.4", "5.5"]
 
     # Some downloads have the OS (Linux or macOS) in the file name; we only care about these two, because Windows doesn't have Nix
     is_macos = platform.system().lower() == "darwin"
@@ -104,6 +104,7 @@ def make_omnetpp_project_description(version, base_version=None):
 
         "sed -i 's/\\$(QMAKE)/$(QMAKE) -spec linux-clang/' src/qtenv/Makefile" if version == "5.0" else None,
 
+        "sed -i '/#include/a #include <stdio.h> // added by opp_env' src/common/commondefs.h" if version == "4.0" else None, # add missing include in vanilla 4.0 release
         "sed -i '/#include <stdlib.h>/a #include <unistd.h> // added by opp_env' src/utils/abspath.cc" if not is_modernized and version >= "4.0" and version < "4.3" else None, # add missing include in unpatched 4.0/4.1/4.2
         "sed -i 's|static inline int64 abs(int64 x)|//static inline int64 abs(int64 x)|' src/common/bigdecimal.cc" if not is_modernized and version >= "4.0" and version < "4.2" else None,
         "sed -i 's|int64 val = abs(this->intVal);|int64 val = this->intVal < 0 ? -this->intVal : this->intVal;|' src/common/bigdecimal.cc" if not is_modernized and version >= "4.0" and version < "4.2" else None,
@@ -271,8 +272,8 @@ def make_omnetpp_project_description(version, base_version=None):
 def get_all_omnetpp_released_versions():
     released_versions = [
         "6.0.1", "6.0",
-        "5.7", "5.6.2", "5.6.1", "5.6", "5.5.1", "5.5", "5.4.1", "5.4", "5.3", "5.2.1", "5.2", "5.1.1", "5.1", "5.0", # note: no linux tarball on github for: 5.1, 5.2, etc
-        "4.6", "4.5", "4.4.1", "4.4", "4.3.1", "4.3", "4.2.2", "4.2.1", "4.2", "4.1", "4.0p1", "4.0", # note: no linux tarball on github for: 4.0, 4.2, 4.2.1, 4.4
+        "5.7", "5.6.2", "5.6.1", "5.6", "5.5.1", "5.5", "5.4.1", "5.4", "5.3", "5.2.1", "5.2", "5.1.1", "5.1", "5.0",
+        "4.6", "4.5", "4.4.1", "4.4", "4.3.1", "4.3", "4.2.2", "4.2.1", "4.2", "4.1", "4.0p1", "4.0",
         "3.3p1"
     ]
     return [make_omnetpp_project_description(version) for version in released_versions]

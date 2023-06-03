@@ -61,9 +61,6 @@ def natural_less(a, b):
 def natural_sorted(list):
     return sorted(list, key=natural_sort_key)
 
-def natural_sort_key(text):
-    return [int(part) if part.isdigit() else part.lower() for part in re.split('([0-9]+)', text)]
-
 def project_natural_sort_key(project_description):
     return natural_sort_key(project_description.get_full_name())
 
@@ -200,8 +197,8 @@ def get_version():
     version_file_path = os.path.join(current_dir, "_version.py")
 
     version_module = importlib.util.spec_from_file_location("_version", version_file_path)
-    version = importlib.util.module_from_spec(version_module)
-    version_module.loader.exec_module(version)
+    version = importlib.util.module_from_spec(version_module) # type: ignore
+    version_module.loader.exec_module(version) # type: ignore
     return version.version
 
 def detect_nix():
@@ -322,8 +319,8 @@ class ProjectReference:
     def __str__(self):
         return self.get_full_name()
 
-    @classmethod
-    def parse(self, string):
+    @staticmethod
+    def parse(string):
         return ProjectReference(*string.rsplit("-", 1)) if "-" in string else ProjectReference(string, "")
 
     def get_full_name(self):
@@ -550,6 +547,8 @@ class Workspace:
 
     @staticmethod
     def init_workspace(dir=None):
+        if not dir:
+            dir = os.getcwd()
         if not os.path.isdir(dir):
             raise Exception(f"Directory does not exist: {dir}")
         opp_env_dir = os.path.join(dir, ".opp_env")
@@ -664,10 +663,10 @@ class Workspace:
         specified_project_descriptions = resolve_projects(projects)
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(self.root_directory)}")
-        Workspace._print_project_warnings(effective_project_descriptions, pause_after_warnings)
+        self._print_project_warnings(effective_project_descriptions, pause_after_warnings)
         return effective_project_descriptions
 
-    def _print_project_warnings(project_descriptions, pause_after_warnings=True):
+    def _print_project_warnings(self, project_descriptions, pause_after_warnings=True):
         have_warnings = False
         for p in project_descriptions:
             if p.warnings:
@@ -677,6 +676,7 @@ class Workspace:
         if pause_after_warnings and have_warnings and sys.stdin.isatty():
             input("Press Enter to continue, or Ctrl+C to abort ")
 
+    @staticmethod
     def _get_unique_project_attribute(project_descriptions, attr_name):
         values = set([getattr(p, attr_name) for p in project_descriptions if getattr(p, attr_name)])
         if not values:

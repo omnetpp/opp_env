@@ -131,6 +131,7 @@ def parse_arguments():
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
     subparser.add_argument("--nixless", default=False, action='store_true', help="Run without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     subparser = subparsers.add_parser("build", help="Builds the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -140,6 +141,7 @@ def parse_arguments():
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -148,6 +150,7 @@ def parse_arguments():
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -159,6 +162,7 @@ def parse_arguments():
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help="Whether to change into the directory of the project. The default action is to change into the project root only if the current working directory is outside the project")
     subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -170,6 +174,7 @@ def parse_arguments():
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
     subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     return parser.parse_args(sys.argv[1:])
 
@@ -185,11 +190,13 @@ def process_arguments():
     if "workspace_directory" in kwargs:
         kwargs["workspace_directory"] = os.path.abspath(kwargs["workspace_directory"])
     if "options" in kwargs:
-        options = []
-        for arg in args.options:
-            options += arg.split(",")
-        kwargs["requested_options"] = options
+        # split up and flatten list
+        kwargs["requested_options"] = [name for arg in args.options for name in arg.split(",")]
         del kwargs["options"]
+    if "keep" in kwargs:
+        # split up and flatten list
+        kwargs["vars_to_keep"] = [name for arg in args.keep for name in arg.split(",")]
+        del kwargs["keep"]
     return kwargs
 
 def get_version():
@@ -221,7 +228,7 @@ def detect_nix():
 class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
-                 required_projects={}, external_nix_packages=[],
+                 required_projects={}, external_nix_packages=[], vars_to_keep=[],
                  download_url=None, git_url=None, git_branch=None, download_commands=None,
                  patch_commands=[], patch_url=None,
                  shell_hook_commands=[], setenv_commands=[],
@@ -238,6 +245,7 @@ class ProjectDescription:
         self.folder_name = folder_name or name
         self.required_projects = required_projects
         self.external_nix_packages = remove_empty(external_nix_packages)
+        self.vars_to_keep = remove_empty(vars_to_keep)
         self.download_url = download_url
         self.git_url = git_url
         self.git_branch = git_branch
@@ -730,13 +738,14 @@ class Workspace:
             print(self._read_file_if_exists(patching_log_file).strip())
             raise e
 
-    def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_mode=None, tracing=False, **kwargs):
+    def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_mode=None, tracing=False, **kwargs):
         nixos = Workspace._get_unique_project_attribute(effective_project_descriptions, "nixos")
         stdenv = Workspace._get_unique_project_attribute(effective_project_descriptions, "stdenv")
 
         session_name = '+'.join([str(d) for d in reversed(effective_project_descriptions)])
         project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
         project_nix_packages = sum([p.external_nix_packages for p in effective_project_descriptions], [])
+        project_vars_to_keep = sum([p.vars_to_keep for p in effective_project_descriptions], [])
         project_setenv_commands = sum([[f"cd '{self.get_project_root_directory(p)}'", *p.setenv_commands] for p in effective_project_descriptions], [])
         project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={self.get_project_root_directory(p)}" for p in effective_project_descriptions]
 
@@ -756,11 +765,12 @@ class Workspace:
             *commands
         ]
 
+        vars_to_keep = (vars_to_keep or []) + project_vars_to_keep
         script = join_lines(shell_hook_lines)
 
         if nixful:
             return self._do_nix_develop(nixos=nixos, stdenv=stdenv, nix_packages=project_nix_packages,
-                        session_name=session_name, script=script, interactive=interactive,
+                        session_name=session_name, script=script, vars_to_keep=vars_to_keep, interactive=interactive,
                         isolated=isolated, check_exitcode=check_exitcode, suppress_stdout=suppress_stdout, tracing=tracing)
         else:
             if interactive:
@@ -769,7 +779,7 @@ class Workspace:
                 script += f"\nPROMPT_COMMAND=\"PS1='{prompt}'\" bash -i"
             return self._do_run_command(script, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
 
-    def _do_nix_develop(self, nixos, stdenv, nix_packages=[], session_name="", script="", interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, tracing=False):
+    def _do_nix_develop(self, nixos, stdenv, nix_packages=[], session_name="", script="", vars_to_keep=None, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, tracing=False):
         nix_develop_flake = """{
         inputs = {
             nixpkgs.url = "nixpkgs/@NIXOS@";
@@ -810,7 +820,8 @@ class Workspace:
 
         _logger.debug(f"Nix flake shellHook script:\n{indent(script)}")
         #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
-        isolation_options = '-i -k HOME -k TERM -k COLORTERM -k DISPLAY -k XAUTHORITY -k XDG_RUNTIME_DIR -k XDG_DATA_DIRS -k XDG_CACHE_HOME -k QT_AUTO_SCREEN_SCALE_FACTOR ' if isolated else ''
+        vars_to_keep = (vars_to_keep or []) + ['HOME', 'TERM', 'COLORTERM', 'DISPLAY', 'XAUTHORITY', 'XDG_RUNTIME_DIR', 'XDG_DATA_DIRS', 'XDG_CACHE_HOME', 'QT_AUTO_SCREEN_SCALE_FACTOR']
+        isolation_options = ('-i ' + ' '.join(['-k ' + varname for varname in vars_to_keep])) if isolated else ''
         command = '-c bash --norc' if interactive else '-c true'
         nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
 

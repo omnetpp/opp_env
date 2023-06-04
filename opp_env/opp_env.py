@@ -595,14 +595,14 @@ class Workspace:
         data['state'] = state
         self.write_project_state_file(project_description, data)
 
-    def download_project(self, project_description, patch, cleanup, **kwargs):
+    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, **kwargs):
         _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         project_dir = self.root_directory + "/" + project_description.get_full_name()
         if os.path.exists(project_dir):
             raise Exception("f{project_dir} already exists")
         try:
             if project_description.download_commands:
-                self.run_command(join_commands([f"cd '{self.root_directory}'", *project_description.download_commands]))
+                self.nix_develop(effective_project_descriptions, self.root_directory, project_description.download_commands, run_setenv=False, **kwargs)
             elif project_description.download_url:
                 self.download_and_unpack_tarball(project_description.download_url, project_dir)
             elif project_description.git_url:
@@ -618,7 +618,7 @@ class Workspace:
                 if patch:
                     _logger.info(f"Patching project {cyan(project_description.get_full_name())}")
                     if project_description.patch_commands:
-                        self.run_command(join_commands([f"cd '{project_dir}'", *project_description.patch_commands]))
+                        self.nix_develop(effective_project_descriptions, project_dir, project_description.patch_commands, run_setenv=False, **kwargs)
                     if project_description.patch_url:
                         self.download_and_apply_patch(project_description.patch_url, project_dir)
                 else:
@@ -694,12 +694,12 @@ class Workspace:
         else:
             return list(values)[0]
 
-    def download_project_if_needed(self, project_description, prepare_missing=True, patch=True, cleanup=True, **kwargs):
+    def download_project_if_needed(self, project_description, effective_project_descriptions, prepare_missing=True, patch=True, cleanup=True, **kwargs):
         project_state = self.get_project_state(project_description)
         if not prepare_missing and project_state in [Workspace.ABSENT, Workspace.INCOMPLETE]:
             raise Exception(f"Project '{project_description}' is missing or incomplete")
         elif project_state == Workspace.ABSENT:
-            self.download_project(project_description, patch, cleanup, **kwargs)
+            self.download_project(project_description, effective_project_descriptions, patch, cleanup, **kwargs)
         elif project_state == Workspace.INCOMPLETE:
             raise Exception(f"Cannot download '{project_description}': Directory already exists")
         else:
@@ -1000,7 +1000,7 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
     for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, **kwargs)
+        workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
 
 def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, mode=None, nixless=False, **kwargs):
     workspace_directory = resolve_workspace(workspace_directory)
@@ -1008,7 +1008,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
     build_modes = mode if mode else ["debug", "release"]
     for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, prepare_missing, **kwargs)
+        workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     for project_description in effective_project_descriptions:
         assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
         if project_description.build_commands:
@@ -1022,7 +1022,7 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
     build_modes = mode if mode else ["debug", "release"]
     for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, prepare_missing, **kwargs)
+        workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     for project_description in reversed(effective_project_descriptions):
         if project_description.clean_commands:
             workspace.clean_project(project_description, effective_project_descriptions, build_modes, **kwargs)
@@ -1037,7 +1037,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
     workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, prepare_missing, **kwargs)
+        workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     if build:
         try:
             build_modes = mode if mode else ["debug", "release"]
@@ -1070,7 +1070,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
     workspace = Workspace(workspace_directory, nixless)
     effective_project_descriptions = workspace.setup_environment(projects, requested_options, **kwargs)
     for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, prepare_missing, **kwargs)
+        workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     if build:
         build_modes = mode if mode else ["debug", "release"]
         for project_description in effective_project_descriptions:

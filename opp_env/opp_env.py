@@ -952,21 +952,15 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
         return
 
     # print info for each
-    first = True
     for project_description in project_descriptions:
         project_description = project_description.activate_project_options(requested_options)
-        if first:
-            first = False
-        else:
-            print()
-        if requested_options:
-            project_description = project_description.get_with_options(requested_options)
-        print("* " + project_description.get_full_name() + (" - " + project_description.description if project_description.description else ""))
+        print()
+        print(project_description.get_full_name() + (": " + project_description.description if project_description.description else ""))
         if project_description.warnings:
             for warning in project_description.warnings:
                 print(yellow("\nWARNING: ") + warning)
         if (project_description.options):
-            print("\navailable options:")
+            print("\nAvailable options:")
             for option_name, option in project_description.options.items():
                 option_description = option.get('option_description')
                 default_mark = "*" if option.get('is_default') else "";
@@ -975,9 +969,14 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
                 else:
                     print(f"- {cyan(option_name)}{default_mark}")
         if (project_description.required_projects):
-            print(f"\nrequires:")
+            print(f"\nRequires:")
             for name, versions in project_description.required_projects.items():
-                print(f"- {cyan(name)}: {'/'.join(versions)}")
+                print(f"- {cyan(name)}: {' / '.join(versions)}")
+        if len(project_descriptions) > 1:
+            print("\n--------")
+    print()
+    print("Note: Specify `--raw` to `opp_env info` for more details.")
+    print("Note: Options can be selected by adding `--options <optionname>` to the opp_env command line, see help. Options active by default are marked with '*'.")
 
 def download_subcommand_main(projects, workspace_directory=None, requested_options=None, skip_dependencies=True, nixless=False, **kwargs):
     global project_registry

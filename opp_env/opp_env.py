@@ -755,6 +755,7 @@ class Workspace:
         nixful = not self.nixless
 
         shell_hook_lines = [
+            'error() { echo "$*" 1>&2; return 1; }; export -f error',
             f"export BUILD_MODE={build_mode or ''}",
             *project_root_environment_variable_assignments,
             *(project_shell_hook_commands if nixful else []),

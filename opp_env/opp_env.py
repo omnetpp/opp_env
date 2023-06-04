@@ -209,6 +209,7 @@ def get_version():
     return version.version
 
 def detect_nix():
+    minimum_nix_version = "2.4"  # Nix flakes were introduced in version 2.4
     # check nix is installed
     try:
         _logger.debug(f"Running nix --version")
@@ -216,14 +217,13 @@ def detect_nix():
         output = result.stdout.decode('utf-8')
     except Exception as ex:
         _logger.debug(f"Error: {ex}")
-        raise Exception("Nix does not seem to be installed. You can install it from https://nixos.org/download.html or using your system's package manager, or try using opp_env with the --nixless option.")
+        raise Exception("Nix does not seem to be installed. You can install it from https://nixos.org/download.html or using your system's package manager (important: at least version {minimum_nix_version} is required). Alternatively, you may try using opp_env with the --nixless option, but it is only likely to work for relatively recent versions of OMNeT++ and models.")
     # check it is recent enough
     nix_version = output.strip().split()[-1]
     if not re.match("^[0-9.]+$", nix_version):
         raise Exception("Cannot parse Nix version number: Output of 'nix --version' diverges from expected format")
-    minimum_nix_version = "2.4"  # Nix flakes were introduced in version 2.4
     if natural_less(nix_version, minimum_nix_version):
-        raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. Upgrade it, or try using opp_env with the --nixless option.")
+        raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. Alternatively, you may try using opp_env with the --nixless option, but it is only likely to work for relatively recent versions of OMNeT++ and models.")
 
 class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],

@@ -67,6 +67,9 @@ def project_natural_sort_key(project_description):
 def sorted_projects(project_description_list):
     return sorted(project_description_list, key=project_natural_sort_key)
 
+def uniq(l):
+    return list(dict.fromkeys(l))
+
 def indent(txt, indent="    "):
     return indent + txt.replace("\n", "\n" + indent)
 
@@ -381,7 +384,7 @@ class ProjectRegistry:
         return self.all_project_descriptions
 
     def get_project_names(self, project_descriptions=None):
-        return list(dict.fromkeys([p.name for p in project_descriptions or self.get_all_project_descriptions()]))
+        return uniq([p.name for p in project_descriptions or self.get_all_project_descriptions()])
 
     def get_project_versions(self, project_name, project_descriptions=None):
         return [p.version for p in project_descriptions or self.get_all_project_descriptions() if p.name == project_name]
@@ -819,6 +822,9 @@ class Workspace:
             });
         }"""
 
+        tools_nix_packages = ["bashInteractive", "git", "openssh", "wget", "gzip", "which", "gnused", "gnutar", "findutils", "coreutils"]
+        nix_packages = uniq(nix_packages + tools_nix_packages)
+
         shell_options = "-exo pipefail" if tracing else "-eo pipefail"
         flake_dir = os.path.join(self.root_directory, ".opp_env")
         flake_file_name = os.path.join(flake_dir, "flake.nix")
@@ -833,6 +839,7 @@ class Workspace:
             )
             f.write(nix_develop_flake)
 
+        _logger.debug(f"Using Nix packages: {' '.join(nix_packages)}")
         _logger.debug(f"Nix flake shellHook script:\n{indent(script)}")
         #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
         vars_to_keep = (vars_to_keep or []) + ['HOME', 'TERM', 'COLORTERM', 'DISPLAY', 'XAUTHORITY', 'XDG_RUNTIME_DIR', 'XDG_DATA_DIRS', 'XDG_CACHE_HOME', 'QT_AUTO_SCREEN_SCALE_FACTOR']
@@ -874,7 +881,6 @@ class Workspace:
             reference_project_description = project_registry.get_project_latest_version("omnetpp").activate_project_options([])
             return self._do_nix_develop(nixos=reference_project_description.nixos or "22.04",
                         stdenv=reference_project_description.stdenv or "llvmPackages_14.stdenv",
-                        nix_packages=["bashInteractive", "git", "openssh", "wget", "gzip", "which", "gnused", "gnutar", "findutils", "coreutils"], # md5sum is in the core packages
                         session_name="run_command", script=command,
                         interactive=False, isolated=True, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
         else:
@@ -922,7 +928,7 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", latest
             tmp += matching_projects
         projects = sorted_projects(list(set(tmp)))
 
-    names = list(dict.fromkeys([p.name for p in projects]))
+    names = uniq([p.name for p in projects])
     if list_mode == "flat":
         for p in projects:
             print(p.get_full_name())

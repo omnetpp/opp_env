@@ -483,13 +483,7 @@ class ProjectRegistry:
         # _logger.debug(f"{required_project_names=}")
 
         # 2. collect all available project versions for all required projects separately
-        available_project_versions = {}
-        for required_project_name in required_project_names:
-            project_versions = []
-            for project_description in self.get_all_project_descriptions():
-                if project_description.name == required_project_name:
-                    project_versions.append(project_description.version)
-            available_project_versions[required_project_name] = project_versions
+        available_project_versions = { name: self.get_project_versions(name) for name in required_project_names }
         # _logger.debug(f"{available_project_versions=}")
 
         # 3. iterate over all combinations of the available project versions for the different required projects

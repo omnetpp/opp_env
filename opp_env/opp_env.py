@@ -494,7 +494,7 @@ class ProjectRegistry:
             # _logger.debug(f"checking combination: {combination=}")
             accept_combination = True
             selected_project_descriptions = []
-            # 4. for each required project version combination check if it matches all specified and required project criteria
+            # 4. turn the combination of version numbers (a tuple of strings) into a tuple of project descriptions
             for i in range(len(combination)):
                 selected_project_name = f"{keys[i]}-{combination[i]}"
                 selected_project_description = self.find_project_description(ProjectReference.parse(selected_project_name))

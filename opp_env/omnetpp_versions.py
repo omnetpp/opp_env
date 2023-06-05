@@ -156,7 +156,7 @@ def make_omnetpp_project_description(version, base_version=None):
             ]),
             "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None
         ]),
-        "nixos": "nixos-22.11",
+        "nixos": "nixos-23.05", # MUST NOT BE CHANGED FOR EXISTING VERSIONS
         "stdenv": None, # defined as default option
         "external_nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
@@ -201,13 +201,13 @@ def make_omnetpp_project_description(version, base_version=None):
         ],
         "options": {  # note: git master doesn't have all these download options
             "gcc7": {
-                "option_description": "Use the GCC 7.5 compiler toolchain for the build",
+                "option_description": "Use an older version of the gcc compiler toolchain for the build",
                 "category": "compiler",
                 "is_default": use_gcc7,
                 "stdenv": "gcc7Stdenv",
             },
             "clang14": {
-                "option_description": "Use the Clang 14 compiler toolchain for the build",
+                "option_description": "Use a recent version of the clang toolchain for the build",
                 "category": "compiler",
                 "is_default": not use_gcc7,
                 "stdenv": "llvmPackages_14.stdenv",

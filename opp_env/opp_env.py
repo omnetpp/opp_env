@@ -802,6 +802,9 @@ class Workspace:
             return self._do_run_command(script, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
 
     def _do_nix_develop(self, nixos, stdenv, nix_packages=[], session_name="", script="", vars_to_keep=None, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, tracing=False):
+        if not nixos or not stdenv:
+            raise Exception(f"The nixos or stdenv field is not defined in any of the effective projects! {nixos=} {stdenv=}")
+
         nix_develop_flake = """{
         inputs = {
             nixpkgs.url = "nixpkgs/@NIXOS@";
@@ -883,8 +886,8 @@ class Workspace:
         global project_registry
         if not self.nixless:
             reference_project_description = project_registry.get_project_latest_version("omnetpp").activate_project_options([])
-            return self._do_nix_develop(nixos=reference_project_description.nixos or "22.04",
-                        stdenv=reference_project_description.stdenv or "llvmPackages_14.stdenv",
+            return self._do_nix_develop(nixos=reference_project_description.nixos,
+                        stdenv=reference_project_description.stdenv,
                         session_name="run_command", script=command,
                         interactive=False, isolated=True, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
         else:

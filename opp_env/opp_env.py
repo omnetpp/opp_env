@@ -14,6 +14,7 @@ import shutil
 import tempfile
 import importlib
 import importlib.util
+import platform
 
 
 _logger = logging.getLogger(__file__)
@@ -229,7 +230,7 @@ def detect_nix():
         raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. Alternatively, you may try using opp_env with the --nixless option, but it is only likely to work for relatively recent versions of OMNeT++ and models.")
 
 def detect_tools():
-    tools = [ "bash", "git", "wget", "grep", "find", "xargs", "md5sum", "tar", "gzip", "sed", "touch" ]
+    tools = [ "bash", "git", "wget", "grep", "find", "xargs", "md5sum", "tar", "gzip", "sed", "touch", "nproc" ]
     errors = []
     for tool in tools:
         try:
@@ -771,12 +772,15 @@ class Workspace:
 
         nixful = not self.nixless
 
+        is_macos = platform.system().lower() == "darwin"
+        nproc_command = "nproc" if not is_macos else "sysctl -n hw.ncpu"
+
         shell_hook_lines = [
             'error() { echo "$*" 1>&2; return 1; }; export -f error',
             f"export BUILD_MODE={build_mode or ''}",
             *project_root_environment_variable_assignments,
             *(project_shell_hook_commands if nixful else []),
-            "export NIX_BUILD_CORES=8" if self.nixless else None, #TODO hack
+            f"export NIX_BUILD_CORES=$({nproc_command})" if self.nixless else None, # otherwise Nix defines it
             f"export PS1='{prompt}'" if interactive and nixful else None,
             *(["pushd . > /dev/null", *project_setenv_commands, "popd > /dev/null"] if run_setenv else []),
             f"cd '{working_directory}'" if working_directory else None,

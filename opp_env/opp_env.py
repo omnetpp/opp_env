@@ -225,6 +225,18 @@ def detect_nix():
     if natural_less(nix_version, minimum_nix_version):
         raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. Alternatively, you may try using opp_env with the --nixless option, but it is only likely to work for relatively recent versions of OMNeT++ and models.")
 
+def detect_tools():
+    tools = [ "bash", "git", "wget", "grep", "find", "xargs", "md5sum", "tar", "gzip", "sed", "touch" ]
+    errors = []
+    for tool in tools:
+        try:
+            result = subprocess.run([tool, '--version'], capture_output=True)
+        except Exception as ex:
+            errors.append(tool)
+    if errors:
+        raise Exception(f"The following programs were not found: {', '.join(errors)}.")
+
+
 class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
@@ -533,7 +545,9 @@ class Workspace:
         assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
         self.nixless = nixless
-        if not nixless:
+        if nixless:
+            detect_tools()
+        else:
             detect_nix()
         opp_env_directory = os.path.join(self.root_directory, ".opp_env")
         if not os.path.exists(opp_env_directory):

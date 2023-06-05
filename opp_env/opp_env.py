@@ -118,7 +118,6 @@ def parse_arguments():
 
     subparser = subparsers.add_parser("list", help="Lists all available projects")
     subparser.add_argument("project_name_patterns", nargs="*", metavar="project-name-or-pattern", help="Names of projects to list (omit to list all)")
-    subparser.add_argument("-l", "--latest-patchlevels", default=False, action='store_true', help="Print the latest patchlevels of each major/minor version only")
     subparser.add_argument("-m", "--mode", dest="list_mode", choices=["flat", "grouped", "names", "expand", "combinations"], default="grouped", help="Listing mode")
 
     subparser = subparsers.add_parser("info", help="Describes the specified project")
@@ -364,6 +363,7 @@ class ProjectReference:
 class ProjectRegistry:
     def __init__(self):
         self.all_project_descriptions = self.collect_project_descriptions()
+        self.index = self.build_index(self.all_project_descriptions)
 
     def collect_project_descriptions(self):
         python_files = [
@@ -381,7 +381,7 @@ class ProjectRegistry:
         all_project_descriptions = []
         for fname in python_files:
             module = importlib.import_module("opp_env." + fname)
-            raw_project_descriptions = module.get_project_descriptions()
+            raw_project_descriptions = module.find_project_descriptions()
             project_descriptions = [ProjectDescription(**e) for e in raw_project_descriptions]
             all_project_descriptions += project_descriptions
 
@@ -399,52 +399,47 @@ class ProjectRegistry:
         return uniq([p.name for p in project_descriptions or self.get_all_project_descriptions()])
 
     def get_project_versions(self, project_name, project_descriptions=None):
+        # Note: this does not include "pseudo" versions like "latest", or "omnetpp-4" that means "omnetpp-4.6.1"
         return [p.version for p in project_descriptions or self.get_all_project_descriptions() if p.name == project_name]
 
-    def get_project_latest_version(self, project_name, project_descriptions=None):
-        if project_descriptions is None:
-            project_descriptions = self.get_all_project_descriptions()
-        versions = self.get_project_versions(project_name, project_descriptions)
-        if not versions:
-            raise Exception(f"Unknown project '{project_name}'")
-        #TODO why not just a plain loop over all project descriptions
-        numbered_versions = [v for v in versions if v and v[0] in '0123456789']  # exclude versions named "git", etc.
-        if not numbered_versions:
-            raise Exception(f"Cannot determine latest version for project '{project_name}': version numbers do not start with a number")
-        latest_version = natural_sorted(numbered_versions)[-1] if numbered_versions else None  # almost as good as semantic version sorting
-        assert latest_version
-        matching = [p for p in project_descriptions if p.name == project_name and p.version == latest_version]
-        assert len(matching) == 1  # must be no duplicate
-        return project_descriptions[0]
+    def build_index(self, project_descriptions):
+        # index structure: { name: {version: description}}
+        index = {}
+        versions = {}
+        for project in project_descriptions:
+            project_name = project.name
+            project_version = project.version
+            if project_name not in index:
+                index[project_name] = {}
+                versions[project_name] = []
+            index[project_name][project_version] = project
+            versions[project_name].append(project_version)
 
-    def is_latest_patchlevel(self, project_description, among_project_descriptions=None):
-        name = project_description.name
-        if not is_semver(project_description.version):
-            return True  # TODO debatable
+        # add meta entries: "latest"; "3", "3.8" -> 3.8.2 (latest minor/patch version)
+        # ordering is determined by order of items in the project_descriptions array.
+        for project_name, project_versions in versions.items():
+            index[project_name]["latest"] = index[project_name][project_versions[0]]
+            for version in project_versions:
+                truncated_version = version
+                while "." in truncated_version:
+                    truncated_version = truncated_version.rsplit(".",1)[0] # chop off part after last dot
+                    if truncated_version not in index[project_name]:
+                        index[project_name][truncated_version] = index[project_name][version]
+        return index
 
-        major, minor, patch = parse_semver(project_description.version)
-        for p in among_project_descriptions or self.get_all_project_descriptions():
-            if is_semver(p.version):
-                p_major, p_minor, p_patch = parse_semver(p.version)
-                if name == p.name and major == p_major and minor == p_minor and patch < p_patch:
-                    return False
-        return True
-
-    def find_project_description(self, project_reference):
-        if project_reference.name not in self.get_project_names():
+    def get_project_description(self, project_reference):
+        if type(project_reference) is str:
+            project_reference = ProjectReference.parse(project_reference)
+        if project_reference.name not in self.index:
             raise Exception(f"Cannot resolve '{project_reference}': Unknown project '{project_reference.name}'")
         if not project_reference.version:
             raise Exception(f"Which version of '{project_reference.name}' do you mean? (Use '{project_reference.name}-latest' for latest version)")
-        if project_reference.version == "latest":
-            return self.get_project_latest_version(project_reference.name)
-
-        project_descriptions = [x for x in self.get_all_project_descriptions() if x.name == project_reference.name and x.version == project_reference.version]
-        if len(project_descriptions) == 0:
+        project_description = self.index[project_reference.name].get(project_reference.version)
+        if not project_description:
             raise Exception(f"Project '{project_reference.name}' has no version '{project_reference.version}'")
-        elif len(project_descriptions) > 1:
-            raise Exception("More than one project descriptions were found for " + str(project_reference))
-        else:
-            return project_descriptions[0]
+        if project_reference.version != project_description.version:
+            _logger.debug(f"Resolved {cyan(project_reference)} as {cyan(project_description)}")
+        return project_description
 
     def expand_wildcards_in_project_dependencies(self, project_description, all_project_descriptions):
         def expand(project_name, version, all_project_descriptions):
@@ -483,7 +478,7 @@ class ProjectRegistry:
                 if project_name in required_project_names:
                     required_project_names = [e for e in required_project_names if e != project_name]
                 else:
-                    todo_list.append(self.find_project_description(ProjectReference.parse(project_name + "-" + project_versions[0])))
+                    todo_list.append(self.get_project_description(ProjectReference.parse(project_name + "-" + project_versions[0])))
                 required_project_names.append(project_name)
         required_project_names.reverse()
         # _logger.debug(f"{required_project_names=}")
@@ -503,7 +498,7 @@ class ProjectRegistry:
             # 4. turn the combination of version numbers (a tuple of strings) into a tuple of project descriptions
             for i in range(len(combination)):
                 selected_project_name = f"{keys[i]}-{combination[i]}"
-                selected_project_description = self.find_project_description(ProjectReference.parse(selected_project_name))
+                selected_project_description = self.get_project_description(ProjectReference.parse(selected_project_name))
                 selected_project_descriptions.append(selected_project_description)
             # _logger.debug(f"checking combination: {selected_project_descriptions=}")
             # 5. check if the specified project versions are included in the project version combination
@@ -518,7 +513,7 @@ class ProjectRegistry:
                 for required_project_name, required_project_versions in selected_project_description.required_projects.items():
                     accept_selected_project_description = False
                     for required_project_version in required_project_versions:
-                        required_project_description = self.find_project_description(ProjectReference.parse(required_project_name + "-" + required_project_version))
+                        required_project_description = self.get_project_description(ProjectReference.parse(required_project_name + "-" + required_project_version))
                         if required_project_description in selected_project_descriptions:
                             accept_selected_project_description = True
                     if not accept_selected_project_description:
@@ -890,7 +885,7 @@ class Workspace:
     def run_command(self, command, suppress_stdout=False, check_exitcode=True, tracing=False):
         global project_registry
         if not self.nixless:
-            reference_project_description = project_registry.get_project_latest_version("omnetpp").activate_project_options([], quiet=True)
+            reference_project_description = project_registry.get_project_description("omnetpp-latest").activate_project_options([], quiet=True)
             return self._do_nix_develop(nixos=reference_project_description.nixos,
                         stdenv=reference_project_description.stdenv,
                         session_name="run_command", script=command,
@@ -919,18 +914,16 @@ class Workspace:
 
 def resolve_projects(project_full_names):
     global project_registry
-    project_descriptions = [project_registry.find_project_description(ProjectReference.parse(p)) for p in project_full_names]
+    project_descriptions = [project_registry.get_project_description(ProjectReference.parse(p)) for p in project_full_names]
     return project_descriptions
 
 def resolve_workspace(workspace_directory):
     workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
     return workspace_directory
 
-def list_subcommand_main(project_name_patterns=None, list_mode="grouped", latest_patchlevels=False, **kwargs):
+def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwargs):
     global project_registry
     projects = project_registry.get_all_project_descriptions()
-    if latest_patchlevels:
-        projects = [p for p in projects if project_registry.is_latest_patchlevel(p,projects)]
     if project_name_patterns:
         tmp = []
         for project_name_pattern in project_name_patterns:
@@ -938,7 +931,7 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", latest
             if not matching_projects:
                 raise Exception(f"Name/pattern '{project_name_pattern}' does not match any project")
             tmp += matching_projects
-        projects = sorted_projects(list(set(tmp)))
+        projects = tmp # NOTE: No sorting! Order of project versions is STRICTLY determined by the order they are in ProjectRegistry.
 
     names = uniq([p.name for p in projects])
     if list_mode == "flat":
@@ -984,9 +977,9 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
         project_descriptions = []
         for project in projects:
             if '-' in project:
-                project_descriptions += [project_registry.find_project_description(ProjectReference.parse(project))]
+                project_descriptions += [project_registry.get_project_description(ProjectReference.parse(project))]
             elif project in project_registry.get_project_names():
-                project_descriptions += [project_registry.find_project_description(ProjectReference(project, version)) for version in project_registry.get_project_versions(project)]
+                project_descriptions += [project_registry.get_project_description(ProjectReference(project, version)) for version in project_registry.get_project_versions(project)]
             else:
                 raise Exception(f"Unknown project name '{project}'")
 

@@ -124,7 +124,7 @@ def make_omnetpp_project_description(version, base_version=None):
     # TODO -Wno-string-plus-int should probably be moved into INET.
     extra_cflags = (
         "-Wno-string-plus-int" if is_modernized else
-        "-std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations -Wno-string-plus-int" if version >= "4.0" and version < "4.6" else
+        "-std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations -Wno-string-plus-int -Wno-address-of-temporary" if version < "4.6" else
         "-Wno-deprecated-declarations -Wno-string-plus-int" if version >= "4.6" and version < "5.7" else "")
 
     # Adjust settings in configure.user so that a simple ./configure will do in the configuration phase.
@@ -135,7 +135,8 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i.bak 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
         "sed -i.bak 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
         "sed -i.bak 's|^QT_VERSION=4|QT_VERSION=5|' configure.user" if version.startswith("5.0") else None, # 5.0.x too!
-        f"sed -i.bak '/^PERL =/i CFLAGS += {extra_cflags}' Makefile.inc.in" if extra_cflags and version >= "4.0" else None  # no Makefile.inc.in in 3.x yet
+        f"sed -i.bak '/^PERL =/i CFLAGS += {extra_cflags}' Makefile.inc.in" if extra_cflags and version >= "4.0" else  # no Makefile.inc.in in 3.x yet
+        f"sed -i.bak 's/^CFLAGS=.*/CFLAGS=\\\"-O2 -DNDEBUG=1 {extra_cflags}\\\"/' configure.user" if extra_cflags and version < "4.0" else None  # no Makefile.inc.in in 3.x yet
     ]
 
     # More recent releases can handle parallel build

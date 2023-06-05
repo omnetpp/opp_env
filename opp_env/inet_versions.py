@@ -41,56 +41,56 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
 
             # fix up shebang line in inet_featuretool (python -> python2)
-            "sed -i 's| python$| python2|' inet_featuretool" if inet_version >= "3.0" and inet_version < "3.6.7" else "",
+            "sed -i.bak 's| python$| python2|' inet_featuretool" if inet_version >= "3.0" and inet_version < "3.6.7" else "",
 
             # fix "error: flexible array member in union" in sctp.h, later renamed to sctphdr.h
-            "sed -i 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h" if inet_version.startswith("3.") else "",
-            "sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h" if inet_version.startswith("2.") else "",
+            "sed -i.bak 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h" if inet_version.startswith("3.") else "",
+            "sed -i.bak 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h" if inet_version.startswith("2.") else "",
 
             # Linux appears to define "__linux__" nowadays, not "linux"; affected: serializer/headers/defs.h, ExtInterface.cc, RawSocket.cc, OsUdp.cc, Ext.cc, etc., and their renamed/moved versions
-            "for f in $(grep -Rl 'defined(linux)'); do sed -i 's|defined(linux)|defined(__linux__)|' $f; done",
+            "for f in $(grep -Rl 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
 
             # cResultFilterDescriptor was renamed in omnetpp-5.1
-            "sed -i 's|cResultFilterDescriptor|cResultFilterType|' src/inet/common/figures/DelegateSignalConfigurator.cc" if inet_version == "3.4.0" else "",
+            "sed -i.bak 's|cResultFilterDescriptor|cResultFilterType|' src/inet/common/figures/DelegateSignalConfigurator.cc" if inet_version == "3.4.0" else "",
 
             # PacketDrillApp bug in early 3.x versions
-            "sed -i 's|->spp_hbinterval > 0|->spp_hbinterval->getNum() > 0|' src/inet/applications/packetdrill/PacketDrillApp.cc" if inet_version>="3.5.0" and inet_version<="3.6.1" else "",
-            "sed -i 's|->spp_pathmaxrxt > 0|->spp_pathmaxrxt->getNum() > 0|' src/inet/applications/packetdrill/PacketDrillApp.cc" if inet_version>="3.5.0" and inet_version<="3.6.1" else "",
+            "sed -i.bak 's|->spp_hbinterval > 0|->spp_hbinterval->getNum() > 0|' src/inet/applications/packetdrill/PacketDrillApp.cc" if inet_version>="3.5.0" and inet_version<="3.6.1" else "",
+            "sed -i.bak 's|->spp_pathmaxrxt > 0|->spp_pathmaxrxt->getNum() > 0|' src/inet/applications/packetdrill/PacketDrillApp.cc" if inet_version>="3.5.0" and inet_version<="3.6.1" else "",
 
             # INT64_PRINTF_FORMAT was removed in omnetpp-5.3 (?), replace with "l" for simplicity (suits all 64-bit platforms except Windows)
-            "for f in $(grep -Rl 'INT64_PRINTF_FORMAT'); do sed -i 's|INT64_PRINTF_FORMAT|\"l\"|' $f; done" if inet_version.startswith("3.") else "",
+            "for f in $(grep -Rl 'INT64_PRINTF_FORMAT'); do sed -i.bak 's|INT64_PRINTF_FORMAT|\"l\"|' $f; done" if inet_version.startswith("3.") else "",
 
             # fix linklayer/radio/Radio.cc:1134:35: error: redefinition of 'it' with a different type in inet-2.0 thru 2.2
-            "sed -i 's/SensitivityList::iterator it = sensitivityList.find(0.0);/SensitivityList::iterator sit = sensitivityList.find(0.0);/' src/linklayer/radio/Radio.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.3" else None,
-            "sed -i 's/if (it == sensitivityList.end())/if (sit == sensitivityList.end())/' src/linklayer/radio/Radio.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.3" else None,
+            "sed -i.bak 's/SensitivityList::iterator it = sensitivityList.find(0.0);/SensitivityList::iterator sit = sensitivityList.find(0.0);/' src/linklayer/radio/Radio.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.3" else None,
+            "sed -i.bak 's/if (it == sensitivityList.end())/if (sit == sensitivityList.end())/' src/linklayer/radio/Radio.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.3" else None,
 
             # fix networklayer/ipv4/RoutingTableRecorder.cc:166:35: error: invalid suffix on literal in inet-2.3
-            "sed -i 's/\"LL\"/\" LL \"/' src/networklayer/ipv4/RoutingTableRecorder.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.5" else None,
+            "sed -i.bak 's/\"LL\"/\" LL \"/' src/networklayer/ipv4/RoutingTableRecorder.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.5" else None,
 
             # fix src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc
-            "sed -i 's/if (vector_cost<=0)/if (vector_cost == NULL)/' src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "3.0" else None,
-            "sed -i 's/if (vector_cost<=nullptr)/if (vector_cost == nullptr)/' src/inet/routing/extras/dsr/dsr-uu/path-cache.cc" if not is_modernized and inet_version >= "3.0" and inet_version < "3.1" else None,
+            "sed -i.bak 's/if (vector_cost<=0)/if (vector_cost == NULL)/' src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "3.0" else None,
+            "sed -i.bak 's/if (vector_cost<=nullptr)/if (vector_cost == nullptr)/' src/inet/routing/extras/dsr/dsr-uu/path-cache.cc" if not is_modernized and inet_version >= "3.0" and inet_version < "3.1" else None,
 
             # compile fix for omnetpp-4.3..4.6: getArraySize() was supposed to be renamed to getFieldArraySize() in omnetpp-4.3, but then the change was postponed to 5.0 as being a breaking change.
-            "sed -i 's/OMNETPP_VERSION < 0x0403/OMNETPP_VERSION < 0x0500/' src/networklayer/manetrouting/aodv/aodv_msg_struct_descriptor.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
-            "sed -i 's/OMNETPP_VERSION < 0x0403/OMNETPP_VERSION < 0x0500/' src/util/MessageChecker.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
+            "sed -i.bak 's/OMNETPP_VERSION < 0x0403/OMNETPP_VERSION < 0x0500/' src/networklayer/manetrouting/aodv/aodv_msg_struct_descriptor.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
+            "sed -i.bak 's/OMNETPP_VERSION < 0x0403/OMNETPP_VERSION < 0x0500/' src/util/MessageChecker.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
 
             # fix no matching function for call to 'make_pair' in src/networklayer/manetrouting/base/ManetRoutingBase.cc (c++11 change in make_pair() signature)
-            "sed -i 's/std::make_pair<Uint128,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((Uint128)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
-            "sed -i 's/std::make_pair<Uint128,Uint128>(dst, gtwy)/std::make_pair((Uint128)dst, (Uint128)gtwy)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
-            "sed -i 's/std::make_pair<Uint128,Uint128>(destination, nextHop)/std::make_pair((Uint128)destination, (Uint128)nextHop)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
+            "sed -i.bak 's/std::make_pair<Uint128,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((Uint128)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
+            "sed -i.bak 's/std::make_pair<Uint128,Uint128>(dst, gtwy)/std::make_pair((Uint128)dst, (Uint128)gtwy)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
+            "sed -i.bak 's/std::make_pair<Uint128,Uint128>(destination, nextHop)/std::make_pair((Uint128)destination, (Uint128)nextHop)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.0" and inet_version < "2.1" else None,
 
-            "sed -i 's/std::make_pair<ManetAddress,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((ManetAddress)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version == "2.1.0" else None,
-            "sed -i 's/std::make_pair<ManetAddress,ManetAddress>(dst, gtwy)/std::make_pair((ManetAddress)dst, (ManetAddress)gtwy)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version == "2.1.0" else None,
-            "sed -i 's/std::make_pair<ManetAddress,ManetAddress>(destination, nextHop)/std::make_pair((ManetAddress)destination, (ManetAddress)nextHop)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version == "2.1.0" else None,
+            "sed -i.bak 's/std::make_pair<ManetAddress,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((ManetAddress)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version == "2.1.0" else None,
+            "sed -i.bak 's/std::make_pair<ManetAddress,ManetAddress>(dst, gtwy)/std::make_pair((ManetAddress)dst, (ManetAddress)gtwy)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version == "2.1.0" else None,
+            "sed -i.bak 's/std::make_pair<ManetAddress,ManetAddress>(destination, nextHop)/std::make_pair((ManetAddress)destination, (ManetAddress)nextHop)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version == "2.1.0" else None,
 
             # fix no matching function for call to 'make_pair' in src/networklayer/manetrouting/base/ManetRoutingBase.cc (c++11 change in make_pair() signature)
-            "sed -i 's/std::make_pair<ManetAddress,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((ManetAddress)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.2" and inet_version < "2.4" else None,
-            "sed -i 's/std::make_pair<ManetAddress,ManetAddress>(dest, next)/std::make_pair((ManetAddress)dest, (ManetAddress)next)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.2" and inet_version < "2.4" else None,
+            "sed -i.bak 's/std::make_pair<ManetAddress,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((ManetAddress)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.2" and inet_version < "2.4" else None,
+            "sed -i.bak 's/std::make_pair<ManetAddress,ManetAddress>(dest, next)/std::make_pair((ManetAddress)dest, (ManetAddress)next)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc" if not is_modernized and inet_version >= "2.2" and inet_version < "2.4" else None,
 
             # fix IPv6Address.cc:185: non-constant-expression cannot be narrowed from type 'unsigned int' to 'int' in initializer list in inet-2.1.0
-            "sed -i 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
-            "sed -i 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
+            "sed -i.bak 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
+            "sed -i.bak 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
             ],
         "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
         "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],

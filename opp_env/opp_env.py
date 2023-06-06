@@ -128,13 +128,17 @@ def parse_arguments():
 
     subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
 
+    help_nixless = re.sub(r"\s+", " ", """Run without Nix. This mode assumes that all packages that the projects and opp_env itself require are already installed in the system.
+        For opp_env itself, this translates to having 'wget' and/or 'git', and basic tools like 'tar' and 'gzip' available for downloading packages.
+        The packages that OMNeT++ requires are documented in the Installation Guide of the particular version.""")
+
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-j", "--skip-dependencies", default=False, action='store_true', help="Download just the specified projects, skip downloading the projects they depend on")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
-    subparser.add_argument("--nixless", default=False, action='store_true', help="Run without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     subparser = subparsers.add_parser("build", help="Builds the specified projects in their environment")
@@ -144,7 +148,7 @@ def parse_arguments():
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
-    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
@@ -153,7 +157,7 @@ def parse_arguments():
     subparser.add_argument("-p", "--prepare-missing", action=argparse.BooleanOptionalAction, default=True, help="Automatically prepare missing projects by downloading and configuring them")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
-    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
@@ -165,7 +169,7 @@ def parse_arguments():
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help="Whether to change into the directory of the project. The default action is to change into the project root only if the current working directory is outside the project")
-    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
@@ -177,7 +181,7 @@ def parse_arguments():
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--patch", action=argparse.BooleanOptionalAction, default=True, help="Patch/do not patch the project after download")
     subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
-    subparser.add_argument("--nixless", default=False, action='store_true', help="Run entirely without Nix. This mode assumes that all packages that the projects and opp_env itself need are already installed in the system")
+    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
 
     return parser.parse_args(sys.argv[1:])
@@ -221,13 +225,14 @@ def detect_nix():
         output = result.stdout.decode('utf-8')
     except Exception as ex:
         _logger.debug(f"Error: {ex}")
-        raise Exception("Nix does not seem to be installed. You can install it from https://nixos.org/download.html or using your system's package manager (important: at least version {minimum_nix_version} is required). Alternatively, you may try using opp_env with the --nixless option, but it is only likely to work for relatively recent versions of OMNeT++ and models.")
+        raise Exception("Nix does not seem to be installed. You can install it from https://nixos.org/download.html or using your system's package manager (important: at least version {minimum_nix_version} is required). See also the --nixless option in the help.")
+
     # check it is recent enough
     nix_version = output.strip().split()[-1]
     if not re.match("^[0-9.]+$", nix_version):
         raise Exception("Cannot parse Nix version number: Output of 'nix --version' diverges from expected format")
     if natural_less(nix_version, minimum_nix_version):
-        raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. Alternatively, you may try using opp_env with the --nixless option, but it is only likely to work for relatively recent versions of OMNeT++ and models.")
+        raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. See also the --nixless option in the help.")
 
 def detect_tools():
     tools = [ "bash", "git", "wget", "grep", "find", "xargs", "md5sum", "tar", "gzip", "sed", "touch" ]
@@ -307,7 +312,7 @@ class ProjectDescription:
     def get_default_options(self):
         return [option_name for option_name, option_entries in self.options.items() if option_entries.get("is_default")]
 
-    def activate_project_options(self, requested_options, activate_default_options=True):
+    def activate_project_options(self, requested_options, activate_default_options=True, quiet=False):
         def get_conflicting_options(the_option_name, option_names):
             return [o for o in option_names if the_option_name != o and self.options[o].get("category") == self.options[the_option_name].get("category")]
 
@@ -327,7 +332,8 @@ class ProjectDescription:
         new_project_description = copy.deepcopy(self)
 
         if effective_options:
-            _logger.debug(f"Selecting options {cyan(requested_options)} for project {cyan(self)}")
+            if not quiet:
+                _logger.debug(f"Selecting options {cyan(requested_options)} for project {cyan(self)}")
             for option in effective_options:
                 if option in self.options:
                     for field_name, field_value in self.options[option].items():
@@ -884,7 +890,7 @@ class Workspace:
     def run_command(self, command, suppress_stdout=False, check_exitcode=True, tracing=False):
         global project_registry
         if not self.nixless:
-            reference_project_description = project_registry.get_project_latest_version("omnetpp").activate_project_options([])
+            reference_project_description = project_registry.get_project_latest_version("omnetpp").activate_project_options([], quiet=True)
             return self._do_nix_develop(nixos=reference_project_description.nixos,
                         stdenv=reference_project_description.stdenv,
                         session_name="run_command", script=command,

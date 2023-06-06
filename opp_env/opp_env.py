@@ -230,7 +230,12 @@ def detect_nix():
         raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. Alternatively, you may try using opp_env with the --nixless option, but it is only likely to work for relatively recent versions of OMNeT++ and models.")
 
 def detect_tools():
-    tools = [ "bash", "git", "wget", "grep", "find", "xargs", "md5sum", "tar", "gzip", "sed", "touch", "nproc" ]
+    tools = [ "bash", "git", "wget", "grep", "find", "xargs", "md5sum", "tar", "gzip", "sed", "touch" ]
+
+    is_macos = platform.system().lower() == "darwin"
+    if not is_macos:
+        tools.append("nproc")
+
     errors = []
     for tool in tools:
         try:

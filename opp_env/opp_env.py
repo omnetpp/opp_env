@@ -940,7 +940,7 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
     elif list_mode == "grouped":
         for name in names:
             versions = [p.version for p in projects if p.name == name]
-            print(f"{name:<10} {'  '.join(versions)}")
+            print(f"{name:<10} {cyan('  '.join(versions))}")
     elif list_mode == "names":
         for name in names:
             print(name)

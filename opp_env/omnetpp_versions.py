@@ -15,6 +15,8 @@ def trim_lines(text):
     return '\n'.join(trimmed_lines)
 
 def make_omnetpp_project_description(version, base_version=None):
+    canonical_version = version.replace("p", ".") if re.match(r"\d+\.\d+p\d+", version) else version+".0" if version.count('.') == 1 else version
+
     # Some patch releases are installed by downloading the preceding release ("base version"),
     # and patching them from the repo.
     base_version = base_version or version
@@ -117,7 +119,7 @@ def make_omnetpp_project_description(version, base_version=None):
         # to avoid detecting system-wide Tcl/Tk at fixed paths
         "sed -i.bak '/# Compiler and linker options for/a TK_LIBS=\"-ltcl8.5 -ltk8.5\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
         "sed -i.bak '/# Compiler and linker options for/a TK_CFLAGS=\"-Idummy\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
-        
+
     ]
 
     # for older versions we use gcc7 (although a recent compiler with -std=c++03 -fpermissive would also do? -- TODO check)
@@ -152,7 +154,7 @@ def make_omnetpp_project_description(version, base_version=None):
 
     return {
         "name": "omnetpp",
-        "version": version,
+        "version": canonical_version,
         "description": "OMNeT++ base system",
         "warnings": remove_blanks([
             join_nonempty_items(" ", [
@@ -300,8 +302,10 @@ def get_all_omnetpp_patch_branches():
     return [make_omnetpp_project_description(dotx(base_version), base_version) for base_version in base_versions_for_patch_branches]
 
 def get_project_descriptions():
-    return [
+    return sorted([
         *get_all_omnetpp_released_versions(),
         *get_all_omnetpp_patch_branches(),
-        make_omnetpp_project_description("master")
-    ]
+    ], key=lambda p: p["name"] + "-" + p["version"], reverse=True) + [ make_omnetpp_project_description("master") ]
+
+
+

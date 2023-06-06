@@ -111,6 +111,13 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i.bak '/%pure_parser/a %lex-param {void *statePtr}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
         "sed -i.bak '/%pure_parser/a %parse-param {void *statePtr}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
         "sed -i.bak '/void yyerror (const char \\*s);/a void yyerror (void *statePtr, const char *s) {yyerror(s);}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
+
+        # to avoid "error: invalid argument '-std=c++03' not allowed with 'C'" with tkImgPNG.c
+        "sed -i.bak 's/\\$(CC) -c \\$(COPTS)/\\$(CC) -c /' src/tkenv/Makefile" if not is_modernized and version == "4.0" else None,
+        # to avoid detecting system-wide Tcl/Tk at fixed paths
+        "sed -i.bak '/# Compiler and linker options for/a TK_LIBS=\"-ltcl8.5 -ltk8.5\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
+        "sed -i.bak '/# Compiler and linker options for/a TK_CFLAGS=\"-Idummy\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
+        
     ]
 
     # for older versions we use gcc7 (although a recent compiler with -std=c++03 -fpermissive would also do? -- TODO check)

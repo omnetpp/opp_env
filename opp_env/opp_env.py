@@ -878,7 +878,7 @@ class Workspace:
 
         # This is a workaround for the following warning printed by Perl:
         # perl: warning: Setting locale failed. / Please check that your locale settings: / LANGUAGE = (unset), / LC_ALL = (unset), ... / Falling back to the standard locale ("C").
-        env["LC_ALL"] = "C.utf8"
+        env["LC_ALL"] = "C"
 
         result = self._do_run_command(nix_develop_command, env=env, suppress_stdout=not interactive and suppress_stdout, check_exitcode=check_exitcode)
 

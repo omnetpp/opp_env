@@ -615,7 +615,7 @@ class Workspace:
 
     def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, **kwargs):
         _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
-        project_dir = self.root_directory + "/" + project_description.get_full_name()
+        project_dir = self.get_project_root_directory(project_description)
         if os.path.exists(project_dir):
             raise Exception("f{project_dir} already exists")
         try:
@@ -1080,7 +1080,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
 
     if chdir and projects:
         first_project_description = resolve_projects(projects)[0]
-        first_project_dir = os.path.join(workspace_directory, first_project_description.get_full_name())
+        first_project_dir = workspace.get_project_root_directory(first_project_description)
         if chdir == "if-outside":
             chdir = not is_subdirectory(os.getcwd(), first_project_dir)  # "is outside the project dir"
         if chdir:

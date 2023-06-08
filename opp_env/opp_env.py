@@ -832,7 +832,13 @@ class Workspace:
         outputs = { self, nixpkgs, flake-utils }:
         flake-utils.lib.eachDefaultSystem(system:
         let
-            pkgs = import nixpkgs { inherit system; };
+            overlay = final: prev: {
+                # allow python2 to be installed despite being EOL and having known vulnerabilities
+                python2 = prev.python2.overrideAttrs (oldAttrs: {
+                    meta = oldAttrs.meta // { knownVulnerabilities = []; };
+                });
+            };
+            pkgs = import nixpkgs { inherit system; overlays = [ overlay ]; };
             in rec {
                 devShells = rec {
                     default = pkgs.@STDENV@.mkDerivation {

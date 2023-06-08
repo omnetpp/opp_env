@@ -583,6 +583,8 @@ class Workspace:
         opp_env_dir = os.path.join(dir, Workspace.WORKSPACE_ADMIN_DIR)
         if os.path.isdir(opp_env_dir):
             raise Exception(f"'{dir}' is already an opp_env workspace")
+        if re.search("\\s", dir):
+            raise Exception(f"Whitespace characters are not allowed in the name and path of the workspace directory")
         os.mkdir(opp_env_dir)
 
     def get_workspace_admin_directory(self):

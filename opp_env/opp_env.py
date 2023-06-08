@@ -139,6 +139,7 @@ def parse_arguments():
     subparser.add_argument("--cleanup", action=argparse.BooleanOptionalAction, default=True, help="Specifies whether to delete partially downloaded project if download fails or is interrupted")
     subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
+    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
 
     subparser = subparsers.add_parser("build", help="Builds the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -149,6 +150,7 @@ def parse_arguments():
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
+    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -158,6 +160,7 @@ def parse_arguments():
     subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
     subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
+    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -170,6 +173,7 @@ def parse_arguments():
     subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help="Whether to change into the directory of the project. The default action is to change into the project root only if the current working directory is outside the project")
     subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
+    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     subparser.add_argument("projects", nargs="+", help="List of projects")
@@ -182,6 +186,7 @@ def parse_arguments():
     subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
     subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
+    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
 
     return parser.parse_args(sys.argv[1:])
 
@@ -254,8 +259,9 @@ class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
                  required_projects={}, external_nix_packages=[], vars_to_keep=[],
-                 download_url=None, git_url=None, git_branch=None, download_commands=None,
-                 patch_commands=[], patch_url=None,
+                 download_url=None, git_url=None, git_branch=None,
+                 download_commands=[], download_commands_local=[],
+                 patch_commands=[], patch_commands_local=[], patch_url=None,
                  shell_hook_commands=[], setenv_commands=[],
                  build_commands=[], clean_commands=[],
                  options=None):
@@ -275,7 +281,9 @@ class ProjectDescription:
         self.git_url = git_url
         self.git_branch = git_branch
         self.download_commands = remove_empty(download_commands)
+        self.download_commands_local = remove_empty(download_commands_local)
         self.patch_commands = remove_empty(patch_commands)
+        self.patch_commands_local = remove_empty(patch_commands_local)
         self.patch_url = patch_url
         self.shell_hook_commands = remove_empty(shell_hook_commands)
         self.setenv_commands = remove_empty(setenv_commands)
@@ -630,20 +638,41 @@ class Workspace:
         data['state'] = state
         self.write_project_state_file(project_description, data)
 
-    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, **kwargs):
+    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, **kwargs):
+        def get_env(varname, what):
+            value = os.environ.get(varname)
+            _logger.debug(f"Checking {cyan('$'+varname)} for {what}: {cyan(value)}")
+            if not value:
+                raise Exception(f"Environment variable {varname} not set, it should point to {what}")
+            return value
+
         _logger.info(f"Downloading project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)}")
         project_dir = self.get_project_root_directory(project_description)
         if os.path.exists(project_dir):
-            raise Exception("f{project_dir} already exists")
+            raise Exception(f"{project_dir} already exists")
         try:
             if project_description.download_commands:
-                self.nix_develop(effective_project_descriptions, self.root_directory, project_description.download_commands, run_setenv=False, **kwargs)
+                if local and not project_description.download_commands_local:
+                    raise Exception(f"Cannot download with '--local': Field 'download_commands_local' is not defined in the description of project '{project_description}'")
+                commands = project_description.download_commands if not local else project_description.download_commands_local
+                self.nix_develop(effective_project_descriptions, self.root_directory, commands, run_setenv=False, **kwargs)
             elif project_description.download_url:
-                self.download_and_unpack_tarball(project_description.download_url, project_dir)
+                if not local:
+                    self.download_and_unpack_tarball(project_description.download_url, project_dir)
+                else:
+                    downloads_dir = get_env("DOWNLOADS_DIR", "the downloads directory on the local disk")
+                    fname = os.path.basename(project_description.download_url)
+                    if project_description.name.lower() not in fname.lower():  # e.g. "master.tar.gz"
+                        fname = project_description.name() + "-" + fname
+                    tarball = os.path.join(downloads_dir, fname)
+                    self.unpack_tarball(tarball, project_dir)
             elif project_description.git_url:
+                if not local:
+                    git_url = project_description.git_url
+                else:
+                    git_url = get_env(project_description.name.upper() + "_REPO", f"the location of the '{project_description.name}' git repository on the local disk")
                 branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
-                #TODO maybe optionally use --single-branch
-                self.run_command(f"git clone --config advice.detachedHead=false {branch_option} {project_description.git_url} {project_dir}")
+                self.run_command(f"git clone --config advice.detachedHead=false {branch_option} {git_url} {project_dir}") #TODO maybe optionally use --single-branch
             else:
                 raise Exception(f"{project_description}: No download_url or download_commands in project description -- check project options for alternative download means (enter 'opp_env info {project_description}')")
             if not os.path.exists(project_dir):
@@ -652,10 +681,11 @@ class Workspace:
             if project_description.patch_commands or project_description.patch_url:
                 if patch:
                     _logger.info(f"Patching project {cyan(project_description.get_full_name())}")
-                    if project_description.patch_commands:
-                        self.nix_develop(effective_project_descriptions, project_dir, project_description.patch_commands, run_setenv=False, **kwargs)
                     if project_description.patch_url:
                         self.download_and_apply_patch(project_description.patch_url, project_dir)
+                    patch_commands = project_description.patch_commands_local if local and project_description.patch_commands_local else project_description.patch_commands
+                    if patch_commands:
+                        self.nix_develop(effective_project_descriptions, project_dir, patch_commands, run_setenv=False, **kwargs)
                 else:
                     _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
 
@@ -762,6 +792,10 @@ class Workspace:
             print(self._read_file_if_exists(wget_log_file).strip())
             print(self._read_file_if_exists(tar_log_file).strip())
             raise e
+
+    def unpack_tarball(self, tarball_fname, target_folder):
+        os.makedirs(target_folder)
+        self.run_command(f"cd {target_folder} && tar --strip-components=1 -xzf {tarball_fname}")
 
     def download_and_apply_patch(self, patch_url, target_folder):
         wget_log_file = os.path.join(target_folder, "wget.log")

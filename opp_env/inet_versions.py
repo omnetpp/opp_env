@@ -108,24 +108,6 @@ def make_inet_project_description(inet_version, omnetpp_versions):
                 "git_url": "git@github.com:inet-framework/inet.git",
                 "git_branch": git_branch_or_tag_name,
             },
-            "from-local": {
-                "option_description": f"Install from release tarball on local disk ($DOWNLOADS_DIR)",
-                "category": "download",
-                "vars_to_keep": [ "DOWNLOADS_DIR" ],
-                "download_commands": [
-                    '[ -d "$DOWNLOADS_DIR" ] || error "Error: DOWNLOADS_DIR=$DOWNLOADS_DIR is not set or does not point to an existing directory"',
-                    f"mkdir inet-{inet_version} && cd inet-{inet_version} && tar --strip-components=1 -xzf $DOWNLOADS_DIR/inet-{inet_version}-src.tgz"
-                ],
-            },
-            "from-local-git": {
-                "option_description": f"Install from git repo on local disk ($INET_REPO)",
-                "category": "download",
-                "vars_to_keep": [ "INET_REPO" ],
-                "download_commands": [
-                    '[ -d $INET_REPO/.git ] || error "Error: INET_REPO=$INET_REPO is not set or does not point to a git repository on the local disk"',
-                    f"git clone -l $INET_REPO inet-{inet_version} --branch {git_branch_or_tag_name}"
-                ],
-            }
         }
     }
 

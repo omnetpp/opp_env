@@ -83,11 +83,11 @@ def make_omnetpp_project_description(version, base_version=None):
     ]
 
     apply_release_patch_from_local_repo_commands = [] if version == base_version else [
-        f"# apply diff between omnetpp-{base_version} and omnetpp-{version}",
+        f"# apply diff between omnetpp-{base_version} and {git_branch_or_tag_name}",
         f'[ -d $OMNETPP_REPO/.git ] || error "Error: OMNETPP_REPO=$OMNETPP_REPO is not set or does not point to a git repository on the local disk (required for obtaining patch to upgrade base release omnetpp-{base_version} to requested version omnetpp-{version})"',
         f"git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure >configure",
         f"git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure.in >configure.in",
-        f"git --git-dir=$OMNETPP_REPO/.git diff omnetpp-{base_version}..omnetpp-{version} --patch > patchfile.diff",
+        f"git --git-dir=$OMNETPP_REPO/.git diff omnetpp-{base_version}..origin/{git_branch_or_tag_name} --patch > patchfile.diff",
         f"git apply --whitespace=nowarn --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
     ]
 
@@ -176,6 +176,12 @@ def make_omnetpp_project_description(version, base_version=None):
             *source_patch_commands,
             *configuration_patch_commands
         ],
+        "patch_commands_local": [
+            *apply_release_patch_from_local_repo_commands,
+            *source_patch_commands,
+            *configuration_patch_commands
+        ],
+        "vars_to_keep": [ "OMNETPP_REPO" ],
         "shell_hook_commands": [
             "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if qt_packages else None,
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,
@@ -251,34 +257,6 @@ def make_omnetpp_project_description(version, base_version=None):
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
                 "git_branch": git_branch_or_tag_name,
             },
-            "from-local": {
-                "option_description": f"Install from release tarball (and git repo) on local disk ($DOWNLOADS_DIR)",
-                "category": "download",
-                "vars_to_keep": [ "DOWNLOADS_DIR", "OMNETPP_REPO" ],
-                "download_commands": [
-                    '[ -d "$DOWNLOADS_DIR" ] || error "Error: DOWNLOADS_DIR=$DOWNLOADS_DIR is not set or does not point to an existing directory"',
-                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf $DOWNLOADS_DIR/omnetpp-{base_version}-src.tgz" if version == "master" else
-                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf $DOWNLOADS_DIR/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
-                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf $DOWNLOADS_DIR/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else
-                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf $DOWNLOADS_DIR/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
-                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf $DOWNLOADS_DIR/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
-                    f"mkdir omnetpp-{version} && cd omnetpp-{version} && tar --strip-components=1 -xzf $DOWNLOADS_DIR/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else ""
-                ],
-                "patch_commands": [
-                    *apply_release_patch_from_local_repo_commands,
-                    *source_patch_commands,
-                    *configuration_patch_commands
-                ],
-            },
-            "from-local-git": {
-                "option_description": f"Install from git repo on local disk at $OMNETPP_REPO (IDE will not be available)",
-                "category": "download",
-                "vars_to_keep": [ "OMNETPP_REPO" ],
-                "download_commands": [
-                    '[ -d $OMNETPP_REPO/.git ] || error "Error: OMNETPP_REPO=$OMNETPP_REPO is not set or does not point to a git repository on the local disk"',
-                    f"git clone -l $OMNETPP_REPO omnetpp-{version} --branch {git_branch_or_tag_name}"
-                ],
-            }
         }
     }
 

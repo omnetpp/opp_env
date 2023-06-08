@@ -545,6 +545,9 @@ class Workspace:
     INCOMPLETE = "INCOMPLETE"
     DOWNLOADED = "DOWNLOADED"
 
+    WORKSPACE_ADMIN_DIR = ".opp_env_workspace"
+    PROJECT_ADMIN_DIR = ".opp_env"
+
     def __init__(self, root_directory, nixless=False):
         assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
@@ -553,7 +556,7 @@ class Workspace:
             detect_tools()
         else:
             detect_nix()
-        opp_env_directory = os.path.join(self.root_directory, ".opp_env")
+        opp_env_directory = os.path.join(self.root_directory, self.WORKSPACE_ADMIN_DIR)
         if not os.path.exists(opp_env_directory):
             raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn in into one")
         _logger.debug(f"Workspace created, {root_directory=}, {nixless=}")
@@ -562,7 +565,7 @@ class Workspace:
     def find_workspace(from_dir=None):
         dir = os.path.abspath(from_dir) if from_dir else os.getcwd()
         while True:
-            if os.path.isdir(os.path.join(dir, ".opp_env")):
+            if os.path.isdir(os.path.join(dir, Workspace.WORKSPACE_ADMIN_DIR)):
                 return dir
             parent_dir = os.path.dirname(dir)
             if parent_dir == dir:
@@ -577,26 +580,38 @@ class Workspace:
             dir = os.getcwd()
         if not os.path.isdir(dir):
             raise Exception(f"Directory does not exist: {dir}")
-        opp_env_dir = os.path.join(dir, ".opp_env")
+        opp_env_dir = os.path.join(dir, Workspace.WORKSPACE_ADMIN_DIR)
         if os.path.isdir(opp_env_dir):
             raise Exception(f"'{dir}' is already an opp_env workspace")
         os.mkdir(opp_env_dir)
 
+    def get_workspace_admin_directory(self):
+        return os.path.join(self.root_directory, self.WORKSPACE_ADMIN_DIR)
+
     def get_project_root_directory(self, project_description):
         return os.path.join(self.root_directory, project_description.get_full_folder_name())
+
+    def get_project_admin_directory(self, project_description, create=False):
+        dir = os.path.join(self.get_project_root_directory(project_description), self.PROJECT_ADMIN_DIR)
+        if create and not os.path.isdir(dir):
+            os.mkdir(dir)
+        return dir
+
+    def get_project_admin_file(self, project_description, filename, create_dir=False):
+        return os.path.join(self.get_project_admin_directory(project_description, create=create_dir), filename)
 
     def print_project_state(self, project_description):
         _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green(self.get_project_state(project_description))}, {self.check_project_state(project_description)}")
 
     def read_project_state_file(self, project_description):
-        state_file_name = os.path.join(self.get_project_root_directory(project_description), ".opp_env_state")
+        state_file_name = self.get_project_admin_file(project_description, "state")
         if not os.path.isfile(state_file_name):
             return {}
         with open(state_file_name) as f:
             return json.load(f)
 
     def write_project_state_file(self, project_description, data):
-        state_file_name = os.path.join(self.get_project_root_directory(project_description), ".opp_env_state")
+        state_file_name = self.get_project_admin_file(project_description, "state", create_dir=True)
         with open(state_file_name, "w") as f:
             json.dump(data, f)
 
@@ -673,11 +688,14 @@ class Workspace:
 
     def mark_project_state(self, project_description):
         # exclude the Simulation IDE's directory from the md5sum, because ./configure and eclipse itself modifies stuff in it
-        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
-        self.run_command(f"find {self.get_project_root_directory(project_description)} -type f -a -not -path './ide/*' -print0 | xargs -0 md5sum > {file_list_file_name}")
+        dir = self.get_project_root_directory(project_description)
+        admin_dir = self.get_project_admin_directory(project_description)
+        ide_dir = os.path.join(dir, "ide")
+        file_list_file_name = self.get_project_admin_file(project_description, "filelist.md5", create_dir=True)
+        self.run_command(f"find {dir} \\( -path {admin_dir} -o -path {ide_dir} \\) -prune -o -type f -print0 | xargs -0 md5sum > {file_list_file_name}")
 
     def check_project_state(self, project_description):
-        file_list_file_name = os.path.join(self.root_directory, ".opp_env/" + project_description.get_full_folder_name() + ".md5")
+        file_list_file_name = self.get_project_admin_file(project_description, "filelist.md5")
         if not os.path.exists(file_list_file_name):
             return red('UNKNOWN -- project state not yet marked')
         # note: this won't detect if extra files were added to the project
@@ -833,7 +851,7 @@ class Workspace:
         nix_packages = uniq(nix_packages + tools_nix_packages)
 
         shell_options = "-exo pipefail" if tracing else "-eo pipefail"
-        flake_dir = os.path.join(self.root_directory, ".opp_env")
+        flake_dir = self.get_workspace_admin_directory()
         flake_file_name = os.path.join(flake_dir, "flake.nix")
         with open(flake_file_name, "w") as f:
             nix_develop_flake = (nix_develop_flake

@@ -285,9 +285,8 @@ class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
                  required_projects={}, nix_packages=[], vars_to_keep=[],
-                 download_url=None, git_url=None, git_branch=None,
-                 download_commands=[], download_commands_local=[],
-                 patch_commands=[], patch_commands_local=[], patch_url=None,
+                 download_url=None, git_url=None, git_branch=None, download_commands=[],
+                 patch_commands=[], patch_url=None,
                  shell_hook_commands=[], setenv_commands=[],
                  build_commands=[], clean_commands=[],
                  options=None):
@@ -307,9 +306,7 @@ class ProjectDescription:
         self.git_url = git_url
         self.git_branch = git_branch
         self.download_commands = remove_empty(download_commands)
-        self.download_commands_local = remove_empty(download_commands_local)
         self.patch_commands = remove_empty(patch_commands)
-        self.patch_commands_local = remove_empty(patch_commands_local)
         self.patch_url = patch_url
         self.shell_hook_commands = remove_empty(shell_hook_commands)
         self.setenv_commands = remove_empty(setenv_commands)
@@ -678,9 +675,7 @@ class Workspace:
             raise Exception(f"{project_dir} already exists")
         try:
             if project_description.download_commands:
-                if local and not project_description.download_commands_local:
-                    raise Exception(f"Cannot download with '--local': Field 'download_commands_local' is not defined in the description of project '{project_description}'")
-                commands = project_description.download_commands if not local else project_description.download_commands_local
+                commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.download_commands ]
                 self.nix_develop(effective_project_descriptions, self.root_directory, commands, run_setenv=False, **kwargs)
             elif project_description.download_url:
                 if not local:
@@ -688,7 +683,7 @@ class Workspace:
                 else:
                     downloads_dir = get_env("DOWNLOADS_DIR", "the downloads directory on the local disk")
                     fname = os.path.basename(project_description.download_url)
-                    if project_description.name.lower() not in fname.lower():  # e.g. "master.tar.gz"
+                    if project_description.name.lower() not in fname.lower():  # e.g. just "v1.2.0.tar.gz"
                         fname = project_description.name() + "-" + fname
                     tarball = os.path.join(downloads_dir, fname)
                     self.unpack_tarball(tarball, project_dir)
@@ -709,9 +704,9 @@ class Workspace:
                     _logger.info(f"Patching project {cyan(project_description.get_full_name())}")
                     if project_description.patch_url:
                         self.download_and_apply_patch(project_description.patch_url, project_dir)
-                    patch_commands = project_description.patch_commands_local if local and project_description.patch_commands_local else project_description.patch_commands
-                    if patch_commands:
-                        self.nix_develop(effective_project_descriptions, project_dir, patch_commands, run_setenv=False, **kwargs)
+                    if project_description.patch_commands:
+                        commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.patch_commands ]
+                        self.nix_develop(effective_project_descriptions, project_dir, commands, run_setenv=False, **kwargs)
                 else:
                     _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
 

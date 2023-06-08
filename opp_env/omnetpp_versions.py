@@ -74,21 +74,20 @@ def make_omnetpp_project_description(version, base_version=None):
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version >= "6.0" else []
 
     # Unreleased patch versions are produced by downloading the preceding release, then applying the diff downloaded from github.
-    apply_release_patch_from_github_commands = [] if version == base_version else [
-        f"# apply diff between omnetpp-{base_version} and omnetpp-{version}",
-        f"wget -O configure {github_url}/raw/omnetpp-{base_version}/configure",
-        f"wget -O configure.in {github_url}/raw/omnetpp-{base_version}/configure.in",
-        f"wget -O patchfile.diff {github_url}/compare/omnetpp-{base_version}...omnetpp-{version}.patch",
-        f"git apply --whitespace=nowarn --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
-    ]
-
-    apply_release_patch_from_local_repo_commands = [] if version == base_version else [
-        f"# apply diff between omnetpp-{base_version} and {git_branch_or_tag_name}",
-        f'[ -d $OMNETPP_REPO/.git ] || error "Error: OMNETPP_REPO=$OMNETPP_REPO is not set or does not point to a git repository on the local disk (required for obtaining patch to upgrade base release omnetpp-{base_version} to requested version omnetpp-{version})"',
-        f"git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure >configure",
-        f"git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure.in >configure.in",
-        f"git --git-dir=$OMNETPP_REPO/.git diff omnetpp-{base_version}..origin/{git_branch_or_tag_name} --patch > patchfile.diff",
-        f"git apply --whitespace=nowarn --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+    base_release_to_actual_version_patch_commands = [] if version == base_version else [
+        f"echo 'Patching vanilla omnetpp-{base_version} to {git_branch_or_tag_name} from git...'",
+        'if [ "$LOCAL_OPERATION" == "" ]; then',
+        f"  wget -O configure {github_url}/raw/omnetpp-{base_version}/configure",
+        f"  wget -O configure.in {github_url}/raw/omnetpp-{base_version}/configure.in",
+        f"  wget -O patchfile.diff {github_url}/compare/omnetpp-{base_version}...omnetpp-{version}.patch",
+        f"  git apply --whitespace=nowarn --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+        'else',
+        f'  [ -d $OMNETPP_REPO/.git ] || error "Error: OMNETPP_REPO=$OMNETPP_REPO is not set or does not point to a git repository on the local disk (required for obtaining patch to upgrade base release omnetpp-{base_version} to requested version omnetpp-{version})"',
+        f"  git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure >configure",
+        f"  git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure.in >configure.in",
+        f"  git --git-dir=$OMNETPP_REPO/.git diff omnetpp-{base_version}..origin/{git_branch_or_tag_name} --patch > patchfile.diff",
+        f"  git apply --whitespace=nowarn --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+        'fi',
     ]
 
     # Vanilla 4.x releases need to be patched to compile under Nix.
@@ -172,17 +171,6 @@ def make_omnetpp_project_description(version, base_version=None):
         "stdenv": None, # defined as default option
         "nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
-        "patch_commands": [
-            *apply_release_patch_from_github_commands,
-            *source_patch_commands,
-            *configuration_patch_commands
-        ],
-        "patch_commands_local": [
-            *apply_release_patch_from_local_repo_commands,
-            *source_patch_commands,
-            *configuration_patch_commands
-        ],
-        "vars_to_keep": [ "OMNETPP_REPO" ],
         "shell_hook_commands": [
             "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if qt_packages else None,
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,
@@ -244,12 +232,22 @@ def make_omnetpp_project_description(version, base_version=None):
                     f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
                     f"{github_url}/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else "",
+                "patch_commands": [
+                    *base_release_to_actual_version_patch_commands,
+                    *source_patch_commands,
+                    *configuration_patch_commands
+                ],
+                "vars_to_keep": [ "OMNETPP_REPO" ],
             },
             "from-source-archive": {
                 "option_description": "Install from source archive on GitHub (IDE will not be available)",
                 "option_category": "download",
                 "option_is_default": version in missing_releases,
                 "download_url": f"https://github.com/omnetpp/omnetpp/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz",
+                "patch_commands": [
+                    *source_patch_commands,
+                    *configuration_patch_commands
+                ],
             },
             "from-git": {
                 "option_description": "Install from git repo on GitHub (IDE will not be available)",
@@ -257,6 +255,10 @@ def make_omnetpp_project_description(version, base_version=None):
                 "option_is_default": version == "master",
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
                 "git_branch": git_branch_or_tag_name,
+                "patch_commands": [
+                    *source_patch_commands,
+                    *configuration_patch_commands
+                ],
             },
         }
     }

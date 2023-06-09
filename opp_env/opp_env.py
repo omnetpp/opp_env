@@ -263,7 +263,7 @@ def detect_tools():
 class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
-                 required_projects={}, external_nix_packages=[], vars_to_keep=[],
+                 required_projects={}, nix_packages=[], vars_to_keep=[],
                  download_url=None, git_url=None, git_branch=None,
                  download_commands=[], download_commands_local=[],
                  patch_commands=[], patch_commands_local=[], patch_url=None,
@@ -280,7 +280,7 @@ class ProjectDescription:
         self.stdenv = stdenv
         self.folder_name = folder_name or name
         self.required_projects = required_projects
-        self.external_nix_packages = remove_empty(external_nix_packages)
+        self.nix_packages = remove_empty(nix_packages)
         self.vars_to_keep = remove_empty(vars_to_keep)
         self.download_url = download_url
         self.git_url = git_url
@@ -820,7 +820,7 @@ class Workspace:
 
         session_name = '+'.join([str(d) for d in reversed(effective_project_descriptions)])
         project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
-        project_nix_packages = sum([p.external_nix_packages for p in effective_project_descriptions], [])
+        project_nix_packages = sum([p.nix_packages for p in effective_project_descriptions], [])
         project_vars_to_keep = sum([p.vars_to_keep for p in effective_project_descriptions], [])
         project_setenv_commands = sum([[f"cd '{self.get_project_root_directory(p)}'", *p.setenv_commands] for p in effective_project_descriptions], [])
         project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={self.get_project_root_directory(p)}" for p in effective_project_descriptions]
@@ -1057,14 +1057,14 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
             print(f"\nRequires:")
             for name, versions in project_description.required_projects.items():
                 print(f"- {cyan(name)}: {' / '.join(versions)}")
-        if project_description.nixos or project_description.stdenv or project_description.external_nix_packages:
+        if project_description.nixos or project_description.stdenv or project_description.nix_packages:
             print("\nNix:")
             if project_description.nixos:
                 print(f"- version:  {cyan(project_description.nixos)}")
             if project_description.stdenv:
                 print(f"- stdenv:   {cyan(project_description.stdenv)}")
-            if project_description.external_nix_packages:
-                print(f"- packages: {cyan(' '.join(project_description.external_nix_packages))}")
+            if project_description.nix_packages:
+                print(f"- packages: {cyan(' '.join(project_description.nix_packages))}")
         if project_description.options:
             print("\nAvailable options:")
             for option_name, option in project_description.options.items():

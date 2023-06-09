@@ -22,7 +22,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
         "folder_name": "inet",
         # TODO "catalog_url": "https://omnetpp.org/download-items/Antnet.html",
         "required_projects": {"omnetpp": omnetpp_versions}, # list(set([dotx(v) for v in omnetpp_versions]))},
-        "external_nix_packages":
+        "nix_packages":
             ["z3"] if inet_version >= "4.4" else
             [] if inet_version >= "4.0" else # inet-4.x uses omnetpp-6.x, so python3 doesn't need to be spelled out
             ["python3"] if inet_version >= "3.6.7" or is_modernized else

@@ -9,7 +9,7 @@ def make_veins_project_description(version, omnetpp_versions):
         "name": "veins", "version": version,
         "description": "The open source vehicular network simulation framework.",
         "required_projects": {"omnetpp": omnetpp_versions},
-        "external_nix_packages": ["sumo"] if version >= "5.1" else ["sumo", "python2"],
+        "nix_packages": ["sumo"] if version >= "5.1" else ["sumo", "python2"],
         "patch_commands": [
             "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if version<="4.6" else ""
         ],

@@ -169,7 +169,7 @@ def make_omnetpp_project_description(version, base_version=None):
         ]),
         "nixos": "nixos-23.05", # MUST NOT BE CHANGED FOR EXISTING VERSIONS
         "stdenv": None, # defined as default option
-        "external_nix_packages":
+        "nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
         "patch_commands": [
             *apply_release_patch_from_github_commands,

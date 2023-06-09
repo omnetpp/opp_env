@@ -1055,7 +1055,19 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
         if project_description.warnings:
             for warning in project_description.warnings:
                 print(yellow("\nWARNING: ") + warning)
-        if (project_description.options):
+        if (project_description.required_projects):
+            print(f"\nRequires:")
+            for name, versions in project_description.required_projects.items():
+                print(f"- {cyan(name)}: {' / '.join(versions)}")
+        if project_description.nixos or project_description.stdenv or project_description.external_nix_packages:
+            print("\nNix:")
+            if project_description.nixos:
+                print(f"- version:  {cyan(project_description.nixos)}")
+            if project_description.stdenv:
+                print(f"- stdenv:   {cyan(project_description.stdenv)}")
+            if project_description.external_nix_packages:
+                print(f"- packages: {cyan(' '.join(project_description.external_nix_packages))}")
+        if project_description.options:
             print("\nAvailable options:")
             for option_name, option in project_description.options.items():
                 option_description = option.get('option_description')
@@ -1064,10 +1076,6 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
                     print(f"- {cyan(option_name)}{default_mark}: {option_description}")
                 else:
                     print(f"- {cyan(option_name)}{default_mark}")
-        if (project_description.required_projects):
-            print(f"\nRequires:")
-            for name, versions in project_description.required_projects.items():
-                print(f"- {cyan(name)}: {' / '.join(versions)}")
         if len(project_descriptions) > 1:
             print("\n--------")
     print()

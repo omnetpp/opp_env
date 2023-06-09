@@ -117,8 +117,13 @@ def parse_arguments():
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     subparser = subparsers.add_parser("list", help="Lists all available projects")
-    subparser.add_argument("project_name_patterns", nargs="*", metavar="project-name-or-pattern", help="Names of projects to list (omit to list all)")
-    subparser.add_argument("-m", "--mode", dest="list_mode", choices=["flat", "grouped", "names", "expand", "combinations"], default="grouped", help="Listing mode")
+    subparser.add_argument("project_name_patterns", nargs="*", metavar="project-name-or-pattern", help="Project names, project names with versions, or in general, regular expressions that match the beginning of the project names with versions to be selected. Omit to list all projects.")
+    group = subparser.add_mutually_exclusive_group()
+    group.add_argument("--flat", dest="list_mode", action="store_const", const="flat", help="List projects with available versions, one per line")
+    group.add_argument("--grouped", dest="list_mode", action="store_const", const="grouped", help="List the available versions for each project")
+    group.add_argument("--names", dest="list_mode", action="store_const", const="names", help="List project names only (without version numbers)")
+    group.add_argument("--expand", dest="list_mode", action="store_const", const="expand", help="Expand dependency list of each matching project in the default version combination")
+    group.add_argument("--expand-all", dest="list_mode", action="store_const", const="expand-all", help="Expand dependency list of each matching project in all supported version combinations")
 
     subparser = subparsers.add_parser("info", help="Describes the specified project")
     subparser.add_argument("projects", nargs="*", help="The list of projects to describe. You can specify exact versions like 'inet-4.0' or project names like 'inet'. The latter will print info on all versions of the project. An empty list prints info on all projects.")
@@ -1006,19 +1011,12 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
     elif list_mode == "expand":
         for project in projects:
             expanded = project_registry.expand_dependencies([project])
-            print(project, "-->", expanded)
-    elif list_mode == "combinations":
-        grouped = False #TODO
-        if grouped:
-            for project in projects:
-                combinations_list = project_registry.expand_dependencies([project], return_all=True)
-                print(project, "-->", combinations_list)
-        else:
-            for project in projects:
-                combinations_list = project_registry.expand_dependencies([project], return_all=True)
-                for combination in combinations_list:
-                    print(" ".join([p.get_full_name() for p in reversed(combination)]))
-
+            print(' '.join([p.get_full_name() for p in reversed(expanded)]))
+    elif list_mode == "expand-all":
+        for project in projects:
+            combinations_list = project_registry.expand_dependencies([project], return_all=True)
+            for combination in combinations_list:
+                print(' '.join([p.get_full_name() for p in reversed(combination)]))
     else:
         raise Exception(f"invalid list mode '{list_mode}'")
 

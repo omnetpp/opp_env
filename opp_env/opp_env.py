@@ -381,7 +381,7 @@ class ProjectRegistry:
         all_project_descriptions = []
         for fname in python_files:
             module = importlib.import_module("opp_env." + fname)
-            raw_project_descriptions = module.find_project_descriptions()
+            raw_project_descriptions = module.get_project_descriptions()
             project_descriptions = [ProjectDescription(**e) for e in raw_project_descriptions]
             all_project_descriptions += project_descriptions
 

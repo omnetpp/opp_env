@@ -219,20 +219,20 @@ def make_omnetpp_project_description(version, base_version=None):
         "options": {  # note: git master doesn't have all these download options
             "gcc7": {
                 "option_description": "Use an older version of the gcc compiler toolchain for the build",
-                "category": "compiler",
-                "is_default": use_gcc7,
+                "option_category": "compiler",
+                "option_is_default": use_gcc7,
                 "stdenv": "gcc7Stdenv",
             },
             "clang14": {
                 "option_description": "Use a recent version of the clang toolchain for the build",
-                "category": "compiler",
-                "is_default": not use_gcc7,
+                "option_category": "compiler",
+                "option_is_default": not use_gcc7,
                 "stdenv": "llvmPackages_14.stdenv",
             },
             "from-release": {
                 "option_description": "Install from release tarball on GitHub",
-                "category": "download",
-                "is_default": version not in missing_releases and version != "master",
+                "option_category": "download",
+                "option_is_default": version not in missing_releases and version != "master",
                 "download_url":
                     "" if version in missing_releases or version == "master" else
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-macos-x86_64.tgz" if is_macos and (base_version.startswith("6.") or base_version == "5.7") else
@@ -246,14 +246,14 @@ def make_omnetpp_project_description(version, base_version=None):
             },
             "from-source-archive": {
                 "option_description": "Install from source archive on GitHub (IDE will not be available)",
-                "category": "download",
-                "is_default": version in missing_releases,
+                "option_category": "download",
+                "option_is_default": version in missing_releases,
                 "download_url": f"https://github.com/omnetpp/omnetpp/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz",
             },
             "from-git": {
                 "option_description": "Install from git repo on GitHub (IDE will not be available)",
-                "category": "download",
-                "is_default": version == "master",
+                "option_category": "download",
+                "option_is_default": version == "master",
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
                 "git_branch": git_branch_or_tag_name,
             },

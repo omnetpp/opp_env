@@ -91,20 +91,20 @@ def make_inet_project_description(inet_version, omnetpp_versions):
         "options": {
             "from-release": {
                 "option_description": "Install from release tarball on GitHub",
-                "category": "download",
-                "is_default": inet_version not in missing_releases and not is_git_branch,
+                "option_category": "download",
+                "option_is_default": inet_version not in missing_releases and not is_git_branch,
                 "download_url": f"https://github.com/inet-framework/inet/releases/download/v{inet_version}/inet-{inet_version}-src.tgz" if inet_version not in missing_releases and not is_git_branch else None,
             },
             "from-source-archive": {
                 "option_description": "Install from source archive on GitHub",
-                "category": "download",
-                "is_default": inet_version in missing_releases,
+                "option_category": "download",
+                "option_is_default": inet_version in missing_releases,
                 "download_url": f"https://github.com/inet-framework/inet/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz",
             },
             "from-git": {
                 "option_description": "Install from git repo on GitHub",
-                "category": "download",
-                "is_default": is_git_branch,
+                "option_category": "download",
+                "option_is_default": is_git_branch,
                 "git_url": "git@github.com:inet-framework/inet.git",
                 "git_branch": git_branch_or_tag_name,
             },

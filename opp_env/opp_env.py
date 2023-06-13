@@ -322,11 +322,11 @@ class ProjectDescription:
         return list(self.options.keys())
 
     def get_default_options(self):
-        return [option_name for option_name, option_entries in self.options.items() if option_entries.get("is_default")]
+        return [option_name for option_name, option_entries in self.options.items() if option_entries.get("option_is_default")]
 
     def activate_project_options(self, requested_options, activate_default_options=True, quiet=False):
         def get_conflicting_options(the_option_name, option_names):
-            return [o for o in option_names if the_option_name != o and self.options[o].get("category") == self.options[the_option_name].get("category")]
+            return [o for o in option_names if the_option_name != o and self.options[o].get("option_category") == self.options[the_option_name].get("option_category")]
 
         # activate requested options, and those of the default options that don't conflict with the requested ones
         effective_options = []
@@ -349,7 +349,7 @@ class ProjectDescription:
             for option in effective_options:
                 if option in self.options:
                     for field_name, field_value in self.options[option].items():
-                        if field_name not in ["option_description", "category", "is_default"]: # option metadata fields
+                        if not re.match("option_", field_name): # not option metadata
                             setattr(new_project_description, field_name, field_value)
                 else:
                     _logger.warning(f"Project {cyan(self)} does not support option {cyan(option)}")

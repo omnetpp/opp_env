@@ -15,7 +15,7 @@ import tempfile
 import importlib
 import importlib.util
 import platform
-
+import urllib.request
 
 _logger = logging.getLogger(__file__)
 
@@ -193,6 +193,10 @@ def parse_arguments():
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
     subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
 
+    subparser = subparsers.add_parser("upgrade", help="Upgrades opp_env to the latest version")
+    subparser.add_argument("-n", "--dry-run", default=False, action='store_true', help="Only test if an upgrade is available, do not perform the upgrade")
+    subparser.add_argument("--from-pypi", default=False, action='store_true', help="Use the latest version from PyPI instead of the latest version from the Git repository")
+
     return parser.parse_args(sys.argv[1:])
 
 def process_arguments():
@@ -224,6 +228,23 @@ def get_version():
     version = importlib.util.module_from_spec(version_module) # type: ignore
     version_module.loader.exec_module(version) # type: ignore
     return version.version
+
+def get_latest_version_from_github():
+    try:
+        response = urllib.request.urlopen("https://api.github.com/repos/omnetpp/opp_env/git/refs/tags")
+        tag_refs = json.loads(response.read().decode('utf-8'))
+        tags = [ tag_ref['ref'].split('/')[-1] for tag_ref in tag_refs ]
+        return max([ tag for tag in tags if is_semver(tag)], key=natural_sort_key)
+    except Exception as e:
+        return None
+
+def get_latest_version_from_pypi():
+    try:
+        response = urllib.request.urlopen("https://pypi.org/pypi/opp_env/json")
+        json_data = json.loads(response.read().decode("utf-8"))
+        return json_data["info"]["version"]
+    except Exception as e:
+        return None
 
 def detect_nix():
     minimum_nix_version = "2.4"  # Nix flakes were introduced in version 2.4
@@ -1177,6 +1198,19 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)} in {cyan(kind)} mode")
     workspace.nix_develop(effective_project_descriptions, workspace_directory, [command], **dict(kwargs, suppress_stdout=False))
 
+def upgrade_subcommand_main(dry_run=False, from_pypi=False, **kwargs):
+    latest_version = get_latest_version_from_pypi() if from_pypi else get_latest_version_from_github()
+    version = get_version()
+    upgrade_needed = natural_less(version, latest_version)
+    _logger.info(f"An upgrade is available for opp_env" if upgrade_needed else f"opp_env is up-to-date")
+    _logger.info(f"Installed version: {cyan(version)}, latest version: {cyan(latest_version)}")
+    dry_run_option = "--dry-run" if dry_run else ""
+    module_spec = f"opp_env=={latest_version}" if from_pypi else f"git+https://github.com/omnetpp/opp_env.git@{latest_version}"
+    if upgrade_needed:
+        upgrade_command = f"python3 -m pip install --user --upgrade {dry_run_option} {module_spec}"
+        _logger.debug(f"Executing command: {upgrade_command}")
+        subprocess.run(["bash", "-c", upgrade_command])
+
 def main():
     kwargs = process_arguments()
     subcommand = kwargs['subcommand']
@@ -1199,6 +1233,8 @@ def main():
             shell_subcommand_main(**kwargs)
         elif subcommand == "run":
             run_subcommand_main(**kwargs)
+        elif subcommand == "upgrade":
+            upgrade_subcommand_main(**kwargs)
         else:
             raise Exception(f"Unknown subcommand '{subcommand}'")
         _logger.debug(f"The {cyan(subcommand)} operation completed successfully")

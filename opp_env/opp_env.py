@@ -598,10 +598,13 @@ class Workspace:
     WORKSPACE_ADMIN_DIR = ".opp_env_workspace"
     PROJECT_ADMIN_DIR = ".opp_env"
 
-    def __init__(self, root_directory, nixless=False):
+    def __init__(self, root_directory, nixless=False, default_nixos=None, default_stdenv=None):
         assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
         self.nixless = nixless
+        self.default_nixos = default_nixos or "nixos-23.05"
+        self.default_stdenv = default_stdenv or "llvmPackages_14.stdenv"
+
         if nixless:
             detect_tools()
         else:
@@ -792,10 +795,11 @@ class Workspace:
                 input("Press Enter to continue, or Ctrl+C to abort ")
 
     @staticmethod
-    def _get_unique_project_attribute(project_descriptions, attr_name):
+    def _get_unique_project_attribute(project_descriptions, attr_name, default_value):
         values = set([getattr(p, attr_name) for p in project_descriptions if getattr(p, attr_name)])
         if not values:
-            raise Exception(f"None of the projects specify the '{attr_name}' attribute")
+            _logger.debug(f"None of the projects specify the '{attr_name}' attribute, using '{default_value}' as default")
+            return default_value
         elif len(values) > 1:
             raise Exception(f"The projects disagree on the choice of '{attr_name}': {values}")
         else:
@@ -850,8 +854,11 @@ class Workspace:
             raise e
 
     def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_mode=None, tracing=False, **kwargs):
-        nixos = Workspace._get_unique_project_attribute(effective_project_descriptions, "nixos")
-        stdenv = Workspace._get_unique_project_attribute(effective_project_descriptions, "stdenv")
+        nixful = not self.nixless
+
+        if nixful:
+            nixos = Workspace._get_unique_project_attribute(effective_project_descriptions, "nixos", self.default_nixos)
+            stdenv = Workspace._get_unique_project_attribute(effective_project_descriptions, "stdenv", self.default_stdenv)
 
         session_name = '+'.join([str(d) for d in reversed(effective_project_descriptions)])
         project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
@@ -862,8 +869,6 @@ class Workspace:
 
         # a custom prompt spec to help users distinguish an opp_env shell from a normal terminal session
         prompt = f"\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
-
-        nixful = not self.nixless
 
         is_macos = platform.system().lower() == "darwin"
         nproc_command = "nproc" if not is_macos else "sysctl -n hw.ncpu"
@@ -982,12 +987,8 @@ class Workspace:
         return result
 
     def run_command(self, command, suppress_stdout=False, check_exitcode=True, tracing=False):
-        global project_registry
         if not self.nixless:
-            reference_project_description = project_registry.get_project_description("omnetpp-latest").activate_project_options([], quiet=True)
-            return self._do_nix_develop(nixos=reference_project_description.nixos,
-                        stdenv=reference_project_description.stdenv,
-                        session_name="run_command", script=command,
+            return self._do_nix_develop(nixos=self.default_nixos, stdenv=self.default_stdenv, session_name="run_command", script=command,
                         interactive=False, isolated=True, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
         else:
             return self._do_run_command(command, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)

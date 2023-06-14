@@ -128,7 +128,7 @@ def parse_arguments():
     subparser = subparsers.add_parser("info", help="Describes the specified project")
     subparser.add_argument("projects", nargs="*", help="The list of projects to describe. You can specify exact versions like 'inet-4.0' or project names like 'inet'. The latter will print info on all versions of the project. An empty list prints info on all projects.")
     subparser.add_argument("--raw", action='store_true', default=False, help="Print the project descriptions in a raw form. The output is well-formed JSON, so you can use tools like 'jq' to further query it and extract the desired data.")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Print the project description as if the given project options were selected")
+    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Print the project description as if the given project options were selected")
 
     subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
 
@@ -139,7 +139,7 @@ def parse_arguments():
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("--skip-dependencies", default=False, action='store_true', help="Download just the specified projects, skip downloading the projects they depend on")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
     subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
     subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete partially downloaded project if download or patching fails or is interrupted")
     subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
@@ -154,7 +154,7 @@ def parse_arguments():
     subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
     subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete partially downloaded project if download or patching fails or is interrupted")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
     subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
     subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
@@ -165,7 +165,7 @@ def parse_arguments():
     subparser.add_argument("--skip-dependencies", default=False, action='store_true', help="Download and build just the specified projects, skip the projects they depend on")
     subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
     subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
     subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
@@ -175,7 +175,7 @@ def parse_arguments():
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
     subparser.add_argument("--skip-dependencies", default=False, action='store_true', help="Download and build just the specified projects, skip the projects they depend on")
     subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
     subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Build project if not already built")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
@@ -190,7 +190,7 @@ def parse_arguments():
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("--skip-dependencies", default=False, action='store_true', help="Download and build just the specified projects, skip the projects they depend on")
     subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
-    subparser.add_argument("--options", action='append', metavar='name1,name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has")
+    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
     subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Build project if not already built")
     subparser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
     subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
@@ -357,7 +357,8 @@ class ProjectDescription:
         # activate requested options, and those of the default options that don't conflict with the requested ones
         effective_options = []
         for option in requested_options or []:
-            if option in self.options:
+            prefix,_,option = option.rpartition(":") # allows for project-specific options, e.g. "inet:from-git-repo"
+            if option in self.options and (not prefix or prefix == self.name):
                 conflicting_options = get_conflicting_options(option, effective_options)
                 if conflicting_options:
                     raise Exception(f"Option '{option}' conflicts with option '{conflicting_options[0]}' due to both belonging in the category '{self.options[option].get('category')}' (Note that options in the same category are exclusive)")
@@ -571,10 +572,20 @@ def activate_project_options(project_descriptions, requested_options):
     all_supported_options = []
     for desc in project_descriptions:
         all_supported_options += desc.get_supported_options()
-    all_supported_options = list(set(all_supported_options))
+    all_supported_options = uniq(all_supported_options)
     for option in requested_options or []:
-        if option not in all_supported_options:
-            raise Exception(f"None of the selected projects supports option '{option}'")
+        prefix,_,option = option.rpartition(":") # allows for project-specific options, e.g. "inet:from-git-repo"
+        if prefix:
+            # the project selected with the prefix (e.g. "inet:") must have such option
+            targeted_projects = [p for p in project_descriptions if p.name == prefix]
+            if not targeted_projects:
+                raise Exception(f"Invalid option '{prefix}:{option}': There is no project named '{prefix}' among the selected projects")
+            targeted_project = targeted_projects[0]  # reasonably, there can be only one matching
+            if not option in targeted_project.get_supported_options():
+                raise Exception(f"Invalid option '{prefix}:{option}': Project '{targeted_project}' has no option named '{option}'")
+        else:
+            if option not in all_supported_options:
+                raise Exception(f"None of the selected projects supports option '{option}'")
     # create and return updated project descriptions
     return [desc.activate_project_options(requested_options) for desc in project_descriptions]
 

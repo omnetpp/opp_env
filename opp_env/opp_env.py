@@ -146,7 +146,7 @@ def parse_arguments():
     subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
     subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
 
-    subparser = subparsers.add_parser("build", help="Builds the specified projects in their environment")
+    subparser = subparsers.add_parser("build", aliases=["install"], help="Builds the specified projects in their environment")
     subparser.add_argument("projects", nargs="+", help="List of projects")
     subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
     subparser.add_argument("--skip-dependencies", default=False, action='store_true', help="Download and build just the specified projects, skip the projects they depend on")
@@ -1257,7 +1257,7 @@ def main():
             init_subcommand_main(**kwargs)
         elif subcommand == "download":
             download_subcommand_main(**kwargs)
-        elif subcommand == "build":
+        elif subcommand == "build" or subcommand == "install":
             build_subcommand_main(**kwargs)
         elif subcommand == "clean":
             clean_subcommand_main(**kwargs)

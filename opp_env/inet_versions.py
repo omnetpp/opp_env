@@ -105,7 +105,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
                 "option_description": "Install from git repo on GitHub",
                 "option_category": "download",
                 "option_is_default": is_git_branch,
-                "git_url": "git@github.com:inet-framework/inet.git",
+                "git_url": "https://github.com/inet-framework/inet.git",
                 "git_branch": git_branch_or_tag_name,
             },
         }

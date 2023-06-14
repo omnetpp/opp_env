@@ -289,7 +289,7 @@ class ProjectDescription:
                  patch_commands=[], patch_url=None,
                  shell_hook_commands=[], setenv_commands=[],
                  build_commands=[], clean_commands=[],
-                 options=None):
+                 options=None, metadata=None):
         def remove_empty(list):
             return [x for x in list if x] if list else []
         self.name = name
@@ -313,6 +313,7 @@ class ProjectDescription:
         self.build_commands = remove_empty(build_commands)
         self.clean_commands = remove_empty(clean_commands)
         self.options = options or {}
+        self.metadata = metadata or {}  # examples: catalog_url, release_year, original_version
 
         # remove null elements from lists inside options, too
         for option_name, option_entries in self.options.items():

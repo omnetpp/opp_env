@@ -79,7 +79,7 @@ def make_omnetpp_project_description(version, base_version=None):
         f"wget -O configure {github_url}/raw/omnetpp-{base_version}/configure",
         f"wget -O configure.in {github_url}/raw/omnetpp-{base_version}/configure.in",
         f"wget -O patchfile.diff {github_url}/compare/omnetpp-{base_version}...omnetpp-{version}.patch",
-        f"git apply --whitespace=nowarn --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+        f"git apply --whitespace=nowarn --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
     ]
 
     apply_release_patch_from_local_repo_commands = [] if version == base_version else [
@@ -88,7 +88,7 @@ def make_omnetpp_project_description(version, base_version=None):
         f"git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure >configure",
         f"git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure.in >configure.in",
         f"git --git-dir=$OMNETPP_REPO/.git diff omnetpp-{base_version}..origin/{git_branch_or_tag_name} --patch > patchfile.diff",
-        f"git apply --whitespace=nowarn --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+        f"git apply --whitespace=nowarn --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
     ]
 
     # Vanilla 4.x releases need to be patched to compile under Nix.

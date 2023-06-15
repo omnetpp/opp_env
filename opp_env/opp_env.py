@@ -275,7 +275,7 @@ def detect_nix():
         raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. See also the --nixless option in the help.")
 
 def detect_tools():
-    tools = [ "bash", "git", "wget", "grep", "find", "xargs", "md5sum", "tar", "gzip", "sed", "touch" ]
+    tools = [ "bash", "git", "wget", "grep", "find", "xargs", "shasum", "tar", "gzip", "sed", "touch" ]
 
     is_macos = platform.system().lower() == "darwin"
     if not is_macos:
@@ -765,19 +765,19 @@ class Workspace:
             self.nix_develop(effective_project_descriptions, project_dir, project_description.clean_commands, build_mode=build_mode, **kwargs)
 
     def mark_project_state(self, project_description):
-        # exclude the Simulation IDE's directory from the md5sum, because ./configure and eclipse itself modifies stuff in it
+        # exclude the Simulation IDE's directory from the shasum, because ./configure and eclipse itself modifies stuff in it
         dir = self.get_project_root_directory(project_description)
         admin_dir = self.get_project_admin_directory(project_description)
         ide_dir = os.path.join(dir, "ide")
-        file_list_file_name = self.get_project_admin_file(project_description, "filelist.md5", create_dir=True)
-        self.run_command(f"find {dir} \\( -path {admin_dir} -o -path {ide_dir} \\) -prune -o -type f -print0 | xargs -0 md5sum > {file_list_file_name}")
+        file_list_file_name = self.get_project_admin_file(project_description, "filelist.sha", create_dir=True)
+        self.run_command(f"find {dir} \\( -path {admin_dir} -o -path {ide_dir} \\) -prune -o -type f -print0 | xargs -0 shasum > {file_list_file_name}")
 
     def check_project_state(self, project_description):
-        file_list_file_name = self.get_project_admin_file(project_description, "filelist.md5")
+        file_list_file_name = self.get_project_admin_file(project_description, "filelist.sha")
         if not os.path.exists(file_list_file_name):
             return red('UNKNOWN -- project state not yet marked')
         # note: this won't detect if extra files were added to the project
-        result = self.run_command(f"md5sum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", suppress_stdout=True, check_exitcode=False)
+        result = self.run_command(f"shasum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", suppress_stdout=True, check_exitcode=False)
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
     def setup_environment(self, projects, requested_options=None, pause_after_warnings=True, **kwargs):
@@ -936,7 +936,7 @@ class Workspace:
             });
         }"""
 
-        tools_nix_packages = ["bashInteractive", "git", "openssh", "wget", "gzip", "which", "gnused", "gnutar", "findutils", "coreutils"]
+        tools_nix_packages = ["bashInteractive", "git", "openssh", "wget", "gzip", "which", "gnused", "gnutar", "perl", "findutils", "coreutils"]
         nix_packages = uniq(nix_packages + tools_nix_packages)
 
         shell_options = "-exo pipefail" if tracing else "-eo pipefail"

@@ -38,7 +38,8 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "sed -i.bak 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h" if inet_version.startswith("2.") else "",
 
             # Linux appears to define "__linux__" nowadays, not "linux"; affected: serializer/headers/defs.h, ExtInterface.cc, RawSocket.cc, OsUdp.cc, Ext.cc, etc., and their renamed/moved versions
-            "for f in $(grep -Rl 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
+            # Note: grep -s suppresses error messages about broken media/ softlinks under showcases and tutorials in 4.x versions
+            "for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
 
             # cResultFilterDescriptor was renamed in omnetpp-5.1
             "sed -i.bak 's|cResultFilterDescriptor|cResultFilterType|' src/inet/common/figures/DelegateSignalConfigurator.cc" if inet_version == "3.4.0" else "",

@@ -133,7 +133,7 @@ def parse_arguments():
     subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
 
     help_nixless = re.sub(r"\s+", " ", """Run without Nix. This mode assumes that all packages that the projects and opp_env itself require are already installed in the system.
-        For opp_env itself, this translates to having 'wget' and/or 'git', and basic tools like 'tar' and 'gzip' available for downloading packages.
+        For opp_env itself, this translates to having 'curl' and/or 'git', and basic tools like 'tar' and 'gzip' available for downloading packages.
         The packages that OMNeT++ requires are documented in the Installation Guide of the particular version.""")
 
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
@@ -275,7 +275,7 @@ def detect_nix():
         raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. See also the --nixless option in the help.")
 
 def detect_tools():
-    tools = [ "bash", "git", "wget", "grep", "find", "xargs", "shasum", "tar", "gzip", "sed", "touch" ]
+    tools = [ "bash", "git", "curl", "grep", "find", "xargs", "shasum", "tar", "gzip", "sed", "touch" ]
 
     is_macos = platform.system().lower() == "darwin"
     if not is_macos:
@@ -829,14 +829,14 @@ class Workspace:
 
     def download_and_unpack_tarball(self, download_url, target_folder):
         os.makedirs(target_folder)
-        wget_log_file = os.path.join(target_folder, "wget.log")
+        curl_log_file = os.path.join(target_folder, "curl.log")
         tar_log_file = os.path.join(target_folder, "tar.log")
         try:
-            self.run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}")
-            os.remove(wget_log_file)
+            self.run_command(f"cd {target_folder} && curl -L --stderr {curl_log_file} {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}")
+            os.remove(curl_log_file)
             os.remove(tar_log_file)
         except Exception as e:
-            print(self._read_file_if_exists(wget_log_file).strip())
+            print(self._read_file_if_exists(curl_log_file).strip())
             print(self._read_file_if_exists(tar_log_file).strip())
             raise e
 
@@ -845,14 +845,14 @@ class Workspace:
         self.run_command(f"cd {target_folder} && tar --strip-components=1 -xzf {tarball_fname}")
 
     def download_and_apply_patch(self, patch_url, target_folder):
-        wget_log_file = os.path.join(target_folder, "wget.log")
+        curl_log_file = os.path.join(target_folder, "curl.log")
         patching_log_file = os.path.join(target_folder, "patch.log")
         try:
-            self.run_command(f"cd {target_folder} && wget -O - -nv -o {wget_log_file} --show-progress {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}")
-            os.remove(wget_log_file)
+            self.run_command(f"cd {target_folder} && curl -L --stderr {curl_log_file} {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}")
+            os.remove(curl_log_file)
             os.remove(patching_log_file)
         except Exception as e:
-            print(self._read_file_if_exists(wget_log_file).strip())
+            print(self._read_file_if_exists(curl_log_file).strip())
             print(self._read_file_if_exists(patching_log_file).strip())
             raise e
 
@@ -936,7 +936,7 @@ class Workspace:
             });
         }"""
 
-        tools_nix_packages = ["bashInteractive", "git", "openssh", "wget", "gzip", "which", "gnused", "gnutar", "perl", "findutils", "coreutils"]
+        tools_nix_packages = ["bashInteractive", "git", "openssh", "curl", "gzip", "which", "gnused", "gnutar", "perl", "findutils", "coreutils"]
         nix_packages = uniq(nix_packages + tools_nix_packages)
 
         shell_options = "-exo pipefail" if tracing else "-eo pipefail"

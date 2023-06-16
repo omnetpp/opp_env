@@ -35,7 +35,7 @@ RUN set -o pipefail \
     && sh <(curl -L https://nixos.org/nix/install) --no-daemon \
     && mkdir -p .local/bin && source .profile \
     && nix profile install nixpkgs#python3 nixpkgs#python3Packages.pip \
-       nixpkgs#git nixpkgs#gzip nixpkgs#wget \
+       nixpkgs#git nixpkgs#gzip nixpkgs#curl \
     && nix-collect-garbage \
     && nix-store --optimise \
     && nix-store --verify --check-contents \

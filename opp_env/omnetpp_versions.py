@@ -77,9 +77,9 @@ def make_omnetpp_project_description(version, base_version=None):
     base_release_to_actual_version_patch_commands = [] if version == base_version else [
         f"echo 'Patching vanilla omnetpp-{base_version} to {git_branch_or_tag_name} from git...'",
         'if [ "$LOCAL_OPERATION" == "" ]; then',
-        f"  wget -O configure {github_url}/raw/omnetpp-{base_version}/configure",
-        f"  wget -O configure.in {github_url}/raw/omnetpp-{base_version}/configure.in",
-        f"  wget -O patchfile.diff {github_url}/compare/omnetpp-{base_version}...omnetpp-{version}.patch",
+        f"  curl -L -sS -o configure {github_url}/raw/omnetpp-{base_version}/configure",
+        f"  curl -L -sS -o configure.in {github_url}/raw/omnetpp-{base_version}/configure.in",
+        f"  curl -L -sS -o patchfile.diff {github_url}/compare/omnetpp-{base_version}...omnetpp-{version}.patch",
         f"  git apply --whitespace=nowarn --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
         'else',
         f'  [ -d $OMNETPP_REPO/.git ] || error "Error: OMNETPP_REPO=$OMNETPP_REPO is not set or does not point to a git repository on the local disk (required for obtaining patch to upgrade base release omnetpp-{base_version} to requested version omnetpp-{version})"',

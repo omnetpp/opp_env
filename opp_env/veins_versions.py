@@ -24,7 +24,7 @@ def make_veins_project_description(version, omnetpp_versions):
                 "option_description": "Install from source archive on GitHub",
                 "option_category": "download",
                 "option_is_default": version != "master",
-                # currently unused: "download_commands": [ "wget  -q -nv --show-progress https://veins.car2x.org/download/veins-5.2.zip && unzip veins-5.2.zip && rm veins-5.2.zip && mv veins-veins-5.2 veins-5.2" ],
+                # currently unused: "download_commands": [ "curl -LO https://veins.car2x.org/download/veins-5.2.zip && unzip veins-5.2.zip && rm veins-5.2.zip && mv veins-veins-5.2 veins-5.2" ],
                 "download_url": f"https://github.com/sommer/veins/archive/refs/{heads_or_tags}/{git_branch_or_tag_name}.tar.gz",
             },
             "from-git": {

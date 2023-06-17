@@ -14,6 +14,11 @@ import importlib
 import importlib.util
 import platform
 import urllib.request
+import fnmatch
+
+if sys.version_info < (3,9):
+    print(f"Python version 3.9 or above is required.") # e.g. str.removeprefix()
+    sys.exit(1)
 
 _logger = logging.getLogger(__file__)
 
@@ -424,6 +429,7 @@ class ProjectDescription:
                  patch_commands=[], patch_url=None,
                  shell_hook_commands=[], setenv_commands=[],
                  build_commands=[], clean_commands=[],
+                 potential_build_inputs=None, potential_build_outputs=None,
                  options=None, metadata=None):
         def remove_empty(list):
             return [x for x in list if x] if list else []
@@ -447,6 +453,8 @@ class ProjectDescription:
         self.setenv_commands = remove_empty(setenv_commands)
         self.build_commands = remove_empty(build_commands)
         self.clean_commands = remove_empty(clean_commands)
+        self.potential_build_inputs = potential_build_inputs or [ "src/*", "*.cc", "*.cxx", "*.c", "*.h", "*.hpp", "*.hh", "*.msg", "Makefile", "*/Makefile", "makefrag", "*/makefrag" ]
+        self.potential_build_outputs = potential_build_outputs or [ "out/*", "*.o", "*.a", "*.a.*", "*.so", "*.so.*", "*.dylib", "*.dylib.*", "*.dll", "*.exe", ":noext" ]
         self.options = options or {}
         self.metadata = metadata or {}  # examples: catalog_url, release_year, original_version
 
@@ -793,8 +801,32 @@ class Workspace:
     def get_project_admin_file(self, project_description, filename, create_dir=False):
         return os.path.join(self.get_project_admin_directory(project_description, create=create_dir), filename)
 
+    def is_project_modified(self, project_description):
+        postdownload_shasums = self.read_project_shasums(project_description, "postdownload")
+        last_shasums = self.read_project_shasums(project_description, "last")
+        new_files, disappeared_files, changed_files = self.compare_shasums(postdownload_shasums, last_shasums)
+        self.print_shasums_comparison_result(new_files, disappeared_files, changed_files, label=f"File changes in {project_description} since download", root_dir=self.get_project_root_directory(project_description))
+        return disappeared_files or changed_files # new files do not count  (TODO or: should count, except for build outputs?)
+
+    def may_need_rebuild(self, project_description):
+        postbuild_shasums = self.read_project_shasums(project_description, "postbuild", allow_missing=True)
+        if not postbuild_shasums: # no build yet
+            return True
+        last_shasums = self.read_project_shasums(project_description, "last")
+        new_files, disappeared_files, changed_files = self.compare_shasums(postbuild_shasums, last_shasums)
+        self.print_shasums_comparison_result(new_files, disappeared_files, changed_files, label=f"File changes in {project_description} since last build", root_dir=self.get_project_root_directory(project_description))
+        for filename in (new_files + disappeared_files + changed_files):
+            for pattern in project_description.potential_build_inputs + project_description.potential_build_outputs:
+                if pattern == ":noext": # matches file names with no extension
+                    if "." not in os.path.basename(filename):
+                        return True
+                elif fnmatch.fnmatch(filename, pattern):
+                    return True
+        return False
+
     def print_project_state(self, project_description):
-        _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green(self.get_project_state(project_description))}, {self.check_project_state(project_description)}")
+        modified_phrase = red('MODIFIED') if self.is_project_modified(project_description) else green("UNMODIFIED")
+        _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green(self.get_project_state(project_description))}, {modified_phrase} since download")
 
     def read_project_state_file(self, project_description):
         state_file_name = self.get_project_admin_file(project_description, "state")
@@ -870,7 +902,7 @@ class Workspace:
                 else:
                     _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
 
-            self.mark_project_state(project_description)
+            self.record_project_shasums(project_description, "postdownload")
             self.set_project_state(project_description, self.DOWNLOADED)
         except KeyboardInterrupt as e:
             if cleanup:
@@ -885,12 +917,18 @@ class Workspace:
                     shutil.rmtree(project_dir)
             raise e
 
-    def build_project(self, project_description, effective_project_descriptions, build_modes, **kwargs):
+    def build_project_if_needed(self, project_description, effective_project_descriptions, build_modes, force=False, **kwargs):
         assert(project_description.build_commands)
-        for build_mode in build_modes:
-            _logger.info(f"Building project {cyan(project_description.get_full_name())} in {cyan(build_mode)} mode in workspace {cyan(self.root_directory)}")
-            project_dir = self.get_project_root_directory(project_description)
-            self.nix_develop(effective_project_descriptions, project_dir, project_description.build_commands, build_mode=build_mode, **kwargs)
+        if force or self.may_need_rebuild(project_description):
+            for build_mode in build_modes:
+                _logger.info(f"Building project {cyan(project_description.get_full_name())} in {cyan(build_mode)} mode in workspace {cyan(self.root_directory)}")
+                project_dir = self.get_project_root_directory(project_description)
+                self.nix_develop(effective_project_descriptions, project_dir, project_description.build_commands, build_mode=build_mode, **kwargs)
+            self.record_project_shasums(project_description, "postbuild")
+            return True
+        else:
+            _logger.info(f"Project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)} appears to be {green('UNMODIFIED')} since last build, {green('skipping build')}")
+            return False
 
     def clean_project(self, project_description, effective_project_descriptions, build_modes, **kwargs):
         assert(project_description.clean_commands)
@@ -899,21 +937,55 @@ class Workspace:
             project_dir = self.get_project_root_directory(project_description)
             self.nix_develop(effective_project_descriptions, project_dir, project_description.clean_commands, build_mode=build_mode, **kwargs)
 
-    def mark_project_state(self, project_description):
+    def record_project_shasums(self, project_description, snapshot_name):
         # exclude the Simulation IDE's directory from the shasum, because ./configure and eclipse itself modifies stuff in it
         dir = self.get_project_root_directory(project_description)
         admin_dir = self.get_project_admin_directory(project_description)
         ide_dir = os.path.join(dir, "ide")
-        file_list_file_name = self.get_project_admin_file(project_description, "filelist.sha", create_dir=True)
-        self.run_command(f"find {dir} \\( -path {admin_dir} -o -path {ide_dir} \\) -prune -o -type f -print0 | xargs -0 shasum > {file_list_file_name}")
+        shasum_file = self.get_project_admin_file(project_description, snapshot_name+".sha", create_dir=True)
+        self.run_command(f"find {dir} \\( -path {admin_dir} -o -path {ide_dir} \\) -prune -o -type f -print0 | xargs -0 shasum > {shasum_file}")
 
-    def check_project_state(self, project_description):
-        file_list_file_name = self.get_project_admin_file(project_description, "filelist.sha")
-        if not os.path.exists(file_list_file_name):
-            return red('UNKNOWN -- project state not yet marked')
-        # note: this won't detect if extra files were added to the project
-        result = self.run_command(f"shasum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", suppress_stdout=True, check_exitcode=False)
-        return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
+    def read_project_shasums(self, project_description, snapshot_name, allow_missing=False):
+        shasum_file = self.get_project_admin_file(project_description, snapshot_name+".sha")
+        if allow_missing and not os.path.isfile(shasum_file):
+            return None
+        with open(shasum_file, 'r') as f:
+            output = f.read()
+        results = {}
+        lines = output.strip().split('\n')
+        for line in lines:
+            shasum, filepath = line.strip().split(maxsplit=1)
+            results[filepath] = shasum
+        return results
+
+    def compare_shasums(self, shasums1, shasums2, label=None, root_dir=None):
+        new_files = []
+        disappeared_files = []
+        changed_files = []
+        for filepath, shasum in shasums1.items():
+            if filepath in shasums2:
+                if shasums2[filepath] != shasum:
+                    changed_files.append(filepath)
+            else:
+                disappeared_files.append(filepath)
+        for filepath in shasums2.keys():
+            if filepath not in shasums1:
+                new_files.append(filepath)
+
+        return new_files, disappeared_files, changed_files
+
+    def print_shasums_comparison_result(self, new_files, disappeared_files, changed_files, label=None, root_dir=None, max_num=10):
+        if _logger.isEnabledFor(logging.DEBUG):
+            if root_dir and root_dir[-1] != "/":
+                root_dir += "/"
+            def log_list(label, list):
+                if list:
+                    note = f" ... and {len(list)-max_num} more" if len(list) > max_num else ""
+                    _logger.debug(label + ": " + ' '.join([(f.removeprefix(root_dir or "")) for f in list[:max_num]]) + note)
+            _logger.debug(f"{label or 'Files'}: {len(new_files)} new, {len(disappeared_files)} disappeared, {len(changed_files)} changed")
+            log_list('New files', new_files)
+            log_list('Disappeared files', disappeared_files)
+            log_list('Changed files', changed_files)
 
     # def setup_environment(self, projects, requested_options=None, **kwargs):
     #     global project_registry
@@ -952,6 +1024,7 @@ class Workspace:
         elif project_state == Workspace.INCOMPLETE:
             raise Exception(f"Cannot download '{project_description}': Directory already exists")
         else:
+            self.record_project_shasums(project_description, "last")
             self.print_project_state(project_description)
         assert self.get_project_state(project_description) == Workspace.DOWNLOADED
 
@@ -1279,7 +1352,7 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
 
-def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
+def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, skip_build_if_unchanged=False, nixless=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
     workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
@@ -1293,10 +1366,11 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
+    force = not skip_build_if_unchanged  # note: if one project is rebuilt, rebuild all subsequent (likely derived) projects as well
     for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
         assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
         if project_description.build_commands:
-            workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
+            force = workspace.build_project_if_needed(project_description, effective_project_descriptions, build_modes, force=force, **kwargs) or force
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
 def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, pause_after_warnings=True, all_warnings=False, **kwargs):
@@ -1323,7 +1397,7 @@ def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
-def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, nixless=False, isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, skip_build_if_unchanged=True, nixless=False, isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
     workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
@@ -1339,10 +1413,11 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     if build:
         try:
+            force = not skip_build_if_unchanged  # note: if one project is rebuilt, rebuild all subsequent (likely derived) projects as well
             for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
                 assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
                 if project_description.build_commands:
-                    workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
+                    force = workspace.build_project_if_needed(project_description, effective_project_descriptions, build_modes, force=force, **kwargs) or force
         except Exception as e:
             # print error but continue bringing up the shell to give user a chance to fix the problem
             _logger.error(f"An error occurred while building affected projects: {red(e)}")
@@ -1363,7 +1438,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
 
     workspace.nix_develop(effective_project_descriptions, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, nixless=False,  isolated=True, pause_after_warnings=True,  all_warnings=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, skip_build_if_unchanged=True, nixless=False,  isolated=True, pause_after_warnings=True,  all_warnings=False, **kwargs):
     global project_registry
     workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
@@ -1378,10 +1453,11 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     if build:
+        force = not skip_build_if_unchanged  # note: if one project is rebuilt, rebuild all subsequent (likely derived) projects as well
         for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
             assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
             if project_description.build_commands:
-                workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
+                force = workspace.build_project_if_needed(project_description, effective_project_descriptions, build_modes, force=force, **kwargs) or force
     kind = "nixless" if nixless else "isolated" if isolated else "non-isolated"
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)} in {cyan(kind)} mode")
     workspace.nix_develop(effective_project_descriptions, workspace_directory, [command], **dict(kwargs, suppress_stdout=False))

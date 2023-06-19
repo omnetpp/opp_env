@@ -829,14 +829,12 @@ class Workspace:
 
     def download_and_unpack_tarball(self, download_url, target_folder):
         os.makedirs(target_folder)
-        curl_log_file = os.path.join(target_folder, "curl.log")
         tar_log_file = os.path.join(target_folder, "tar.log")
         try:
-            self.run_command(f"cd {target_folder} && curl -L --stderr {curl_log_file} {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}")
-            os.remove(curl_log_file)
+            print(f"{download_url}")
+            self.run_command(f"cd {target_folder} && curl -L --progress-bar {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}")
             os.remove(tar_log_file)
         except Exception as e:
-            print(self._read_file_if_exists(curl_log_file).strip())
             print(self._read_file_if_exists(tar_log_file).strip())
             raise e
 

@@ -566,6 +566,7 @@ class ProjectRegistry:
                         accept_combination = False
                         break
             if accept_combination:
+                selected_project_descriptions = list(reversed(selected_project_descriptions))  # most derived project first, omnetpp last (usually)
                 if return_all:
                     result.append(selected_project_descriptions)
                 else:
@@ -1050,12 +1051,12 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
     elif list_mode == "expand":
         for project in projects:
             expanded = project_registry.expand_dependencies([project])
-            print(' '.join([p.get_full_name() for p in reversed(expanded)]))
+            print(' '.join([p.get_full_name() for p in expanded]))
     elif list_mode == "expand-all":
         for project in projects:
             combinations_list = project_registry.expand_dependencies([project], return_all=True)
             for combination in combinations_list:
-                print(' '.join([p.get_full_name() for p in reversed(combination)]))
+                print(' '.join([p.get_full_name() for p in combination]))
     else:
         raise Exception(f"invalid list mode '{list_mode}'")
 
@@ -1148,7 +1149,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
-    for project_description in effective_project_descriptions:
+    for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
         assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
         if project_description.build_commands:
             workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
@@ -1169,7 +1170,7 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
-    for project_description in reversed(effective_project_descriptions):
+    for project_description in effective_project_descriptions:
         if project_description.clean_commands:
             workspace.clean_project(project_description, effective_project_descriptions, build_modes, **kwargs)
     _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
@@ -1194,7 +1195,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     if build:
         try:
-            for project_description in effective_project_descriptions:
+            for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
                 assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
                 if project_description.build_commands:
                     workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
@@ -1233,7 +1234,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     if build:
-        for project_description in effective_project_descriptions:
+        for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
             assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
             if project_description.build_commands:
                 workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)

@@ -202,6 +202,9 @@ def parse_arguments():
     subparser.add_argument("-n", "--dry-run", default=False, action='store_true', help="Only test if an upgrade is available, do not perform the upgrade")
     subparser.add_argument("--from-pypi", default=False, action='store_true', help="Use the latest version from PyPI instead of the latest version from the Git repository")
 
+    subparser = subparsers.add_parser("maint", help="Maintenance functions")
+    subparser.add_argument("-u", "--update-catalog", metavar="download-items-dir", dest="catalog_dir", help="Update the opp_env installation commands in the model catalog of omnetpp.org. The argument should point to the `download-items/` subdir of a checked-out copy of the https://github.com/omnetpp/omnetpp.org/ repository.")
+
     return parser.parse_args(sys.argv[1:])
 
 def process_arguments():
@@ -1250,6 +1253,46 @@ def upgrade_subcommand_main(dry_run=False, from_pypi=False, **kwargs):
         _logger.debug(f"Executing command: {upgrade_command}")
         subprocess.run(["bash", "-c", upgrade_command])
 
+def maint_subcommand_main(catalog_dir, **kwargs):
+    update_catalog(catalog_dir)
+
+def update_catalog(catalog_dir):
+    # collect catalog URLs by project name
+    _logger.info(f"Collecting catalog_url entries from projects")
+    global project_registry
+    project_catalog_urls = {}
+    for project_description in project_registry.get_all_project_descriptions():
+        catalog_url = project_description.metadata.get("catalog_url")
+        if catalog_url:
+            if project_description.name in project_catalog_urls:
+                if project_catalog_urls[project_description.name] != catalog_url:
+                    raise Exception(f"The 'metadata/catalog_url' field differs across versions for project '{project_description.name}'")
+            else:
+                project_catalog_urls[project_description.name] = catalog_url
+    _logger.debug(f"Result: {project_catalog_urls=}")
+
+    # insert them into the pages
+    _logger.info(f"Updating pages in {cyan(catalog_dir)}")
+    for project_name, catalog_url in project_catalog_urls.items():
+        # read file
+        filename = os.path.join(catalog_dir, os.path.basename(catalog_url).replace(".html", ".md"))
+        with open(filename, "r") as f:
+            content = f.read()
+
+        # update content
+        line = f"opp-env-command: opp_env install {project_name}-latest"
+        if "opp-env-command:" in content:
+            updated_content = re.sub("^opp-env-command:.*$", line, content, flags=re.MULTILINE)
+        else:
+            updated_content = re.sub("\n---", f"\n{line}\n---", content)
+        assert f"\n{line}\n" in updated_content
+
+        # write back change
+        if content != updated_content:
+            _logger.debug(f"Writing {filename}")
+            with open(filename, "w") as f:
+                f.write(updated_content)
+
 def main():
     kwargs = process_arguments()
     subcommand = kwargs['subcommand']
@@ -1274,6 +1317,8 @@ def main():
             run_subcommand_main(**kwargs)
         elif subcommand == "upgrade":
             upgrade_subcommand_main(**kwargs)
+        elif subcommand == "maint":
+            maint_subcommand_main(**kwargs)
         else:
             raise Exception(f"Unknown subcommand '{subcommand}'")
         _logger.debug(f"The {cyan(subcommand)} operation completed successfully")

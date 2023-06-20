@@ -20,7 +20,9 @@ def make_inet_project_description(inet_version, omnetpp_versions):
     return {
         "name": "inet", "version": inet_version, "description": description,
         "folder_name": "inet",
-        # TODO "catalog_url": "https://omnetpp.org/download-items/Antnet.html",
+        "metadata": {
+            "catalog_url": "https://omnetpp.org/download-items/INET.html",
+        },
         "required_projects": {"omnetpp": omnetpp_versions}, # list(set([dotx(v) for v in omnetpp_versions]))},
         "nix_packages":
             ["z3"] if inet_version >= "4.4" else

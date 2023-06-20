@@ -3,6 +3,9 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
     return {
         "name": "simu5g", "version": simu5g_version,
         "description": "5G NR and LTE/LTE-A user-plane simulation model",
+        "metadata": {
+            "catalog_url": "https://omnetpp.org/download-items/Simu5G.html",
+        },
         "required_projects": {"inet": inet_versions, "omnetpp": omnetpp_versions},
         "download_url": f"https://github.com/Unipisa/Simu5G/archive/refs/tags/v{simu5g_version}.tar.gz",
         "patch_commands": [

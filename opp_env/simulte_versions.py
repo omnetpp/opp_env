@@ -3,6 +3,9 @@ def get_simulte_project_description(simulte_version, inet_versions, omnetpp_vers
     return {
         "name": "simulte", "version": simulte_version,
         "description": "LTE and LTE Advanced (3GPP Release 8 and beyond) user plane simulation model",
+        "metadata": {
+            "catalog_url": "https://omnetpp.org/download-items/SimuLTE.html",
+        },
         "required_projects": {"inet": inet_versions, "omnetpp": omnetpp_versions},
         "download_url":
             f"https://github.com/inet-framework/simulte/releases/download/v{simulte_version}/simulte-{simulte_version}-src.tgz" if simulte_version == "1.2.0" else

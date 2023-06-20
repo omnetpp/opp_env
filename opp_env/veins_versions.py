@@ -8,6 +8,9 @@ def make_veins_project_description(version, omnetpp_versions):
     return {
         "name": "veins", "version": version,
         "description": "The open source vehicular network simulation framework.",
+        "metadata": {
+            "catalog_url": "https://omnetpp.org/download-items/Veins.html",
+        },
         "required_projects": {"omnetpp": omnetpp_versions},
         "nix_packages": ["sumo"] if version >= "5.1" else ["sumo", "python2"],
         "patch_commands": [

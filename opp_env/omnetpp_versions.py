@@ -98,6 +98,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i.bak 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
 
         "sed -i.bak '1s|.*|#!/bin/env perl|;2s|.*||' src/nedc/opp_msgc" if version == "3.3p1" else None, # otherwise calling msgc from a Makefile fails
+        "sed -i.bak 's/#build_shared_libs=no/build_shared_libs=no/' configure.user.dist" if version < "4.0" and is_macos else None, # on macOS only static builds were properly supported
 
         "sed -i.bak 's/\\$(QMAKE)/$(QMAKE) -spec linux-clang/' src/qtenv/Makefile" if version == "5.0" else None,
 

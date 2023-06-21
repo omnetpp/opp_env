@@ -199,7 +199,8 @@ def parse_arguments():
     subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
 
     subparser = subparsers.add_parser("upgrade", help="Upgrades opp_env to the latest version")
-    subparser.add_argument("-n", "--dry-run", default=False, action='store_true', help="Only test if an upgrade is available, do not perform the upgrade")
+    subparser.add_argument("-n", "--dry-run", default=False, action='store_true', help="Test if an upgrade is available and simulate the upgrade without actually carrying out the installation")
+    subparser.add_argument("-c", "--check", default=False, action='store_true', help="Only test if an upgrade is available")
     subparser.add_argument("--from-pypi", default=False, action='store_true', help="Use the latest version from PyPI instead of the latest version from the Git repository")
 
     subparser = subparsers.add_parser("maint", help="Maintenance functions")
@@ -1240,12 +1241,14 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)} in {cyan(kind)} mode")
     workspace.nix_develop(effective_project_descriptions, workspace_directory, [command], **dict(kwargs, suppress_stdout=False))
 
-def upgrade_subcommand_main(dry_run=False, from_pypi=False, **kwargs):
+def upgrade_subcommand_main(dry_run=False, from_pypi=False, check=False, **kwargs):
     latest_version = get_latest_version_from_pypi() if from_pypi else get_latest_version_from_github()
     version = get_version()
     upgrade_needed = natural_less(version, latest_version)
     _logger.info(f"An upgrade is available for opp_env" if upgrade_needed else f"opp_env is up-to-date")
     _logger.info(f"Installed version: {cyan(version)}, latest version: {cyan(latest_version)}")
+    if check:
+        return
     dry_run_option = "--dry-run" if dry_run else ""
     module_spec = f"opp_env=={latest_version}" if from_pypi else f"git+https://github.com/omnetpp/opp_env.git@{latest_version}"
     if upgrade_needed:

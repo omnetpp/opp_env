@@ -153,11 +153,11 @@ def parse_arguments():
     subparser.add_argument("--raw", action='store_true', default=False, help="Print the project descriptions in a raw form. The output is well-formed JSON, so you can use tools like 'jq' to further query it and extract the desired data.")
     subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Print the project description as if the given project options were selected")
 
-    subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
-
     def add_argument(subparser, name):
         if name=="projects":     subparser.add_argument("projects", nargs="+", help="List of projects")
         elif name=="quiet":      subparser.add_argument("-q", "--quiet", dest="suppress_stdout", default=False, action='store_true', help="Suppress the standard output of executed commands")
+        elif name=="force-init": subparser.add_argument("-f", "--force", default=False, action='store_true', help="Force turning a non-empty directory into a workspace")
+        elif name=="init":       subparser.add_argument("--init", default=False, action='store_true', help="Initialize workspace") #TODO
         elif name=="workspace":  subparser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
         elif name=="no-pause":   subparser.add_argument("-n", "--no-pause", dest="pause_after_warnings", default=True, action='store_false', help="Do not pause after printing warnings")
         elif name=="no-deps":    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help=
@@ -193,10 +193,17 @@ def parse_arguments():
         for name in names:
             add_argument(subparser, name)
 
+    subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
+    add_arguments(subparser, [
+        "workspace",
+        "force-init"
+    ])
+
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     add_arguments(subparser, [
         "projects",
         "quiet",
+        "init",
         "workspace",
         "no-pause",
         "no-deps",
@@ -212,6 +219,7 @@ def parse_arguments():
     add_arguments(subparser, [
         "projects",
         "quiet",
+        "init",
         "workspace",
         "no-pause",
         "no-isolated",
@@ -246,6 +254,7 @@ def parse_arguments():
     add_arguments(subparser, [
         "projects",
         "quiet",
+        "init",
         "workspace",
         "no-pause",
         "isolated",
@@ -266,6 +275,7 @@ def parse_arguments():
     add_arguments(subparser, [
         "projects",
         "quiet",
+        "init",
         "workspace",
         "no-pause",
         "no-isolated",
@@ -704,6 +714,10 @@ class Workspace:
         _logger.debug(f"Workspace created, {root_directory=}, {nixless=}")
 
     @staticmethod
+    def is_workspace(dir):
+        return os.path.isdir(os.path.join(dir, Workspace.WORKSPACE_ADMIN_DIR))
+
+    @staticmethod
     def find_workspace(from_dir=None):
         dir = os.path.abspath(from_dir) if from_dir else os.getcwd()
         while True:
@@ -1104,6 +1118,21 @@ def resolve_projects(project_full_names):
     project_descriptions = [project_registry.get_project_description(ProjectReference.parse(p)) for p in project_full_names]
     return project_descriptions
 
+def init_workspace(workspace_directory, force=False):
+    workspace_directory = workspace_directory or os.getcwd()
+    if os.path.isdir(workspace_directory):
+        if not Workspace.is_workspace(workspace_directory):
+            if os.listdir(workspace_directory) and not force: # dir not empty
+                raise Exception(f"Refusing to turn non-empty directory '{workspace_directory}' into an opp_env workspace -- use 'opp_env init --force' if it was intentional")
+    else:
+        parent_dir = os.path.dirname(os.path.abspath(workspace_directory))
+        if not os.path.isdir(parent_dir):
+            raise Exception(f"Cannot create workspace at '{workspace_directory}': refusing to create more than one level of directories")
+        os.mkdir(workspace_directory)
+    Workspace.init_workspace(workspace_directory)
+    _logger.info(f"Workspace created in folder {cyan(workspace_directory)}")
+    return workspace_directory
+
 def resolve_workspace(workspace_directory):
     workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
     return workspace_directory
@@ -1142,11 +1171,6 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
                 print(' '.join([p.get_full_name() for p in combination]))
     else:
         raise Exception(f"invalid list mode '{list_mode}'")
-
-def init_subcommand_main(workspace_directory=None, **kwargs):
-    workspace_directory = workspace_directory or os.getcwd()
-    Workspace.init_workspace(workspace_directory)
-    _logger.info(f"Workspace created in folder {cyan(workspace_directory)}")
 
 def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
     # resolve project list
@@ -1203,9 +1227,12 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
     print("Note: Specify `--raw` to `opp_env info` for more details.")
     print("Note: Options can be selected by adding `--options <optionname>` to the opp_env command line, see help. Options active by default are marked with '*'.")
 
-def download_subcommand_main(projects, workspace_directory=None, requested_options=None, no_dependency_resolution=False, nixless=False, pause_after_warnings=True, all_warnings=False, **kwargs):
+def init_subcommand_main(workspace_directory=None, force=False, **kwargs):
+    init_workspace(workspace_directory, force=force)
+
+def download_subcommand_main(projects, workspace_directory=None, requested_options=None, no_dependency_resolution=False, nixless=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = resolve_workspace(workspace_directory)
+    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
@@ -1218,9 +1245,9 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
 
-def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, pause_after_warnings=True, all_warnings=False, **kwargs):
+def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = resolve_workspace(workspace_directory)
+    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
@@ -1241,7 +1268,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
 def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     #TODO shouldn't there be a "realclean" command that deletes all files NOT in the file list??
     global project_registry
-    workspace_directory = resolve_workspace(workspace_directory)
+    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
@@ -1262,9 +1289,9 @@ def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
-def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, no_dependency_resolution=False, build=True, build_modes=None, nixless=False, isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, nixless=False, isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = resolve_workspace(workspace_directory)
+    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
@@ -1302,9 +1329,9 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
 
     workspace.nix_develop(effective_project_descriptions, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True,requested_options=None, no_dependency_resolution=False, build=True, build_modes=None, nixless=False,  isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, nixless=False,  isolated=True, pause_after_warnings=True,  all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = resolve_workspace(workspace_directory)
+    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:

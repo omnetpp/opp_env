@@ -134,11 +134,8 @@ def version_matches(wildcard_version, version):
 def parse_arguments():
     description = "Sets up the development environment for OMNeT++ projects"
     parser = argparse.ArgumentParser(prog="opp_env", description=description)
-    parser.add_argument("-q", "--quiet", dest="suppress_stdout", default=False, action='store_true', help="Suppress the standard output of executed commands")
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Log level of output")
-    parser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
     parser.add_argument("-p", "--print-stacktrace", default=False, action='store_true', help="Print stack trace on error")
-    parser.add_argument("-n", "--no-pause", dest="pause_after_warnings", default=True, action='store_false', help="Do not pause after printing warnings")
     parser.add_argument("-v", "--version", action='version', version=get_version(), help="Print version information and exit")
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
@@ -160,6 +157,9 @@ def parse_arguments():
 
     def add_argument(subparser, name):
         if name=="projects":     subparser.add_argument("projects", nargs="+", help="List of projects")
+        elif name=="quiet":      subparser.add_argument("-q", "--quiet", dest="suppress_stdout", default=False, action='store_true', help="Suppress the standard output of executed commands")
+        elif name=="workspace":  subparser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
+        elif name=="no-pause":   subparser.add_argument("-n", "--no-pause", dest="pause_after_warnings", default=True, action='store_false', help="Do not pause after printing warnings")
         elif name=="no-deps":    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help=
             "Ignore dependencies among projects, only operate on the projects explicitly listed on the command line. "
             "This allows projects to be used together in previously untested or \"unofficial\" combinations.")
@@ -196,6 +196,9 @@ def parse_arguments():
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
     add_arguments(subparser, [
         "projects",
+        "quiet",
+        "workspace",
+        "no-pause",
         "no-deps",
         "options",
         "no-patch",
@@ -208,6 +211,9 @@ def parse_arguments():
     subparser = subparsers.add_parser("build", aliases=["install"], help="Builds the specified projects in their environment")
     add_arguments(subparser, [
         "projects",
+        "quiet",
+        "workspace",
+        "no-pause",
         "no-isolated",
         "no-deps",
         "no-prepare-missing",
@@ -223,6 +229,9 @@ def parse_arguments():
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
     add_arguments(subparser, [
         "projects",
+        "quiet",
+        "workspace",
+        "no-pause",
         "no-isolated",
         "no-deps",
         "no-prepare-missing",
@@ -236,6 +245,9 @@ def parse_arguments():
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
     add_arguments(subparser, [
         "projects",
+        "quiet",
+        "workspace",
+        "no-pause",
         "isolated",
         "no-deps",
         "no-prepare-missing",
@@ -253,6 +265,9 @@ def parse_arguments():
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
     add_arguments(subparser, [
         "projects",
+        "quiet",
+        "workspace",
+        "no-pause",
         "no-isolated",
         "no-deps",
         "no-prepare-missing",

@@ -783,7 +783,7 @@ class Workspace:
         result = self.run_command(f"shasum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", suppress_stdout=True, check_exitcode=False)
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
-    def setup_environment(self, projects, requested_options=None, pause_after_warnings=True, **kwargs):
+    def setup_environment(self, projects, requested_options=None, **kwargs):
         global project_registry
         specified_project_descriptions = resolve_projects(projects)
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
@@ -1120,7 +1120,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
     print("Note: Specify `--raw` to `opp_env info` for more details.")
     print("Note: Options can be selected by adding `--options <optionname>` to the opp_env command line, see help. Options active by default are marked with '*'.")
 
-def download_subcommand_main(projects, workspace_directory=None, requested_options=None, no_dependency_resolution=False, nixless=False, pause_after_warnings=True, **kwargs):
+def download_subcommand_main(projects, workspace_directory=None, requested_options=None, no_dependency_resolution=False, nixless=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
@@ -1131,11 +1131,11 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-    workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
+    workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
 
-def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, pause_after_warnings=True, **kwargs):
+def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
@@ -1146,7 +1146,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-    workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
+    workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
@@ -1155,7 +1155,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
             workspace.build_project(project_description, effective_project_descriptions, build_modes, **kwargs)
     _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
 
-def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, pause_after_warnings=True, **kwargs):
+def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     #TODO shouldn't there be a "realclean" command that deletes all files NOT in the file list??
     global project_registry
     workspace_directory = resolve_workspace(workspace_directory)
@@ -1167,7 +1167,7 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-    workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
+    workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     for project_description in effective_project_descriptions:
@@ -1179,7 +1179,7 @@ def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
-def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, no_dependency_resolution=False, build=True, build_modes=None, nixless=False, isolated=True, pause_after_warnings=True, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, no_dependency_resolution=False, build=True, build_modes=None, nixless=False, isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
@@ -1190,7 +1190,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-    workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
+    workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     if build:
@@ -1219,7 +1219,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
 
     workspace.nix_develop(effective_project_descriptions, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True,requested_options=None, no_dependency_resolution=False, build=True, build_modes=None, nixless=False,  isolated=True, pause_after_warnings=True, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True,requested_options=None, no_dependency_resolution=False, build=True, build_modes=None, nixless=False,  isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
     workspace_directory = resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
@@ -1230,7 +1230,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
-    workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
+    workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
     if build:

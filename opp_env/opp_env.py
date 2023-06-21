@@ -158,73 +158,114 @@ def parse_arguments():
 
     subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
 
-    help_nixless = re.sub(r"\s+", " ", """Run without Nix. This mode assumes that all packages that the projects and opp_env itself require are already installed in the system.
-        For opp_env itself, this translates to having 'curl' and/or 'git', and basic tools like 'tar' and 'gzip' available for downloading packages.
-        The packages that OMNeT++ requires are documented in the Installation Guide of the particular version.""")
+    def add_argument(subparser, name):
+        if name=="projects":     subparser.add_argument("projects", nargs="+", help="List of projects")
+        elif name=="no-deps":    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help=
+            "Ignore dependencies among projects, only operate on the projects explicitly listed on the command line. "
+            "This allows projects to be used together in previously untested or \"unofficial\" combinations.")
+        elif name=="options":    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
+        elif name=="no-patch":   subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
+        elif name=="no-cleanup": subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete partially downloaded project if download or patching fails or is interrupted")
+        elif name=="nixless":    subparser.add_argument("--nixless", default=False, action='store_true', help=
+            "Run without Nix. This mode assumes that all packages that the projects and opp_env itself require are already installed in the system. "
+            "For opp_env itself, this translates to having 'curl' and/or 'git', and basic tools like 'tar' and 'gzip' available for downloading packages. "
+            "The packages that OMNeT++ requires are documented in the Installation Guide of the particular version.")
+        elif name=="keep":       subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help=
+            "Keep the specified environment variables, i.e. pass them into shells spawned by opp_env.")
+        elif name=="local":      subparser.add_argument("--local", default=False, action='store_true', help=
+            "Replaces internet access with file access. When specified, opp_env will use a local downloads directory and "
+            "locally cloned Git repositories as installation sources instead of network access. "
+            "It expects the file system locations to be passed in via environment variables. "
+            "It is primarily useful for testing purposes.")
+        elif name=="isolated":    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
+        elif name=="no-isolated": subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+        elif name=="no-prepare-missing": subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
+        elif name=="mode(release)":  subparser.add_argument("--mode", metavar='debug,release,...', default="release", help="Build mode(s), separated by commas.")
+        elif name=="mode(both)": subparser.add_argument("--mode", metavar='debug,release,...', default="debug,release", help="Build mode(s), separated by commas.")
+        elif name=="no-build":   subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Build project if not already built")
+        elif name=="chdir":      subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help=
+            "Whether to change into the directory of the project. The default action is to change into the project root "
+            "only if the current working directory is outside the project")
+        elif name=="command":    subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
+        else: raise Exception(f"Internal error: unrecognized option name '{name}'")
+
+    def add_arguments(subparser, names):
+        for name in names:
+            add_argument(subparser, name)
 
     subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
-    subparser.add_argument("projects", nargs="+", help="List of projects")
-    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help="Ignore dependencies among projects, only download the projects explicitly listed on the command line. This allows projects to be used together in previously untested or \"unofficial\" combinations.")
-    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
-    subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
-    subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete partially downloaded project if download or patching fails or is interrupted")
-    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
-    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
-    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
+    add_arguments(subparser, [
+        "projects",
+        "no-deps",
+        "options",
+        "no-patch",
+        "no-cleanup",
+        "nixless",
+        "keep",
+        "local"
+    ])
 
     subparser = subparsers.add_parser("build", aliases=["install"], help="Builds the specified projects in their environment")
-    subparser.add_argument("projects", nargs="+", help="List of projects")
-    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
-    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help="Ignore dependencies among projects, only operate on the projects explicitly listed on the command line. This allows projects to be used together in previously untested or \"unofficial\" combinations.")
-    subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
-    subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
-    subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete partially downloaded project if download or patching fails or is interrupted")
-    subparser.add_argument("--mode", metavar='debug,release,...', default="release", help="Build mode(s), separated by commas.")
-    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
-    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
-    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
-    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
+    add_arguments(subparser, [
+        "projects",
+        "no-isolated",
+        "no-deps",
+        "no-prepare-missing",
+        "no-patch",
+        "no-cleanup",
+        "mode(both)",
+        "options",
+        "nixless",
+        "keep",
+        "local"
+    ])
 
     subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
-    subparser.add_argument("projects", nargs="+", help="List of projects")
-    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
-    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help="Ignore dependencies among projects, only operate on the projects explicitly listed on the command line. This allows projects to be used together in previously untested or \"unofficial\" combinations.")
-    subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
-    subparser.add_argument("--mode", action='append', metavar='debug,release,...', default="debug,release", help="Build mode(s)")
-    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
-    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
-    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
-    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
+    add_arguments(subparser, [
+        "projects",
+        "no-isolated",
+        "no-deps",
+        "no-prepare-missing",
+        "mode(both)",
+        "options",
+        "nixless",
+        "keep",
+        "local"
+    ])
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
-    subparser.add_argument("projects", nargs="+", help="List of projects")
-    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
-    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help="Ignore dependencies among projects, only operate on the projects explicitly listed on the command line. This allows projects to be used together in previously untested or \"unofficial\" combinations.")
-    subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
-    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
-    subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Build project if not already built")
-    subparser.add_argument("--mode", action='append', metavar='debug,release,...', default="release", help="Build mode(s)")
-    subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
-    subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete partially downloaded project if download or patching fails or is interrupted")
-    subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help="Whether to change into the directory of the project. The default action is to change into the project root only if the current working directory is outside the project")
-    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
-    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
-    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
+    add_arguments(subparser, [
+        "projects",
+        "isolated",
+        "no-deps",
+        "no-prepare-missing",
+        "options",
+        "no-build",
+        "mode(release)",
+        "no-patch",
+        "no-cleanup",
+        "chdir",
+        "nixless",
+        "keep",
+        "local"
+    ])
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
-    subparser.add_argument("projects", nargs="+", help="List of projects")
-    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
-    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help="Ignore dependencies among projects, only operate on the projects explicitly listed on the command line. This allows projects to be used together in previously untested or \"unofficial\" combinations.")
-    subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
-    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
-    subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Build project if not already built")
-    subparser.add_argument("--mode", action='append', metavar='debug,release,...', default="release", help="Build mode(s)")
-    subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
-    subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete partially downloaded project if download or patching fails or is interrupted")
-    subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
-    subparser.add_argument("--nixless", default=False, action='store_true', help=help_nixless)
-    subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help="Keep the specified environment variables, i.e. pass them into shells spawned by opp_env")
-    subparser.add_argument("--local", default=False, action='store_true', help="Replaces internet access with file access. When specified, opp_env will use a local downloads directory and locally cloned Git repositories as installation sources instead of network access. It expects the file system locations to be passed in via environment variables. It is primarily useful for testing purposes.")
+    add_arguments(subparser, [
+        "projects",
+        "no-isolated",
+        "no-deps",
+        "no-prepare-missing",
+        "options",
+        "no-build",
+        "mode(release)",
+        "no-patch",
+        "no-cleanup",
+        "command",
+        "nixless",
+        "keep",
+        "local"
+    ])
 
     subparser = subparsers.add_parser("upgrade", help="Upgrades opp_env to the latest version")
     subparser.add_argument("-n", "--dry-run", default=False, action='store_true', help="Test if an upgrade is available and simulate the upgrade without actually carrying out the installation")

@@ -868,7 +868,7 @@ class Workspace:
         project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
         project_nix_packages = sum([p.nix_packages for p in effective_project_descriptions], [])
         project_vars_to_keep = sum([p.vars_to_keep for p in effective_project_descriptions], [])
-        project_setenv_commands = sum([[f"cd '{self.get_project_root_directory(p)}'", *p.setenv_commands] for p in effective_project_descriptions], [])
+        project_setenv_commands = sum([[f"cd '{self.get_project_root_directory(p)}'", *p.setenv_commands] for p in reversed(effective_project_descriptions)], [])
         project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={self.get_project_root_directory(p)}" for p in effective_project_descriptions]
 
         # a custom prompt spec to help users distinguish an opp_env shell from a normal terminal session

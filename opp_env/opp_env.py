@@ -80,6 +80,34 @@ def join_commands(commands):
     assert type(commands) is list
     return "\n".join([cmd for cmd in commands if cmd])  # using ";" as separator also works, " && " should too (script runs on 'set -e' anyway) but doesn't
 
+def topological_sort(nodes, is_edge):
+    visited = set()
+    stack = []
+
+    def dfs_rec(node):
+        visited.add(node)
+        for neighbor in nodes:
+            if neighbor not in visited and is_edge(node, neighbor):
+                dfs_rec(neighbor)
+        stack.append(node)
+
+    for node in nodes:
+        if node not in visited:
+            dfs_rec(node)
+
+    stack.reverse()
+    return stack
+
+def sort_by_project_dependencies(project_descriptions):
+    def depends_on(project_a, project_b):
+        # return true if project_a depends on project_b
+        res = project_b.name in project_a.required_projects
+        # print(f"{project_a.name} depends on {project_b.name}: {res}")
+        return res
+    sorted = topological_sort(project_descriptions, depends_on)
+    # print(f"{project_descriptions} -----> {sorted}")
+    return sorted
+
 def is_semver(version):
     # supported formats: "3.2", "3.2.1", "3.2p1"
     pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?$'
@@ -291,7 +319,6 @@ def detect_tools():
             errors.append(tool)
     if errors:
         raise Exception(f"The following programs were not found: {', '.join(errors)}.")
-
 
 class ProjectDescription:
     def __init__(self, name, version, description=None, warnings=[],
@@ -1126,7 +1153,7 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
-        effective_project_descriptions = activate_project_options(specified_project_descriptions, requested_options)
+        effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
@@ -1141,7 +1168,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
-        effective_project_descriptions = activate_project_options(specified_project_descriptions, requested_options)
+        effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
@@ -1162,7 +1189,7 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
-        effective_project_descriptions = activate_project_options(specified_project_descriptions, requested_options)
+        effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
@@ -1185,7 +1212,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
-        effective_project_descriptions = activate_project_options(specified_project_descriptions, requested_options)
+        effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
@@ -1225,7 +1252,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
-        effective_project_descriptions = activate_project_options(specified_project_descriptions, requested_options)
+        effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
         _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")

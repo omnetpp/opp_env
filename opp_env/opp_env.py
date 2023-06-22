@@ -131,16 +131,22 @@ def version_matches(wildcard_version, version):
     else:
         return wildcard_version == version
 
-def parse_arguments():
-    description = "Sets up the development environment for OMNeT++ projects"
-    parser = argparse.ArgumentParser(prog="opp_env", description=description)
+def create_arg_parser():
+    parser = argparse.ArgumentParser(prog="opp_env", description=
+        "Provides automated installation of various versions of OMNeT++ and simulation frameworks -- enter 'opp_env list' for a list of supported projects. "
+        "Uses Nix (nixos.org) to ensure a controlled software environment (compiler, libraries, tool) for building and running simulations. "
+        "Projects are downloaded and built in dedicated directories called workspaces. Typical usage: mkdir workspace; cd workspace; opp_env init; opp_env shell inet-4",
+        epilog="For command-specific help, type: opp_env COMMAND -h")
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Log level of output")
     parser.add_argument("-p", "--print-stacktrace", default=False, action='store_true', help="Print stack trace on error")
     parser.add_argument("-v", "--version", action='version', version=get_version(), help="Print version information and exit")
-    subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
-    subparser = subparsers.add_parser("list", help="Lists all available projects")
-    subparser.add_argument("project_name_patterns", nargs="*", metavar="project-name-or-pattern", help="Project names, project names with versions, or in general, regular expressions that match the beginning of the project names with versions to be selected. Omit to list all projects.")
+    subparsers = parser.add_subparsers(help='', dest='subcommand', metavar='COMMAND')
+
+    subparser = subparsers.add_parser("list", description="Lists all available projects")
+    subparser.add_argument("project_name_patterns", nargs="*", metavar="project-name-or-pattern", help=
+                           "Project names, project names with versions, or in general, regular expressions that match "
+                           "the beginning of the project names with versions to be selected. Omit to list all projects.")
     group = subparser.add_mutually_exclusive_group()
     group.add_argument("--flat", dest="list_mode", action="store_const", const="flat", help="List projects with available versions, one per line")
     group.add_argument("--grouped", dest="list_mode", action="store_const", const="grouped", help="List the available versions for each project")
@@ -148,44 +154,55 @@ def parse_arguments():
     group.add_argument("--expand", dest="list_mode", action="store_const", const="expand", help="Expand dependency list of each matching project in the default version combination")
     group.add_argument("--expand-all", dest="list_mode", action="store_const", const="expand-all", help="Expand dependency list of each matching project in all supported version combinations")
 
-    subparser = subparsers.add_parser("info", help="Describes the specified project")
+    subparser = subparsers.add_parser("info", help="Describes the specified project", description="Describes the specified project")
     subparser.add_argument("projects", nargs="*", help="The list of projects to describe. You can specify exact versions like 'inet-4.0' or project names like 'inet'. The latter will print info on all versions of the project. An empty list prints info on all projects.")
     subparser.add_argument("--raw", action='store_true', default=False, help="Print the project descriptions in a raw form. The output is well-formed JSON, so you can use tools like 'jq' to further query it and extract the desired data.")
     subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Print the project description as if the given project options were selected")
 
     def add_argument(subparser, name):
-        if name=="projects":     subparser.add_argument("projects", nargs="+", help="List of projects")
+        if name=="projects":     subparser.add_argument("projects", nargs="+", help=
+            "List of projects with versions to work with, e.g. 'inet-4.2'. Abbreviated version numbers are understood as the latest "
+            "minor/patchlevel version that matches the abbreviated version, e.g. 'inet-3' and 'inet-3.8' both refer to 'inet-3.8.3'. "
+            "The pseudo-version 'latest' translates to the latest version of the project, e.g. 'inet-latest' stood for 'inet-4.5.0' at the time of writing. "
+            "If the specified projects have dependencies, they will also be selected (unless the --no-deps option is present).")
         elif name=="quiet":      subparser.add_argument("-q", "--quiet", dest="suppress_stdout", default=False, action='store_true', help="Suppress the standard output of executed commands")
         elif name=="force-init": subparser.add_argument("-f", "--force", default=False, action='store_true', help="Force turning a non-empty directory into a workspace")
-        elif name=="init":       subparser.add_argument("--init", default=False, action='store_true', help="Initialize workspace") #TODO
-        elif name=="workspace":  subparser.add_argument("-w", "--workspace", dest="workspace_directory", help="Workspace directory")
+        elif name=="init":       subparser.add_argument("--init", default=False, action='store_true', help=
+            "Turn the current directory (or the directory specified via -w/--workspace) into a workspace if it is not already one")
+        elif name=="workspace":  subparser.add_argument("-w", "--workspace", metavar='DIR', dest="workspace_directory", help=
+            "Specifies the workspace directory. When this option is missing and opp_env needs to find the workspace, "
+            "it will do so by searching up from the current directory.")
         elif name=="no-pause":   subparser.add_argument("-n", "--no-pause", dest="pause_after_warnings", default=True, action='store_false', help="Do not pause after printing warnings")
         elif name=="no-deps":    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help=
             "Ignore dependencies among projects, only operate on the projects explicitly listed on the command line. "
             "This allows projects to be used together in previously untested or \"unofficial\" combinations.")
-        elif name=="options":    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
+        elif name=="options":    subparser.add_argument("--options", action='append', metavar='[PROJECT:]NAME,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
         elif name=="no-patch":   subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
-        elif name=="no-cleanup": subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete partially downloaded project if download or patching fails or is interrupted")
+        elif name=="no-cleanup": subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete a partially downloaded project if download or patching fails or is interrupted")
         elif name=="nixless":    subparser.add_argument("--nixless", default=False, action='store_true', help=
             "Run without Nix. This mode assumes that all packages that the projects and opp_env itself require are already installed in the system. "
             "For opp_env itself, this translates to having 'curl' and/or 'git', and basic tools like 'tar' and 'gzip' available for downloading packages. "
             "The packages that OMNeT++ requires are documented in the Installation Guide of the particular version.")
-        elif name=="keep":       subparser.add_argument("-k", "--keep", action='append', metavar='name1,name2,...', help=
+        elif name=="keep":       subparser.add_argument("-k", "--keep", action='append', metavar='NAME,...', help=
             "Keep the specified environment variables, i.e. pass them into shells spawned by opp_env.")
         elif name=="local":      subparser.add_argument("--local", default=False, action='store_true', help=
             "Replaces internet access with file access. When specified, opp_env will use a local downloads directory and "
             "locally cloned Git repositories as installation sources instead of network access. "
             "It expects the file system locations to be passed in via environment variables. "
             "It is primarily useful for testing purposes.")
-        elif name=="isolated":    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help="Run in isolated environment from the host operating system")
-        elif name=="no-isolated": subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help="Run in isolated environment from the host operating system")
+        elif name=="isolated":    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help=
+            "Run in a Nix-based isolated environment from the host operating system.")
+        elif name=="no-isolated": subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help=
+            "Run in a Nix-based isolated environment from the host operating system.")
         elif name=="no-prepare-missing": subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
-        elif name=="mode(release)":  subparser.add_argument("--mode", metavar='debug,release,...', default="release", help="Build mode(s), separated by commas.")
-        elif name=="mode(both)": subparser.add_argument("--mode", metavar='debug,release,...', default="debug,release", help="Build mode(s), separated by commas.")
+        elif name=="mode(release)":  subparser.add_argument("--mode", metavar='MODE,...', default="release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
+        elif name=="mode(both)": subparser.add_argument("--mode", metavar='MODE,...', default="debug,release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
         elif name=="no-build":   subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Build project if not already built")
-        elif name=="chdir":      subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="if-outside", help=
-            "Whether to change into the directory of the project. The default action is to change into the project root "
-            "only if the current working directory is outside the project")
+        elif name=="chdir":      subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="convenience", help=
+            "Whether to change into the workspace directory (--chdir), or stay in the current working directory (--no-chdir). "
+            "If neither is given, the default action to try doing what is likely the most convenient for the user, "
+            "which is to change into the root of the (first) project if the current working directory is outside that project's directory tree, "
+            "and stay in the current directory (inside the project) otherwise.")
         elif name=="command":    subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
         else: raise Exception(f"Internal error: unrecognized option name '{name}'")
 
@@ -193,13 +210,14 @@ def parse_arguments():
         for name in names:
             add_argument(subparser, name)
 
-    subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace")
+    subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace", description="Designates the current working directory to be an opp_env workspace")
     add_arguments(subparser, [
         "workspace",
         "force-init"
     ])
 
-    subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace")
+    subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace",
+        description="Downloads the specified projects into the workspace, including the ones required by the specified projects.")
     add_arguments(subparser, [
         "projects",
         "quiet",
@@ -215,7 +233,8 @@ def parse_arguments():
         "local"
     ])
 
-    subparser = subparsers.add_parser("build", aliases=["install"], help="Builds the specified projects in their environment")
+    subparser = subparsers.add_parser("build", aliases=["install"], help="Builds the specified projects in their environment",
+        description="Builds the specified projects in their environment. It also performs download steps as necessary.")
     add_arguments(subparser, [
         "projects",
         "quiet",
@@ -234,7 +253,8 @@ def parse_arguments():
         "local"
     ])
 
-    subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment")
+    subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment",
+        description="Cleans the specified projects in their environment.")
     add_arguments(subparser, [
         "projects",
         "quiet",
@@ -250,7 +270,8 @@ def parse_arguments():
         "local"
     ])
 
-    subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects")
+    subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects",
+        description="Runs a shell in the environment of the specified projects. It also performs download and build steps as necessary.")
     add_arguments(subparser, [
         "projects",
         "quiet",
@@ -271,7 +292,8 @@ def parse_arguments():
         "local"
     ])
 
-    subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects")
+    subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects",
+        description="Runs a command in the environment of the specified projects. It also performs download and build steps as necessary.")
     add_arguments(subparser, [
         "projects",
         "quiet",
@@ -292,18 +314,21 @@ def parse_arguments():
         "local"
     ])
 
-    subparser = subparsers.add_parser("upgrade", help="Upgrades opp_env to the latest version")
+    subparser = subparsers.add_parser("upgrade", help="Upgrades opp_env to the latest version", description="Upgrades opp_env to the latest version")
     subparser.add_argument("-n", "--dry-run", default=False, action='store_true', help="Test if an upgrade is available and simulate the upgrade without actually carrying out the installation")
     subparser.add_argument("-c", "--check", default=False, action='store_true', help="Only test if an upgrade is available")
     subparser.add_argument("--from-pypi", default=False, action='store_true', help="Use the latest version from PyPI instead of the latest version from the Git repository")
 
-    subparser = subparsers.add_parser("maint", help="Maintenance functions")
+    subparser = subparsers.add_parser("maint", help="Maintenance functions", description="Maintenance functions")
     subparser.add_argument("-u", "--update-catalog", metavar="download-items-dir", dest="catalog_dir", help="Update the opp_env installation commands in the model catalog of omnetpp.org. The argument should point to the `download-items/` subdir of a checked-out copy of the https://github.com/omnetpp/omnetpp.org/ repository.")
 
-    return parser.parse_args(sys.argv[1:])
+    return parser
 
 def process_arguments():
-    args = parse_arguments()
+    parser = create_arg_parser()
+    args = parser.parse_args(sys.argv[1:])
+    if args.subcommand == None:
+        parser.print_help()
 
     handler = logging.StreamHandler()
     handler.setFormatter(ColoredLoggingFormatter())
@@ -1323,7 +1348,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
     if chdir and projects:
         first_project_description = resolve_projects(projects)[0]
         first_project_dir = workspace.get_project_root_directory(first_project_description)
-        if chdir == "if-outside":
+        if chdir == "convenience":
             chdir = not is_subdirectory(os.getcwd(), first_project_dir)  # "is outside the project dir"
         if chdir:
             _logger.debug(f"Changing into the first project's directory {cyan(first_project_dir)}")
@@ -1413,11 +1438,13 @@ def update_catalog(catalog_dir):
 
 def main():
     kwargs = process_arguments()
-    subcommand = kwargs['subcommand']
+    subcommand = kwargs.get('subcommand')
 
     try:
         _logger.debug(f"Starting {cyan(subcommand)} operation")
-        if subcommand == "list":
+        if subcommand == None:
+            pass # parser.print_help() already called
+        elif subcommand == "list":
             list_subcommand_main(**kwargs)
         elif subcommand == "info":
             info_subcommand_main(**kwargs)

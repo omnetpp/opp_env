@@ -731,17 +731,22 @@ class Workspace:
         #return None
 
     @staticmethod
-    def init_workspace(dir=None):
+    def init_workspace(dir=None, allow_existing=False):
         if not dir:
             dir = os.getcwd()
         if not os.path.isdir(dir):
             raise Exception(f"Directory does not exist: {dir}")
         opp_env_dir = os.path.join(dir, Workspace.WORKSPACE_ADMIN_DIR)
         if os.path.isdir(opp_env_dir):
-            raise Exception(f"'{dir}' is already an opp_env workspace")
+            if allow_existing:
+                _logger.debug(f"Using existing workspace in folder {cyan(dir)}")
+                return
+            else:
+                raise Exception(f"'{dir}' is already an opp_env workspace")
         if re.search("\\s", dir):
             raise Exception(f"Whitespace characters are not allowed in the name and path of the workspace directory")
         os.mkdir(opp_env_dir)
+        _logger.info(f"Workspace created in folder {cyan(dir)}")
 
     def get_workspace_admin_directory(self):
         return os.path.join(self.root_directory, self.WORKSPACE_ADMIN_DIR)
@@ -1118,7 +1123,7 @@ def resolve_projects(project_full_names):
     project_descriptions = [project_registry.get_project_description(ProjectReference.parse(p)) for p in project_full_names]
     return project_descriptions
 
-def init_workspace(workspace_directory, force=False):
+def init_workspace(workspace_directory, force=False, allow_existing=False):
     workspace_directory = workspace_directory or os.getcwd()
     if os.path.isdir(workspace_directory):
         if not Workspace.is_workspace(workspace_directory):
@@ -1129,8 +1134,7 @@ def init_workspace(workspace_directory, force=False):
         if not os.path.isdir(parent_dir):
             raise Exception(f"Cannot create workspace at '{workspace_directory}': refusing to create more than one level of directories")
         os.mkdir(workspace_directory)
-    Workspace.init_workspace(workspace_directory)
-    _logger.info(f"Workspace created in folder {cyan(workspace_directory)}")
+    Workspace.init_workspace(workspace_directory, allow_existing=allow_existing)
     return workspace_directory
 
 def resolve_workspace(workspace_directory):
@@ -1232,7 +1236,7 @@ def init_subcommand_main(workspace_directory=None, force=False, **kwargs):
 
 def download_subcommand_main(projects, workspace_directory=None, requested_options=None, no_dependency_resolution=False, nixless=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
+    workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
@@ -1247,7 +1251,7 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
 
 def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
+    workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
@@ -1268,7 +1272,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
 def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     #TODO shouldn't there be a "realclean" command that deletes all files NOT in the file list??
     global project_registry
-    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
+    workspace_directory = resolve_workspace(workspace_directory)  # note: no init_workspace()
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
@@ -1291,7 +1295,7 @@ def is_subdirectory(child_dir, parent_dir):
 
 def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, nixless=False, isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
+    workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
@@ -1331,7 +1335,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
 
 def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, nixless=False,  isolated=True, pause_after_warnings=True,  all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = init_workspace(workspace_directory) if init else resolve_workspace(workspace_directory)
+    workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
     workspace = Workspace(workspace_directory, nixless)
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:

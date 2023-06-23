@@ -880,12 +880,12 @@ class Workspace:
         result = self.run_command(f"shasum -c --quiet {file_list_file_name} > {file_list_file_name + '.out'}", suppress_stdout=True, check_exitcode=False)
         return green("UNMODIFIED") if result.returncode == 0 else f"{red('MODIFIED')} -- see {file_list_file_name + '.out'} for details"
 
-    def setup_environment(self, projects, requested_options=None, **kwargs):
-        global project_registry
-        specified_project_descriptions = resolve_projects(projects)
-        effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-        _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(self.root_directory)}")
-        return effective_project_descriptions
+    # def setup_environment(self, projects, requested_options=None, **kwargs):
+    #     global project_registry
+    #     specified_project_descriptions = resolve_projects(projects)
+    #     effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
+    #     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(self.root_directory)}")
+    #     return effective_project_descriptions
 
     def show_warnings_before_download(self, project_descriptions, pause_after_warnings=True):
         # the ones that have warnings and are not yet downloaded
@@ -1239,7 +1239,7 @@ def download_subcommand_main(projects, workspace_directory=None, requested_optio
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-        _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
     workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
@@ -1254,7 +1254,7 @@ def build_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-        _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
     workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
@@ -1275,7 +1275,7 @@ def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=Tr
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-        _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
     workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
@@ -1298,7 +1298,7 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-        _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
     workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
@@ -1338,7 +1338,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, prepar
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-        _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
 
     workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:

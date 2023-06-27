@@ -137,6 +137,7 @@ def create_arg_parser():
         "Uses Nix (nixos.org) to ensure a controlled software environment (compiler, libraries, tool) for building and running simulations. "
         "Projects are downloaded and built in dedicated directories called workspaces. Typical usage: mkdir workspace; cd workspace; opp_env init; opp_env shell inet-4",
         epilog="For command-specific help, type: opp_env COMMAND -h")
+    parser.add_argument("-d", "--debug", default=False, action='store_true', help="Equivalent to '--print-stacktrace --log-level DEBUG'")
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Log level of output")
     parser.add_argument("-p", "--print-stacktrace", default=False, action='store_true', help="Print stack trace on error")
     parser.add_argument("-v", "--version", action='version', version=get_version(), help="Print version information and exit")
@@ -329,6 +330,10 @@ def process_arguments():
     args = parser.parse_args(sys.argv[1:])
     if args.subcommand == None:
         parser.print_help()
+
+    if args.debug:
+        args.log_level = "DEBUG"
+        args.print_stacktrace = True
 
     handler = logging.StreamHandler()
     handler.setFormatter(ColoredLoggingFormatter())

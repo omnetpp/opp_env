@@ -739,8 +739,8 @@ class Workspace:
         assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
         self.nixless = nixless
-        self.default_nixos = default_nixos or "nixos-23.05"
-        self.default_stdenv = default_stdenv or "llvmPackages_14.stdenv"
+        self.default_nixos = default_nixos or "22.11"
+        self.default_stdenv = default_stdenv or "llvmPackages.stdenv"
 
         if nixless:
             detect_tools()

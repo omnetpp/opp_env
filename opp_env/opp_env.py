@@ -204,6 +204,8 @@ def create_arg_parser():
         elif name=="mode(release)":  subparser.add_argument("--mode", metavar='MODE,...', default="release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
         elif name=="mode(both)": subparser.add_argument("--mode", metavar='MODE,...', default="debug,release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
         elif name=="no-build":   subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Build project if not already built")
+        elif name=="no-skip-build":   subparser.add_argument("--no-skip-build", dest='skip_build_if_unchanged', default=True, action='store_false', help=
+            "The default behavior is to skip running the build command if all relevant files in the project appear to be unchanged. This option disables this optimization.")
         elif name=="chdir":      subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="convenience", help=
             "Whether to change into the workspace directory (--chdir), or stay in the current working directory (--no-chdir). "
             "If neither is given, the default action to try doing what is likely the most convenient for the user, "
@@ -253,6 +255,7 @@ def create_arg_parser():
         "no-cleanup",
         "no-patch",
         "mode(both)",
+        "no-skip-build",
         "no-isolated",
         "nixless",
         "keep",
@@ -291,6 +294,7 @@ def create_arg_parser():
         "no-patch",
         "no-build",
         "mode(release)",
+        "no-skip-build",
         "quiet",
         "isolated",
         "nixless",
@@ -313,6 +317,7 @@ def create_arg_parser():
         "no-patch",
         "no-build",
         "mode(release)",
+        "no-skip-build",
         "quiet",
         "no-isolated",
         "nixless",

@@ -1146,7 +1146,8 @@ class Workspace:
         nix_packages = uniq(nix_packages + tools_nix_packages)
 
         shell_options = "-exo pipefail" if tracing else "-eo pipefail"
-        flake_dir = self.get_workspace_admin_directory()
+        flake_dir = os.path.join(self.get_workspace_admin_directory(), nixos)
+        os.makedirs(flake_dir, exist_ok=True)
         flake_file_name = os.path.join(flake_dir, "flake.nix")
         with open(flake_file_name, "w") as f:
             nix_develop_flake = (nix_develop_flake

@@ -254,7 +254,7 @@ def create_arg_parser():
         "no-pause",
         "no-cleanup",
         "no-patch",
-        "mode(both)",
+        "mode(release)",
         "no-skip-build",
         "no-isolated",
         "nixless",

@@ -68,7 +68,11 @@ def make_omnetpp_project_description(version, base_version=None):
     tcltk_packages = [] if version >= "6.0" else ["tk", "tcl", "cairo"] if version >= "5.0" else ["tk", "tcl"] if is_modernized or version >= "4.3" else ["tk-8_5", "tcl-8_5"]
 
     # Various tools and libs required by / for building omnetpp. Note that we only started using Python in version 5.0.
-    other_packages = ["bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "pkg-config", "ccache", ("gdb" if not is_macos else None), "vim", ("python3" if version > "5.0" else None)]
+    # NOTE: We have to explicitly specify and use gnumake 4.2 (instead of relying on the version bundled in the stdenv).
+    # Later versions (espacially >= 4.4) have introduced backward-incompatible changes with pattern rules that are incomaptible 
+    # with older OMNeT++ releases. These issues can even cause mysterious compiler crashes on subsequent builds because of
+    # concurrency issues between the message compiler and the compiler.
+    other_packages = ["bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "pkg-config", "ccache", "gnumake42", ("gdb" if not is_macos else None), "vim", ("python3" if version > "5.0" else None)]
 
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version >= "6.0" else []

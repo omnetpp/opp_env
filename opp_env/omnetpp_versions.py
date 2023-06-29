@@ -41,6 +41,14 @@ def make_omnetpp_project_description(version, base_version=None):
 
     # Some downloads have the OS (Linux or macOS) in the file name; we only care about these two, because Windows doesn't have Nix
     is_macos = platform.system().lower() == "darwin"
+    is_linux = platform.system().lower() == "linux"
+    os_name = "macos" if is_macos else "linux" if is_linux else "unsupported"
+    os_name_x = "macosx" if is_macos else "linux" if is_linux else "unsupported"  # alternative name used in some URLs for 5.x versions
+    
+    # some versions have machine architecture specific versions (aarch64, x86_64, etc.)
+    is_x86_64 = platform.machine().lower() == "x86_64"
+    is_aarch64 = platform.machine().lower() == "arm64"
+    arch_name = "x86_64" if is_x86_64 else "aarch64" if is_aarch64 else "unsupported"
 
     # 5.7, 6.0 and up have bundled JREs (JustJ), on macOS we do not support the IDE below 5.7
     jre_package = "temurin-jre-bin-8" if version < "5.7" else None
@@ -232,14 +240,14 @@ def make_omnetpp_project_description(version, base_version=None):
                 "option_is_default": version not in missing_releases and version != "master",
                 "download_url":
                     "" if version in missing_releases or version == "master" else
-                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-macos-x86_64.tgz" if is_macos and (base_version.startswith("6.") or base_version == "5.7") else
-                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-linux-x86_64.tgz" if base_version.startswith("6.") or base_version == "5.7" else
-                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-macosx.tgz" if is_macos and base_version.startswith("5.") else
-                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version == "5.0" else # only macOS has an OS-specific download
-                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-linux.tgz" if base_version.startswith("5.") else
-                    f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else
-                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else
-                    f"{github_url}/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else "",
+                    f"{github_url}/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else # special name
+                    f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else # special name for v4.0
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else # for versions 4.1 - 4.6 there is a single tarball for all OSes
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-{os_name}-x86_64.tgz" if base_version == "5.7" else # on 5.7 the macOS tarball is named differently than earlier versions and there are only x86_64 tarballs
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src{'-'+os_name_x if is_macos else ''}.tgz" if base_version == "5.0" else # macOS has an OS-specific download for 5.0
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-{os_name_x}.tgz" if base_version.startswith("5.") else # for versions 5.1 - 5.6 there are separate tarballs for each OS (linux or macosx)
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-{os_name}-{'x86_64' if is_macos else arch_name}.tgz" if base_version.startswith("6.0") else # for 6.0.x there are separate tarballs for each architecture on Linux (x86_64, aarch64), but not on macOS (only x86_64)
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-{os_name}-{arch_name}.tgz", # for 6.1.x+ there are separate tarballs for each architecture on both Linux and macOS
                 "patch_commands": [
                     *base_release_to_actual_version_patch_commands,
                     *source_patch_commands,

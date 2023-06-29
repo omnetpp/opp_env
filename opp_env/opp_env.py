@@ -1165,7 +1165,7 @@ class Workspace:
             )
             f.write(nix_develop_flake)
 
-        _logger.debug(f"Using {nixos}, {stdenv}, packages: {' '.join(nix_packages)}")
+        _logger.debug(f"Using nixpkgs {cyan(nixos)} with {cyan(stdenv)}, packages: {cyan(' '.join(sorted(nix_packages)))}")
         _logger.debug(f"Nix flake shellHook script:\n{indent(script)}")
         #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
         vars_to_keep = (vars_to_keep or []) + ['HOME', 'TERM', 'COLORTERM', 'DISPLAY', 'XAUTHORITY', 'XDG_RUNTIME_DIR', 'XDG_DATA_DIRS', 'XDG_CACHE_HOME', 'QT_AUTO_SCREEN_SCALE_FACTOR']

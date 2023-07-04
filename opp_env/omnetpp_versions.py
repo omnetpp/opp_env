@@ -69,7 +69,7 @@ def make_omnetpp_project_description(version, base_version=None):
 
     # Various tools and libs required by / for building omnetpp. Note that we only started using Python in version 5.0.
     # NOTE: We have to explicitly specify and use gnumake 4.2 (instead of relying on the version bundled in the stdenv).
-    # Later versions (espacially >= 4.4) have introduced backward-incompatible changes with pattern rules that are incomaptible 
+    # Later versions (especially >= 4.4) have introduced backward-incompatible changes with pattern rules that are incompatible
     # with older OMNeT++ releases. These issues can even cause mysterious compiler crashes on subsequent builds because of
     # concurrency issues between the message compiler and the compiler.
     other_packages = ["bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "pkg-config", "ccache", "gnumake42", ("gdb" if not is_macos else None), "vim", ("python3" if version > "5.0" else None)]
@@ -163,8 +163,8 @@ def make_omnetpp_project_description(version, base_version=None):
         "description": "OMNeT++ base system",
         "warnings": remove_blanks([
             join_nonempty_items(" ", [
-                f"This version is not the latest patchlevel. We recommend that you use the corresponding patch branch 'omnetpp-{dotx(version)}' instead." if not is_modernized and version >= "5.0" else None,
-                f"This version is not the latest patchlevel. It may compile with warnings or work incorrectly due to bit rotting. We recommend to use the corresponding patch branch 'omnetpp-{dotx(version)}', which has also been updated to build with an up-to-date C++ compiler." if not is_modernized and version < "5.0" else None,
+                f"This version is not the latest patchlevel. Consider the corresponding patch branch 'omnetpp-{dotx(version)}' instead if you can." if not is_modernized and version >= "5.0" else None,
+                f"This version is not the latest patchlevel, it may compile with warnings or work incorrectly due to bit rotting. Consider the corresponding patch branch 'omnetpp-{dotx(version)}' if you can, which has also been updated to build with an up-to-date C++ compiler." if not is_modernized and version < "5.0" else None,
                 "Specifically, most simulation models won't work, because they use activity(), and the coroutine library in this release has become broken due to changes in the standard C library implementation of setjmp()/longjmp(). This issue has been resolved in the modernized patch branch and release.)" if not is_modernized and version.startswith("3.") else None,
                 "Specifically, this version could only be made to compile with the combination of compiler options (C++03, permissiveness, warning suppression, etc.), patching (e.g. due to changes in Bison), and using an older Tcl/Tk library." if not is_modernized and version >= "4.0" and version < "4.3" else None,
                 "Specifically, Qtenv in this version may not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None,

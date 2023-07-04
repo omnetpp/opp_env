@@ -1006,7 +1006,7 @@ class Workspace:
             for p in projects_to_warn:
                 for warning in p.warnings:
                     _logger.warning(f"Project {cyan(p)}: {warning}")
-            if pause_after_warnings and sys.stdin.isatty():
+            if pause_after_warnings and sys.stdout.isatty() and sys.stdin.isatty():
                 input("Press Enter to continue, or Ctrl+C to abort ")
 
     @staticmethod

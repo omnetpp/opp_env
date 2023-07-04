@@ -5,9 +5,8 @@ rm -rf test
 mkdir test
 cd test
 opp_env list
-opp_env describe $PROJECT
+opp_env info $PROJECT
 opp_env download $PROJECT
-opp_env configure $PROJECT
 opp_env clean $PROJECT
 opp_env build $PROJECT
 opp_env shell $PROJECT

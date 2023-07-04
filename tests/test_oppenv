@@ -31,7 +31,7 @@ mode = ",".join(args.mode) if args.mode else ""
 
 # Produce list of test cases
 def expand_project_filter(project_filter):
-    cmd = f"opp_env list --mode flat --latest-patchlevels | grep '{project_filter}'"
+    cmd = f"opp_env list --flat | grep '{project_filter}'"
     print(cmd, end="")
     list = sorted(subprocess.check_output(cmd, shell=True, text=True).split())
     print(" --> ", " ".join(list))
@@ -75,7 +75,7 @@ for project_list in test_cases:
     if "cannot be installed in the standard way" in subprocess.check_output(f"opp_env info {projects_string}", shell=True, text=True):
         options += " --options=source-archive"
 
-    test_command = f"opp_env -lDEBUG --no-pause {command} {options} {projects_string}"
+    test_command = f"opp_env -lDEBUG {command} {options} {projects_string}"
 
     print(f"Running #{total_runs} {test_command} : ", end="")
     sys.stdout.flush()

@@ -179,6 +179,7 @@ def make_omnetpp_project_description(version, base_version=None):
             ]),
             "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None,
             "The OMNeT++ IDE will not be available because a matching JRE is not available on macOS." if is_macos and version < "5.7" else None,
+            "OMNeT++ 5.0 and earlier versions work with severely limited functionality on recent versions of macOS. Dynamic libraries, Tkenv and Qtenv must be turned off manually in configure.user before configuring and building. For further info see: https://github.com/omnetpp/opp_env/issues/1" if is_macos and version < "5.1" else None,
         ]),
         # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
         # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS. 

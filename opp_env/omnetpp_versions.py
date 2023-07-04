@@ -135,7 +135,7 @@ def make_omnetpp_project_description(version, base_version=None):
     ]
 
     # for older versions we use gcc7 (although a recent compiler with -std=c++03 -fpermissive would also do? -- TODO check)
-    use_gcc7 = not is_modernized and (version.startswith("3.") or version.startswith("4."))
+    use_gcc7 = not is_modernized and (version.startswith("3.") or version.startswith("4.")) and not is_macos
 
     # Early 4.x versions need flags such as -std=c++03 -fpermissive to compile.
     # Note: technically, omnetpp itself would not need "-std=c++03" from version 4.3 on,

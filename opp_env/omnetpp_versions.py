@@ -74,6 +74,8 @@ def make_omnetpp_project_description(version, base_version=None):
     # Cairo is required for the Tkpath plugin bundled with omnetpp in 5.x versions (those with cCanvas support).
     # Tkenv was removed in 6.0, Tcl/Tk is not required above that.
     tcltk_packages = [] if version >= "6.0" else ["tk", "tcl", "cairo"] if version >= "5.0" else ["tk", "tcl"] if is_modernized or version >= "4.3" else ["tk-8_5", "tcl-8_5"]
+    tcltk_packages += ["darwin.apple_sdk.frameworks.Carbon"] if is_macos and version >= "4.0" and version < "5.1" else []
+    
 
     # Various tools and libs required by / for building omnetpp. Note that we only started using Python in version 5.0.
     # NOTE: We have to explicitly specify and use gnumake 4.2 (instead of relying on the version bundled in the stdenv).
@@ -131,7 +133,8 @@ def make_omnetpp_project_description(version, base_version=None):
         # to avoid detecting system-wide Tcl/Tk at fixed paths
         "sed -i.bak '/# Compiler and linker options for/a TK_LIBS=\"-ltcl8.5 -ltk8.5\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
         "sed -i.bak '/# Compiler and linker options for/a TK_CFLAGS=\"-Idummy\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
-
+        # to disable tkdock calls which is not available on macOS / aarch64
+        "sed -i.bak 's|tkdock::switchIcon|# tkdock::switchIcon|' src/tkenv/startup.tcl" if version >= "4.5" and version < "5.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkdock is not supported
     ]
 
     # for older versions we use gcc7 (although a recent compiler with -std=c++03 -fpermissive would also do? -- TODO check)
@@ -147,6 +150,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "-Wno-string-plus-int" if is_modernized else
         "-std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations -Wno-string-plus-int -Wno-address-of-temporary" if version < "4.6" else
         "-Wno-deprecated-declarations -Wno-string-plus-int" if version >= "4.6" and version < "5.7" else "")
+    extra_cflags += " -D_XOPEN_SOURCE" if is_macos and version >= "4.0" and version < "4.2" else ""
 
     # Adjust settings in configure.user so that a simple ./configure will do in the configuration phase.
     # Note the CFLAGS can only be specified in a convenient way by patching Makefile.inc.
@@ -157,6 +161,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i.bak 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
         "sed -i.bak 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
         "sed -i.bak 's|^QT_VERSION=4|QT_VERSION=5|' configure.user" if version.startswith("5.0") else None, # 5.0.x too!
+        "sed -i.bak 's|^WITH_TKENV=yes|WITH_TKENV=no|' configure.user" if version >= "5.0" and version < "6.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkenv is not supported
         f"sed -i.bak '/^PERL =/i CFLAGS += {extra_cflags}' Makefile.inc.in" if extra_cflags and version >= "4.0" else  # no Makefile.inc.in in 3.x yet
         f"sed -i.bak 's/^CFLAGS=.*/CFLAGS=\\\"-O2 -DNDEBUG=1 {extra_cflags}\\\"/' configure.user" if extra_cflags and version < "4.0" else None  # no Makefile.inc.in in 3.x yet
     ]
@@ -179,7 +184,7 @@ def make_omnetpp_project_description(version, base_version=None):
             ]),
             "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None,
             "The OMNeT++ IDE will not be available because a matching JRE is not available on macOS." if is_macos and version < "5.7" else None,
-            "OMNeT++ 5.0 and earlier versions work with severely limited functionality on recent versions of macOS. Dynamic libraries, Tkenv and Qtenv must be turned off manually in configure.user before configuring and building. For further info see: https://github.com/omnetpp/opp_env/issues/1" if is_macos and version < "5.1" else None,
+            "OMNeT++ 5.0 and earlier versions work with limited functionality on recent versions of ARM64 based macOS. Tkenv and Qtenv must be turned off manually in configure.user before configuring and building. For further info see: https://github.com/omnetpp/opp_env/issues/1" if is_macos and version < "5.1" else None,
         ]),
         # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
         # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS. 

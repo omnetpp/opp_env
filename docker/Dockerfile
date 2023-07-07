@@ -3,6 +3,7 @@
 # The base image
 FROM ubuntu:22.04
 LABEL maintainer="Rudolf Hornig <rudi@omnetpp.org>"
+LABEL org.opencontainers.image.source = "https://github.com/omnetpp/opp_env"
 
 ARG USER=opp_env
 ENV USER=${USER}
@@ -33,14 +34,14 @@ COPY --chown=$USER:root ./bashrc /home/${USER}/.bashrc
 # install nix for the default user in single user mode
 RUN set -o pipefail \
     && sh <(curl -L https://nixos.org/nix/install) --no-daemon \
-    && mkdir -p .local/bin && source .profile \
-    && nix profile install nixpkgs#python3 nixpkgs#python3Packages.pip \
+    && mkdir -p .local/bin
+RUN source .profile && nix profile install nixpkgs#python3 nixpkgs#python3Packages.pip \
        nixpkgs#git nixpkgs#gzip nixpkgs#curl \
     && nix-collect-garbage \
     && nix-store --optimise \
-    && nix-store --verify --check-contents \
-    && pip3 install --user git+https://github.com/omnetpp/opp_env.git \
-    && opp_env init
+    && nix-store --verify --check-contents
+RUN source .profile && pip3 install --break-system-packages --user git+https://github.com/omnetpp/opp_env.git \
+    && opp_env init --force
 
 # set up the entrypoint script so all commands have an environment where .profile is sourced
 COPY --chmod=+x ./entrypoint.sh /entrypoint.sh

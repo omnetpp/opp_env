@@ -60,6 +60,7 @@ def make_omnetpp_project_description(version, base_version=None):
     linux_ide_packages = [jre_package] + [
         "gtk2" if version < "5.2" else "gtk3", # SWT (eclipse 4.7 and up is using gtk3)
         "glib", "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender", "gsettings-desktop-schemas", "webkitgtk",
+        "zlib",
         "stdenv.cc.cc.lib" if version < "5.2" else None  # for libstdc++.so used by our nativelibs; in 5.2 and up, it's statically linked
     ]
     ide_packages = (linux_ide_packages if not is_macos else []) if version >= "4.0" else []
@@ -107,7 +108,10 @@ def make_omnetpp_project_description(version, base_version=None):
     # Vanilla 4.x releases need to be patched to compile under Nix.
     # Compiling with '-std=c++03 -fpermissive' helps, but is not enough.
     source_patch_commands = [
-        "rm -rf tools/", # because of macOS
+        # binary patch the IDE so proper glibc and interpreter is used by the eclipse launcher and the JRE executables under the Nix environment
+        # Only do it in nix environment. Using glob patterns and enabling nullglob are important because theses file may or may not be present in a distro (depending on the distro version)
+        "[ -n $NIX_BINTOOLS ] && (shopt -s nullglob && patchelf --set-interpreter $(cat $NIX_BINTOOLS/nix-support/dynamic-linker) ide/*opp_ide ide/*omnetpp ide/*omnetpp64 ide/linux64/*omnetpp ide/plugins/org.eclipse.justj.*/jre/bin/* ; shopt -u nullglob) || true" if is_linux and version >= "4.0" else None,
+        "rm -rf tools/" if is_macos else None, # because bundled tools on macOS are not required when compiling under Nix
         "sed -i.bak 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i.bak 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
 
@@ -197,6 +201,7 @@ def make_omnetpp_project_description(version, base_version=None):
             "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if qt_packages else None,
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,
             "export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"" if "libxml2.dev" in other_packages else None,
+            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.zlib}/lib\"" if "zlib" in ide_packages else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.cairo}/lib\"" if "cairo" in (tcltk_packages + ide_packages) else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.gtk2}/lib\"" if "gtk2" in ide_packages else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.gtk3}/lib\"" if "gtk3" in ide_packages else None,

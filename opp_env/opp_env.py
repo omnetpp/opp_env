@@ -1484,7 +1484,7 @@ def upgrade_subcommand_main(dry_run=False, from_pypi=False, check=False, **kwarg
     dry_run_option = "--dry-run" if dry_run else ""
     module_spec = f"opp_env=={latest_version}" if from_pypi else f"git+https://github.com/omnetpp/opp_env.git@{latest_version}"
     if upgrade_needed:
-        upgrade_command = f"python3 -m pip install --user --upgrade {dry_run_option} {module_spec}"
+        upgrade_command = f"pip3 install --user --upgrade --break-system-packages {dry_run_option} {module_spec}"
         _logger.debug(f"Executing command: {upgrade_command}")
         subprocess.run(["bash", "-c", upgrade_command])
 

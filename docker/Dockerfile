@@ -40,7 +40,9 @@ RUN source .profile && nix profile install nixpkgs#python3 nixpkgs#python3Packag
     && nix-collect-garbage \
     && nix-store --optimise \
     && nix-store --verify --check-contents
-RUN source .profile && pip3 install --break-system-packages --user git+https://github.com/omnetpp/opp_env.git \
+# trick: check if the github repo changed and force a rebuild of the remaining layers    
+ADD "https://api.github.com/repos/omnetpp/opp_env/commits?per_page=1" latest_commit  
+RUN rm latest_commit && source .profile && pip3 install --break-system-packages --user git+https://github.com/omnetpp/opp_env.git \
     && opp_env init --force
 
 # set up the entrypoint script so all commands have an environment where .profile is sourced

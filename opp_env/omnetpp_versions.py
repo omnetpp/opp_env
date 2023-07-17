@@ -67,7 +67,7 @@ def make_omnetpp_project_description(version, base_version=None):
 
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
-    qt_packages = ["qt5.qtbase", "qt5.qtsvg"] if version >= "5.0" else []
+    qt_packages = ["qt5.qtbase", "qt5.qtsvg", "qt5.qtwayland"] if version >= "5.0" else []
 
     # The default Tcl/Tk version in Nix is 8.6, and that's OK with most of our releases.
     # However, early 4.x versions don't compile with Tcl 8.6 because no longer supports "interp->result" in the C API, so they need version 8.5.
@@ -198,7 +198,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
         "shell_hook_commands": [
-            "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if qt_packages else None,
+            "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtwayland.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if qt_packages else None,
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,
             "export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"" if "libxml2.dev" in other_packages else None,
             "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.zlib}/lib\"" if "zlib" in ide_packages else None,

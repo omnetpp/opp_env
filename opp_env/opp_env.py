@@ -553,6 +553,7 @@ class ProjectRegistry:
             "veins_versions",
             "simulte_versions",
             "simu5g_versions",
+            "external_versions"
         ]
 
         json_files = [

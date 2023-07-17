@@ -149,7 +149,7 @@ def create_arg_parser():
 
     subparsers = parser.add_subparsers(help='', dest='subcommand', metavar='COMMAND')
 
-    subparser = subparsers.add_parser("list", description="Lists all available projects")
+    subparser = subparsers.add_parser("list", help="Lists all available projects", description="Lists all available projects")
     subparser.add_argument("project_name_patterns", nargs="*", metavar="project-name-or-pattern", help=
                            "Project names, project names with versions, or in general, regular expressions that match "
                            "the beginning of the project names with versions to be selected. Omit to list all projects.")

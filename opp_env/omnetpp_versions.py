@@ -50,20 +50,25 @@ def make_omnetpp_project_description(version, base_version=None):
     is_aarch64 = platform.machine().lower() == "arm64"
     arch_name = "x86_64" if is_x86_64 else "aarch64" if is_aarch64 else "unsupported"
 
-    # 5.7, 6.0 and up have bundled JREs (JustJ), on macOS we do not support the IDE below 5.7
-    jre_package = "temurin-jre-bin-8" if version < "5.7" else None
+    # whether we can support the IDE considering the required JRE on the OS and architecture
+    # we do not support the IDE below 4.2 because of incompatibilities with JRE 8
+    is_ide_supported = (version >= "5.7") or (version >= "4.2" and is_x86_64)
+
+    # 5.7, 6.0 and up have bundled JREs (JustJ) so we don't depend on a JRE package
+    jre_package = "temurin-jre-bin-8" if is_ide_supported and version < "5.7" else None
 
     # Packages required by the IDE to work. The IDE can be started and is usable for most versions.
     # It doesn't work in omnetpp-4.0 and 4.1, because it would require an older JRE version that is not present in the Nix repo.
     # A problem component is the embedded Webkit library, used as HTML widget in Eclipse (help, some tooltips, etc.)
     # It doesn't work for version 5.6 and below (due to some incompatible change in Webkit), but newer versions should work.
-    linux_ide_packages = [jre_package] + [
+    linux_ide_packages = [
         "gtk2" if version < "5.2" else "gtk3", # SWT (eclipse 4.7 and up is using gtk3)
-        "glib", "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender", "gsettings-desktop-schemas", "webkitgtk",
-        "zlib",
+        "glib", "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender",
+        "gsettings-desktop-schemas", "webkitgtk", "zlib",
         "stdenv.cc.cc.lib" if version < "5.2" else None  # for libstdc++.so used by our nativelibs; in 5.2 and up, it's statically linked
-    ]
-    ide_packages = (linux_ide_packages if not is_macos else []) if version >= "4.0" else []
+    ] if is_ide_supported else []
+
+    ide_packages = [jre_package] + (linux_ide_packages if is_linux else []) 
 
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
@@ -111,6 +116,10 @@ def make_omnetpp_project_description(version, base_version=None):
         # binary patch the IDE so proper glibc and interpreter is used by the eclipse launcher and the JRE executables under the Nix environment
         # Only do it in nix environment. Using glob patterns and enabling nullglob are important because theses file may or may not be present in a distro (depending on the distro version)
         "[ -n $NIX_BINTOOLS ] && (shopt -s nullglob && patchelf --set-interpreter $(cat $NIX_BINTOOLS/nix-support/dynamic-linker) ide/*opp_ide ide/*omnetpp ide/*omnetpp64 ide/linux64/*omnetpp ide/plugins/org.eclipse.justj.*/jre/bin/* ; shopt -u nullglob) || true" if is_linux and version >= "4.0" else None,
+        # disable the ide launcher scripts on unsupported os/arch
+        "sed -i.bak 's/echo Starting the.*/echo The IDE is not supported on this OS and platform ; exit 1/' src/utils/omnetpp" if not is_ide_supported else None,
+        "sed -i.bak 's/echo Starting the.*/echo The IDE is not supported on this OS and platform ; exit 1/' src/utils/omnest" if not is_ide_supported else None,
+        
         "rm -rf tools/" if is_macos else None, # because bundled tools on macOS are not required when compiling under Nix
         "sed -i.bak 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i.bak 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
@@ -188,8 +197,7 @@ def make_omnetpp_project_description(version, base_version=None):
                 "Specifically, Qtenv in this version may not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None,
             ]),
             "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None,
-            "The OMNeT++ IDE will not be available because a matching JRE is not available on macOS." if is_macos and version < "5.7" else None,
-            "OMNeT++ 5.0 and earlier versions work with limited functionality on recent versions of ARM64 based macOS. Tkenv and Qtenv must be turned off manually in configure.user before configuring and building. For further info see: https://github.com/omnetpp/opp_env/issues/1" if is_macos and version < "5.1" else None,
+            "The OMNeT++ IDE will not be available because a matching JRE is not available." if (version < "4.2" or (is_macos and is_aarch64 and version < "5.7")) and version >= "4.0" else None,
         ]),
         # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
         # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS. 

@@ -71,6 +71,22 @@ opp_env list
 
 ## Installation
 
+### IMPORTANT NOTE
+
+Installation is based on the `pip install` command. On some system, namely recent versions of
+Ubuntu / Debian, this command stops with an error message:
+
+```
+error: externally-managed-environment
+[lengthy explanation]
+```
+
+To work around the error, follow the instructions in the printed message, which
+boils down to either adding the `--break-system-packages` option to the
+`pip install` commands, or setting up a Python virtual environment
+([venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/))
+and working from there.
+
 ### Installing opp_env with pip (on Linux and macOS)
 
 To get started with `opp_env`, you need to have Python3, pip and Nix installed on your
@@ -97,6 +113,9 @@ For now, you can install directly from GitHub:
 ```
 pip3 install --user git+https://github.com/omnetpp/opp_env.git
 ```
+
+If you get the `error: externally-managed-environment` message, see the note
+marked IMPORTANT above.
 
 When you install `opp_env` using pip, it installs the `opp_env` Python module,
 as well as a small script into your system's path (e.g. `~/.local/bin`) that
@@ -160,8 +179,11 @@ pip install --user --editable .
 This will install the Python module and the `opp_env` command, but with the
 added ability to make local modifications that will take effect immediately.
 
-If the above command results in any errors, try upgrading pip to the latest
-version first by running `python3 -m pip install --upgrade pip`.
+If you get the `error: externally-managed-environment` message, see the note
+marked IMPORTANT above.
+
+In case of other errors, try upgrading pip to the latest version first by
+running `python3 -m pip install --upgrade pip`.
 
 ### Building the Python Package
 

@@ -87,7 +87,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             ],
         "setenv_commands": [
             'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',
-            "source setenv -f" if inet_version.startswith("4.") or is_git_branch else "", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
+            "INET_ROOT= source setenv -f" if inet_version.startswith("4.") or is_git_branch else "", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
         ],
         "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
         "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],

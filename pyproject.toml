@@ -18,7 +18,9 @@ license = {text = "LGPL-3"}
 classifiers = [
     "Framework :: OMNeT++ :: 6",
 ]
-dependencies = []
+dependencies = [
+    'pip >= 23.0.0',
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]

@@ -184,7 +184,7 @@ def make_omnetpp_project_description(version, base_version=None):
     ]
 
     # More recent releases can handle parallel build
-    allow_parallel_build = version.startswith("5.") or version.startswith("6.") or is_modernized
+    allow_parallel_build = version.startswith("5.") or version.startswith("6.") or (is_modernized and version >= "4.1")
     num_build_cores = '$NIX_BUILD_CORES' if allow_parallel_build else '1'
 
     return {

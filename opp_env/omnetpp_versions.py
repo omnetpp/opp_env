@@ -127,7 +127,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i.bak 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i.bak 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
 
-        "sed -i.bak '1s|.*|#!/bin/env perl|;2s|.*||' src/nedc/opp_msgc" if version == "3.3p1" else None, # otherwise calling msgc from a Makefile fails
+        "sed -i.bak '1s|.*|#!/bin/env perl|;2s|.*||' src/nedc/opp_msgc" if version == "3.3.1" else None, # otherwise calling msgc from a Makefile fails
         "sed -i.bak 's/#build_shared_libs=no/build_shared_libs=no/' configure.user.dist" if version < "4.0" and is_macos else None, # on macOS only static builds were properly supported
 
         "sed -i.bak 's/\\$(QMAKE)/$(QMAKE) -spec linux-clang/' src/qtenv/Makefile" if version.startswith("5.0.") else None,
@@ -235,7 +235,7 @@ def make_omnetpp_project_description(version, base_version=None):
             # unfortunately omnetpp setenv scripts don't set OMNETPP_IMAGE_PATH, so do it here
             "export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$(pwd)/images" if not is_modernized else None,
 
-            "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish)" if version == "3.3p1" else
+            "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish)" if version == "3.3.1" else
             "source setenv" + (" -f" if base_version.startswith("5.") else "") # -f allows setenv to be called from scripts
         ],
         "build_commands": [
@@ -264,7 +264,7 @@ def make_omnetpp_project_description(version, base_version=None):
                 "option_is_default": version not in missing_releases and version != "master",
                 "download_url":
                     "" if version in missing_releases or version == "master" else
-                    f"{github_url}/releases/download/omnetpp-3.3-ubuntu18.04/omnetpp-3.3-src-gcc73.tgz" if base_version == "3.3p1" else # special name
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("3.") else
                     f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else # special name for v4.0
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else # for versions 4.1 - 4.6 there is a single tarball for all OSes
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-{os_name}-x86_64.tgz" if base_version == "5.7" else # on 5.7 the macOS tarball is named differently than earlier versions and there are only x86_64 tarballs
@@ -308,7 +308,7 @@ def get_all_omnetpp_released_versions():
         "6.0.1", "6.0",
         "5.7", "5.6.2", "5.6.1", "5.6", "5.5.1", "5.5", "5.4.1", "5.4", "5.3", "5.2.1", "5.2", "5.1.1", "5.1", "5.0",
         "4.6", "4.5", "4.4.1", "4.4", "4.3.1", "4.3", "4.2.2", "4.2.1", "4.2", "4.1", "4.0p1", "4.0",
-        "3.3p1"
+        "3.3.1", "3.3"
     ]
     return [make_omnetpp_project_description(version) for version in released_versions]
 
@@ -317,7 +317,7 @@ def get_all_omnetpp_patch_branches():
         "6.0.1",
         "5.7", "5.6.2", "5.5.1", "5.4.1", "5.3", "5.2.1", "5.1.1", "5.0",
         "4.6", "4.5", "4.4.1", "4.3.1", "4.2.2", "4.1", "4.0p1",
-        "3.3p1"
+        "3.3.1"
     ]
 
     return [make_omnetpp_project_description(dotx(base_version), base_version) for base_version in base_versions_for_patch_branches]

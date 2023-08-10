@@ -263,7 +263,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
                     f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else # special name for v4.0
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else # for versions 4.1 - 4.6 there is a single tarball for all OSes
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-{os_name}-x86_64.tgz" if base_version == "5.7" else # on 5.7 the macOS tarball is named differently than earlier versions and there are only x86_64 tarballs
-                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src{'-'+os_name_x if is_macos else ''}.tgz" if base_version == "5.0" else # macOS has an OS-specific download for 5.0
+                    f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src{'-'+os_name_x if is_macos else ''}.tgz" if base_version.startswith("5.0") else # macOS has an OS-specific download for 5.0
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src-{os_name_x}.tgz" if base_version.startswith("5.") else # for versions 5.1 - 5.6 there are separate tarballs for each OS (linux or macosx)
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-{os_name}-{'x86_64' if is_macos else arch_name}.tgz" if base_version.startswith("6.0") else # for 6.0.x there are separate tarballs for each architecture on Linux (x86_64, aarch64), but not on macOS (only x86_64)
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-{os_name}-{arch_name}.tgz", # for 6.1.x+ there are separate tarballs for each architecture on both Linux and macOS
@@ -302,25 +302,24 @@ def get_project_descriptions():
     # Modernized versions are marked with a "*" suffix.
     # Modernized versions build/work with modern a C++ compiler, bison/flex
     # and other tools and libraries, and also to have similar setenv scripts.
-
     released_versions = [
         "6.0.x:6.0.1", "6.0.1", "6.0",
         "5.7.x:5.7",   "5.7",
-        "5.6.x:5.6.2", "5.6.2", "5.6.1", "5.6",
-        "5.5.x:5.5.1", "5.5.1", "5.5",
-        "5.4.x:5.4.1", "5.4.1", "5.4",
-        "5.3.x:5.3",   "5.3",
-        "5.2.x:5.2.1", "5.2.1", "5.2",
-        "5.1.x:5.1.1", "5.1.1", "5.1",
-        "5.0.x:5.0",   "5.0",
-        "4.6.x:4.6",   "4.6",
-        "4.5.x:4.5",   "4.5",
-        "4.4.x:4.4.1", "4.4.1", "4.4",
-        "4.3.x:4.3.1", "4.3.1", "4.3",
-        "4.2.x:4.2.2", "4.2.2", "4.2.1", "4.2",
-        "4.1.x:4.1",   "4.1",
-        "4.0.x:4.0p1", "4.0p1", "4.0",
-        "3.3.x:3.3.1", "3.3.1", "3.3"
+        "5.6.x:5.6.3", "5.6.3*", "5.6.2", "5.6.1", "5.6",
+        "5.5.x:5.5.2", "5.5.2*", "5.5.1", "5.5",
+        "5.4.x:5.4.2", "5.4.2*", "5.4.1", "5.4",
+        "5.3.x:5.3.1", "5.3.1*", "5.3",
+        "5.2.x:5.2.2", "5.2.2*", "5.2.1", "5.2",
+        "5.1.x:5.1.2", "5.1.2*", "5.1.1", "5.1",
+        "5.0.x:5.0.1", "5.0.1*", "5.0",
+        "4.6.x:4.6.1", "4.6.1*", "4.6",
+        "4.5.x:4.5.1", "4.5.1*", "4.5",
+        "4.4.x:4.4.2", "4.4.2*", "4.4.1", "4.4",
+        "4.3.x:4.3.2", "4.3.2*", "4.3.1", "4.3",
+        "4.2.x:4.2.3", "4.2.3*", "4.2.2", "4.2.1", "4.2",
+        "4.1.x:4.1.1", "4.1.1*", "4.1",
+        "4.0.x:4.0.2", "4.0.2*", "4.0p1", "4.0",
+        "3.3.x:3.3.2", "3.3.2*", "3.3.1", "3.3"
     ]
     descriptions = []
     for version in released_versions:

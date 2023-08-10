@@ -100,13 +100,13 @@ def make_omnetpp_project_description(version, base_version=None):
         f"  curl -L -sS -o configure {github_url}/raw/omnetpp-{base_version}/configure",
         f"  curl -L -sS -o configure.in {github_url}/raw/omnetpp-{base_version}/configure.in",
         f"  curl -L -sS -o patchfile.diff {github_url}/compare/omnetpp-{base_version}...omnetpp-{version}.patch",
-        f"  git apply --whitespace=nowarn --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+        f"  git apply --whitespace=nowarn --allow-empty --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
         'else',
         f'  [ -d $OMNETPP_REPO/.git ] || error "Error: OMNETPP_REPO=$OMNETPP_REPO is not set or does not point to a git repository on the local disk (required for obtaining patch to upgrade base release omnetpp-{base_version} to requested version omnetpp-{version})"',
         f"  git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure >configure",
         f"  git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure.in >configure.in",
         f"  git --git-dir=$OMNETPP_REPO/.git diff omnetpp-{base_version}..origin/{git_branch_or_tag_name} --patch > patchfile.diff",
-        f"  git apply --whitespace=nowarn --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+        f"  git apply --whitespace=nowarn --allow-empty --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
         'fi',
     ]
 
@@ -152,7 +152,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "sed -i.bak '/# Compiler and linker options for/a TK_LIBS=\"-ltcl8.5 -ltk8.5\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
         "sed -i.bak '/# Compiler and linker options for/a TK_CFLAGS=\"-Idummy\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
         # to disable tkdock calls which is not available on macOS / aarch64
-        "sed -i.bak 's|tkdock::switchIcon|# tkdock::switchIcon|' src/tkenv/startup.tcl" if version >= "4.5" and version < "5.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkdock is not supported
+        "sed -i.bak 's|tkdock::switchIcon|# tkdock::switchIcon|' src/tkenv/startup.tcl" if not is_modernized and version >= "4.5" and version < "5.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkdock is not supported
     ]
 
     # for older versions we use gcc7 (although a recent compiler with -std=c++03 -fpermissive would also do? -- TODO check)

@@ -14,20 +14,13 @@ def trim_lines(text):
     trimmed_lines = [line.trim() for line in text.splitlines()]
     return '\n'.join(trimmed_lines)
 
-def make_omnetpp_project_description(version, base_version=None):
+def make_omnetpp_project_description(version, base_version=None, is_modernized=False):
     canonical_version = version.replace("p", ".") if re.match(r"\d+\.\d+p\d+", version) else version+".0" if version.count('.') == 1 else version
 
     # Some patch releases are installed by downloading the preceding release ("base version"),
     # and patching them from the repo.
     base_version = base_version or version
     github_url = "https://github.com/omnetpp/omnetpp"
-
-    # All major and minor releases have been patched to work with modern a C++ compiler, tools like
-    # bison/flex, and libraries, and also to have similar setenv scripts.
-    # Patch branches in the repo are in the form "omnetpp-<major>.<minor>.x", and are based off
-    # the last patch release of that major/minor release. E.g. "omnetpp-4.2.x" is based off "omnetpp-4.2.2".
-    # Those modernized versions require much fewer quirks to set up and compile.
-    is_modernized = version.endswith(".x") or version=="master" #TODO and new patch releases from the .x branches, and releases after 6.0.1
 
     # Github automatically makes source archives available under a different URL for tags and branches.
     is_git_branch = version.endswith(".x") or version=="master"
@@ -305,30 +298,40 @@ def make_omnetpp_project_description(version, base_version=None):
         }
     }
 
-def get_all_omnetpp_released_versions():
-    released_versions = [
-        "6.0.1", "6.0",
-        "5.7", "5.6.2", "5.6.1", "5.6", "5.5.1", "5.5", "5.4.1", "5.4", "5.3", "5.2.1", "5.2", "5.1.1", "5.1", "5.0",
-        "4.6", "4.5", "4.4.1", "4.4", "4.3.1", "4.3", "4.2.2", "4.2.1", "4.2", "4.1", "4.0p1", "4.0",
-        "3.3.1", "3.3"
-    ]
-    return [make_omnetpp_project_description(version) for version in released_versions]
-
-def get_all_omnetpp_patch_branches():
-    base_versions_for_patch_branches = [
-        "6.0.1",
-        "5.7", "5.6.2", "5.5.1", "5.4.1", "5.3", "5.2.1", "5.1.1", "5.0",
-        "4.6", "4.5", "4.4.1", "4.3.1", "4.2.2", "4.1", "4.0p1",
-        "3.3.1"
-    ]
-
-    return [make_omnetpp_project_description(dotx(base_version), base_version) for base_version in base_versions_for_patch_branches]
-
 def get_project_descriptions():
-    return sorted([
-        *get_all_omnetpp_released_versions(),
-        *get_all_omnetpp_patch_branches(),
-    ], key=lambda p: p["name"] + "-" + p["version"], reverse=True) + [ make_omnetpp_project_description("master") ]
+    # Modernized versions are marked with a "*" suffix.
+    # Modernized versions build/work with modern a C++ compiler, bison/flex
+    # and other tools and libraries, and also to have similar setenv scripts.
+
+    released_versions = [
+        "6.0.x:6.0.1", "6.0.1", "6.0",
+        "5.7.x:5.7",   "5.7",
+        "5.6.x:5.6.2", "5.6.2", "5.6.1", "5.6",
+        "5.5.x:5.5.1", "5.5.1", "5.5",
+        "5.4.x:5.4.1", "5.4.1", "5.4",
+        "5.3.x:5.3",   "5.3",
+        "5.2.x:5.2.1", "5.2.1", "5.2",
+        "5.1.x:5.1.1", "5.1.1", "5.1",
+        "5.0.x:5.0",   "5.0",
+        "4.6.x:4.6",   "4.6",
+        "4.5.x:4.5",   "4.5",
+        "4.4.x:4.4.1", "4.4.1", "4.4",
+        "4.3.x:4.3.1", "4.3.1", "4.3",
+        "4.2.x:4.2.2", "4.2.2", "4.2.1", "4.2",
+        "4.1.x:4.1",   "4.1",
+        "4.0.x:4.0p1", "4.0p1", "4.0",
+        "3.3.x:3.3.1", "3.3.1", "3.3"
+    ]
+    descriptions = []
+    for version in released_versions:
+        version_name = version.split(":")[0].replace("*", "")
+        base_version = version.split(":")[1] if ":" in version else None
+        is_modernized = base_version is not None or "*" in version
+        descriptions.append(make_omnetpp_project_description(version_name, base_version, is_modernized))
+    master_description = make_omnetpp_project_description("master", None, True)
+
+    return sorted(descriptions, key=lambda p: p["name"] + "-" + p["version"], reverse=True) + [ master_description ]
+
 
 
 

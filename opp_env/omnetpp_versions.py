@@ -44,7 +44,7 @@ def make_omnetpp_project_description(version, base_version=None):
     is_linux = platform.system().lower() == "linux"
     os_name = "macos" if is_macos else "linux" if is_linux else "unsupported"
     os_name_x = "macosx" if is_macos else "linux" if is_linux else "unsupported"  # alternative name used in some URLs for 5.x versions
-    
+
     # some versions have machine architecture specific versions (aarch64, x86_64, etc.)
     is_x86_64 = platform.machine().lower() == "x86_64"
     is_aarch64 = platform.machine().lower() == "arm64"
@@ -68,7 +68,7 @@ def make_omnetpp_project_description(version, base_version=None):
         "stdenv.cc.cc.lib" if version < "5.2" else None  # for libstdc++.so used by our nativelibs; in 5.2 and up, it's statically linked
     ] if is_ide_supported else []
 
-    ide_packages = [jre_package] + (linux_ide_packages if is_linux else []) 
+    ide_packages = [jre_package] + (linux_ide_packages if is_linux else [])
 
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
@@ -76,12 +76,12 @@ def make_omnetpp_project_description(version, base_version=None):
 
     # The default Tcl/Tk version in Nix is 8.6, and that's OK with most of our releases.
     # However, early 4.x versions don't compile with Tcl 8.6 because no longer supports "interp->result" in the C API, so they need version 8.5.
-    # Tkenv was updated for Tcl 8.6 in version omnetpp-4.3. omnetpp-3.3p1 has no problem with 8.6, as it was updated for Tcl 8.6 earlier.
+    # Tkenv was updated for Tcl 8.6 in version omnetpp-4.3. omnetpp-3.3.1 has no problem with 8.6, as it was updated for Tcl 8.6 earlier.
     # Cairo is required for the Tkpath plugin bundled with omnetpp in 5.x versions (those with cCanvas support).
     # Tkenv was removed in 6.0, Tcl/Tk is not required above that.
     tcltk_packages = [] if version >= "6.0" else ["tk", "tcl", "cairo"] if version >= "5.0" else ["tk", "tcl"] if is_modernized or version >= "4.3" else ["tk-8_5", "tcl-8_5"]
     tcltk_packages += ["darwin.apple_sdk.frameworks.Carbon"] if is_macos and version >= "4.0" and version < "5.1" else []
-    
+
 
     # Various tools and libs required by / for building omnetpp. Note that we only started using Python in version 5.0.
     # NOTE: We have to explicitly specify and use gnumake 4.2 (instead of relying on the version bundled in the stdenv).
@@ -115,14 +115,14 @@ def make_omnetpp_project_description(version, base_version=None):
     source_patch_commands = [
         # patch the simulator executables/IDE/build system if we are in nix shell so later it does not allow running outside of a nix shell
         """[ -n $IN_NIX_SHELL ] && sed -i.bak 's/cStaticFlag dummy;/cStaticFlag dummy;\\n    if (!getenv("IN_NIX_SHELL") || !getenv("OMNETPP_ROOT")) { std::cerr << "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." << std::endl; return 1; }/' """ + ("src/envir/evmain.cc" if version >= "4.2" else "src/envir/main.cc"),
-        """[ -n $IN_NIX_SHELL ] && sed -i.bak 's|#!/bin/sh|#!/bin/sh\\n[ -z $IN_NIX_SHELL ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,                
+        """[ -n $IN_NIX_SHELL ] && sed -i.bak 's|#!/bin/sh|#!/bin/sh\\n[ -z $IN_NIX_SHELL ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
         "[ -n $IN_NIX_SHELL ] && sed -i.bak 's/OMNETPP_PRODUCT = @OMNETPP_PRODUCT@/ifndef IN_NIX_SHELL\\n  $(error This OMNeT++ installation cannot be used outside an opp_env shell.)\\nendif\\nOMNETPP_PRODUCT = @OMNETPP_PRODUCT@/' Makefile.inc.in" if version >= "4.0" else None,
         # disable the ide launcher scripts on unsupported os/arch
         "sed -i.bak 's/echo Starting the.*/echo The IDE is not supported on this OS and platform ; exit 1/' src/utils/omnetpp src/utils/omnest" if (not is_ide_supported) and version >= "4.0" else None,
         # binary patch the IDE so proper glibc and interpreter is used by the eclipse launcher and the JRE executables under the Nix environment
         # Only do it in nix environment. Using glob patterns and enabling nullglob are important because theses file may or may not be present in a distro (depending on the distro version)
         "[ -n $IN_NIX_SHELL -a -n $NIX_BINTOOLS ] && (shopt -s nullglob && patchelf --set-interpreter $(cat $NIX_BINTOOLS/nix-support/dynamic-linker) ide/*opp_ide ide/*omnetpp ide/*omnetpp64 ide/linux64/*omnetpp ide/plugins/org.eclipse.justj.*/jre/bin/* ; shopt -u nullglob) || true" if is_linux and is_ide_supported else None,
-        
+
         "rm -rf tools/" if is_macos else None, # because bundled tools on macOS are not required when compiling under Nix
         "sed -i.bak 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i.bak 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
@@ -203,9 +203,9 @@ def make_omnetpp_project_description(version, base_version=None):
             "The OMNeT++ IDE will not be available because a matching JRE is not available." if (version < "4.2" or (is_macos and is_aarch64 and version < "5.7")) and version >= "4.0" else None,
         ]),
         # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
-        # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS. 
-        # IT MUST BE A TAG (i.e 22.11) AND NOT A BRANCH (nixos-22.11)                          
-        "nixos": "22.11" if version < "6.0.0" else "23.05", 
+        # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS.
+        # IT MUST BE A TAG (i.e 22.11) AND NOT A BRANCH (nixos-22.11)
+        "nixos": "22.11" if version < "6.0.0" else "23.05",
         "stdenv": None, # defined as default option
         "nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),

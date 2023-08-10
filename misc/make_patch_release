@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# ./make_patch_release omnetpp-5.1.2 omnetpp-5.1.1 omnetpp-5.1.x -linux
+# ./make_patch_release omnetpp-5.1.2 omnetpp-5.1.1 omnetpp-5.1.x -macosx
+# ./make_patch_release omnetpp-5.1.2 omnetpp-5.1.1 omnetpp-5.1.x -core
+
+set -exuo pipefail
+
+NEW_VERSION=$1   # omnetpp-4.2.3
+BASE_VERSION=$2  # omnetpp-4.2.2
+DOTX_VERSION=$3  # omnetpp-4.2.x
+TARBALL_PLATFORM_SUFFIX=$4  # "-linux"
+
+rm -rf $NEW_VERSION-work
+mkdir $NEW_VERSION-work
+cd $NEW_VERSION-work
+opp_env init
+
+BASE_TARBALL="${BASE_VERSION}-src${TARBALL_PLATFORM_SUFFIX}.tgz"
+wget -nv "https://github.com/omnetpp/omnetpp/releases/download/$BASE_VERSION/$BASE_TARBALL"
+tar xfz $BASE_TARBALL
+mv $BASE_VERSION $NEW_VERSION
+
+opp_env download $DOTX_VERSION
+
+cd $NEW_VERSION
+curl -L -sS -o configure https://github.com/omnetpp/omnetpp/raw/${BASE_VERSION}/configure
+curl -L -sS -o configure.in https://github.com/omnetpp/omnetpp/raw/${BASE_VERSION}/configure.in
+git apply --whitespace=nowarn --allow-empty --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' ../$DOTX_VERSION/patchfile.diff
+
+DATE=$(date +'%y%m%d')
+HASH=$(curl -s "https://api.github.com/repos/omnetpp/omnetpp/git/refs/tags/${NEW_VERSION}" | jq -r '.object.url' | xargs curl -s | jq -r '.object.sha' | cut -c 1-7)
+BUILDID=${DATE}-${HASH}
+echo BUILDID: $BUILDID
+
+sed -i 's|"internal"|"'$BUILDID'"|' configure
+sed -i 's|"internal"|"'$BUILDID'"|' configure.in
+
+cd ..
+NEW_TARBALL="${NEW_VERSION}-src${TARBALL_PLATFORM_SUFFIX}.tgz"
+tar cfz $NEW_TARBALL $NEW_VERSION
+cp $NEW_TARBALL ..
+
+echo $NEW_TARBALL created

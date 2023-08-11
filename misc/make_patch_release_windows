@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# ./make_patch_release_windows omnetpp-5.6.3 omnetpp-5.6.2 omnetpp-5.6.x
+# ./make_patch_release_windows omnetpp-5.5.2 omnetpp-5.5.1 omnetpp-5.5.x
+# ./make_patch_release_windows omnetpp-5.4.2 omnetpp-5.4.1 omnetpp-5.4.x
+# ./make_patch_release_windows omnetpp-5.3.1 omnetpp-5.3   omnetpp-5.3.x
+# ./make_patch_release_windows omnetpp-5.2.2 omnetpp-5.2.1 omnetpp-5.2.x
+# ./make_patch_release_windows omnetpp-5.1.2 omnetpp-5.1.1 omnetpp-5.1.x
+# ./make_patch_release_windows omnetpp-5.0.1 omnetpp-5.0   omnetpp-5.0.x
+# ./make_patch_release_windows omnetpp-4.6.1 omnetpp-4.6   omnetpp-4.6.x
+# ./make_patch_release_windows omnetpp-4.5.1 omnetpp-4.5   omnetpp-4.5.x
+# ./make_patch_release_windows omnetpp-4.4.2 omnetpp-4.4.1 omnetpp-4.4.x
+# ./make_patch_release_windows omnetpp-4.3.2 omnetpp-4.3.1 omnetpp-4.3.x
+# ./make_patch_release_windows omnetpp-4.2.3 omnetpp-4.2.2 omnetpp-4.2.x
+# ./make_patch_release_windows omnetpp-4.1.1 omnetpp-4.1   omnetpp-4.1.x
+# ./make_patch_release_windows omnetpp-4.0.2 omnetpp-4.0p1 omnetpp-4.0.x
+# ./make_patch_release_windows omnetpp-3.3.2 omnetpp-3.3.1 omnetpp-3.3.x
+
+set -exuo pipefail
+
+NEW_VERSION=$1   # omnetpp-4.2.3
+BASE_VERSION=$2  # omnetpp-4.2.2
+DOTX_VERSION=$3  # omnetpp-4.2.x
+
+GITHUB_URL="https://github.com/omnetpp/omnetpp"
+
+rm -rf $NEW_VERSION-work
+mkdir $NEW_VERSION-work
+cd $NEW_VERSION-work
+
+BASE_ZIP="${BASE_VERSION}-src-windows.zip"
+wget -nv "$GITHUB_URL/releases/download/$BASE_VERSION/$BASE_ZIP"
+unzip -q $BASE_ZIP
+mv $BASE_VERSION $NEW_VERSION
+
+cd $NEW_VERSION
+curl -L -sS -o configure $GITHUB_URL/raw/$DOTX_VERSION/configure
+curl -L -sS -o configure.in $GITHUB_URL/raw/$DOTX_VERSION/configure.in
+curl -L -sS -o WHATSNEW $GITHUB_URL/raw/$DOTX_VERSION/WHATSNEW
+mv WHATSNEW WHATSNEW.txt
+unix2dos WHATSNEW.txt
+curl -L -sS -o patchfile.diff $GITHUB_URL/compare/$BASE_VERSION...$DOTX_VERSION.patch
+git apply --whitespace=nowarn --allow-empty --exclude .gitignore --exclude ui/* --exclude setenv --exclude WHATSNEW --exclude configure --exclude configure.in patchfile.diff
+rm patchfile.diff
+#TODO refine -- there are problems on the bashrc - setenv - configure line..
+
+DATE=$(date +'%y%m%d')
+HASH=$(curl -s "https://api.github.com/repos/omnetpp/omnetpp/git/refs/tags/${NEW_VERSION}" | jq -r '.object.url' | xargs curl -s | jq -r '.object.sha' | cut -c 1-7)
+BUILDID=${DATE}-${HASH}
+echo BUILDID: $BUILDID
+
+sed -i 's|"internal"|"'$BUILDID'"|' configure
+sed -i 's|"internal"|"'$BUILDID'"|' configure.in
+
+cd ..
+NEW_ZIP="${NEW_VERSION}-src-windows.zip"
+zip -r -q $NEW_ZIP $NEW_VERSION
+cp $NEW_ZIP ..
+
+echo $NEW_ZIP created

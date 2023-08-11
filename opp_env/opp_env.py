@@ -1046,7 +1046,7 @@ class Workspace:
         tar_log_file = os.path.join(target_folder, "tar.log")
         try:
             print(f"{download_url}")
-            self.run_command(f"cd {target_folder} && curl -L --progress-bar {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}")
+            self.run_command(f"cd {target_folder} && curl -L --fail --progress-bar {download_url} | tar --strip-components=1 -xzf - 2>{tar_log_file}")
             os.remove(tar_log_file)
         except Exception as e:
             print(self._read_file_if_exists(tar_log_file).strip())
@@ -1060,7 +1060,7 @@ class Workspace:
         curl_log_file = os.path.join(target_folder, "curl.log")
         patching_log_file = os.path.join(target_folder, "patch.log")
         try:
-            self.run_command(f"cd {target_folder} && curl -L --stderr {curl_log_file} {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}")
+            self.run_command(f"cd {target_folder} && curl -L --fail --stderr {curl_log_file} {patch_url} | git apply --whitespace=nowarn - 2>{patching_log_file}")
             os.remove(curl_log_file)
             os.remove(patching_log_file)
         except Exception as e:

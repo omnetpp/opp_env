@@ -188,9 +188,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "description": "OMNeT++ base system",
         "warnings": remove_blanks([
             join_nonempty_items(" ", [
-                f"This version is not the latest patchlevel. Consider the corresponding patch branch 'omnetpp-{dotx(version)}' instead if you can." if not is_modernized and version >= "5.0" else None,
-                f"This version is not the latest patchlevel, it may compile with warnings or work incorrectly due to bit rotting. Consider the corresponding patch branch 'omnetpp-{dotx(version)}' if you can, which has also been updated to build with an up-to-date C++ compiler." if not is_modernized and version < "5.0" else None,
-                "Specifically, most simulation models won't work, because they use activity(), and the coroutine library in this release has become broken due to changes in the standard C library implementation of setjmp()/longjmp(). This issue has been resolved in the modernized patch branch and release.)" if not is_modernized and version.startswith("3.") else None,
+                f"This is not a modernized version of OMNeT++. Consider using a later patchlevel for a cleaner compilation and bug fixes." if not is_modernized and version >= "5.0" else None,
+                f"This is not a modernized version of OMNeT++. Consider using a later patchlevel for a cleaner compilation, bug fixes, and compatibility with modern C++ compilers and libraries." if not is_modernized and version < "5.0" else None,
+                "Specifically, most simulation models won't work, because they use activity(), and the coroutine library in this release has become broken due to changes in the standard C library implementation of setjmp()/longjmp(). This issue has been resolved in modernized patchlevel releases.)" if not is_modernized and version.startswith("3.") else None,
                 "Specifically, this version could only be made to compile with the combination of compiler options (C++03, permissiveness, warning suppression, etc.), patching (e.g. due to changes in Bison), and using an older Tcl/Tk library." if not is_modernized and version >= "4.0" and version < "4.3" else None,
                 "Specifically, Qtenv in this version may not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None,
             ]),

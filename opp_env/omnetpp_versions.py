@@ -1,9 +1,6 @@
 import re
 import platform
 
-def dotx(base_version):
-    return re.sub("(\\d\\.\\d)[\\.p]\\d", "\\1", base_version) + ".x"  # 4.2, 4.2.1, 4.2p1 -> 4.2.x
-
 def join_nonempty_items(sep, list):
     return sep.join([x for x in list if x])
 
@@ -27,7 +24,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
     git_branch_or_tag_name = f"omnetpp-{version}" if version[0].isdigit() else version
 
-    # Some versions have no release tarballs on github, some don't even have an entry on the Releases page (5.4, 5.5, 5.7).
+    # Some versions have no release tarballs on github, some don't even have an entry on the Releases page (5.4, 5.5).
     # Source tarballs that github automatically makes are still available at URLs of the form
     # https://github.com/omnetpp/omnetpp/archive/refs/tags/omnetpp-<version>.tar.gz
     missing_releases = ["5.4", "5.5"]

@@ -122,7 +122,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i.bak '1s|.*|#!/bin/env perl|;2s|.*||' src/nedc/opp_msgc" if version == "3.3.1" else None, # otherwise calling msgc from a Makefile fails
         "sed -i.bak 's/#build_shared_libs=no/build_shared_libs=no/' configure.user.dist" if version < "4.0" and is_macos else None, # on macOS only static builds were properly supported
 
-        "sed -i.bak 's/\\$(QMAKE)/$(QMAKE) -spec linux-clang/' src/qtenv/Makefile" if version.startswith("5.0.") else None,
+        # fix Qtenv build error in isolated mode ("g++ not found") due to a qmake issue
+        "sed -i.bak 's/\\$(QMAKE)/$(QMAKE) -spec linux-clang/' src/qtenv/Makefile" if version.startswith("5.0") else None,
 
         "sed -i.bak '/#include/a #include <stdio.h> // added by opp_env' src/common/commondefs.h" if version == "4.0" else None, # add missing include in vanilla 4.0 release
         "sed -i.bak '/#include <stdlib.h>/a #include <unistd.h> // added by opp_env' src/utils/abspath.cc" if not is_modernized and version >= "4.0" and version < "4.3" else None, # add missing include in unpatched 4.0/4.1/4.2
@@ -189,7 +190,6 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
                 f"This is not a modernized version of OMNeT++. Consider using a later patchlevel for a cleaner compilation, bug fixes, and compatibility with modern C++ compilers and libraries." if not is_modernized and version < "5.0" else None,
                 "Specifically, most simulation models won't work, because they use activity(), and the coroutine library in this release has become broken due to changes in the standard C library implementation of setjmp()/longjmp(). This issue has been resolved in modernized patchlevel releases.)" if not is_modernized and version.startswith("3.") else None,
                 "Specifically, this version could only be made to compile with the combination of compiler options (C++03, permissiveness, warning suppression, etc.), patching (e.g. due to changes in Bison), and using an older Tcl/Tk library." if not is_modernized and version >= "4.0" and version < "4.3" else None,
-                "Specifically, Qtenv in this version may not build in isolated mode due to a qmake problem (g++ not found error)." if not is_modernized and version.startswith("5.0.") else None,
             ]),
             "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None,
             "The OMNeT++ IDE will not be available because a matching JRE is not available." if (version < "4.2" or (is_macos and is_aarch64 and version < "5.7")) and version >= "4.0" else None,

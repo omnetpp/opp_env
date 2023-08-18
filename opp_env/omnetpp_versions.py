@@ -69,9 +69,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # Tkenv was updated for Tcl 8.6 in version omnetpp-4.3. omnetpp-3.3.1 has no problem with 8.6, as it was updated for Tcl 8.6 earlier.
     # Cairo is required for the Tkpath plugin bundled with omnetpp in 5.x versions (those with cCanvas support).
     # Tkenv was removed in 6.0, Tcl/Tk is not required above that.
-    tcltk_packages = [] if version >= "6.0" else ["tk", "tcl", "cairo"] if version >= "5.0" else ["tk", "tcl"] if is_modernized or version >= "4.3" else ["tk-8_5", "tcl-8_5"]
+    tcltk_packages = [] if version >= "6.0" else ["tk-8_6", "tcl-8_6", "cairo"] if version >= "5.0" else ["tk-8_6", "tcl-8_6"] if is_modernized or version >= "4.3" else ["tk-8_5", "tcl-8_5"]
     tcltk_packages += ["darwin.apple_sdk.frameworks.Carbon"] if is_macos and version >= "4.0" and version < "5.1" else []
-
+    tcltk_libs = "-ltcl8.5 -ltk8.5" if ("tcl-8_5" in tcltk_packages) else "-ltcl8.6 -ltk8.6" if ("tcl-8_6" in tcltk_packages) else ""
 
     # Various tools and libs required by / for building omnetpp. Note that we only started using Python in version 5.0.
     # NOTE: We have to explicitly specify and use gnumake 4.2 (instead of relying on the version bundled in the stdenv).
@@ -139,9 +139,11 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
         # to avoid "error: invalid argument '-std=c++03' not allowed with 'C'" with tkImgPNG.c
         "sed -i.bak 's/\\$(CC) -c \\$(COPTS)/\\$(CC) -c /' src/tkenv/Makefile" if not is_modernized and version == "4.0" else None,
-        # to avoid detecting system-wide Tcl/Tk at fixed paths
-        "sed -i.bak '/# Compiler and linker options for/a TK_LIBS=\"-ltcl8.5 -ltk8.5\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
-        "sed -i.bak '/# Compiler and linker options for/a TK_CFLAGS=\"-Idummy\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
+
+        # some versions detect system-wide Tcl/Tk at fixed paths if TK_CFLAGS is empty, prevent that by giving a dummy include path (Nix will supply the actual one)
+        f"sed -i.bak '/# Compiler and linker options for/a TK_LIBS=\"{tcltk_libs}\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
+        f"sed -i.bak '/# Compiler and linker options for/a TK_CFLAGS=\"-Idummy\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
+
         # to disable tkdock calls which is not available on macOS / aarch64
         "sed -i.bak 's|tkdock::switchIcon|# tkdock::switchIcon|' src/tkenv/startup.tcl" if not is_modernized and version >= "4.5" and version < "5.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkdock is not supported
     ]

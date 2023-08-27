@@ -17,7 +17,8 @@ import urllib.request
 import fnmatch
 
 if sys.version_info < (3,9):
-    print(f"Python version 3.9 or above is required.") # e.g. str.removeprefix()
+    v = sys.version_info
+    print(f"Python version 3.9 or above is required, the current one is {v.major}.{v.minor}.{v.micro} ({sys.executable}).") # e.g. str.removeprefix()
     sys.exit(1)
 
 _logger = logging.getLogger(__file__)

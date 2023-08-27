@@ -89,7 +89,14 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',
             "INET_ROOT= source setenv -f" if inet_version.startswith("4.") or is_git_branch else "", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
         ],
-        "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
+        "build_commands": [
+            # we do have z3, so the first time we run, turn on the project feature that uses it
+            # note: this should probably be in "patch_commands" instead, but opp_featuretool is not available there because omnetpp's setenv hasn't run and omnetpp hasn't been built yet
+            "[ -f src/Makefile ] || opp_featuretool -v enable Z3GateSchedulingConfigurator" if inet_version >= "4.4" else "",
+
+            # build
+            "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"
+        ],
         "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
         "options": {
             "from-release": {

@@ -196,6 +196,11 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None,
             "The OMNeT++ IDE will not be available because a matching JRE is not available." if (version < "4.2" or (is_macos and is_aarch64 and version < "5.7")) and version >= "4.0" else None,
         ]),
+        "metadata": {
+            "modernized": is_modernized,
+            "base_version": base_version,
+        },
+
         # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
         # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS.
         # IT MUST BE A TAG (i.e 22.11) AND NOT A BRANCH (nixos-22.11)

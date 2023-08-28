@@ -12,7 +12,7 @@ authors = [
 ]
 description = "A tool, that sets up the development environment for OMNeT++ projects"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["omnetpp", "omnest"]
 license = {text = "LGPL-3"}
 classifiers = [

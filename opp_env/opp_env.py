@@ -16,6 +16,7 @@ import platform
 import urllib.request
 import fnmatch
 
+# make sure that this run-time version check is in synch with the metadata for python requirement in the project.toml file.
 if sys.version_info < (3,9):
     v = sys.version_info
     print(f"Python version 3.9 or above is required, the current one is {v.major}.{v.minor}.{v.micro} ({sys.executable}).") # e.g. str.removeprefix()

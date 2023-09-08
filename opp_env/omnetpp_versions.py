@@ -91,13 +91,13 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         f"  curl -L -sS -o configure {github_url}/raw/omnetpp-{base_version}/configure",
         f"  curl -L -sS -o configure.in {github_url}/raw/omnetpp-{base_version}/configure.in",
         f"  curl -L -sS -o patchfile.diff {github_url}/compare/omnetpp-{base_version}...omnetpp-{version}.patch",
-        f"  git apply --whitespace=nowarn --allow-empty --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+        f"  git apply --whitespace=nowarn --allow-empty --exclude .gitignore --exclude 'ui/*' --exclude 'releng/*' --exclude '**/Makefile.vc' patchfile.diff",
         'else',
         f'  [ -d $OMNETPP_REPO/.git ] || error "Error: OMNETPP_REPO=$OMNETPP_REPO is not set or does not point to a git repository on the local disk (required for obtaining patch to upgrade base release omnetpp-{base_version} to requested version omnetpp-{version})"',
         f"  git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure >configure",
         f"  git --git-dir=$OMNETPP_REPO/.git show omnetpp-{base_version}:configure.in >configure.in",
         f"  git --git-dir=$OMNETPP_REPO/.git diff omnetpp-{base_version}..origin/{git_branch_or_tag_name} --patch > patchfile.diff",
-        f"  git apply --whitespace=nowarn --allow-empty --exclude .gitignore --exclude 'ui/*' --exclude '**/Makefile.vc' patchfile.diff",
+        f"  git apply --whitespace=nowarn --allow-empty --exclude .gitignore --exclude 'ui/*' --exclude 'releng/*' --exclude '**/Makefile.vc' patchfile.diff",
         'fi',
     ]
 

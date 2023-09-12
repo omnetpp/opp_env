@@ -687,7 +687,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/Artery.html",
             },
             "required_projects": {"omnetpp": ["5.6"]},
-            "nix_packages": ["cmake", "boost", "cryptopp", "geographiclib", "sumo"],
+            "nix_packages": ["cmake", "boost", "cryptopp", "geographiclib", "sumo", "git-lfs" ],
             # we use a hash from master because the opp-summit release needs git to build
             "download_commands": [
                 "mkdir artery_allinone-20230820",

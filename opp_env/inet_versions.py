@@ -24,11 +24,11 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "catalog_url": "https://omnetpp.org/download-items/INET.html",
         },
         "required_projects": {"omnetpp": omnetpp_versions}, # list(set([dotx(v) for v in omnetpp_versions]))},
-        "nix_packages":
-            ["z3", "ffmpeg-headless"] if inet_version >= "4.4" else  # ffmpeg needed for VoIPStream
-            [] if inet_version >= "4.0" else # inet-4.x uses omnetpp-6.x, so python3 doesn't need to be spelled out
-            ["python3"] if inet_version >= "3.6.7" or is_modernized else
-            ["python2"], # up to inet-3.6.6, inet_featuretool uses python2 in original, and python3 in modernized versions
+        "nix_packages": [
+            "z3" if inet_version >= "4.4" else None,  # ffmpeg needed for VoIPStream
+            "ffmpeg-headless" if inet_version >= "4.5" else "ffmpeg_4-headless" if inet_version >= "4.0" else None,  # ffmpeg needed for VoIPStream
+            "python3" if inet_version >= "3.6.7" or is_modernized else "python2" # up to inet-3.6.6, inet_featuretool uses python2 in original, and python3 in modernized versions
+            ],
         "patch_commands": [
             "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
 
@@ -93,7 +93,9 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             # we do have z3 and avcodec (in ffmpeg), so the first time we run, turn on the project features that use them
             # note: this should probably be in "patch_commands" instead, but opp_featuretool is not available there because omnetpp's setenv hasn't run and omnetpp hasn't been built yet
             # note: VoipStream could be turned on for earlier INET versions too, but it's not tested out / added yet
-            "[ -f src/Makefile ] || opp_featuretool -v enable Z3GateSchedulingConfigurator VoipStream VoipStreamExamples" if inet_version >= "4.4" else "",
+            "[ -f src/Makefile ] || opp_featuretool -v enable Z3GateSchedulingConfigurator" if inet_version >= "4.4" else "",
+            "[ -f src/Makefile ] || opp_featuretool -v enable VoipStream VoipStreamExamples" if inet_version >= "4.3" else
+            "[ -f src/Makefile ] || opp_featuretool -v enable VoIPStream VoIPStream_examples" if inet_version >= "4.0" else "",
 
             # build
             "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"

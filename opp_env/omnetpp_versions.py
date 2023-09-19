@@ -309,7 +309,7 @@ def get_project_descriptions():
     # and other tools and libraries, and also to have similar setenv scripts.
     released_versions = [
         "6.0.x:6.0.1", "6.0.1", "6.0",
-        "5.7.x:5.7",   "5.7",
+        "5.7.x:5.7.1", "5.7.1*", "5.7",
         "5.6.x:5.6.3", "5.6.3*", "5.6.2", "5.6.1", "5.6",
         "5.5.x:5.5.2", "5.5.2*", "5.5.1", "5.5",
         "5.4.x:5.4.2", "5.4.2*", "5.4.1", "5.4",

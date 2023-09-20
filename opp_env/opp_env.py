@@ -161,6 +161,7 @@ def create_arg_parser():
     group.add_argument("--grouped", dest="list_mode", action="store_const", const="grouped", help="List the available versions for each project")
     group.add_argument("--names", dest="list_mode", action="store_const", const="names", help="List project names only (without version numbers)")
     group.add_argument("--descriptions", dest="list_mode", action="store_const", const="descriptions", help="List project names with descriptions only, one per line")
+    group.add_argument("--aliases", dest="list_mode", action="store_const", const="aliases", help="List version aliases for projects")
     group.add_argument("--expand", dest="list_mode", action="store_const", const="expand", help="Expand dependency list of each matching project in the default version combination")
     group.add_argument("--expand-all", dest="list_mode", action="store_const", const="expand-all", help="Expand dependency list of each matching project in all supported version combinations")
 
@@ -620,6 +621,11 @@ class ProjectRegistry:
                     if truncated_version not in index[project_name]:
                         index[project_name][truncated_version] = index[project_name][version]
         return index
+
+    def get_project_version_aliases(self, project_reference):
+        # collect version aliases for a given project; e.g. if project_reference is "omnetpp-6.0.2", then it may return ["6", "6.0", "latest"]
+        version_to_project_dict = self.index[project_reference.name]
+        return [v for v,p in version_to_project_dict.items() if p.version != v and p.version == project_reference.version]
 
     def get_project_description(self, project_reference):
         if type(project_reference) is str:
@@ -1299,6 +1305,11 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
     elif list_mode == "names":
         for name in names:
             print(name)
+    elif list_mode == "aliases":
+        for project in projects:
+            alias_versions = project_registry.get_project_version_aliases(ProjectReference(project.name, project.version))
+            for alias_version in natural_sorted(alias_versions):
+                print(f"{project.name}-{alias_version} -> {project.get_full_name()}")
     elif list_mode == "descriptions":
         for name in names:
             descriptions = uniq([p.description for p in projects if p.name == name if p.description])

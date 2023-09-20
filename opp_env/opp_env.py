@@ -611,8 +611,9 @@ class ProjectRegistry:
         # add meta entries: "latest"; "3", "3.8" -> 3.8.2 (latest minor/patch version)
         # ordering is determined by order of items in the project_descriptions array.
         for project_name, project_versions in versions.items():
-            index[project_name]["latest"] = index[project_name][project_versions[0]]
-            for version in project_versions:
+            semver_versions = [v for v in project_versions if is_semver(v)] # exclude weird versions, and ".x" versions like "6.0.x" (6.0 or "latest" should NOT resolve to 6.0.x)
+            index[project_name]["latest"] = index[project_name][semver_versions[0]] if semver_versions else index[project_name][project_versions[0]]
+            for version in semver_versions:
                 truncated_version = version
                 while "." in truncated_version:
                     truncated_version = truncated_version.rsplit(".",1)[0] # chop off part after last dot

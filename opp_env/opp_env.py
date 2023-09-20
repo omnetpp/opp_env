@@ -1273,6 +1273,18 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
         projects = tmp # NOTE: No sorting! Order of project versions is STRICTLY determined by the order they are in ProjectRegistry.
 
     names = uniq([p.name for p in projects])
+
+    def move_to_front(list, name):
+        try:
+            list.remove(name)
+            list.insert(0, name)
+        except ValueError:
+            pass
+
+    names.sort()
+    move_to_front(names, "inet")
+    move_to_front(names, "omnetpp")
+
     name_width = len(max(names, key=len))
     if list_mode == "flat":
         for p in projects:

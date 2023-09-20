@@ -117,6 +117,7 @@ def sort_by_project_dependencies(project_descriptions):
 
 def is_semver(version):
     # supported formats: "3.2", "3.2.1", "3.2p1"
+    # note: this only VERY loosely based on https://semver.org/ (see BNF grammar there)
     pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?$'
     return re.match(pattern, version) is not None
 
@@ -545,6 +546,7 @@ class ProjectReference:
 
     @staticmethod
     def parse(string):
+        # split to name and version
         return ProjectReference(*string.rsplit("-", 1)) if "-" in string else ProjectReference(string, "")
 
     def get_full_name(self):
@@ -763,7 +765,7 @@ class Workspace:
             detect_nix()
         opp_env_directory = os.path.join(self.root_directory, self.WORKSPACE_ADMIN_DIR)
         if not os.path.exists(opp_env_directory):
-            raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn in into one")
+            raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn it into one")
         _logger.debug(f"Workspace created, {root_directory=}, {nixless=}")
 
     @staticmethod

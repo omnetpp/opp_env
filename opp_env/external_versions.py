@@ -242,7 +242,7 @@ def get_project_descriptions():
         {
             # DONE - ok
             "name": "mixim", "version": "2.3",
-            "description": "MiXiM is a simulation framework to support modeling and simulation of wireless and mobile networks. NOTE: This is a deprecated model kept only for archival purposes. All functionality of this model is available in the INET Framework.",
+            "description": "Framework for modeling and simulation of wireless and mobile networks (deprecated in favor of INET)",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/MiXiM.html",
             },

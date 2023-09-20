@@ -159,6 +159,7 @@ def create_arg_parser():
     group.add_argument("--flat", dest="list_mode", action="store_const", const="flat", help="List projects with available versions, one per line")
     group.add_argument("--grouped", dest="list_mode", action="store_const", const="grouped", help="List the available versions for each project")
     group.add_argument("--names", dest="list_mode", action="store_const", const="names", help="List project names only (without version numbers)")
+    group.add_argument("--descriptions", dest="list_mode", action="store_const", const="descriptions", help="List project names with descriptions only, one per line")
     group.add_argument("--expand", dest="list_mode", action="store_const", const="expand", help="Expand dependency list of each matching project in the default version combination")
     group.add_argument("--expand-all", dest="list_mode", action="store_const", const="expand-all", help="Expand dependency list of each matching project in all supported version combinations")
 
@@ -429,7 +430,7 @@ def detect_tools():
         raise Exception(f"The following programs were not found: {', '.join(errors)}.")
 
 class ProjectDescription:
-    def __init__(self, name, version, description=None, warnings=[],
+    def __init__(self, name, version, description=None, details=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
                  required_projects={}, nix_packages=[], vars_to_keep=[],
                  download_url=None, git_url=None, git_branch=None, download_commands=[],
@@ -443,6 +444,7 @@ class ProjectDescription:
         self.name = name
         self.version = version
         self.description = description
+        self.details = details
         self.warnings = remove_empty(warnings)
         self.nixos = nixos
         self.stdenv = stdenv
@@ -473,6 +475,11 @@ class ProjectDescription:
 
         if bool(download_url) + bool(git_url) + bool(download_commands) > 1:
             raise Exception(f"project {name}-{version}: download_url, git_url, and download_commands are mutually exclusive")
+
+        if self.description and "\n" in self.description:
+            raise Exception(f"project {name}-{version}: description may not contain newlines -- use the details field to store additional information")
+        if self.description and len(self.description) > 180:
+            raise Exception(f"project {name}-{version}: description may not be longer than 180 characters (currently {len(self.description)}) -- use the details field to store additional information")
 
     def __repr__(self):
         return self.get_full_name()
@@ -1259,23 +1266,29 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
     if project_name_patterns:
         tmp = []
         for project_name_pattern in project_name_patterns:
-            matching_projects = [p for p in projects if re.match(project_name_pattern, p.get_full_name())]
+            matching_projects = [p for p in projects if re.match(project_name_pattern, p.get_full_name())] # note: prefix match!
             if not matching_projects:
                 raise Exception(f"Name/pattern '{project_name_pattern}' does not match any project")
             tmp += matching_projects
         projects = tmp # NOTE: No sorting! Order of project versions is STRICTLY determined by the order they are in ProjectRegistry.
 
     names = uniq([p.name for p in projects])
+    name_width = len(max(names, key=len))
     if list_mode == "flat":
         for p in projects:
             print(p.get_full_name())
     elif list_mode == "grouped":
         for name in names:
             versions = [p.version for p in projects if p.name == name]
-            print(f"{name:<10} {cyan('  '.join(versions))}")
+            print(f"{name.ljust(name_width)} {cyan('  '.join(versions))}")
     elif list_mode == "names":
         for name in names:
             print(name)
+    elif list_mode == "descriptions":
+        for name in names:
+            descriptions = uniq([p.description for p in projects if p.name == name if p.description])
+            description = descriptions[0] if descriptions else "(no description)"
+            print(f"{name.ljust(name_width)} {cyan(description)}")
     elif list_mode == "expand":
         for project in projects:
             expanded = project_registry.expand_dependencies([project])
@@ -1313,6 +1326,8 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
         project_description = project_description.activate_project_options(requested_options)
         print()
         print(project_description.get_full_name() + (": " + project_description.description if project_description.description else ""))
+        if project_description.details:
+            print("\n" + project_description.details.rstrip())
         if project_description.warnings:
             for warning in project_description.warnings:
                 print(yellow("\nWARNING: ") + warning)

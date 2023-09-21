@@ -334,7 +334,7 @@ def get_project_descriptions():
         descriptions.append(make_omnetpp_project_description(version_name, base_version, is_modernized))
     master_description = make_omnetpp_project_description("master", None, True)
 
-    return sorted(descriptions, key=lambda p: p["name"] + "-" + p["version"], reverse=True) + [ master_description ]
+    return descriptions + [ master_description ]
 
 
 

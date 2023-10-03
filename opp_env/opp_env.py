@@ -406,7 +406,7 @@ def detect_nix():
         output = result.stdout.decode('utf-8')
     except Exception as ex:
         _logger.debug(f"Error: {ex}")
-        raise Exception("Nix does not seem to be installed. You can install it from https://nixos.org/download.html or using your system's package manager (important: at least version {minimum_nix_version} is required). See also the --nixless option in the help.")
+        raise Exception(f"Nix does not seem to be installed (running `nix --version` failed). You can install it from https://nixos.org/download.html or using your system's package manager (important: at least version {minimum_nix_version} is required). See also the --nixless option in the help.")
 
     # check it is recent enough
     nix_version = output.strip().split()[-1]

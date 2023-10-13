@@ -52,6 +52,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # A problem component is the embedded Webkit library, used as HTML widget in Eclipse (help, some tooltips, etc.)
     # It doesn't work for version 5.6 and below (due to some incompatible change in Webkit), but newer versions should work.
     linux_ide_packages = [
+        "graphviz", "doxygen",
         "gtk2" if version < "5.2" else "gtk3", # SWT (eclipse 4.7 and up is using gtk3)
         "glib", "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender",
         "gsettings-desktop-schemas", "webkitgtk", "zlib",

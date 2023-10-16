@@ -1099,6 +1099,7 @@ class Workspace:
         project_vars_to_keep = sum([p.vars_to_keep for p in effective_project_descriptions], [])
         project_setenv_commands = sum([[f"cd '{self.get_project_root_directory(p)}'", *p.setenv_commands] for p in reversed(effective_project_descriptions)], [])
         project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={self.get_project_root_directory(p)}" for p in effective_project_descriptions]
+        project_version_environment_variable_assignments = [f"export {p.name.upper()}_VERSION=\"{p.version}\"" for p in effective_project_descriptions]
 
         # a custom prompt spec to help users distinguish an opp_env shell from a normal terminal session
         prompt = f"\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
@@ -1110,6 +1111,7 @@ class Workspace:
             'error() { echo "$*" 1>&2; return 1; }; export -f error',
             f"export BUILD_MODE={build_mode or ''}",
             *project_root_environment_variable_assignments,
+            *project_version_environment_variable_assignments,
             *(project_shell_hook_commands if nixful else []),
             f"export NIX_BUILD_CORES=$({nproc_command})" if self.nixless else None, # otherwise Nix defines it
             f"export PS1='{prompt}'" if interactive and nixful else None,

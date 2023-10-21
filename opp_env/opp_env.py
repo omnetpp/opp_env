@@ -37,11 +37,19 @@ def colored(color, x):
     global coloring_enabled
     return color + str(x) + COLOR_RESET if coloring_enabled else str(x)
 
-def gray(x): return colored(COLOR_GRAY, x)
 def red(x): return colored(COLOR_RED, x)
 def yellow(x): return colored(COLOR_YELLOW, x)
 def cyan(x): return colored(COLOR_CYAN, x)
 def green(x): return colored(COLOR_GREEN, x)
+def gray(x): return colored(COLOR_GRAY, x)
+
+def shell_esc(x): return x.replace("\u001b", "\\033")
+
+SHELL_RED = shell_esc(COLOR_RED)
+SHELL_YELLOW = shell_esc(COLOR_YELLOW)
+SHELL_CYAN = shell_esc(COLOR_CYAN)
+SHELL_GREEN = shell_esc(COLOR_GREEN)
+SHELL_NOCOLOR = shell_esc(COLOR_RESET)
 
 class ColoredLoggingFormatter(logging.Formatter):
     COLORS = {
@@ -190,8 +198,9 @@ def create_arg_parser():
         elif name=="options":    subparser.add_argument("--options", action='append', metavar='[PROJECT:]NAME,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
         elif name=="no-patch":   subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
         elif name=="no-cleanup": subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete a partially downloaded project if download or patching fails or is interrupted")
-        elif name=="nixless":    subparser.add_argument("--nixless", default=False, action='store_true', help=
-            "Run without Nix. This mode assumes that all packages that the projects and opp_env itself require are already installed in the system. "
+        elif name=="nixless-workspace":    subparser.add_argument("--nixless-workspace", default=False, action='store_true', help=
+            "When creating a workspace, designate the new workspace as nixless. In a nixless workspace, projects are installed and run without Nix. "
+            "A nixless workspace requires that all packages that the projects and opp_env itself require are already installed in the system. "
             "For opp_env itself, this translates to having 'curl' and/or 'git', and basic tools like 'tar' and 'gzip' available for downloading packages. "
             "The packages that OMNeT++ requires are documented in the Installation Guide of the particular version.")
         elif name=="keep":       subparser.add_argument("-k", "--keep", action='append', metavar='NAME,...', help=
@@ -202,15 +211,14 @@ def create_arg_parser():
             "It expects the file system locations to be passed in via environment variables. "
             "It is primarily useful for testing purposes.")
         elif name=="isolated":    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help=
-            "Run in a Nix-based isolated environment from the host operating system.")
+            "Run in a Nix-based isolated environment from the host operating system. The default is to run non-isolated.")
         elif name=="no-isolated": subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help=
-            "Run in a Nix-based isolated environment from the host operating system.")
-        elif name=="no-prepare-missing": subparser.add_argument("--no-prepare-missing", dest="prepare_missing", default=True, action='store_false', help="Automatically prepare missing projects by downloading and configuring them")
+            "Run in a Nix-based isolated environment from the host operating system. The default is to run in an isolated environment.")
         elif name=="mode(release)":  subparser.add_argument("--mode", metavar='MODE,...', default="release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
         elif name=="mode(both)": subparser.add_argument("--mode", metavar='MODE,...', default="debug,release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
-        elif name=="no-build":   subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Build project if not already built")
-        elif name=="no-skip-build":   subparser.add_argument("--no-skip-build", dest='skip_build_if_unchanged', default=True, action='store_false', help=
-            "The default behavior is to skip running the build command if all relevant files in the project appear to be unchanged. This option disables this optimization.")
+        elif name=="install":   subparser.add_argument("--install", dest='install', default=False, action='store_true', help="Download and build missing projects")
+        elif name=="build":   subparser.add_argument("--build", dest='build', default=False, action='store_true', help="Build missing projects (but do not download)")
+        elif name=="no-build":   subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Do not build the projects after download")
         elif name=="chdir":      subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="convenience", help=
             "Whether to change into the workspace directory (--chdir), or stay in the current working directory (--no-chdir). "
             "If neither is given, the default action to try doing what is likely the most convenient for the user, "
@@ -226,60 +234,26 @@ def create_arg_parser():
     subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace", description="Designates the current working directory to be an opp_env workspace")
     add_arguments(subparser, [
         "workspace",
-        "force-init"
+        "force-init",
+        "nixless-workspace"
     ])
 
-    subparser = subparsers.add_parser("download", help="Downloads the specified projects into the workspace",
-        description="Downloads the specified projects into the workspace, including the ones required by the specified projects.")
+    subparser = subparsers.add_parser("install", help="Downloads and builds the specified projects in their environment",
+        description="Downloads and builds the specified projects in their environment. Skips the download step if project is already downloaded.")
     add_arguments(subparser, [
         "projects",
         "quiet",
         "init",
+        "nixless-workspace",
         "workspace",
         "options",
         "no-deps",
         "no-pause",
         "no-cleanup",
         "no-patch",
-        "nixless",
-        "keep",
-        "local"
-    ])
-
-    subparser = subparsers.add_parser("build", aliases=["install"], help="Builds the specified projects in their environment",
-        description="Builds the specified projects in their environment. It also performs download steps as necessary.")
-    add_arguments(subparser, [
-        "projects",
-        "quiet",
-        "init",
-        "workspace",
-        "options",
-        "no-deps",
-        "no-prepare-missing",
-        "no-pause",
-        "no-cleanup",
-        "no-patch",
+        "no-build",
         "mode(release)",
-        "no-skip-build",
         "no-isolated",
-        "nixless",
-        "keep",
-        "local"
-    ])
-
-    subparser = subparsers.add_parser("clean", help="Cleans the specified projects in their environment",
-        description="Cleans the specified projects in their environment.")
-    add_arguments(subparser, [
-        "projects",
-        "quiet",
-        "workspace",
-        "options",
-        "no-deps",
-        "no-prepare-missing",
-        "no-pause",
-        "mode(both)",
-        "no-isolated",
-        "nixless",
         "keep",
         "local"
     ])
@@ -289,20 +263,19 @@ def create_arg_parser():
     add_arguments(subparser, [
         "projects",
         "init",
+        "nixless-workspace",
         "workspace",
         "options",
         "chdir",
         "no-deps",
-        "no-prepare-missing",
         "no-pause",
         "no-cleanup",
         "no-patch",
-        "no-build",
+        "install",
+        "build",
         "mode(release)",
-        "no-skip-build",
         "quiet",
         "isolated",
-        "nixless",
         "keep",
         "local"
     ])
@@ -312,20 +285,19 @@ def create_arg_parser():
     add_arguments(subparser, [
         "projects",
         "init",
+        "nixless-workspace",
         "workspace",
         "command",
         "options",
         "no-deps",
-        "no-prepare-missing",
         "no-pause",
         "no-cleanup",
         "no-patch",
-        "no-build",
+        "install",
+        "build",
         "mode(release)",
-        "no-skip-build",
         "quiet",
         "no-isolated",
-        "nixless",
         "keep",
         "local"
     ])
@@ -406,14 +378,14 @@ def detect_nix():
         output = result.stdout.decode('utf-8')
     except Exception as ex:
         _logger.debug(f"Error: {ex}")
-        raise Exception(f"Nix does not seem to be installed (running `nix --version` failed). You can install it from https://nixos.org/download.html or using your system's package manager (important: at least version {minimum_nix_version} is required). See also the --nixless option in the help.")
+        raise Exception(f"Nix does not seem to be installed (running `nix --version` failed). You can install it from https://nixos.org/download.html or using your system's package manager (important: at least version {minimum_nix_version} is required). See also the --nixless-workspace option in the help.")
 
     # check it is recent enough
     nix_version = output.strip().split()[-1]
     if not re.match("^[0-9.]+$", nix_version):
         raise Exception("Cannot parse Nix version number: Output of 'nix --version' diverges from expected format")
     if natural_less(nix_version, minimum_nix_version):
-        raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. See also the --nixless option in the help.")
+        raise Exception(f"Your Nix installation of version {nix_version} is too old, at least version {minimum_nix_version} is required. The newest version is available from https://nixos.org/download.html. See also the --nixless-workspace option in the help.")
 
 def detect_tools():
     tools = [ "bash", "git", "curl", "grep", "find", "xargs", "shasum", "tar", "gzip", "sed", "touch" ]
@@ -759,21 +731,23 @@ class Workspace:
     WORKSPACE_ADMIN_DIR = ".opp_env_workspace"
     PROJECT_ADMIN_DIR = ".opp_env"
 
-    def __init__(self, root_directory, nixless=False, default_nixos=None, default_stdenv=None):
+    def __init__(self, root_directory, default_nixos=None, default_stdenv=None):
         assert(os.path.isabs(root_directory))
         self.root_directory = root_directory
-        self.nixless = nixless
         self.default_nixos = default_nixos or "22.11"
         self.default_stdenv = default_stdenv or "llvmPackages.stdenv"
 
-        if nixless:
-            detect_tools()
-        else:
-            detect_nix()
         opp_env_directory = os.path.join(self.root_directory, self.WORKSPACE_ADMIN_DIR)
         if not os.path.exists(opp_env_directory):
             raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn it into one")
-        _logger.debug(f"Workspace created, {root_directory=}, {nixless=}")
+        self.nixless = os.path.exists(os.path.join(self.get_workspace_admin_directory(), ".nixless"))  #TODO do it properly!!!
+
+        if self.nixless:
+            detect_tools()
+        else:
+            detect_nix()
+
+        _logger.debug(f"Workspace {root_directory=}, {self.nixless=}")
 
     @staticmethod
     def is_workspace(dir):
@@ -793,7 +767,7 @@ class Workspace:
         #return None
 
     @staticmethod
-    def init_workspace(dir=None, allow_existing=False):
+    def init_workspace(dir=None, allow_existing=False, nixless=False):
         if not dir:
             dir = os.getcwd()
         if not os.path.isdir(dir):
@@ -808,6 +782,9 @@ class Workspace:
         if re.search("\\s", dir):
             raise Exception(f"Whitespace characters are not allowed in the name and path of the workspace directory")
         os.mkdir(opp_env_dir)
+        if nixless:
+            # write an empty file called .nixless to indicate that this is a nixless workspace
+            open(os.path.join(opp_env_dir, ".nixless"), "w").close()
         _logger.info(f"Workspace created in folder {cyan(dir)}")
 
     def get_workspace_admin_directory(self):
@@ -832,22 +809,6 @@ class Workspace:
         self.print_shasums_comparison_result(new_files, disappeared_files, changed_files, label=f"File changes in {project_description} since download", root_dir=self.get_project_root_directory(project_description))
         return disappeared_files or changed_files # new files do not count  (TODO or: should count, except for build outputs?)
 
-    def may_need_rebuild(self, project_description):
-        postbuild_shasums = self.read_project_shasums(project_description, "postbuild", allow_missing=True)
-        if not postbuild_shasums: # no build yet
-            return True
-        last_shasums = self.read_project_shasums(project_description, "last")
-        new_files, disappeared_files, changed_files = self.compare_shasums(postbuild_shasums, last_shasums)
-        self.print_shasums_comparison_result(new_files, disappeared_files, changed_files, label=f"File changes in {project_description} since last build", root_dir=self.get_project_root_directory(project_description))
-        for filename in (new_files + disappeared_files + changed_files):
-            for pattern in project_description.potential_build_inputs + project_description.potential_build_outputs:
-                if pattern == ":noext": # matches file names with no extension
-                    if "." not in os.path.basename(filename):
-                        return True
-                elif fnmatch.fnmatch(filename, pattern):
-                    return True
-        return False
-
     def print_project_state(self, project_description):
         modified_phrase = red('MODIFIED') if self.is_project_modified(project_description) else green("UNMODIFIED")
         _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green(self.get_project_state(project_description))}, {modified_phrase} since download")
@@ -869,7 +830,7 @@ class Workspace:
         data = self.read_project_state_file(project_description)
         return self.ABSENT if not os.path.isdir(project_directory) else \
                self.INCOMPLETE if not data or 'state' not in data else \
-               data['state']
+               data['state'] #TODO redundant, remove
 
     def set_project_state(self, project_description, state):
         _logger.debug(f"Setting project {cyan(project_description.get_full_name())} state to {cyan(state)}")
@@ -940,26 +901,6 @@ class Workspace:
                 if os.path.isdir(project_dir):
                     shutil.rmtree(project_dir)
             raise e
-
-    def build_project_if_needed(self, project_description, effective_project_descriptions, build_modes, force=False, **kwargs):
-        assert(project_description.build_commands)
-        if force or self.may_need_rebuild(project_description):
-            for build_mode in build_modes:
-                _logger.info(f"Building project {cyan(project_description.get_full_name())} in {cyan(build_mode)} mode in workspace {cyan(self.root_directory)}")
-                project_dir = self.get_project_root_directory(project_description)
-                self.nix_develop(effective_project_descriptions, project_dir, project_description.build_commands, build_mode=build_mode, **kwargs)
-            self.record_project_shasums(project_description, "postbuild")
-            return True
-        else:
-            _logger.info(f"Project {cyan(project_description.get_full_name())} in workspace {cyan(self.root_directory)} appears to be {green('UNMODIFIED')} since last build, {green('skipping build')}")
-            return False
-
-    def clean_project(self, project_description, effective_project_descriptions, build_modes, **kwargs):
-        assert(project_description.clean_commands)
-        for build_mode in build_modes:
-            _logger.info(f"Cleaning project {cyan(project_description.get_full_name())} in {cyan(build_mode)} in workspace {cyan(self.root_directory)}")
-            project_dir = self.get_project_root_directory(project_description)
-            self.nix_develop(effective_project_descriptions, project_dir, project_description.clean_commands, build_mode=build_mode, **kwargs)
 
     def record_project_shasums(self, project_description, snapshot_name):
         # exclude the Simulation IDE's directory from the shasum, because ./configure and eclipse itself modifies stuff in it
@@ -1039,11 +980,9 @@ class Workspace:
         else:
             return list(values)[0]
 
-    def download_project_if_needed(self, project_description, effective_project_descriptions, prepare_missing=True, patch=True, cleanup=True, **kwargs):
+    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, **kwargs):
         project_state = self.get_project_state(project_description)
-        if not prepare_missing and project_state in [Workspace.ABSENT, Workspace.INCOMPLETE]:
-            raise Exception(f"Project '{project_description}' is missing or incomplete")
-        elif project_state == Workspace.ABSENT:
+        if project_state == Workspace.ABSENT:
             self.download_project(project_description, effective_project_descriptions, patch, cleanup, **kwargs)
         elif project_state == Workspace.INCOMPLETE:
             raise Exception(f"Cannot download '{project_description}': Directory already exists")
@@ -1086,6 +1025,90 @@ class Workspace:
             print(self._read_file_if_exists(patching_log_file).strip())
             raise e
 
+    def _define_shell_functions(self, effective_project_descriptions):
+        def make_build_function(function_name, directory, build_commands):
+            return f"""
+                function {function_name} ()
+                {{
+                    # Collect build modes from args and $BUILD_MODE; if there is one, build it;
+                    # if there are several, recursively call this this function for each.
+                    local modes="$*"
+                    if [ -z "$modes" ]; then modes="$BUILD_MODE"; fi
+                    if [ -z "$modes" ]; then modes="debug release"; fi
+                    local mode_count=$(echo "$modes" | wc -w)
+                    if [ "$mode_count" -gt 1 ]; then
+                        echo -e "{SHELL_GREEN}Invoking {function_name} with modes: $modes{SHELL_NOCOLOR}";
+                        for i in $modes; do
+                            {function_name} $i || return 1
+                        done
+                        return 0
+                    fi
+                    local mode=$modes
+                    echo -e "{SHELL_GREEN}Invoking {function_name} $mode:{SHELL_NOCOLOR}"
+                    if (
+                        set -eo pipefail
+                        cd '{directory}'
+                        BUILD_MODE=$mode
+                        {build_commands}
+                    ); then
+                        echo -e "{SHELL_GREEN}Done {function_name} $mode{SHELL_NOCOLOR}"
+                    else
+                        echo -e "{SHELL_RED}ERROR in {function_name} $mode{SHELL_NOCOLOR}";
+                        return 1;
+                    fi
+                }}
+                export -f {function_name}
+            """
+
+        def make_check_function(function_name, project_name, directory):
+            return f"""
+                function {function_name} ()
+                {{
+                    echo -e "{SHELL_GREEN}Invoking {function_name}:{SHELL_NOCOLOR}"
+                    echo 'Checking post-download file checksums...'
+                    cd '{directory}'
+                    tmp=.opp_env/postdownload.out
+                    if shasum --check --quiet .opp_env/postdownload.sha > $tmp 2>/dev/null; then
+                        echo OK
+                    else
+                        cat $tmp | sed 's/FAILED open or read/MISSING/; s/FAILED$/MODIFIED/'
+                        echo -e "{SHELL_YELLOW}WARNING: {project_name}: $(cat $tmp | wc -l) file(s) missing/modified since download{SHELL_NOCOLOR}"
+                    fi
+                    rm $tmp
+                }}
+                export -f {function_name}
+            """
+
+        def make_function(function_name, commands):
+            return f"""function {function_name}() {{
+                {join_commands(commands)}
+            }}
+            export -f {function_name}"""
+
+        project_build_function_commands = [
+            make_build_function("build_" + p.name, self.get_project_root_directory(p), join_commands(p.build_commands))
+            for p in effective_project_descriptions
+        ]
+        project_clean_function_commands = [
+            make_build_function("clean_" + p.name, self.get_project_root_directory(p), join_commands(p.clean_commands))
+            for p in effective_project_descriptions
+        ]
+
+        project_check_function_commands = [
+            make_check_function("check_" + p.name, p.get_full_name(), self.get_project_root_directory(p))
+            for p in effective_project_descriptions
+        ]
+
+        function_definitions = [
+            *project_build_function_commands,
+            *project_clean_function_commands,
+            *project_check_function_commands,
+            make_function("build_all", [f"build_{p.name} || exit 1" for p in reversed(effective_project_descriptions)]),
+            make_function("clean_all", [f"clean_{p.name} || exit 1" for p in effective_project_descriptions]),
+            make_function("check_all", [f"check_{p.name}" for p in effective_project_descriptions]),
+        ]
+        return function_definitions
+
     def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_mode=None, tracing=False, **kwargs):
         nixful = not self.nixless
 
@@ -1118,6 +1141,7 @@ class Workspace:
             f"export PS1='{prompt}'" if interactive and nixful else None,
             *(["pushd . > /dev/null", *project_setenv_commands, "popd > /dev/null"] if run_setenv else []),
             f"cd '{working_directory}'" if working_directory else None,
+            *self._define_shell_functions(effective_project_descriptions),
             *commands
         ]
 
@@ -1254,7 +1278,7 @@ def resolve_projects(project_full_names, remove_trailing_slash=True):
     project_descriptions = [project_registry.get_project_description(ProjectReference.parse(p.rstrip('/') if remove_trailing_slash else p)) for p in project_full_names]
     return project_descriptions
 
-def init_workspace(workspace_directory, force=False, allow_existing=False):
+def init_workspace(workspace_directory, force=False, allow_existing=False, nixless=False):
     workspace_directory = workspace_directory or os.getcwd()
     if os.path.isdir(workspace_directory):
         if not Workspace.is_workspace(workspace_directory):
@@ -1265,12 +1289,19 @@ def init_workspace(workspace_directory, force=False, allow_existing=False):
         if not os.path.isdir(parent_dir):
             raise Exception(f"Cannot create workspace at '{workspace_directory}': refusing to create more than one level of directories")
         os.mkdir(workspace_directory)
-    Workspace.init_workspace(workspace_directory, allow_existing=allow_existing)
+    Workspace.init_workspace(workspace_directory, allow_existing=allow_existing, nixless=nixless)
     return workspace_directory
 
-def resolve_workspace(workspace_directory):
-    workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
-    return workspace_directory
+def resolve_workspace(workspace_directory, init, nixless_workspace):
+    if init:
+        workspace_directory = init_workspace(workspace_directory, allow_existing=True, nixless=nixless_workspace)
+        workspace = Workspace(workspace_directory, nixless_workspace)
+    else:
+        if nixless_workspace:
+            raise Exception("--nixless-workspace is only supported with --init")
+        workspace_directory = os.path.abspath(workspace_directory) if workspace_directory else Workspace.find_workspace(os.getcwd())
+        workspace = Workspace(workspace_directory)
+    return workspace
 
 def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwargs):
     global project_registry
@@ -1387,100 +1418,62 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
     print("Note: Specify `--raw` to `opp_env info` for more details.")
     print("Note: Options can be selected by adding `--options <optionname>` to the opp_env command line, see help. Options active by default are marked with '*'.")
 
-def init_subcommand_main(workspace_directory=None, force=False, **kwargs):
-    init_workspace(workspace_directory, force=force)
+def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
+    init_workspace(workspace_directory, force=force, nixless=nixless_workspace)
 
-def download_subcommand_main(projects, workspace_directory=None, requested_options=None, no_dependency_resolution=False, nixless=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, build=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless_workspace=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory, nixless)
+
+    workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
+
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
     # workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
 
-def build_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, skip_build_if_unchanged=False, nixless=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
-    global project_registry
-    workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory, nixless)
-    specified_project_descriptions = resolve_projects(projects)
-    if no_dependency_resolution:
-        effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
-    else:
-        effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
-
-    # workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
-    workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
-    for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
-    force = not skip_build_if_unchanged  # note: if one project is rebuilt, rebuild all subsequent (likely derived) projects as well
-    for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
-        assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
-        if project_description.build_commands:
-            force = workspace.build_project_if_needed(project_description, effective_project_descriptions, build_modes, force=force, **kwargs) or force
-    _logger.info(f"Build finished for projects {cyan(effective_project_descriptions)} in workspace {cyan(workspace_directory)}")
-
-def clean_subcommand_main(projects, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless=False, pause_after_warnings=True, all_warnings=False, **kwargs):
-    #TODO shouldn't there be a "realclean" command that deletes all files NOT in the file list??
-    global project_registry
-    workspace_directory = resolve_workspace(workspace_directory)  # note: no init_workspace()
-    workspace = Workspace(workspace_directory, nixless)
-    specified_project_descriptions = resolve_projects(projects)
-    if no_dependency_resolution:
-        effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
-    else:
-        effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
-
-    # workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
-    workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
-    for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
-    for project_description in effective_project_descriptions:
-        if project_description.clean_commands:
-            workspace.clean_project(project_description, effective_project_descriptions, build_modes, **kwargs)
-    _logger.info(f"Clean finished for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    if build:
+        workspace.nix_develop(effective_project_descriptions, commands=["build_all"])
 
 def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
-def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, skip_build_if_unchanged=True, nixless=False, isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, build=False, build_modes=None, nixless_workspace=False, isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory, nixless)
+
+    workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
+
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
+
+    if not install:
+        for project_description in effective_project_descriptions:
+            if workspace.get_project_state(project_description) != Workspace.DOWNLOADED:
+                raise Exception(f"Project {cyan(project_description.get_full_name())} is not downloaded, please run {cyan('opp_env install')} first, or use {cyan('opp_env shell --install')}")
 
     # workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
-    for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
-    if build:
-        try:
-            force = not skip_build_if_unchanged  # note: if one project is rebuilt, rebuild all subsequent (likely derived) projects as well
-            for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
-                assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
-                if project_description.build_commands:
-                    force = workspace.build_project_if_needed(project_description, effective_project_descriptions, build_modes, force=force, **kwargs) or force
-        except Exception as e:
-            # print error but continue bringing up the shell to give user a chance to fix the problem
-            _logger.error(f"An error occurred while building affected projects: {red(e)}")
 
-    kind = "nixless" if nixless else "isolated" if isolated else "non-isolated"
-    _logger.info(f"Starting {cyan(kind)} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    if install:
+        for project_description in effective_project_descriptions:
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
+
+    hint_command = f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean or check a project, use the `build_*`, `clean_*` and `check_*` commands.'"
+    commands = ["build_all", hint_command] if install or build else [hint_command]
+
+    kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
+    _logger.info(f"Starting {cyan(kind)} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
     if chdir and projects:
         first_project_description = resolve_projects(projects)[0]
@@ -1493,32 +1486,37 @@ def shell_subcommand_main(projects, workspace_directory=[], prepare_missing=True
         else:
             _logger.debug(f"No need to change directory, wd={cyan(os.getcwd())} is already under the first project's directory {cyan(first_project_dir)}")
 
-    workspace.nix_develop(effective_project_descriptions, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
+    workspace.nix_develop(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, prepare_missing=True, requested_options=None, no_dependency_resolution=False, init=False, build=True, build_modes=None, skip_build_if_unchanged=True, nixless=False,  isolated=True, pause_after_warnings=True,  all_warnings=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, requested_options=None, no_dependency_resolution=False, init=False, install=False, build=False, build_modes=None, nixless_workspace=False,  isolated=True, pause_after_warnings=True,  all_warnings=False, **kwargs):
     global project_registry
-    workspace_directory = init_workspace(workspace_directory, allow_existing=True) if init else resolve_workspace(workspace_directory)
-    workspace = Workspace(workspace_directory, nixless)
+
+    workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
+
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)}")
+    _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
+
+    if not install:
+        for project_description in effective_project_descriptions:
+            if workspace.get_project_state(project_description) != Workspace.DOWNLOADED:
+                raise Exception(f"Project {cyan(project_description.get_full_name())} is not downloaded, please run {cyan('opp_env install')} first, or use {cyan('opp_env run --install')}")
 
     # workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
-    for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, effective_project_descriptions, prepare_missing, **kwargs)
-    if build:
-        force = not skip_build_if_unchanged  # note: if one project is rebuilt, rebuild all subsequent (likely derived) projects as well
-        for project_description in reversed(effective_project_descriptions): # reversed: build omnetpp first
-            assert workspace.get_project_state(project_description) == Workspace.DOWNLOADED
-            if project_description.build_commands:
-                force = workspace.build_project_if_needed(project_description, effective_project_descriptions, build_modes, force=force, **kwargs) or force
-    kind = "nixless" if nixless else "isolated" if isolated else "non-isolated"
-    _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace_directory)} in {cyan(kind)} mode")
-    workspace.nix_develop(effective_project_descriptions, workspace_directory, [command], **dict(kwargs, suppress_stdout=False))
+
+    if install:
+        for project_description in effective_project_descriptions:
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
+
+    commands = ["build_all", command] if install or build else [command]
+
+    kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
+    _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")
+    workspace.nix_develop(effective_project_descriptions, workspace_directory, commands=commands, **dict(kwargs, suppress_stdout=False))
 
 def upgrade_subcommand_main(dry_run=False, from_pypi=False, check=False, **kwargs):
     latest_version = get_latest_version_from_pypi() if from_pypi else get_latest_version_from_github()
@@ -1589,12 +1587,8 @@ def main():
             info_subcommand_main(**kwargs)
         elif subcommand == "init":
             init_subcommand_main(**kwargs)
-        elif subcommand == "download":
-            download_subcommand_main(**kwargs)
-        elif subcommand == "build" or subcommand == "install":
-            build_subcommand_main(**kwargs)
-        elif subcommand == "clean":
-            clean_subcommand_main(**kwargs)
+        elif subcommand == "install":
+            install_subcommand_main(**kwargs)
         elif subcommand == "shell":
             shell_subcommand_main(**kwargs)
         elif subcommand == "run":

@@ -1248,9 +1248,9 @@ class Workspace:
             raise Exception(f"Child process exit code {result.returncode}")
         return result
 
-def resolve_projects(project_full_names):
+def resolve_projects(project_full_names, remove_trailing_slash=True):
     global project_registry
-    project_descriptions = [project_registry.get_project_description(ProjectReference.parse(p)) for p in project_full_names]
+    project_descriptions = [project_registry.get_project_description(ProjectReference.parse(p.rstrip('/') if remove_trailing_slash else p)) for p in project_full_names]
     return project_descriptions
 
 def init_workspace(workspace_directory, force=False, allow_existing=False):

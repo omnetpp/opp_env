@@ -1108,7 +1108,8 @@ class Workspace:
         nproc_command = "nproc" if not is_macos else "sysctl -n hw.ncpu"
 
         shell_hook_lines = [
-            'error() { echo "$*" 1>&2; return 1; }; export -f error',
+            'function error() { echo "$*" 1>&2; return 1; }; export -f error',
+            'function ll() { ls -l $*; }; export -f ll',
             f"export BUILD_MODE={build_mode or ''}",
             *project_root_environment_variable_assignments,
             *project_version_environment_variable_assignments,

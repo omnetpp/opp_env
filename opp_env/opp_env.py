@@ -180,8 +180,16 @@ def create_arg_parser():
 
     def add_argument(subparser, name):
         if name=="projects":     subparser.add_argument("projects", nargs="+", help=
-            "List of projects with versions to work with, e.g. 'inet-4.2'. Abbreviated version numbers are understood as the latest "
-            "minor/patchlevel version that matches the abbreviated version, e.g. 'inet-3' and 'inet-3.8' both refer to 'inet-3.8.3'. "
+            "List of projects with versions to work with, e.g. 'inet-4.2'. "
+            "Abbreviated version numbers are understood as the latest minor/patchlevel version that "
+            "matches the abbreviated version, e.g. 'inet-3' and 'inet-3.8' both refer to 'inet-3.8.3'. "
+            "The pseudo-version 'latest' translates to the latest version of the project, e.g. 'inet-latest' stood for 'inet-4.5.0' at the time of writing. "
+            "If the specified projects have dependencies, they will also be selected (unless the --no-deps option is present).")
+        elif name=="projects-optional": subparser.add_argument("projects", nargs="*", help=
+            "List of projects with versions to work with, e.g. 'inet-4.2'. "
+            "Defaults to all projects in the workspace. "
+            "Abbreviated version numbers are understood as the latest minor/patchlevel version that "
+            "matches the abbreviated version, e.g. 'inet-3' and 'inet-3.8' both refer to 'inet-3.8.3'. "
             "The pseudo-version 'latest' translates to the latest version of the project, e.g. 'inet-latest' stood for 'inet-4.5.0' at the time of writing. "
             "If the specified projects have dependencies, they will also be selected (unless the --no-deps option is present).")
         elif name=="quiet":      subparser.add_argument("-q", "--quiet", dest="suppress_stdout", default=False, action='store_true', help="Suppress the standard output of executed commands")
@@ -261,7 +269,7 @@ def create_arg_parser():
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects",
         description="Runs a shell in the environment of the specified projects. It also performs download and build steps as necessary.")
     add_arguments(subparser, [
-        "projects",
+        "projects-optional",
         "init",
         "nixless-workspace",
         "workspace",
@@ -283,7 +291,7 @@ def create_arg_parser():
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects",
         description="Runs a command in the environment of the specified projects. It also performs download and build steps as necessary.")
     add_arguments(subparser, [
-        "projects",
+        "projects-optional",
         "init",
         "nixless-workspace",
         "workspace",
@@ -789,6 +797,19 @@ class Workspace:
 
     def get_workspace_admin_directory(self):
         return os.path.join(self.root_directory, self.WORKSPACE_ADMIN_DIR)
+
+    def get_installed_projects(self):
+        def is_project(folder_name):
+            return os.path.isdir(os.path.join(self.root_directory, folder_name, self.PROJECT_ADMIN_DIR))
+        def get_project_description(folder_name):
+            try:
+                global project_registry
+                return project_registry.get_project_description(folder_name)
+            except Exception as e:
+                _logger.warning(f"Failed to load project description for '{folder_name}': {e}")
+                return None
+        result = [get_project_description(folder) for folder in os.listdir(self.root_directory) if is_project(folder)]
+        return [p for p in result if p]
 
     def get_project_root_directory(self, project_description):
         return os.path.join(self.root_directory, project_description.get_full_folder_name())
@@ -1452,7 +1473,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
-    specified_project_descriptions = resolve_projects(projects)
+    specified_project_descriptions = resolve_projects(projects) if projects else workspace.get_installed_projects()
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
@@ -1477,7 +1498,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
     _logger.info(f"Starting {cyan(kind)} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
     if chdir and projects:
-        first_project_description = resolve_projects(projects)[0]
+        first_project_description = specified_project_descriptions[0]
         first_project_dir = workspace.get_project_root_directory(first_project_description)
         if chdir == "convenience":
             chdir = not is_subdirectory(os.getcwd(), first_project_dir)  # "is outside the project dir"
@@ -1494,7 +1515,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
-    specified_project_descriptions = resolve_projects(projects)
+    specified_project_descriptions = resolve_projects(projects) if projects else workspace.get_installed_projects()
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:

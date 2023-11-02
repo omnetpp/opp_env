@@ -1064,6 +1064,7 @@ class Workspace:
             return f"""
                 function {function_name} ()
                 {{
+                    (
                     echo -e "{SHELL_GREEN}Invoking {function_name}:{SHELL_NOCOLOR}"
                     echo 'Checking post-download file checksums...'
                     cd '{directory}'
@@ -1075,6 +1076,7 @@ class Workspace:
                         echo -e "{SHELL_YELLOW}WARNING: {project_name}: $(cat $tmp | wc -l) file(s) missing/modified since download{SHELL_NOCOLOR}"
                     fi
                     rm $tmp
+                    )
                 }}
                 export -f {function_name}
             """

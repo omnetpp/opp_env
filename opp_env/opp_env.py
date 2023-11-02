@@ -1105,13 +1105,14 @@ class Workspace:
             *project_build_function_commands,
             *project_clean_function_commands,
             *project_check_function_commands,
-            make_function("build_all", [f"build_{p.name} || exit 1" for p in reversed(effective_project_descriptions)]),
-            make_function("clean_all", [f"clean_{p.name} || exit 1" for p in effective_project_descriptions]),
+            make_function("build_all", [f"build_{p.name} || return 1" for p in reversed(effective_project_descriptions)]),
+            make_function("clean_all", [f"clean_{p.name} || return 1" for p in effective_project_descriptions]),
             make_function("check_all", [f"check_{p.name}" for p in effective_project_descriptions]),
         ]
         return function_definitions
 
     def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_modes=None, tracing=False, **kwargs):
+
         nixful = not self.nixless
 
         if nixful:

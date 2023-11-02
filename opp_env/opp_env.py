@@ -1037,6 +1037,21 @@ class Workspace:
             print(self._read_file_if_exists(patching_log_file).strip())
             raise e
 
+    @staticmethod
+    def _get_dependencies(project_description, effective_project_descriptions):
+        # find dependencies of the project among effective_projects
+        todo = [project_description]
+        processed = set()
+        deps = []
+        while todo:
+            project = todo.pop()
+            if project not in processed:
+                new_deps = [p for p in effective_project_descriptions if p.name in project.required_projects and p not in processed]
+                deps += new_deps
+                processed.add(project)
+                todo.extend(new_deps)
+        return deps
+
     def _define_shell_functions(self, effective_project_descriptions):
         def make_build_function(function_name, directory, build_commands):
             return f"""
@@ -1318,6 +1333,24 @@ def resolve_workspace(workspace_directory, init, nixless_workspace):
         workspace = Workspace(workspace_directory)
     return workspace
 
+def check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings=True):
+    for project_description in effective_project_descriptions:
+        data = workspace.read_project_state_file(project_description)
+        last_started_with = data.get("last_started_with", None)
+        starting_with = [ p.get_full_name() for p in Workspace._get_dependencies(project_description, effective_project_descriptions) ]
+        if last_started_with is not None and starting_with != last_started_with:
+            def q(l): return "[" + ", ".join(l) + "]"
+            _logger.warning(f"Project {cyan(project_description)} is now being used with a different set of dependencies "
+                            f"({cyan(q(starting_with))}) than last time ({cyan(q(last_started_with))}), rebuild recommended. "
+                            f"Hint: type " + green(f"clean_{project_description.name} && build_{project_description.name}") + " in the opp_env shell.")
+            if pause_after_warnings and sys.stdout.isatty() and sys.stdin.isatty():
+                input("Press Enter to continue, or Ctrl+C to abort ")
+
+def update_saved_project_dependencies(effective_project_descriptions, workspace):
+    for project_description in effective_project_descriptions:
+        starting_with = [ p.get_full_name() for p in Workspace._get_dependencies(project_description, effective_project_descriptions) ]
+        workspace.update_project_state(project_description, last_started_with=starting_with)
+
 def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwargs):
     global project_registry
     projects = project_registry.get_all_project_descriptions()
@@ -1448,9 +1481,14 @@ def install_subcommand_main(projects, workspace_directory=None, build=True, requ
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
+    check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings)
+
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
+
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
+
+    update_saved_project_dependencies(effective_project_descriptions, workspace)
 
     if build:
         workspace.nix_develop(effective_project_descriptions, commands=["build_all"])
@@ -1476,11 +1514,15 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
             if workspace.get_project_status(project_description) != Workspace.DOWNLOADED:
                 raise Exception(f"Project {cyan(project_description.get_full_name())} is not downloaded, please run {cyan('opp_env install')} first, or use {cyan('opp_env shell --install')}")
 
+    check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings)
+
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     if install:
         for project_description in effective_project_descriptions:
             workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
+
+    update_saved_project_dependencies(effective_project_descriptions, workspace)
 
     hint_command = f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean or check a project, use the `build_*`, `clean_*` and `check_*` commands.'"
     commands = ["build_all", hint_command] if build or (install and not install_without_build) else [hint_command]
@@ -1518,11 +1560,15 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
             if workspace.get_project_status(project_description) != Workspace.DOWNLOADED:
                 raise Exception(f"Project {cyan(project_description.get_full_name())} is not downloaded, please run {cyan('opp_env install')} first, or use {cyan('opp_env run --install')}")
 
+    check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings)
+
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     if install:
         for project_description in effective_project_descriptions:
             workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
+
+    update_saved_project_dependencies(effective_project_descriptions, workspace)
 
     commands = ["build_all", command] if build or (install and not install_without_build) else [command]
 

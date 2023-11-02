@@ -1109,7 +1109,7 @@ class Workspace:
         ]
         return function_definitions
 
-    def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_mode=None, tracing=False, **kwargs):
+    def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_modes=None, tracing=False, **kwargs):
         nixful = not self.nixless
 
         if nixful:
@@ -1133,7 +1133,7 @@ class Workspace:
         shell_hook_lines = [
             'function error() { echo "$*" 1>&2; return 1; }; export -f error',
             'function ll() { ls -l $*; }; export -f ll',
-            f"export BUILD_MODE={build_mode or ''}",
+            f"export BUILD_MODE=\"{' '.join(build_modes) if build_modes else ''}\"",
             *project_root_environment_variable_assignments,
             *project_version_environment_variable_assignments,
             *(project_shell_hook_commands if nixful else []),
@@ -1421,7 +1421,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     init_workspace(workspace_directory, force=force, nixless=nixless_workspace)
 
-def install_subcommand_main(projects, workspace_directory=None, build=True, requested_options=None, no_dependency_resolution=False, build_modes=None, nixless_workspace=False, init=False, pause_after_warnings=True, all_warnings=False, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, build=True, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1433,7 +1433,6 @@ def install_subcommand_main(projects, workspace_directory=None, build=True, requ
         effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
-    # workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
     for project_description in effective_project_descriptions:
         workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
@@ -1445,7 +1444,7 @@ def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
-def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, build=False, build_modes=None, nixless_workspace=False, isolated=True, pause_after_warnings=True, all_warnings=False, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, build=False, nixless_workspace=False, isolated=True, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1462,7 +1461,6 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
             if workspace.get_project_state(project_description) != Workspace.DOWNLOADED:
                 raise Exception(f"Project {cyan(project_description.get_full_name())} is not downloaded, please run {cyan('opp_env install')} first, or use {cyan('opp_env shell --install')}")
 
-    # workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     if install:
@@ -1488,7 +1486,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     workspace.nix_develop(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, requested_options=None, no_dependency_resolution=False, init=False, install=False, build=False, build_modes=None, nixless_workspace=False,  isolated=True, pause_after_warnings=True,  all_warnings=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, requested_options=None, no_dependency_resolution=False, init=False, install=False, build=False, nixless_workspace=False,  isolated=True, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1505,7 +1503,6 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
             if workspace.get_project_state(project_description) != Workspace.DOWNLOADED:
                 raise Exception(f"Project {cyan(project_description.get_full_name())} is not downloaded, please run {cyan('opp_env install')} first, or use {cyan('opp_env run --install')}")
 
-    # workspace.show_warnings_before_download(effective_project_descriptions if all_warnings else specified_project_descriptions, pause_after_warnings)
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     if install:

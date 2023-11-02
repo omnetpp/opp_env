@@ -4,7 +4,6 @@ import itertools
 import json
 import logging
 import os
-import shlex
 import subprocess
 import sys
 import re
@@ -14,7 +13,6 @@ import importlib
 import importlib.util
 import platform
 import urllib.request
-import fnmatch
 
 # make sure that this run-time version check is in synch with the metadata for python requirement in the project.toml file.
 if sys.version_info < (3,9):
@@ -831,10 +829,6 @@ class Workspace:
         self.print_shasums_comparison_result(new_files, disappeared_files, changed_files, label=f"File changes in {project_description} since download", root_dir=self.get_project_root_directory(project_description))
         return disappeared_files or changed_files # new files do not count  (TODO or: should count, except for build outputs?)
 
-    def print_project_state(self, project_description):
-        modified_phrase = red('MODIFIED') if self.is_project_modified(project_description) else green("UNMODIFIED")
-        _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green(self.get_project_state(project_description))}, {modified_phrase} since download")
-
     def read_project_state_file(self, project_description):
         state_file_name = self.get_project_admin_file(project_description, "state")
         if not os.path.isfile(state_file_name):
@@ -847,17 +841,16 @@ class Workspace:
         with open(state_file_name, "w") as f:
             json.dump(data, f)
 
-    def get_project_state(self, project_description):
+    def get_project_status(self, project_description):
         project_directory = self.get_project_root_directory(project_description)
         data = self.read_project_state_file(project_description)
         return self.ABSENT if not os.path.isdir(project_directory) else \
-               self.INCOMPLETE if not data or 'state' not in data else \
-               data['state'] #TODO redundant, remove
+               self.INCOMPLETE if not data else \
+               self.DOWNLOADED
 
-    def set_project_state(self, project_description, state):
-        _logger.debug(f"Setting project {cyan(project_description.get_full_name())} state to {cyan(state)}")
+    def update_project_state(self, project_description, **kwargs):
         data = self.read_project_state_file(project_description)
-        data['state'] = state
+        data.update(kwargs)
         self.write_project_state_file(project_description, data)
 
     def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, **kwargs):
@@ -909,8 +902,8 @@ class Workspace:
                 else:
                     _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
 
+            self.update_project_state(project_description, name=project_description.get_full_name())
             self.record_project_shasums(project_description, "postdownload")
-            self.set_project_state(project_description, self.DOWNLOADED)
         except KeyboardInterrupt as e:
             if cleanup:
                 _logger.info("Download interrupted by user, cleaning up")
@@ -974,16 +967,9 @@ class Workspace:
             log_list('Disappeared files', disappeared_files)
             log_list('Changed files', changed_files)
 
-    # def setup_environment(self, projects, requested_options=None, **kwargs):
-    #     global project_registry
-    #     specified_project_descriptions = resolve_projects(projects)
-    #     effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
-    #     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(self.root_directory)}")
-    #     return effective_project_descriptions
-
     def show_warnings_before_download(self, project_descriptions, pause_after_warnings=True):
         # the ones that have warnings and are not yet downloaded
-        projects_to_warn = [p for p in project_descriptions if self.get_project_state(p) ==  Workspace.ABSENT and p.warnings ]
+        projects_to_warn = [p for p in project_descriptions if self.get_project_status(p) ==  Workspace.ABSENT and p.warnings ]
         if projects_to_warn:
             for p in projects_to_warn:
                 for warning in p.warnings:
@@ -1003,15 +989,19 @@ class Workspace:
             return list(values)[0]
 
     def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, **kwargs):
-        project_state = self.get_project_state(project_description)
+        project_state = self.get_project_status(project_description)
         if project_state == Workspace.ABSENT:
             self.download_project(project_description, effective_project_descriptions, patch, cleanup, **kwargs)
         elif project_state == Workspace.INCOMPLETE:
             raise Exception(f"Cannot download '{project_description}': Directory already exists")
-        else:
+        elif project_state == Workspace.DOWNLOADED:
             self.record_project_shasums(project_description, "last")
-            self.print_project_state(project_description)
-        assert self.get_project_state(project_description) == Workspace.DOWNLOADED
+            modified_phrase = red('MODIFIED') if self.is_project_modified(project_description) else green("UNMODIFIED")
+            _logger.info(f"Project {project_description.get_full_name(colored=True)} is {modified_phrase} since download")
+        else:
+            assert False, f"Unknown project state '{project_state}'"
+
+        assert self.get_project_status(project_description) == Workspace.DOWNLOADED, f"Wrong project status {self.get_project_status(project_description)} after download"
 
     def _read_file_if_exists(self, fname):
         try:
@@ -1483,7 +1473,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     if not install:
         for project_description in effective_project_descriptions:
-            if workspace.get_project_state(project_description) != Workspace.DOWNLOADED:
+            if workspace.get_project_status(project_description) != Workspace.DOWNLOADED:
                 raise Exception(f"Project {cyan(project_description.get_full_name())} is not downloaded, please run {cyan('opp_env install')} first, or use {cyan('opp_env shell --install')}")
 
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
@@ -1525,7 +1515,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
 
     if not install:
         for project_description in effective_project_descriptions:
-            if workspace.get_project_state(project_description) != Workspace.DOWNLOADED:
+            if workspace.get_project_status(project_description) != Workspace.DOWNLOADED:
                 raise Exception(f"Project {cyan(project_description.get_full_name())} is not downloaded, please run {cyan('opp_env install')} first, or use {cyan('opp_env run --install')}")
 
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)

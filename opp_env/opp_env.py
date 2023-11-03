@@ -267,7 +267,7 @@ def create_arg_parser():
     ])
 
     subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects",
-        description="Runs a shell in the environment of the specified projects. It also performs download and build steps as necessary.")
+        description="Runs a shell in the environment of the specified projects. It can also be asked to perform workspace initialization and project installation as well.")
     add_arguments(subparser, [
         "projects-optional",
         "init",
@@ -289,7 +289,7 @@ def create_arg_parser():
     ])
 
     subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects",
-        description="Runs a command in the environment of the specified projects. It also performs download and build steps as necessary.")
+        description="Runs a command in the environment of the specified projects. It can also be asked to perform workspace initialization and project installation as well.")
     add_arguments(subparser, [
         "projects-optional",
         "init",

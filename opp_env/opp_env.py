@@ -222,8 +222,7 @@ def create_arg_parser():
             "Run in a Nix-based isolated environment from the host operating system. The default is to run non-isolated.")
         elif name=="no-isolated": subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help=
             "Run in a Nix-based isolated environment from the host operating system. The default is to run in an isolated environment.")
-        elif name=="mode(release)":  subparser.add_argument("--mode", metavar='MODE,...', default="release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
-        elif name=="mode(both)": subparser.add_argument("--mode", metavar='MODE,...', default="debug,release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
+        elif name=="mode":       subparser.add_argument("--mode", metavar='MODE,...', default="debug,release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
         elif name=="install":   subparser.add_argument("--install", dest='install', default=False, action='store_true', help="Download and build missing projects")
         elif name=="build":   subparser.add_argument("--build", dest='build', default=False, action='store_true', help="Build missing projects (but do not download)")
         elif name=="no-build":   subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Do not build the projects after download")
@@ -260,7 +259,7 @@ def create_arg_parser():
         "no-cleanup",
         "no-patch",
         "no-build",
-        "mode(release)",
+        "mode",
         "no-isolated",
         "keep",
         "local"
@@ -281,7 +280,7 @@ def create_arg_parser():
         "no-patch",
         "install",
         "build",
-        "mode(release)",
+        "mode",
         "quiet",
         "isolated",
         "keep",
@@ -303,7 +302,7 @@ def create_arg_parser():
         "no-patch",
         "install",
         "build",
-        "mode(release)",
+        "mode",
         "quiet",
         "no-isolated",
         "keep",

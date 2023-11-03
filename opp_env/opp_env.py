@@ -223,9 +223,9 @@ def create_arg_parser():
         elif name=="no-isolated": subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help=
             "Run in a Nix-based isolated environment from the host operating system. The default is to run in an isolated environment.")
         elif name=="mode":       subparser.add_argument("--mode", metavar='MODE,...', default="debug,release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
-        elif name=="install":   subparser.add_argument("--install", dest='install', default=False, action='store_true', help="Download and build missing projects")
-        elif name=="build":   subparser.add_argument("--build", dest='build', default=False, action='store_true', help="Build missing projects (but do not download)")
-        elif name=="no-build":   subparser.add_argument("--no-build", dest='build', default=True, action='store_false', help="Do not build the projects after download")
+        elif name=="install":    subparser.add_argument("--install", dest='install', default=False, action='store_true', help="Download and build missing projects")
+        elif name=="build":      subparser.add_argument("--build", dest='build', default=False, action='store_true', help="Build projects")
+        elif name=="no-build":   subparser.add_argument("--no-build", dest='install_without_build', default=False, action='store_true', help="Do not build the projects after download")
         elif name=="chdir":      subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="convenience", help=
             "Whether to change into the workspace directory (--chdir), or stay in the current working directory (--no-chdir). "
             "If neither is given, the default action to try doing what is likely the most convenient for the user, "
@@ -279,6 +279,7 @@ def create_arg_parser():
         "no-cleanup",
         "no-patch",
         "install",
+        "no-build", # with --install
         "build",
         "mode",
         "quiet",
@@ -301,6 +302,7 @@ def create_arg_parser():
         "no-cleanup",
         "no-patch",
         "install",
+        "no-build", # with --install
         "build",
         "mode",
         "quiet",
@@ -1467,7 +1469,7 @@ def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
-def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, build=False, nixless_workspace=False, isolated=True, pause_after_warnings=True, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1491,7 +1493,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
             workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
 
     hint_command = f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean or check a project, use the `build_*`, `clean_*` and `check_*` commands.'"
-    commands = ["build_all", hint_command] if install or build else [hint_command]
+    commands = ["build_all", hint_command] if build or (install and not install_without_build) else [hint_command]
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     _logger.info(f"Starting {cyan(kind)} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
@@ -1509,7 +1511,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     workspace.nix_develop(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, requested_options=None, no_dependency_resolution=False, init=False, install=False, build=False, nixless_workspace=False,  isolated=True, pause_after_warnings=True, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1532,7 +1534,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
         for project_description in effective_project_descriptions:
             workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
 
-    commands = ["build_all", command] if install or build else [command]
+    commands = ["build_all", command] if build or (install and not install_without_build) else [command]
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")

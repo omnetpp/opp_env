@@ -1089,14 +1089,14 @@ class Workspace:
                 {{
                     (
                     echo -e "{SHELL_GREEN}Invoking {function_name}:{SHELL_NOCOLOR}"
-                    echo 'Checking post-download file checksums...'
+                    echo 'Checking whether files have changed since download...'
                     cd '{directory}'
                     tmp=.opp_env/postdownload.out
                     if shasum --check --quiet .opp_env/postdownload.sha > $tmp 2>/dev/null; then
                         echo OK
                     else
                         cat $tmp | sed 's/FAILED open or read/MISSING/; s/FAILED$/MODIFIED/'
-                        echo -e "{SHELL_YELLOW}WARNING: {project_name}: $(cat $tmp | wc -l) file(s) missing/modified since download{SHELL_NOCOLOR}"
+                        echo -e "{SHELL_YELLOW}WARNING:{SHELL_NOCOLOR} {project_name}: $(cat $tmp | wc -l) file(s) changed since download"
                     fi
                     rm $tmp
                     )

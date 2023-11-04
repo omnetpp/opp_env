@@ -113,12 +113,8 @@ def topological_sort(nodes, is_edge):
 
 def sort_by_project_dependencies(project_descriptions):
     def depends_on(project_a, project_b):
-        # return true if project_a depends on project_b
-        res = project_b.name in project_a.required_projects
-        # print(f"{project_a.name} depends on {project_b.name}: {res}")
-        return res
+        return project_b.name in project_a.required_projects
     sorted = topological_sort(project_descriptions, depends_on)
-    # print(f"{project_descriptions} -----> {sorted}")
     return sorted
 
 def is_semver(version):

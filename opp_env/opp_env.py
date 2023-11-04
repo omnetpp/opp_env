@@ -915,11 +915,10 @@ class Workspace:
 
     def record_project_shasums(self, project_description, snapshot_name):
         # exclude the Simulation IDE's directory from the shasum, because ./configure and eclipse itself modifies stuff in it
-        dir = self.get_project_root_directory(project_description)
-        admin_dir = self.get_project_admin_directory(project_description)
-        ide_dir = os.path.join(dir, "ide")
+        project_root = self.get_project_root_directory(project_description)
         shasum_file = self.get_project_admin_file(project_description, snapshot_name+".sha", create_dir=True)
-        self.run_command(f"find {dir} \\( -path {admin_dir} -o -path {ide_dir} \\) -prune -o -type f -print0 | xargs -0 shasum > {shasum_file}")
+        # note: we chdir into project_root so that the shasum file will contain project-relative paths not absolute ones
+        self.run_command(f"cd {project_root} && find . \\( -path ./{self.PROJECT_ADMIN_DIR} -o -path ./ide \\) -prune -o -type f -print0 | xargs -0 shasum > {shasum_file}")
 
     def read_project_shasums(self, project_description, snapshot_name, allow_missing=False):
         shasum_file = self.get_project_admin_file(project_description, snapshot_name+".sha")

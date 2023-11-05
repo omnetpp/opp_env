@@ -991,8 +991,10 @@ class Workspace:
             raise Exception(f"Cannot download '{project_description}': Directory already exists")
         elif project_state == Workspace.DOWNLOADED:
             self.record_project_shasums(project_description, "last")
-            modified_phrase = red('MODIFIED') if self.is_project_modified(project_description) else green("UNMODIFIED")
-            _logger.info(f"Project {project_description.get_full_name(colored=True)} is {modified_phrase} since download")
+            if self.is_project_modified(project_description):
+                _logger.warning(f"Project {project_description.get_full_name(colored=True)} has been {yellow('MODIFIED')} since download, use the check_{project_description.name} command to see what changed")
+            else:
+                _logger.info(f"Project {project_description.get_full_name(colored=True)} is {green('unmodified')} since download")
         else:
             assert False, f"Unknown project state '{project_state}'"
 

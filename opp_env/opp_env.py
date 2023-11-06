@@ -1466,7 +1466,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     init_workspace(workspace_directory, force=force, nixless=nixless_workspace)
 
-def install_subcommand_main(projects, workspace_directory=None, build=True, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1487,7 +1487,7 @@ def install_subcommand_main(projects, workspace_directory=None, build=True, requ
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
-    if build:
+    if not install_without_build:
         workspace.nix_develop(effective_project_descriptions, commands=["build_all"])
 
 def is_subdirectory(child_dir, parent_dir):

@@ -1494,12 +1494,26 @@ def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
 
+def check_multiple_versions(project_descriptions):
+    name_versions_dict = {}
+    for project_description in project_descriptions:
+        name, version = project_description.name, project_description.version
+        if name in name_versions_dict:
+            name_versions_dict[name].append(version)
+        else:
+            name_versions_dict[name] = [version]
+    for name, versions in name_versions_dict.items():
+        if len(versions) > 1:
+            def q(l): return "[" + ", ".join(l) + "]"
+            raise Exception(f"Multiple versions specified for project {cyan(name)}: {cyan(q(versions))} -- only one version of a project may be active at a time")
+
 def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
     specified_project_descriptions = resolve_projects(projects) if projects else workspace.get_installed_projects()
+    check_multiple_versions(specified_project_descriptions)
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
@@ -1546,6 +1560,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
     specified_project_descriptions = resolve_projects(projects) if projects else workspace.get_installed_projects()
+    check_multiple_versions(specified_project_descriptions)
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:

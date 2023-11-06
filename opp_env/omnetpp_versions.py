@@ -165,7 +165,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "-Wno-string-plus-int" if is_modernized else
         "-std=c++03 -fpermissive -Wno-c++11-compat -Wno-deprecated-declarations -Wno-string-plus-int -Wno-address-of-temporary" if version < "4.6" else
         "-Wno-deprecated-declarations -Wno-string-plus-int" if version >= "4.6" and version < "5.7" else "")
-    extra_cflags += " -D_XOPEN_SOURCE" if is_macos and version >= "4.0" and version < "4.2" else ""
+    extra_cflags += " -D_XOPEN_SOURCE" if is_macos and version >= "4.0" else "" # use _XOPEN_SOURCE on all macOS versions
 
     # Adjust settings in configure.user so that a simple ./configure will do in the configuration phase.
     # Note the CFLAGS can only be specified in a convenient way by patching Makefile.inc.

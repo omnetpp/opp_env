@@ -119,6 +119,10 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         # Only do it in nix environment. Using glob patterns and enabling nullglob are important because theses file may or may not be present in a distro (depending on the distro version)
         "[ -n $IN_NIX_SHELL -a -n $NIX_BINTOOLS ] && (shopt -s nullglob && patchelf --set-interpreter $(cat $NIX_BINTOOLS/nix-support/dynamic-linker) ide/*opp_ide ide/*omnetpp ide/*omnetpp64 ide/linux64/*omnetpp ide/plugins/org.eclipse.justj.*/jre/bin/* ; shopt -u nullglob) || true" if is_linux and is_ide_supported else None,
 
+        # adhoc code signature is required for the IDE native lib on aarch64/macOS systems
+        # absolute path required otherwise codesign is not reachable in isolated shells (i.e. durinb install/build)
+        "/usr/bin/codesign --force -s - ide/opp_ide.app/Contents/Eclipse/plugins/org.omnetpp.ide.nativelibs.macosx*/libopplibs.jnilib" if version >= "6.0" and is_macos and is_aarch64 else None,
+
         "rm -rf tools/" if is_macos else None, # because bundled tools on macOS are not required when compiling under Nix
         "sed -i.bak 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i.bak 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits

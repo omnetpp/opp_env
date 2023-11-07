@@ -802,7 +802,7 @@ class Workspace:
                 raise Exception(f"'{dir}' is already an opp_env workspace")
         if re.search("\\s", dir):
             raise Exception(f"Whitespace characters are not allowed in the name and path of the workspace directory")
-        os.mkdir(opp_env_dir)
+        shutil.copytree(os.path.join(os.path.dirname(__file__), "templates", "workspace"), opp_env_dir)
         if nixless:
             # write an empty file called .nixless to indicate that this is a nixless workspace
             open(os.path.join(opp_env_dir, ".nixless"), "w").close()

@@ -1,0 +1,51 @@
+# ~/.profile: executed by the command interpreter for login shells.
+# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
+# exists.
+# see /usr/share/doc/bash/examples/startup-files for examples.
+# the files are located in the bash-doc package.
+
+# the default umask is set in /etc/profile; for setting the umask
+# for ssh logins, install and configure the libpam-umask package.
+#umask 022
+
+# if running bash
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+        . "$HOME/.bashrc"
+    fi
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ] ; then
+    PATH="$HOME/bin:$PATH"
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+
+if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+
+# daily opp_env version check - execute 'touch ~/.disable_opp_env_upgrade_check' to disable
+echo "Welcome to the 'opp_env' WSL distro!"
+if [ ! -f ~/.opp_env_intro_disable ]; then
+  echo
+  opp_env --help-intro
+  echo
+  echo "Run 'touch ~/.opp_env_intro_disable' to remove this intro."
+fi
+
+timestamp=~/.opp_env_upgrade_check_timestamp
+if [ ! -f ~/.opp_env_upgrade_check_disable ]; then
+  # See if it's expired, and background update
+  lastrun=$(stat -c %Y "$timestamp" 2>/dev/null) || lastrun=0
+  expiration=$(expr $lastrun + 86400)
+  if [ $(date +%s) -ge $expiration ]; then
+    echo
+    opp_env upgrade --check
+    touch $timestamp
+  fi
+fi
+echo

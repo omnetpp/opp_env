@@ -29,7 +29,7 @@ RUN echo "default=${USER}" >> /etc/wsl.conf; \
 USER ${USER}
 WORKDIR /home/${USER}
 COPY --chown=$USER:root ./nix.conf /home/${USER}/.config/nix/nix.conf
-COPY --chown=$USER:root ./bashrc /home/${USER}/.bashrc
+COPY --chown=$USER:root ./profile /home/${USER}/.profile
 
 # install nix for the default user in single user mode
 RUN set -o pipefail \

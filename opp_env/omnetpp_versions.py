@@ -123,6 +123,10 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         # absolute path required otherwise codesign is not reachable in isolated shells (i.e. durinb install/build)
         "/usr/bin/codesign --force -s - ide/opp_ide.app/Contents/Eclipse/plugins/org.omnetpp.ide.nativelibs.macosx*/libopplibs.jnilib" if version >= "6.0" and is_macos and is_aarch64 else None,
 
+        # remove deprecated GetCurrentProcess() and TransformProcessType() calls from qtenv.cc (not present on aarch64)
+        "sed -i.bak 's|GetCurrentProcess.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
+        "sed -i.bak 's|TransformProcessType.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
+
         "rm -rf tools/" if is_macos else None, # because bundled tools on macOS are not required when compiling under Nix
         "sed -i.bak 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i.bak 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits

@@ -127,7 +127,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i.bak 's|GetCurrentProcess.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
         "sed -i.bak 's|TransformProcessType.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
 
-        "rm -rf tools/" if is_macos else None, # because bundled tools on macOS are not required when compiling under Nix
+        # delete most bundled tools on macOS as they are not required when compiling under Nix (except the debugger helper)
+        "find tools/macos.x86_64/bin -mindepth 1 -not -name 'lldbmi2' -delete && (cd tools/macos.x86_64 && rm -rf doc include lib mkspecs plugins share)" if is_macos and is_x86_64 else None, 
+
         "sed -i.bak 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i.bak 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
 

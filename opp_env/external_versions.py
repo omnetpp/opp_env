@@ -170,7 +170,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/NeSTiNg.html",
                 "test_command": "cd nesting-0.9.1/simulations/examples && ../runsim 01_example_strict_priority.ini --sim-time-limit=10s",
             },
-            "required_projects": {"omnetpp": ["5.4.1"], "inet": ["4.1.0"]},
+            "required_projects": {"omnetpp": ["5.4.*"], "inet": ["4.1.0"]},
             # "git_url": "https://gitlab.com/ipvs/nesting.git",
             "download_url": "https://gitlab.com/ipvs/nesting/-/archive/v0.9.1/nesting-v0.9.1.tar.gz",
             "patch_commands": [
@@ -502,7 +502,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/OppBSD-4.0.html",
                 "test_command": "cd oppbsd-4.0/examples/TwoSubnets && ./out/gcc-debug/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini",
             },
-            "required_projects": {"omnetpp": ["4.2.0"]},
+            "required_projects": {"omnetpp": ["4.2.*"]},
             "download_url": "https://svn.tm.kit.edu/trac/OppBSD/downloads/2",
             "build_commands": ["make"],
             "setenv_commands": ["echo 'Hint: run example simulations from their folder. For example, in examples/TwoSubnets folder: `./out/gcc-debug/TwoSubnets omnetpp.ini`'"],

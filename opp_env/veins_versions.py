@@ -45,7 +45,7 @@ def make_veins_project_description(version, inet_versions, sumo_version, omnetpp
                 "option_description": "Install from git repo on GitHub",
                 "option_category": "download",
                 "option_is_default": version == "master",
-                "git_url": "git@github.com:sommer/veins.git",
+                "git_url": "https://github.com/sommer/veins.git",
                 "git_branch": git_branch_or_tag_name,
             },
         }

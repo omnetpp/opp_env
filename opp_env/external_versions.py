@@ -1060,28 +1060,4 @@ def get_project_descriptions():
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"],
         },
-            "download_commands": [
-                "mkdir can_allinone-0.1.0",
-                "cd can_allinone-0.1.0",
-                "wget https://github.com/inet-framework/inet/releases/download/v2.5.0/inet-2.5.0-src.tgz",
-                "tar -xvzf inet-2.5.0-src.tgz --strip=1",
-                "rm inet-2.5.0-src.tgz",
-                "wget https://github.com/YutakaMatsubara/can-for-omnet/archive/refs/tags/v0.1.0.tar.gz",
-                "tar -xzvf v0.1.0.tar.gz",
-                "mv can-for-omnet-0.1.0 can-src",
-                "rm v0.1.0.tar.gz",
-            ],
-            "patch_commands": [
-                "cp -r can-src/src/* src",
-                "cp -r can-src/examples/* examples",
-                "rm -r can-src",
-                "sed -i.bak 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h",
-                "for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
-                "sed -i.bak 's/if (vector_cost<=0)/if (vector_cost == NULL)/' src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc",
-                "find . -type f -name 'run' -exec chmod +x {} \;"
-            ],
-            "setenv_commands": ["echo 'Hint: use the `./run` command in any example simulation folder, located in `examples/can`.'"],
-            "build_commands": ["make makefiles && make clean && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
-        },
     ]

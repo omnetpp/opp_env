@@ -10,7 +10,8 @@ import re
 import shutil
 import tempfile
 import importlib
-import importlib.util
+import importlib.metadata
+from packaging.version import Version
 import platform
 import urllib.request
 
@@ -118,19 +119,19 @@ def sort_by_project_dependencies(project_descriptions):
     return sorted
 
 def is_semver(version):
-    # supported formats: "3.2", "3.2.1", "3.2p1"
+    # supported formats: "3.2", "3.2.1", "3.2p1" or "3.2.1.231125"
     # note: this only VERY loosely based on https://semver.org/ (see BNF grammar there)
-    pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?$'
+    pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?(?:\.(\d+))?$'
     return re.match(pattern, version) is not None
 
 def parse_semver(version):
     # supported formats: "3.2", "3.2.1", "3.2p1"
-    pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?$'
+    pattern = r'^(\d+)\.(\d+)(?:[.p](\d+))?(?:\.(\d+))?$'
     match = re.match(pattern, version)
     if match is None:
         raise ValueError('Invalid version string: ' + version)
-    major, minor, patch = match.groups()
-    return int(major), int(minor), int(patch) if patch is not None else 0
+    major, minor, micro, nano = match.groups()
+    return int(major), int(minor), int(micro) if micro is not None else 0, int(nano) if nano is not None else 0
 
 def version_matches(wildcard_version, version):
     if not re.match(r"^[^*?]+(\.\*)?$", wildcard_version):
@@ -365,13 +366,7 @@ To run a simulation model directly with the latest version of OMNeT++, run:
   opp_env run --install omnetpp-latest -c 'cd $OMNETPP_ROOT/samples/aloha;./aloha'""")
 
 def get_version():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    version_file_path = os.path.join(current_dir, "_version.py")
-
-    version_module = importlib.util.spec_from_file_location("_version", version_file_path)
-    version = importlib.util.module_from_spec(version_module) # type: ignore
-    version_module.loader.exec_module(version) # type: ignore
-    return version.version
+    return importlib.metadata.version("opp_env")
 
 def get_latest_version_from_github():
     try:
@@ -1609,7 +1604,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
 def upgrade_subcommand_main(dry_run=False, from_pypi=False, check=False, **kwargs):
     latest_version = get_latest_version_from_pypi() if from_pypi else get_latest_version_from_github()
     version = get_version()
-    upgrade_needed = natural_less(version, latest_version)
+    upgrade_needed = Version(version) < Version(latest_version)
     _logger.info(f"An upgrade is available for opp_env" if upgrade_needed else f"opp_env is up-to-date")
     _logger.info(f"Installed version: {cyan(version)}, latest version: {cyan(latest_version)}")
     if check:

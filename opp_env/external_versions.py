@@ -459,22 +459,6 @@ def get_project_descriptions():
 
         {
             # DONE
-            "name": "inetmanet", "version": "3.8.2",
-            "description": "Fork of INET 3.x, containing additional adhoc routing protocols and other models written by the community",
-            "metadata": {
-                "catalog_url": "https://omnetpp.org/download-items/INETMANET-3.x.html",
-                "test_command": "cd inetmanet-3.8.2/examples/aodv && ./run -u Cmdenv -c Static --sim-time-limit=10s",
-            },
-            "required_projects": {"omnetpp": ["5.7.*"]},
-            "download_url": "https://github.com/aarizaq/inetmanet-3.x/archive/a206218213f96382217a8653ede21f15974c4e70.tar.gz",
-            "patch_commands": ["find . -type f -name 'run' -exec chmod +x {} \;"],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "setenv_commands": ["echo 'Hint: use the `./run` command in any example simulation folder.'"],
-            "clean_commands": ["make clean"],
-        },
-
-        {
-            # DONE
             "name": "inetmanet", "version": "4.0.0",
             "description": "Fork of INET 4.x, extending it with experimental features and protocols, mainly for mobile ad hoc networks, many of which are written by Alfonso Ariza",
             "metadata": {
@@ -491,6 +475,22 @@ def get_project_descriptions():
             "setenv_commands": [
                 ". setenv -f",
                 "echo 'Hint: use the `inet` command in any example simulation folder.'"],
+            "clean_commands": ["make clean"],
+        },
+
+        {
+            # DONE
+            "name": "inetmanet", "version": "3.8.2",
+            "description": "Fork of INET 3.x, containing additional adhoc routing protocols and other models written by the community",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/INETMANET-3.x.html",
+                "test_command": "cd inetmanet-3.8.2/examples/aodv && ./run -u Cmdenv -c Static --sim-time-limit=10s",
+            },
+            "required_projects": {"omnetpp": ["5.7.*"]},
+            "download_url": "https://github.com/aarizaq/inetmanet-3.x/archive/a206218213f96382217a8653ede21f15974c4e70.tar.gz",
+            "patch_commands": ["find . -type f -name 'run' -exec chmod +x {} \;"],
+            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "setenv_commands": ["echo 'Hint: use the `./run` command in any example simulation folder.'"],
             "clean_commands": ["make clean"],
         },
         

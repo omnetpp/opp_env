@@ -91,7 +91,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             ],
         "setenv_commands": [
             'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',
-            "INET_ROOT= source setenv -f" if inet_version.startswith("4.") or is_git_branch else "", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
+            "[ -f setenv ] && INET_ROOT= source setenv -f", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
         ],
         "build_commands": [
             # we do have z3 and avcodec (in ffmpeg), so the first time we run, turn on the project features that use them

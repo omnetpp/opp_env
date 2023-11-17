@@ -187,6 +187,10 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i.bak 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
         "sed -i.bak 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
         "sed -i.bak 's|^WITH_PARSIM=yes|WITH_PARSIM=no|' configure.user",
+        """sed -i.bak 's|#MPI_LIBS="-lmpi++ -lmpi"   #SGI|#MPI_LIBS="-lmpi++ -lmpi"   #SGI\\nMPI_LIBS="-ldisabled"|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
+        """sed -i.bak 's|#include "parsim/cmemcommbuffer.h"|#ifdef WITH_PARSIM\\n#include "parsim/cmemcommbuffer.h"\\n#endif|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
+        """sed -i.bak 's|cMemCommBuffer buffer;|#ifdef WITH_PARSIM\\ncMemCommBuffer buffer;|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
+        """sed -i.bak 's|delete copy;|delete copy;\\n#else\\nthrow cRuntimeError("Fingerprint is configured to contain MESSAGE_DATA (d),"\\n" but parallel simulation support is disabled (WITH_PARSIM=no)"\\n" which is required for serialization.");\\n#endif|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
         "sed -i.bak 's|^QT_VERSION=4|QT_VERSION=5|' configure.user" if version.startswith("5.0") else None, # 5.0.x too!
         "sed -i.bak 's|^WITH_TKENV=yes|WITH_TKENV=no|' configure.user" if version >= "5.0" and version < "6.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkenv is not supported
         f"sed -i.bak '/^PERL =/i CFLAGS += {extra_cflags}' Makefile.inc.in" if extra_cflags and version >= "4.0" else  # no Makefile.inc.in in 3.x yet

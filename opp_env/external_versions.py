@@ -942,7 +942,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SDNController.html",
             },
-            "required_projects": {"omnetpp": ["5.6.*"], "inet": ["4.2.5"]},
+            "required_projects": {"omnetpp": ["5.7.*", "5.6.*"], "inet": ["4.2.5"]},     # TODO: try with 5.7.*; try without omnetpp
             "patch_commands": [
                 "sed -i 's|INET_PROJ=../inet|#INET_PROJ=../inet|g' Makefile",
             ],
@@ -1050,12 +1050,17 @@ def get_project_descriptions():
             # DONE - no example simulation
             # TODO: metadata catalog url
             "name": "wifidirect_allinone", "version": "3.4",
-            "required_projects": {"omnetpp": ["5.1.*"]},
+            "nix_packages": ["python2"],
+            "required_projects": {"omnetpp": ["5.0.*"]},
             "download_url": "https://github.com/ashahin1/inet/archive/refs/tags/v3.4.0.tar.gz",
             "setenv_commands": [
             ],
             "patch_commands": [
-                "sed -i.bak 's|cResultFilterDescriptor|cResultFilterType|' src/inet/common/figures/DelegateSignalConfigurator.cc"
+                "sed -i.bak 's|cResultFilterDescriptor|cResultFilterType|' src/inet/common/figures/DelegateSignalConfigurator.cc",
+                "sed -i.bak 's| python$| python2|' inet_featuretool",
+                "sed -i.bak 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h",
+                "for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
+                "for f in $(grep -Rl 'INT64_PRINTF_FORMAT'); do sed -i.bak 's|INT64_PRINTF_FORMAT|\"l\"|' $f; done",
             ],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"],

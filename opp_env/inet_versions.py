@@ -84,6 +84,10 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             # fix IPv6Address.cc:185: non-constant-expression cannot be narrowed from type 'unsigned int' to 'int' in initializer list in inet-2.1.0
             "sed -i.bak 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
             "sed -i.bak 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc" if not is_modernized and inet_version < "2.2" else None,
+
+            "sed -i.bak 's|precompiled.h|precompiled_$(MODE).h|' src/makefrag" if inet_version.startswith("3.5") else None,
+            """echo '#include "precompiled.h"' > src/inet/common/precompiled_debug.h""" if inet_version.startswith("3.5") else None,
+            """echo '#include "precompiled.h"' > src/inet/common/precompiled_release.h""" if inet_version.startswith("3.5") else None,
             ],
         "setenv_commands": [
             'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',

@@ -446,9 +446,9 @@ def get_project_descriptions():
             "description": "Cell Communication Signaling Project (biological)",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/CellSignaling.html",
-                "test_commands": "cd cell-20140729/src && ./cell -u Cmdenv -n .. ../networks/demo.ini",
+                "test_commands": "cd cell-20140729/src && ./cell -u Cmdenv -c demo-emission -n .. ../networks/demo.ini",
             },
-            "required_projects": {"omnetpp": ["4.0.*"]},        # TODO try *
+            "required_projects": {"omnetpp": ["4.0.*"]},
             # "git_url": "https://github.com/dhuertas/cell-signaling.git",  # master branch
             # we're using a hash from master because there are no releases
             "download_url": "https://github.com/dhuertas/cell-signaling/archive/3434cc00f7ab7bfc33b4ff94e3a355df8e6947bb.tar.gz",
@@ -463,9 +463,9 @@ def get_project_descriptions():
             "description": "Fork of INET 3.x, containing additional adhoc routing protocols and other models written by the community",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INETMANET-3.x.html",
-                "test_command": "cd inetmanet-3.8.2/examples/aodv && ./run -u Cmdenv --sim-time-limit=10s"      # TODO: test this
+                "test_command": "cd inetmanet-3.8.2/examples/aodv && ./run -u Cmdenv -c Static --sim-time-limit=10s",
             },
-            "required_projects": {"omnetpp": ["5.7.x", "5.7.0"]},   # TODO try * or comment why not *
+            "required_projects": {"omnetpp": ["5.7.*"]},
             "download_url": "https://github.com/aarizaq/inetmanet-3.x/archive/a206218213f96382217a8653ede21f15974c4e70.tar.gz",
             "patch_commands": ["find . -type f -name 'run' -exec chmod +x {} \;"],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
@@ -479,10 +479,10 @@ def get_project_descriptions():
             "description": "Fork of INET 4.x, extending it with experimental features and protocols, mainly for mobile ad hoc networks, many of which are written by Alfonso Ariza",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INETMANET-4.x.html",
-                "test_command": "cd inetmanet-4.0.0/examples/aodv && inet -u Cmdenv --sim-time-limit=10s",
+                "test_command": "cd inetmanet-4.0.0/examples/aodv && inet -u Cmdenv -c Static --sim-time-limit=10s",
             },
             "nix_packages": ["python2"],
-            "required_projects": {"omnetpp": ["5.4.*"]},    # TODO try *
+            "required_projects": {"omnetpp": ["5.4.*"]},
             "download_url": "https://github.com/aarizaq/inetmanet-4.x/archive/refs/tags/v4.0.0.tar.gz",
             "patch_commands": [
                 "sed -i.bak 's| python$| python2|' bin/inet_featuretool",
@@ -566,7 +566,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/SIMCAN.html",
                 "test_command": "cd simcan-1.2/simulations/cliServExample && ../../src/simcan -n ../../src:.:$INET_ROOT/src -u Cmdenv",
             },
-            "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"]},     # TODO try *
+            "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"]},
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/simcan.tar.gz",
             "setenv_commands": [
                 "export INET_HOME=$INET_ROOT",
@@ -591,7 +591,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/SolarLEACH.html",
                 "test_command": "cd solarleach-1.01/leachDist && ./leachDist -u Cmdenv -L$OMNETPP_ROOT/src/cmdenv/libcmdenv -c Run1 -r 1 --sim-time-limit=10s",
             },
-            "required_projects": {"omnetpp": ["3.3.*"]},        # TODO try *
+            "required_projects": {"omnetpp": ["3.3.*"]},
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/SolarLEACH-1.01.tgz",
             "setenv_commands": ["echo 'Hint: in the `leachDist` folder, use the `./runall.sh` command to run the simulations. In the `leachFarBS` folder, use the `./leachFarBS` command'",],
             "patch_commands": [
@@ -651,10 +651,10 @@ def get_project_descriptions():
             "description": "Opportunistic Protocol Simulator. This version downloads its own copy of INET, and does not use one installed by opp_env.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OPS.html",
-                "test_command": "cd ops_allinone-20230331/simulations && ../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src -u Cmdenv --sim-time-limit=10s",
+                "test_command": "cd ops_allinone-20230331/simulations && ../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src -u Cmdenv -c Messenger-Epidemic-SWIM --sim-time-limit=10s",
             },
             "nix_packages": ["autoconf", "automake", "libtool"],
-            "required_projects": {"omnetpp": ["5.4.*"]},    # TODO try *
+            "required_projects": {"omnetpp": ["5.4.*"]},
             # "git_url": "https://github.com/ComNets-Bremen/OPS.git",
             "download_url": "https://github.com/ComNets-Bremen/OPS/archive/57ecc379631eec4bb640b022391f2cf808ff09f4.tar.gz",
             "patch_commands": [

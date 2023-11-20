@@ -548,27 +548,27 @@ class ProjectRegistry:
 
     def collect_project_descriptions(self):
         python_files = [
-            "omnetpp_versions",
-            "inet_versions",
-            "veins_versions",
-            "simulte_versions",
-            "simu5g_versions",
-            "external_versions"
+            "omnetpp",
+            "inet",
+            "veins",
+            "simulte",
+            "simu5g",
+            "external"
         ]
 
         json_files = [
-            "external_versions.json"
+            "external.json"
         ]
 
         all_project_descriptions = []
         for fname in python_files:
-            module = importlib.import_module("opp_env." + fname)
+            module = importlib.import_module("opp_env.database." + fname)
             raw_project_descriptions = module.get_project_descriptions()
             project_descriptions = [ProjectDescription(**e) for e in raw_project_descriptions]
             all_project_descriptions += project_descriptions
 
         for fname in json_files:
-            with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), fname)) as f:
+            with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "database", fname)) as f:
                 all_project_descriptions += [ProjectDescription(**e) for e in json.load(f)]
 
         # expand to wildcard versions such as "4.2.*" to list of matching versions

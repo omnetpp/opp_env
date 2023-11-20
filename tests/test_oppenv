@@ -69,7 +69,7 @@ for project_list in test_cases:
     test_name = "+".join(project_list)
     projects_string = " ".join(project_list)
 
-    options = ""
+    options = "-n"
     if mode:
         options += f" --mode {mode}"
     if "cannot be installed in the standard way" in subprocess.check_output(f"opp_env info {projects_string}", shell=True, text=True):

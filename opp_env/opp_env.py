@@ -386,7 +386,7 @@ def get_latest_version_from_pypi():
         return None
 
 def detect_nix():
-    minimum_nix_version = "2.4"  # Nix flakes were introduced in version 2.4
+    minimum_nix_version = "2.9"
     # check nix is installed
     try:
         _logger.debug(f"Running nix --version")

@@ -223,6 +223,8 @@ def create_arg_parser():
         elif name=="install":    subparser.add_argument("--install", dest='install', default=False, action='store_true', help="Download and build missing projects")
         elif name=="build":      subparser.add_argument("--build", dest='build', default=False, action='store_true', help="Build projects")
         elif name=="no-build":   subparser.add_argument("--no-build", dest='install_without_build', default=False, action='store_true', help="Do not build the projects after download")
+        elif name=="smoke-test": subparser.add_argument("--smoke-test", dest='run_smoke_test', default=False, action='store_true', help="Run a short test to ensure that the project executables are working")
+        elif name=="test":       subparser.add_argument("--test", dest='run_test', default=False, action='store_true', help="Run the project's test suite to ensure it is working correctly")
         elif name=="chdir":      subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="convenience", help=
             "Whether to change into the workspace directory (--chdir), or stay in the current working directory (--no-chdir). "
             "If neither is given, the default action to try doing what is likely the most convenient for the user, "
@@ -301,6 +303,8 @@ def create_arg_parser():
         "install",
         "no-build", # with --install
         "build",
+        "smoke-test",
+        "test",
         "mode",
         "quiet",
         "no-isolated",
@@ -426,7 +430,7 @@ class ProjectDescription:
                  download_url=None, git_url=None, git_branch=None, download_commands=[],
                  patch_commands=[], patch_url=None,
                  shell_hook_commands=[], setenv_commands=[],
-                 build_commands=[], clean_commands=[],
+                 build_commands=[], clean_commands=[], smoke_test_commands=[], test_commands=[],
                  potential_build_inputs=None, potential_build_outputs=None,
                  options=None, metadata=None):
         def remove_empty(list):
@@ -452,6 +456,8 @@ class ProjectDescription:
         self.setenv_commands = remove_empty(setenv_commands)
         self.build_commands = remove_empty(build_commands)
         self.clean_commands = remove_empty(clean_commands)
+        self.smoke_test_commands = remove_empty(smoke_test_commands)
+        self.test_commands = remove_empty(test_commands)
         self.potential_build_inputs = potential_build_inputs or [ "src/*", "*.cc", "*.cxx", "*.c", "*.h", "*.hpp", "*.hh", "*.msg", "Makefile", "*/Makefile", "makefrag", "*/makefrag" ]
         self.potential_build_outputs = potential_build_outputs or [ "out/*", "*.o", "*.a", "*.a.*", "*.so", "*.so.*", "*.dylib", "*.dylib.*", "*.dll", "*.exe", ":noext" ]
         self.options = options or {}
@@ -1128,8 +1134,19 @@ class Workspace:
             make_build_function("build_" + p.name, self.get_project_root_directory(p), join_commands(p.build_commands))
             for p in effective_project_descriptions
         ]
+
         project_clean_function_commands = [
             make_build_function("clean_" + p.name, self.get_project_root_directory(p), join_commands(p.clean_commands))
+            for p in effective_project_descriptions
+        ]
+
+        project_smoke_test_function_commands = [
+            make_build_function("smoke_test_" + p.name, self.get_project_root_directory(p), join_commands(p.smoke_test_commands if p.smoke_test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No smoke test commands were specified'"]))
+            for p in effective_project_descriptions
+        ]
+
+        project_test_function_commands = [
+            make_build_function("test_" + p.name, self.get_project_root_directory(p), join_commands(p.test_commands if p.test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No test commands were specified'"]))
             for p in effective_project_descriptions
         ]
 
@@ -1141,9 +1158,13 @@ class Workspace:
         function_definitions = [
             *project_build_function_commands,
             *project_clean_function_commands,
+            *project_smoke_test_function_commands,
+            *project_test_function_commands,
             *project_check_function_commands,
             make_function("build_all", [f"build_{p.name} || return 1" for p in reversed(effective_project_descriptions)]),
             make_function("clean_all", [f"clean_{p.name} || return 1" for p in effective_project_descriptions]),
+            make_function("smoke_test_all", [f"smoke_test_{p.name}" for p in reversed(effective_project_descriptions)]),
+            make_function("test_all", [f"test_{p.name}" for p in reversed(effective_project_descriptions)]),
             make_function("check_all", [f"check_{p.name}" for p in effective_project_descriptions]),
         ]
         return function_definitions
@@ -1548,7 +1569,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
-    hint_command = f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean or check a project, use the `build_*`, `clean_*` and `check_*` commands.'"
+    hint_command = f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean, test or check a project, use the `build_*`, `clean_*`, `test_*`, `smoke_test_*` and `check_*` commands.'"
     commands = ["build_all", hint_command] if build or (install and not install_without_build) else [hint_command]
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
@@ -1567,7 +1588,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     workspace.nix_develop(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, pause_after_warnings=True, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1595,10 +1616,16 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
+    if run_test:
+        command = "test_all"
+
+    if run_smoke_test:
+        command = "smoke_test_all"
+
     commands = ["build_all", command] if build or (install and not install_without_build) else [command]
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
-    _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")
+    _logger.info(f"Running {'test ' if run_test else 'smoke_test ' if run_smoke_test else ''}command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")
     workspace.nix_develop(effective_project_descriptions, workspace_directory, commands=commands, **dict(kwargs, suppress_stdout=False))
 
 def upgrade_subcommand_main(dry_run=False, from_pypi=False, check=False, **kwargs):

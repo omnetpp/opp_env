@@ -259,6 +259,16 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             # "./configure && make" on steroids: magic "[" command ensures that ./configure is run whenever config.status is missing or is older than configure.user
             f"[ config.status -nt configure.user ] || ./configure && make -j{num_build_cores} MODE=$BUILD_MODE"
         ],
+        "smoke_test_commands": [
+            "SMOKE_TEST_COMMAND=nedtool" if base_version.startswith("3.") else
+            """SMOKE_TEST_COMMAND=opp_run""" if base_version < "4.2" else
+            """if [ "$mode" = "release" ]; then SMOKE_TEST_COMMAND="opp_run_release"; else SMOKE_TEST_COMMAND="opp_run"; fi""",
+            "$SMOKE_TEST_COMMAND -h >/dev/null"
+        ],
+        "test_commands": [
+            None if base_version < "6.0" else
+            "cd test/core; MODE=$BUILD_MODE ./runtest"
+        ],
         "clean_commands": [
             "make clean MODE=$BUILD_MODE"
         ],

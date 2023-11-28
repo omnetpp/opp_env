@@ -151,6 +151,10 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i.bak '/%pure_parser/a %parse-param {void *statePtr}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
         "sed -i.bak '/void yyerror (const char \\*s);/a void yyerror (void *statePtr, const char *s) {yyerror(s);}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
 
+        # 5.x versions assumed python2 but now we have python3 only and a little patching is needed 
+        # for the opp_featuretool to work with python3
+        "sed -i.bak 's/raw_input()/input()/' src/utils/opp_featuretool" if version.startswith("5.") else None,
+
         # to avoid "error: invalid argument '-std=c++03' not allowed with 'C'" with tkImgPNG.c
         "sed -i.bak 's/\\$(CC) -c \\$(COPTS)/\\$(CC) -c /' src/tkenv/Makefile" if not is_modernized and version == "4.0" else None,
 

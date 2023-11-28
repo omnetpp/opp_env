@@ -219,7 +219,7 @@ def create_arg_parser():
             "Run in a Nix-based isolated environment from the host operating system. The default is to run non-isolated.")
         elif name=="no-isolated": subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help=
             "Run in a Nix-based isolated environment from the host operating system. The default is to run in an isolated environment.")
-        elif name=="mode":       subparser.add_argument("--mode", metavar='MODE,...', default="debug,release", help="Build mode(s), e.g. 'debug' or 'release', separated by commas.")
+        elif name=="mode":       subparser.add_argument("--mode", metavar='MODE,...', default="release,debug", help="Build mode(s), e.g. 'release' or 'debug', separated by commas.")
         elif name=="install":    subparser.add_argument("--install", dest='install', default=False, action='store_true', help="Download and build missing projects")
         elif name=="build":      subparser.add_argument("--build", dest='build', default=False, action='store_true', help="Build projects")
         elif name=="no-build":   subparser.add_argument("--no-build", dest='install_without_build', default=False, action='store_true', help="Do not build the projects after download")
@@ -1071,7 +1071,7 @@ class Workspace:
                     # if there are several, recursively call this this function for each.
                     local modes="$*"
                     if [ -z "$modes" ]; then modes="$BUILD_MODE"; fi
-                    if [ -z "$modes" ]; then modes="debug release"; fi
+                    if [ -z "$modes" ]; then modes="release debug"; fi
                     local mode_count=$(echo "$modes" | wc -w)
                     if [ "$mode_count" -gt 1 ]; then
                         echo -e "{SHELL_GREEN}Invoking {function_name} with modes: $modes{SHELL_NOCOLOR}";

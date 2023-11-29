@@ -1509,7 +1509,7 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
-        effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
+        effective_project_descriptions = sort_by_project_dependencies(project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options))
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
     check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings)
@@ -1551,7 +1551,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
-        effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
+        effective_project_descriptions = sort_by_project_dependencies(project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options))
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
     if not install:
@@ -1598,7 +1598,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
-        effective_project_descriptions = project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options)
+        effective_project_descriptions = sort_by_project_dependencies(project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options))
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
     if not install:

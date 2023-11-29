@@ -105,6 +105,12 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"
         ],
         "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
+        "smoke_test_commands": [
+            "cd examples/adhoc/ieee80211",
+            """if [ "$mode" = "debug" ]; then DBG_SUFFIX="_dbg"; fi""",
+            "./run -c Ping1 -u Cmdenv --sim-time-limit=60s >/dev/null" if inet_version < "4.0" else
+            "inet$DBG_SUFFIX -c Ping1 -u Cmdenv --sim-time-limit=60s >/dev/null"
+        ],
         "options": {
             "from-release": {
                 "option_description": "Install from release tarball on GitHub",

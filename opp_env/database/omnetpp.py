@@ -264,10 +264,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             f"[ config.status -nt configure.user ] || ./configure && make -j{num_build_cores} MODE=$BUILD_MODE"
         ],
         "smoke_test_commands": [
-            "SMOKE_TEST_COMMAND=nedtool" if base_version.startswith("3.") else
-            """SMOKE_TEST_COMMAND=opp_run""" if base_version < "4.2" else
-            """if [ "$mode" = "release" ]; then SMOKE_TEST_COMMAND="opp_run_release"; else SMOKE_TEST_COMMAND="opp_run"; fi""",
-            "$SMOKE_TEST_COMMAND -h >/dev/null"
+            """if [ "$BUILD_MODE" = "debug" ]; then DEBUG_SUFFIX="_dbg"; fi """ if base_version >= "5.2" else None,
+            "nedtool -h >/dev/null" if base_version.startswith("3.") else
+            "cd samples/dyna; ./dyna$DEBUG_SUFFIX -u Cmdenv >/dev/null" 
         ],
         "test_commands": [
             None if base_version < "6.0" else

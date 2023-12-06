@@ -6,8 +6,11 @@ def get_project_descriptions():
             "description": "Fieldbus Communication (CAN and FlexRay)",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/FiCo4OMNeT.html",
-                "test_command": "cd fico4omnet-20210113/examples/flexray/dynamic && run_fico4omnet -u Cmdenv --sim-time-limit=1s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd examples/flexray/dynamic && run_fico4omnet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.5.*", "5.6.*", "5.7.*"]},
             # "git_url": "https://github.com/CoRE-RG/FiCo4OMNeT.git",
             "download_url": "https://github.com/CoRE-RG/FiCo4OMNeT/archive/refs/tags/nightly/2021-01-13_00-00-25.tar.gz",       # there are no releases available, so we download the latest nightly
@@ -16,7 +19,9 @@ def get_project_descriptions():
                 "rm src/run_fico4omnet.cmd",
                 "mv src/run_fico4omnet bin",
                 "sed -i 's|DIR=`dirname $0`|DIR=`dirname \\$0`/../src|' bin/run_fico4omnet",
-                "sed -i 's|MAKEMAKE_OPTIONS .* -I.|& -o FiCo4OMNeT|' Makefile"
+                "sed -i 's|MAKEMAKE_OPTIONS .* -I.|& -o FiCo4OMNeT|' Makefile",
+                "cp bin/run_fico4omnet bin/run_fico4omnet_dbg",
+                "sed -i 's|opp_run|opp_run_dbg|' bin/run_fico4omnet_dbg",
             ],
             "setenv_commands": [
                 "export NEDPATH=$NEDPATH:$FICO4OMNET_ROOT/src:$FICO4OMNET_ROOT/examples:$FICO4OMNET_ROOT/examples_andl:$FICO4OMNET_ROOT/simulations",
@@ -29,12 +34,17 @@ def get_project_descriptions():
 
         {
             # DONE - ok
-            "name": "ansa", "version": "inet3.4.0",
+            "name": "ansa", "version": "3.4.0",
             "description": "Automated Network Simulation and Analysis",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ANSA.html",
-                "test_command": "cd ansa-inet3.4.0/examples/ansa/eigrp/basic && ls -a && run_inet -c EIGRP_unequal_cost_lb -u Cmdenv",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; ANSA_LIB=$(echo $ANSA_ROOT/out/*-release/src/*INET*); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; ANSA_LIB=$(echo $ANSA_ROOT/out/*-debug/src/*INET*); fi""",
+                "cd examples/ansa/eigrp/basic",
+                "opp_run$BUILD_MODE_SUFFIX -l $ANSA_LIB -n $ANSA_ROOT/tutorials:$ANSA_ROOT/examples:$ANSA_ROOT/src -c EIGRP_unequal_cost_lb -u Cmdenv > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.1.*"]},
             "git_url": "https://github.com/kvetak/ANSA.git",
             "git_branch": "ansainet-3.4.0",
@@ -47,7 +57,7 @@ def get_project_descriptions():
                 "rm src/run_inet.cmd",
                 "mkdir bin",
                 "mv src/run_inet bin",
-                "sed -i 's|DIR=`dirname $0`|DIR=`dirname \\$0`/../src|' bin/run_inet"
+                "sed -i 's|DIR=`dirname $0`|DIR=`dirname \\$0`/../src|' bin/run_inet",
             ],
             "setenv_commands": [
                 "echo 'Hint: use the `run_inet` command to run the simulations in the examples/ansa folder.'",
@@ -63,13 +73,18 @@ def get_project_descriptions():
             "description": "Framework for LoRa",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/FLoRA.html",
-                "test_command": "cd flora-1.1.0/simulations && ./run -u Cmdenv --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["4.4.0"]},
             "download_url": "https://github.com/florasim/flora/releases/download/v1.1.0/flora-1.1.0.tgz",
             "patch_commands": [
                 "sed -i -E 's|INET_DIR = [^ ]+|INET_DIR = $(INET_ROOT)|' Makefile",
-                "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_DIR)|' Makefile"
+                "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_DIR)|' Makefile",
+                "cp src/run_flora src/run_flora_dbg",
+                "sed -i 's|opp_run|opp_run_dbg|' src/run_flora_dbg",
             ],
             "setenv_commands": [
                 "echo 'Hint: use the `./run` command to run the example in the simulations folder.'",
@@ -84,14 +99,18 @@ def get_project_descriptions():
             "description": "Real-Time Ethernet protocols for INET",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Core4INET.html",
-                "test_commands": "cd core4inet-221109/examples/IEEE8021Q/small_network && ./run -u Cmdenv --sim-time-limit=1s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.5.*"], "inet": ["3.6.6"]},
             "download_url": "https://github.com/CoRE-RG/CoRE4INET/archive/refs/tags/nightly/2022-11-09_00-01-11.tar.gz",
             "patch_commands": [
                 "sed -i -E 's|INET_PROJ=[^ ]+|INET_PROJ=$(INET_ROOT)|' Makefile",
                 "sed -i -E 's|-L.*/src|-L$$\\\\(INET_PROJ\\\\)/src|' Makefile",
-                "sed -i -E 's|-O out |-O out -o CoRE4INET |' Makefile"
+                "sed -i -E 's|-O out |-O out -o CoRE4INET |' Makefile",
+                "sed -i 's|-lINET$(DBG_SUFFIX)|-lINET$$\\\(D\\\)|' Makefile"
             ],
             "setenv_commands": [
                 "echo 'Hint: use the `./rundemo` command in the examples folder or the `./run` command in any of the example subfolders.'",
@@ -107,15 +126,18 @@ def get_project_descriptions():
             "description": "Simulation Processing Tool-Chain",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SimProcTC.html",
-                "test_command": "cd simproctc-2.0.2/example-simulation && ./example-simulation -u Cmdenv --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd example-simulation && ./example-simulation$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["6.0.*"]},
             "download_url": "https://github.com/dreibh/simproctc/archive/refs/tags/simproctc-2.0.2.tar.gz",
             "setenv_commands": [
                 "export OPPMAIN_LIB=$OMNETPP_ROOT/lib",
                 "echo 'Hint: use the `./example_simulation` command in the example-simulation folder.'",
                 ],
-            "build_commands": ["cd example-simulation && opp_makemake -f && make"],
+            "build_commands": ["cd example-simulation && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"]
         },
 
@@ -125,8 +147,11 @@ def get_project_descriptions():
             "description": "Network on Chip Simulation Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/HNOCS.html",
-                "test_command": "cd hnocs-20221212/examples/async/4x4 && ./run -u Cmdenv --sim-time-limit=0.01ms",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd examples/async/4x4 && ./run --$BUILD_MODE -u Cmdenv --sim-time-limit=0.01ms > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.5.*"]},
             # "git_url": "https://github.com/yanivbi/HNOCS.git",
             "download_url": "https://github.com/yanivbi/HNOCS/archive/465754c28977a397e8ea4aef9296ca9987eb4f51.tar.gz",     # there are no releases, so we use a commit from the master branch
@@ -139,37 +164,15 @@ def get_project_descriptions():
 
         {
             # DONE - ok
-            "name": "gptp", "version": "20200311",      # last commit of master branch as of time of writing
-            "description": "IEEE 802.1AS gPTP for Clock Synchronization",
-            "metadata": {
-                "catalog_url": "https://omnetpp.org/download-items/gPTP.html",
-                "test_command": "cd gptp-20200311/IEEE8021AS/simulations && ./run -c Network_with_cross_traffic -u Cmdenv --sim-time-limit=10s",
-            },
-            "required_projects": {"omnetpp": ["5.2.*"], "inet": ["3.6.3"]},
-            # "git_url": "https://gitlab.amd.e-technik.uni-rostock.de/peter.danielis/gptp-implementation.git",
-            # there are no releases, so we use a commit from the master branch
-            "download_url": "https://gitlab.amd.e-technik.uni-rostock.de/peter.danielis/gptp-implementation/-/archive/c498af56431d45b71ab5732cb352d03774344b6c/gptp-implementation-c498af56431d45b71ab5732cb352d03774344b6c.tar.gz",
-            "patch_commands": [
-                "sed -i -E 's|ieee8021as|IEEE8021AS|' IEEE8021AS/simulations/run",
-                "sed -i -E 's|-n.*|-n $INET_ROOT/src:.:../src $*|' IEEE8021AS/simulations/run",
-                "chmod +x IEEE8021AS/simulations/run",
-            ],
-            "setenv_commands": [
-                "export INET_PROJ=$INET_ROOT",
-                "echo 'Hint: use the `./run` command in the simulations folder.'",
-            ],
-            "build_commands": ["cd IEEE8021AS/src && opp_makemake -f --deep -KINET_PROJ=$INET_PROJ -DINET_IMPORT -I$INET_PROJ/src -L$INET_PROJ/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
-        },
-
-        {
-            # DONE - ok
             "name": "nesting", "version": "0.9.1",
             "description": "Network Simulator for Time-Sensitive Networking (TSN)",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/NeSTiNg.html",
-                "test_command": "cd nesting-0.9.1/simulations/examples && ../runsim 01_example_strict_priority.ini --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd simulations/examples && MODE=$BUILD_MODE ../runsim 01_example_strict_priority.ini --sim-time-limit=0.1s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.4.*"], "inet": ["4.1.0"]},
             # "git_url": "https://gitlab.com/ipvs/nesting.git",
             "download_url": "https://gitlab.com/ipvs/nesting/-/archive/v0.9.1/nesting-v0.9.1.tar.gz",
@@ -183,6 +186,8 @@ def get_project_descriptions():
                 "sed -i -E 's|INET=.*|INET=$INET_ROOT|' simulations/runsim",
                 "sed -i 's|./nesting$D|$NESTING/simulations/nesting$D|' simulations/runsim",
                 "sed -i 's|-n .:|-n $NESTING/simulations:|' simulations/runsim",
+                "sed -i 's|$1|$@|' simulations/runsim simulations/runsim-qt",
+                # TODO: merge
             ],
             "setenv_commands": ["export INET_PROJ=$INET_ROOT",
                                 "export NESTING=$NESTING_ROOT",
@@ -197,8 +202,12 @@ def get_project_descriptions():
             "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Castalia.html",
-                "test_command": "cd castalia-3.3/Castalia/Simulations/BANtest && Castalia -c TMAC",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/Castalia/out/*-release/CastaliaBin); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/Castalia/out/*-debug/CastaliaBin); fi""",
+                "cd Castalia/Simulations/BANtest && $CASTALIA_BIN -f omnetpp.ini -c TMAC > /dev/null",
+            ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["4.1.*"]},
             # "git_url": "https://github.com/boulis/Castalia.git",  # for master branch version
@@ -224,8 +233,12 @@ def get_project_descriptions():
             "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Castalia.html",
-                "test_command": "cd castalia-3.2/Castalia/Simulations/BANtest && Castalia -c TMAC",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/Castalia/out/*-release/CastaliaBin); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/Castalia/out/*-debug/CastaliaBin); fi""",
+                "cd Castalia/Simulations/BANtest && $CASTALIA_BIN -f omnetpp.ini -c TMAC > /dev/null",
+            ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["4.1.0"]},
             "download_url": "https://github.com/boulis/Castalia/archive/refs/tags/3.2.tar.gz",
@@ -248,8 +261,13 @@ def get_project_descriptions():
             "description": "Framework for modeling and simulation of wireless and mobile networks (deprecated in favor of INET)",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/MiXiM.html",
-                "test_command": "cd mixim-2.3/examples/bmac && ./run -u Cmdenv",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX='_release'; MIXIM_LIB=$(echo $MIXIM_ROOT/out/*-release/src/*mixim*); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then MIXIM_LIB=$(echo $MIXIM_ROOT/out/*-debug/src/*mixim*); fi""",
+                "cd examples/bmac",
+                "opp_run$BUILD_MODE_SUFFIX -l $MIXIM_LIB -n ..:../../src/base:../../src/modules:../../src/inet_stub > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["4.6.*", "4.5.*", "4.4.*", "4.3.*", "4.2.*"], "inet": ["2.1.0"]},
             "download_url": "https://github.com/omnetpp-models/mixim/archive/refs/tags/2.3.tar.gz",
             "patch_commands": ["sed -i -E 's|INET_PROJECT_DIR=.*|INET_PROJECT_DIR=$(INET_ROOT)|' Makefile"],
@@ -267,8 +285,11 @@ def get_project_descriptions():
             "name": "inetgpl", "version": "1.0",
             "description": "GPL licensed models for INET",
             "metadata": {
-                "test_command": "cd inetgpl-1.0/examples/hls && inetgpl -c Experiment1 -u Cmdenv --sim-time-limit=1s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s > /dev/null",
+            ],
             "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.0.*"]},
             "download_commands": ["git clone https://github.com/inet-framework/inet-gpl.git inetgpl-1.0"],
             "setenv_commands": ["source setenv",
@@ -283,8 +304,11 @@ def get_project_descriptions():
             "name": "rspsim", "version": "6.1.2",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RSPSIM.html",
-                "test_command": "cd rspsim-6.1.2/model && ./model test1.ini -u Cmdenv",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd IEEE8021AS/model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["6.0.*", "5.7.*"]},
             "download_url": "https://github.com/dreibh/rspsim/archive/refs/tags/rspsim-6.1.2.tar.gz",
             "patch_commands": [
@@ -297,13 +321,16 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
+            # DONE - ok; when testing without '-u Cmdenv' -> segfault (but works in Cmdenv)
             "name": "rinasim", "version": "20200903",       # last commit of master branch as of time of writing
             "description": "Recursive InterNetwork Architecture Simulator",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RINASim.html",
-                "test_command": "cd rinasim-20200903 && ./simulate.sh examples/Demos/UseCase1/ -u Cmdenv -G -c Ping",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd examples/Demos/UseCase1 && opp_run$BUILD_MODE_SUFFIX omnetpp.ini -u Cmdenv -c Ping -n $RINASIM_ROOT -l $RINASIM_ROOT/policies/rinasim > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.2.*"]},
             # "git_url": "https://github.com/kvetak/RINA.git",
             "download_url": "https://github.com/kvetak/RINA/archive/eb6baaf1034319245fa9e4b846a61094445c8d8a.tar.gz",
@@ -318,13 +345,15 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - builds and starts, simulations run, but segfault after some time (tested with inet 2.6, 2.4)
+            # DONE - builds and starts, simulations run, but segfault after some time (tested with inet 2.6, 2.4); only builds release (so only tested in release)
             "name": "ieee802154standalone", "version": "20180310",      # last commit of master branch as of time of writing
             "description": "IEEE 802.15.4-2006 simulation model for OMNeT++ / INET",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/IEEE802154INET-Standalone.html",
-                "test_command": "cd ieee802154standalone-20180310/simulations && ./run -c StartWPAN-1Node_Starting_WPAN -u Cmdenv",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then cd simulations && ../src/ieee802154inet_standalone -n ..:../src:$INET_ROOT/src -c StartWPAN-1Node_Starting_WPAN -u Cmdenv > /dev/null; fi""",
+            ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"]},
             # "git_url": "https://github.com/michaelkirsche/IEEE802154INET-Standalone.git",     # master branch
             "download_url": "https://github.com/michaelkirsche/IEEE802154INET-Standalone/archive/28add1dd6a208f9f410f7c5c34631550edd2f371.tar.gz",
@@ -340,46 +369,6 @@ def get_project_descriptions():
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"]
         },
-        
-        {
-            # DONE - compiles and runs, but needs weather API access to test
-            "name": "os3", "version": "1.0",
-            "description": "Open Source Satellite Simulator",
-            "metadata": {
-                "catalog_url": "https://omnetpp.org/download-items/OS3.html",
-            },
-            "nix_packages": ["curl", "tcl"],
-            "required_projects": {"omnetpp": ["4.2.*"], "inet": ["2.2.0"]},
-            "download_url": "https://github.com/inet-framework/os3/archive/refs/tags/v1.0.tar.gz",
-            "patch_commands": [
-                "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
-                "sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_cni-os3",
-                "sed -i 's|static const double|constexpr static const double|' src/*/*.h",
-                "sed -i 's|../src/cni_os3|../src/run_cni-os3|' simulations/run",
-            ],
-            "setenv_commands": ["export INET_PROJ=$INET_ROOT",
-                                "export TCL_LIBRARY=$TCLLIBPATH",
-                                "echo 'Hint: use the `./run` command in the simulations folder. For example: `./run Validation/omnetpp.ini`'"],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
-        },
-
-        {
-            # DONE - simulations start but segfault after some time
-            "name": "oversim", "version": "20190424",       # last commit of master branch as of time of writing
-            "description": "Overlay and Peer-to-Peer Network Simulation Framework",
-            "metadata": {
-                "catalog_url": "https://omnetpp.org/download-items/OverSim.html",
-                "test_command": "cd oversim-20190424/simulations && ../src/OverSim omnetpp.ini -c Vast -u Cmdenv --sim-time-limit=10s"
-            },
-            "required_projects": {"inet": ["3.6.*"], "omnetpp": ["5.4.*"]},
-            "download_url": "https://github.com/inet-framework/oversim/archive/refs/tags/v20190424.tar.gz",
-            "patch_commands": ["sed -i -E 's|INETDIR = .*|INETDIR = $(INET_ROOT)|' Makefile",
-                               "sed -i -E \"s|ned-path = .*|ned-path = $INET_ROOT/src;../src|\" simulations/default.ini",],
-            "setenv_commands": ["echo 'Hint: use the `../src/OverSim omnetpp.ini` command in the simulations folder.'"],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
-        },
 
         {
             # DONE
@@ -387,8 +376,13 @@ def get_project_descriptions():
             "description": "Data Center Traffic Generator Library",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/DCTrafficGen.html",
-                "test_command": "cd dctrafficgen-20181016/dctg_example/simulations && ../src/dctg_example -f omnetpp.ini -n ../../src:../src -u Cmdenv -c FrontEnd --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then DCTRAFFICGEN_BIN=$(echo $DCTRAFFICGEN_ROOT/dctg_example/out/*-release/src/dctg_example); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then DCTRAFFICGEN_BIN=$(echo $DCTRAFFICGEN_ROOT/dctg_example/out/*-debug/src/dctg_example); fi""",
+                "cd dctg_example/simulations",
+                "$DCTRAFFICGEN_BIN -f omnetpp.ini -n ../../src:../src -u Cmdenv -c FrontEnd --sim-time-limit=10s > /dev/null",
+            ],
             "nix_packages": ["libxml2"],
             "required_projects": {"omnetpp": ["4.6.*"]},
             # "git_url": "https://github.com/Mellanox/DCTrafficGen.git",    # master branch
@@ -407,8 +401,11 @@ def get_project_descriptions():
             "description": "Avionics Full-Duplex Switched Ethernet model for OMNeT++",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Afdx.html",
-                "test_command": "cd afdx-20220904/afdx/simulations && ./run AutoNetwork.ini -u Cmdenv --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd afdx/simulations && ../src/afdx$BUILD_MODE_SUFFIX -n .:../src:../../queueinglib AutoNetwork.ini -u Cmdenv --sim-time-limit=1s > /dev/null"
+            ],
             "required_projects": {"omnetpp": ["6.0.*"]},
             # "git_url": "https://github.com/badapplexx/AFDX.git",      # master branch
             "download_url": "https://github.com/badapplexx/AFDX/archive/f6ddd70438e1c9ee885a4adef8d2503a5108ade4.tar.gz",
@@ -427,8 +424,11 @@ def get_project_descriptions():
             "description": "Quantum Internet Simulation Package",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/QuISP.html",
-                "test_command": "cd quisp-20230807/quisp && ./quisp simulations/two_nodes.ini -c two_node_MIM -u Cmdenv --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd quisp && ./quisp$BUILD_MODE_SUFFIX simulations/two_nodes.ini -c two_node_MIM -u Cmdenv --sim-time-limit=10s > /dev/null"
+            ],
             "required_projects": {"omnetpp": ["6.0.0"]},
             "git_url": "https://github.com/sfc-aqua/quisp.git",
             "patch_commands": [
@@ -446,8 +446,13 @@ def get_project_descriptions():
             "description": "Cell Communication Signaling Project (biological)",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/CellSignaling.html",
-                "test_commands": "cd cell-20140729/src && ./cell -u Cmdenv -c demo-emission -n .. ../networks/demo.ini",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; CELL_BIN=$(echo $CELL_ROOT/src/out/*-release/cell); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; CELL_BIN=$(echo $CELL_ROOT/src/out/*-debug/cell); fi""",
+                "cd src",
+                "$CELL_BIN -u Cmdenv -c demo-emission -n .. ../networks/demo.ini > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["4.0.*"]},
             # "git_url": "https://github.com/dhuertas/cell-signaling.git",  # master branch
             # we're using a hash from master because there are no releases
@@ -459,12 +464,15 @@ def get_project_descriptions():
 
         {
             # DONE
-            "name": "inetmanet", "version": "4.0.0",
+            "name": "inetmanet4", "version": "4.0.0",
             "description": "Fork of INET 4.x, extending it with experimental features and protocols, mainly for mobile ad hoc networks, many of which are written by Alfonso Ariza",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INETMANET-4.x.html",
-                "test_command": "cd inetmanet-4.0.0/examples/aodv && inet -u Cmdenv -c Static --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd examples/aodv && inet$BUILD_MODE_SUFFIX -u Cmdenv -c Static --sim-time-limit=10s > /dev/null",
+            ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.4.*"]},
             "download_url": "https://github.com/aarizaq/inetmanet-4.x/archive/refs/tags/v4.0.0.tar.gz",
@@ -480,31 +488,42 @@ def get_project_descriptions():
 
         {
             # DONE
-            "name": "inetmanet", "version": "3.8.2",
+            "name": "inetmanet3", "version": "3.8.2",
             "description": "Fork of INET 3.x, containing additional adhoc routing protocols and other models written by the community",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INETMANET-3.x.html",
-                "test_command": "cd inetmanet-3.8.2/examples/aodv && ./run -u Cmdenv -c Static --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd examples/aodv && ../../src/run_inet$BUILD_MODE_SUFFIX -u Cmdenv -c Static --sim-time-limit=10s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.7.*"]},
             "download_url": "https://github.com/aarizaq/inetmanet-3.x/archive/a206218213f96382217a8653ede21f15974c4e70.tar.gz",
-            "patch_commands": ["find . -type f -name 'run' -exec chmod +x {} \;"],
+            "patch_commands": [
+                "find . -type f -name 'run' -exec chmod +x {} \;",
+                # "sed -i 's|DIR=`dirname $0`|DIR=`dirname \\$0`/../src|' bin/run_inet",
+                "cp src/run_inet src/run_inet_dbg",
+                "sed -i 's|opp_run|opp_run_dbg|' src/run_inet_dbg",
+                ],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "setenv_commands": ["echo 'Hint: use the `./run` command in any example simulation folder.'"],
             "clean_commands": ["make clean"],
         },
         
         {
-            # DONE - only builds with just 'make'; TwoSubnets example works, but segfault when running some other simulations
+            # DONE - TwoSubnets example works, but segfault when running some other simulations; only tested in release
+            # TODO this only builds debug (twice apparently)
             "name": "oppbsd", "version": "4.0",
             "description": "OppBSD integrates essential parts of the real FreeBSD networking stack into OMNeT++ as a simulation model",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OppBSD-4.0.html",
-                "test_command": "cd oppbsd-4.0/examples/TwoSubnets && ./out/gcc-debug/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini",
             },
-            "required_projects": {"omnetpp": ["4.2.*"]},
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then cd examples/TwoSubnets && ./out/gcc-release/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini > /dev/null; fi""",
+            ],
+            "required_projects": {"omnetpp": ["4.2.0"]},
             "download_url": "https://svn.tm.kit.edu/trac/OppBSD/downloads/2",
-            "build_commands": ["make"],
+            "build_commands": ["make MODE=$BUILD_MODE"],
             "setenv_commands": ["echo 'Hint: run example simulations from their folder. For example, in examples/TwoSubnets folder: `./out/gcc-debug/TwoSubnets omnetpp.ini`'"],
             "clean_commands": ["make clean"],
         },
@@ -515,8 +534,13 @@ def get_project_descriptions():
             "description": "Realistic Simulation Environments for OMNeT++",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ReaSE.html",
-                "test_command": "cd rease-20130819/Topologies/topo_router && ../../ReaSE/src/rease -n .:../../ReaSE/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                "cd Topologies/topo_router",
+                """if [ "$BUILD_MODE" = "release" ]; then REASE_BIN=$(echo $REASE_ROOT/ReaSE/out/*-release/src/rease); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then REASE_BIN=$(echo $REASE_ROOT/ReaSE/out/*-debug/src/rease); fi""",
+                "$REASE_BIN -n .:../../ReaSE/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
             "nix_packages": ["libpcap"],
             "required_projects": {"omnetpp": ["4.1.0"], "inet": ["20100323"]},
             # "git_url": "https://github.com/ToGaKIT/ReaSE.git",    # master branch
@@ -539,8 +563,12 @@ def get_project_descriptions():
             "description": "Fork of INET developed for hybrid networking research, providing new models in both optical and wireless networking areas and their hybrid.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INET-HNRL.html",
-                "test_command": "cd inet_hnrl-20170217/examples/hybridpon/arptest && ./run -u Cmdenv",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; INET_HNRL_LIB=$(echo $INET_HNRL_ROOT/out/*-release/src/*inet*); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; INET_HNRL_LIB=$(echo $INET_HNRL_ROOT/out/*-debug/src/*inet*); fi""",
+                "opp_run$BUILD_MODE_SUFFIX -l $INET_HNRL_LIB -n src:examples:examples/hybridpon/arptest -u Cmdenv -c ARPTest examples/hybridpon/arptest/omnetpp.ini > /dev/null"
+            ],
             "nix_packages": ["sqlite"],
             "required_projects": {"omnetpp": ["4.2.0"]},
             # "git_url": "https://github.com/kyeongsoo/inet-hnrl.git",
@@ -553,6 +581,7 @@ def get_project_descriptions():
                 "sed -i 's|addr.sin_len|// addr.sin_len|' src/linklayer/ext/*.cc",  # ugly hack? this is needed on apple
                 "sed -i 's|machine/endian|endian|' src/util/headerserializers/headers/defs.h",
                 "sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/headers/sctp.h",
+                "sed -i 's|$(OPP_LIBS)|-loppcommon$$\\\(D\\\)|' Makefile",
             ],
             "build_commands": ["make makefiles && make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-std=c++14 -fpermissive -fPIC'"],
             "clean_commands": ["make clean"],
@@ -564,8 +593,13 @@ def get_project_descriptions():
             "description": "A simulation platform for modelling and simulating distributes architectures and applications.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SIMCAN.html",
-                "test_command": "cd simcan-1.2/simulations/cliServExample && ../../src/simcan -n ../../src:.:$INET_ROOT/src -u Cmdenv",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; SIMCAN_BIN=$(echo $SIMCAN_ROOT/out/clang-release/src/simcan); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; SIMCAN_BIN=$(echo $SIMCAN_ROOT/out/clang-debug/src/simcan); fi""",
+                "cd simulations/cliServExample",
+                "$SIMCAN_BIN -n ../../src:.:$INET_ROOT/src -u Cmdenv > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"]},
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/simcan.tar.gz",
             "setenv_commands": [
@@ -584,13 +618,15 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
+            # DONE -> omnetpp 3.3 so no distinct debug/release
             "name": "solarleach", "version": "1.01",
             "description": "A simulation of LEACH (Low-Energy Adaptive Clustering Hierarchy) cluster-based protocol for sensor networks with an extension to make it solar-aware.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SolarLEACH.html",
-                "test_command": "cd solarleach-1.01/leachDist && ./leachDist -u Cmdenv -L$OMNETPP_ROOT/src/cmdenv/libcmdenv -c Run1 -r 1 --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                "cd leachDist && ./leachDist -u Cmdenv -L$OMNETPP_ROOT/src/cmdenv/libcmdenv -c Run1 -r 1 --sim-time-limit=10s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["3.3.*"]},
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/SolarLEACH-1.01.tgz",
             "setenv_commands": ["echo 'Hint: in the `leachDist` folder, use the `./runall.sh` command to run the simulations. In the `leachFarBS` folder, use the `./leachFarBS` command'",],
@@ -610,8 +646,12 @@ def get_project_descriptions():
             "description": "An OMNeT++ simulation for stochastic battery behavior. It implements the Stochastic Battery Model by Chiasserini and Rao.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/StochasticBattery.html",
-                "test_command": "cd stochasticbattery-20170224 && ./stochasticbattery -u Cmdenv",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; STOCHASTICBATTERY_BIN=$(echo $STOCHASTICBATTERY_ROOT/out/*-release/stochastic_battery); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; STOCHASTICBATTERY_BIN=$(echo $STOCHASTICBATTERY_ROOT/out/*-debug/stochastic_battery); fi""",
+                "$STOCHASTICBATTERY_BIN -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.0.*"]},    # TODO try *
             # "git_url": "https://github.com/brandte/stochastic_battery.git",
             "download_url": "https://github.com/brandte/stochastic_battery/archive/dd999402a0aa7c88a9f78a3ca23f193b8250a925.tar.gz",
@@ -625,12 +665,15 @@ def get_project_descriptions():
 
         {
             # DONE - should this be a library?
-            # TODO: how to test this?
             "name": "chaosmanager", "version": "20221210",      # last commit of master branch as of time of writing
             "description": "An automated hard faul injection tool inspired by Chaos Engineering principles for MANETs. This tool has been tested extensively on LEACH for OMNETPP.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/WSN-Chaos-Manager.html",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "./chaosmanager$BUILD_MODE_SUFFIX $INET_ROOT/examples/aodv/omnetpp.ini -n $INET_ROOT/src:$INET_ROOT/examples -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.6.2"], "inet": ["4.2.5"]},
             # "git_url": "https://github.com/Agr-IoT/WSN-Chaos-Manager.git",
             "download_url": "https://github.com/Agr-IoT/WSN-Chaos-Manager/archive/07272355eb0e8d5fa6216b9dcfb07fcac0a5115b.tar.gz",
@@ -646,13 +689,17 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
+            # DONE - we only test release currently
+            # UPDATE: this only builds inet release, and links the ops debug with that? should not be done with the bootstrap script but manually?
             "name": "ops_allinone", "version": "20230331",      # last commit of master branch as of time of writing
             "description": "Opportunistic Protocol Simulator. This version downloads its own copy of INET, and does not use one installed by opp_env.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OPS.html",
-                "test_command": "cd ops_allinone-20230331/simulations && ../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src -u Cmdenv -c Messenger-Epidemic-SWIM --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then cd simulations && ../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src -c Messenger-Epidemic-SWIM -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
+                # "cd simulations && ../ops-simu$BUILD_MODE_SUFFIX omnetpp-ops.ini -n ../src:.:../modules/inet/src -c Messenger-Epidemic-SWIM --sim-time-limit=10s",
+            ],
             "nix_packages": ["autoconf", "automake", "libtool"],
             "required_projects": {"omnetpp": ["5.4.*"]},
             # "git_url": "https://github.com/ComNets-Bremen/OPS.git",
@@ -664,24 +711,6 @@ def get_project_descriptions():
             "build_commands": ["./bootstrap.sh && ./ops-makefile-setup.sh && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"]
         },
-
-        {
-            # DONE
-            # TEST: ./opslite needs to be run from simulation folder
-            "name": "opslite", "version": "20190624",       # last commit of master branch as of time of writing
-            "description": "A Lightweight Opportunistic Networking Simulator in OMNeT++",
-            "metadata": {
-                "catalog_url": "https://omnetpp.org/download-items/OPSLite.html",
-                "test_command": "cd opslite-20190624/simulations && ../src/opslite omnetpp.ini -n .:../src:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s",
-            },
-            "required_projects": {"omnetpp": ["5.4.1"], "inet": ["4.0.0"]},
-            # "git_url": "https://github.com/ComNets-Bremen/OPSLite.git",
-            "download_url": "https://github.com/ComNets-Bremen/OPSLite/archive/df67c31eff6d20f91affd931638a058001d81e98.tar.gz",
-            "setenv_commands": ["export INET_PROJ=$INET_ROOT",
-                                "echo 'Hint: in the `simulations` folder, use the `../src/opslite omnetpp.ini -n .:../src:$INET_ROOT/src` command to run the example simulation.'"],
-            "build_commands": ["cd src && opp_makemake -f --deep -o opslite -KINET_PROJ=$INET_PROJ -DINET_IMPORT -I$INET_PROJ/src -L$INET_PROJ/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
-        },
         
         {
             # DONE
@@ -690,8 +719,11 @@ def get_project_descriptions():
             "description": "Small Worlds in Motion (SWIM) mobility model. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SWIMMobility.html",
-                "test_command": "cd swim_allinone-20180221/examples/aodv && ./run -u Cmdenv --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd examples/aodv && ../../src/run_inet$BUILD_MODE_SUFFIX -c Static -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.7.*"]},
             "download_commands": [
                 "mkdir swim_allinone-20180221",
@@ -714,6 +746,9 @@ def get_project_descriptions():
                 "rm master.tar.gz",
                 "cp SWIMMobility.* ../src/inet/mobility/single",
                 "echo 'Patching done.'",
+                "cd ..",
+                "cp src/run_inet src/run_inet_dbg",
+                "sed -i 's|opp_run|opp_run_dbg|' src/run_inet_dbg",
             ],
             "setenv_commands": [
             ],
@@ -727,8 +762,11 @@ def get_project_descriptions():
             "description": "6TiSCH-CLX ACM TOIT paper exact version. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ComNetsHH-TSCH.html",
-                "test_command": "cd tsch_allinone-6tisch_paper/src && ./tsch ../simulations/wireless/waic/omnetpp.ini -n .:../rpl/src:../rpl/inet/src:../simulations -c HPQ -r 0 -u Cmdenv --sim-time-limit=10s",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd src && ./tsch$BUILD_MODE_SUFFIX ../simulations/wireless/waic/omnetpp.ini -n .:../rpl/src:../rpl/inet/src:../simulations -c HPQ -r 0 -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
             "nix_packages": ["rsync"],
             "required_projects": {"omnetpp": ["5.6.*"]},
             "download_commands": [
@@ -775,9 +813,14 @@ def get_project_descriptions():
             "description": "Controller Area Network. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/CAN.html",
-                "test_command": "cd can_allinone-0.1.0/examples/can/messagerouter1 && ./run -u Cmdenv -c CanMessageRouter --sim-time-limit=10s",
             },
-            "required_projects": {"omnetpp": ["4.6.*"]},    # TODO: 4.6.0 to option --with-recommended-deps?
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; CAN_ALLINONE_LIB=$(echo $CAN_ALLINONE_ROOT/out/*-release/src/*inet*); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; CAN_ALLINONE_LIB=$(echo $CAN_ALLINONE_ROOT/out/*-debug/src/*inet*); fi""",
+                "cd examples/can/messagerouter1",
+                "opp_run$BUILD_MODE_SUFFIX -l $CAN_ALLINONE_LIB omnetpp.ini -n ../..:../../../src -u Cmdenv -c CanMessageRouter > /dev/null",
+            ],
+            "required_projects": {"omnetpp": ["4.4.*", "4.6.*"]},    # TODO: 4.6.0 to option --with-recommended-deps?
             "download_commands": [
                 "mkdir can_allinone-0.1.0",
                 "cd can_allinone-0.1.0",
@@ -815,6 +858,7 @@ def get_project_descriptions():
         	{
             # DONE
             # TODO no catalog entry yet
+            # TODO how to test this?
             "name": "lora_icn", "version": "paper",
             "nix_packages": ["docker"],
             "details": "This project contains code and documentation to reproduce experimental results of the paper 'Long-Range ICN for the IoT: Exploring a LoRa System Design' published in Proc. of the IFIP Networking Conference 2022.",
@@ -846,6 +890,12 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SEA++.html",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; SEAPP_LIB=$(echo $SEAPP_ROOT/src/out/*-release/*inet*); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; SEAPP_LIB=$(echo $SEAPP_ROOT/src/out/*-debug/*inet*); fi""",
+                "cd examples/seapp/simpleTopo",
+                "opp_run$BUILD_MODE_SUFFIX -l $SEAPP_LIB omnetpp.ini -n ../..:../../../src -u Cmdenv -c Simple_attack > /dev/null",
+            ],
             "nix_packages": ["python2", "glibmm", "libxml2", "libsigcxx", "libxmlxx", "glib"],
             "required_projects": {"omnetpp": ["4.6.x", "4.6.1", "4.6.0"]},
             "download_url": "https://github.com/seapp/seapp_stable/archive/75bde5636917610b04e0dcaec21fbd3438063b79.tar.gz",    # latest master hash as of time of writing
@@ -875,33 +925,17 @@ def get_project_descriptions():
         },
         
         {
-            # DONE
-            "name": "icancloud", "version": "1.0",
-            "description": "Cloud Computing Systems",
-            "metadata": {
-                "catalog_url": "https://omnetpp.org/download-items/iCanCloud.html",
-            },
-            "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.5.0"]},
-            "download_url": "http://sourceforge.net/projects/icancloudsim/files/iCanCloud_v1.0_20150216.tgz/download",
-            "patch_commands": [
-                "sed -i 's|unsigned int requestSize|int requestSize|g' src/Base/Messages/SMS/SMS_MainMemory.cc",
-                "sed -i 's|ned-path|#net-path|g' simulations/*/omnetpp.ini",
-                "sed -i 's|$DIR/../iCanCloud|$DIR/iCanCloud|g' src/run_iCanCloud",
-                "sed -i 's|/simulations|/simulations:$INET_ROOT/src|g' src/run_iCanCloud",
-            ],
-            "setenv_commands": ["echo 'Hint: use the `./run` command in an example simulation folder.'"],
-            "build_commands": ["cd src && opp_makemake -f --deep --make-so -O out -o iCanCloud -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/util -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/status -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/base -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/transport/udp -L$INET_ROOT/src -lz -linet -DINET_IMPORT -KINET_PROJ=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
-        },
-        
-        {
-            # DONE
+            # DONE - simulations need pcap device for running, so we only test the executable with an inet example
             # TODO: enable emulation by default in inet, and use nix inet version?
             "name": "sedencontroller_allinone", "version": "20230305",      # latest commit of master branch as of time of writing
             "description": "sEden Controller",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SDNController.html",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "sdncontroller/src/sdncontroller$BUILD_MODE_SUFFIX $INET_ROOT/examples/aodv/omnetpp.ini -n $INET_ROOT/src:$INET_ROOT/examples -c Static -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
             "nix_packages": ["libmysqlconnectorcpp", "mysql", "libpcap", "wireshark-qt"],
             "required_projects": {"omnetpp": ["5.4.*"]},
             "download_commands": [
@@ -942,7 +976,12 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SDNController.html",
             },
-            "required_projects": {"omnetpp": ["5.7.*", "5.6.*"], "inet": ["4.2.5"]},     # TODO: try with 5.7.*; try without omnetpp
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd gradys-0.5",
+                "./gradys-simulations$BUILD_MODE_SUFFIX mobilityDrones-omnetpp.ini -n .:$INET_ROOT/src -c Wifi -u Cmdenv --sim-time-limit=1s > /dev/null",
+            ],
+            "required_projects": {"omnetpp": ["5.7.*", "5.6.*"], "inet": ["4.2.5"]},
             "patch_commands": [
                 "sed -i 's|INET_PROJ=../inet|#INET_PROJ=../inet|g' Makefile",
             ],
@@ -959,12 +998,18 @@ def get_project_descriptions():
         
         {
             # DONE
+            # TODO: update catalog -> wrong url
             "name": "omnet_tdma", "version": "1.0.2",
             "description": "An abstract TDMA MAC protocol for the INET Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ComNetsHH-TDMA.html",
             },
-            "required_projects": {"omnetpp": ["5.6.*"], "inet": ["4.2.5"]},
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd tdma/src",
+                "./tdma$BUILD_MODE_SUFFIX ../simulations/omnetpp.ini -n .:../simulations:$INET_ROOT/src -r 0 -u Cmdenv > /dev/null",
+            ],
+            "required_projects": {"omnetpp": ["5.7.*", "5.6.*"], "inet": ["4.2.5"]},
             "download_url": "https://github.com/ComNetsHH/omnet-tdma/archive/refs/tags/v1.0.2.tar.gz",
             "setenv_commands": [
                 "rm -r inet",
@@ -985,6 +1030,11 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OpenCV2X.html",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd simulations/x2",
+                "../../src/run_lte$BUILD_MODE_SUFFIX -c X2-MeshTopology -r 0 -u Cmdenv --**.pdcpRrc.ipBased=false --sim-time-limit=10s > /dev/null",
+            ],
             "required_projects": {"omnetpp": ["5.5.1"], "inet": ["3.6.6"], "veins": ["5.2"]},
             "details": "An open source implementation of the 3GPP standard CV2X (Rel 14) Mode 4. It is based on an extended version of the SimuLTE OMNeT++ simulator which enables LTE network simulations.",
             "download_url": "https://github.com/brianmc95/simulte/archive/refs/tags/v1.4.1.tar.gz",
@@ -998,6 +1048,9 @@ def get_project_descriptions():
                 """find . -name '*.launchd.xml' -exec bash -c 'sed -i "s|UPDATE-WITH-YOUR-PATH|$(pwd)/{}|g" {}' \;""",
                 "sed -i 's|/highway.launchd.xml||g' simulations/*/*/*/*.launchd.xml",
                 "sed -i 's|/./|/|g' simulations/*/*/*/*.launchd.xml",
+                "cp src/run_lte src/run_lte_dbg",
+                "sed -i 's|libveins_inet.so|veins_inet|' src/run_lte_dbg",
+                "sed -i 's|opp_run|opp_run_dbg|' src/run_lte_dbg",
             ],
             "setenv_commands": [
                 "export INET_PROJ=$INET_ROOT",
@@ -1019,6 +1072,10 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/LRE-OMNeT.html",
             },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "opp_run$BUILD_MODE_SUFFIX -l lre_omnet -n .:$INET_ROOT/src -u Cmdenv > /dev/null",
+            ],
             "nix_packages": ["python311", "python311Packages.boost.dev", "boost", "gcc"],
             "description": "Integration of the Limited Relative Error algorithm into OMNeT++",
             "details": "This project provides an integration of the Limited Relative Error (LRE) \
@@ -1040,7 +1097,7 @@ def get_project_descriptions():
                 "sed -i 's|-lboost_python3 |-lboost_python311 |g' lre-src/Makefile",
                 "cd lre-src",
                 "make LRE3.6 -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
-                "cd .. && opp_makemake --make-so -f --deep -O out -o lre_omnet -KINET_PROJ=$INET_ROOT -I. -I$INET_ROOT/src -L$INET_ROOT/src -lINET -Xlre-src/main",
+                "cd .. && opp_makemake --make-so -f --deep -O out -o lre_omnet -KINET_PROJ=$INET_ROOT -I. -I$INET_ROOT/src -L$INET_ROOT/src -lINET\$D -Xlre-src/main",
                 "make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"
             ],
             "clean_commands": ["make clean"],
@@ -1052,11 +1109,19 @@ def get_project_descriptions():
             "name": "wifidirect_allinone", "version": "3.4",
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.0.*"]},
+            "metadata": {
+                "catalog_url": "",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; WIFIDIRECT_ALLINONE_LIB=$(echo $WIFIDIRECT_ALLINONE_ROOT/out/*-release/src/*INET*); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; WIFIDIRECT_ALLINONE_LIB=$(echo $WIFIDIRECT_ALLINONE_ROOT/out/*-debug/src/*INET*); fi""",
+                "cd examples/aodv",
+                "opp_run$BUILD_MODE_SUFFIX -l $WIFIDIRECT_ALLINONE_LIB -n ../../src:.. omnetpp.ini -c IPv4ModerateFastMobility -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
             "download_url": "https://github.com/ashahin1/inet/archive/refs/tags/v3.4.0.tar.gz",
             "setenv_commands": [
             ],
             "patch_commands": [
-                "sed -i.bak 's|cResultFilterDescriptor|cResultFilterType|' src/inet/common/figures/DelegateSignalConfigurator.cc",
                 "sed -i.bak 's| python$| python2|' inet_featuretool",
                 "sed -i.bak 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h",
                 "for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
@@ -1064,5 +1129,261 @@ def get_project_descriptions():
             ],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"],
+        },
+        
+        {
+            # DONE - we only build (and test) this in release
+            "name": "libara_allinone", "version": "20150402",       # last commit of master branch as of time of writing
+            "description": "Routing algorithms based on the Ant Colony Optimization (ACO) metaheuristic. This version downloads its own copy of INETMANET, and does not use one installed by opp_env.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/libARA.html",
+            },
+            "smoke_test_commands": [
+                "cd simulations/eara && ./run.sh EARA0ALT12 --test > /dev/null",
+            ],
+            "required_projects": {"omnetpp": ["4.5.*"]},
+            "download_commands": [
+                "git clone https://github.com/des-testbed/libara.git libara_allinone-20150402",
+                "cd libara_allinone-20150402",
+                "git reset --hard 5b40a41839167c6709d86400d41be51f1ce51781",
+                "sed -i 's|git:\/\/|https:\/\/|g' .gitmodules",
+                "pwd",
+                "cd inetmanet",
+                "git submodule init",
+                "git submodule update",
+            ],
+            "patch_commands": [
+                """sed -i 's|if \[ $2 == "--debug" \]; then|if [ $2 == "--test" ]; then $RELATIVE_PATH_TO_ROOT/omnetpp/ara-sim -u Cmdenv -c $experimentName -n "$nedPath" omnetpp.ini -r 0 --sim-time-limit=10s; fi\\nif [ $2 == "--debug" ]; then|' simulations/run.sh""",
+                "cd inetmanet",
+                "sed -i.bak 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h",
+                "for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
+                "sed -i.bak 's/SensitivityList::iterator it = sensitivityList.find(0.0);/SensitivityList::iterator sit = sensitivityList.find(0.0);/' src/linklayer/radio/Radio.cc",
+                "sed -i.bak 's/if (it == sensitivityList.end())/if (sit == sensitivityList.end())/' src/linklayer/radio/Radio.cc",
+                "sed -i.bak 's/\"LL\"/\" LL \"/' src/networklayer/ipv4/RoutingTableRecorder.cc",
+                "sed -i.bak 's/if (vector_cost<=0)/if (vector_cost == NULL)/' src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc",
+                "sed -i.bak 's/std::make_pair<ManetAddress,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((ManetAddress)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc",
+                "sed -i.bak 's/std::make_pair<ManetAddress,ManetAddress>(dst, gtwy)/std::make_pair((ManetAddress)dst, (ManetAddress)gtwy)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc",
+                "sed -i.bak 's/std::make_pair<ManetAddress,ManetAddress>(destination, nextHop)/std::make_pair((ManetAddress)destination, (ManetAddress)nextHop)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc",
+                "sed -i.bak 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc",
+                "sed -i.bak 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc",
+            ],
+            "setenv_commands": ["export INETMANET_FOLDER=$LIBARA_ROOT/inetmanet",
+                                "echo 'Hint: in an example simulation folder, use the `./run.sh` command to run the example simulation. Note: this project is only available in release mode.'"],
+            "build_commands": [
+                "make all -j$NIX_BUILD_CORES MODE=release"
+            ],
+            "clean_commands": ["cd inetmanet && make clean && cd .. && make clean"],
+        },
+
+        {
+            # DONE
+            "name": "opendsme_allinone", "version": "20201110",     # last commit of master branch as of time of writing
+            "description": "IEEE 802.15.4 Deterministic and Synchronous Multi-channel Extension. This version downloads its own copy of INET, and does not use one installed by opp_env.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/OpenDSME.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd inet-dsme/simulations && opp_run$BUILD_MODE_SUFFIX -r 0 --seed-set=0 --repeat=1 --cmdenv-express-mode=false --vector-recording=false -u Cmdenv -c DSME -n .:../src:../../inet/examples:../../inet/src:../../inet/tutorials:.:../src -l ../../inet/src/INET -l ../src/inet-dsme -l ../../inet/src/INET -l ../src/inet-dsme -l ../../inet/src/INET -l ../src/inet-dsme --debug-on-errors=false example.ini --sim-time-limit=10s > /dev/null",
+            ],
+            "required_projects": {"omnetpp": ["5.4.*"]},
+            "download_commands": [
+                "mkdir opendsme_allinone-20201110",
+                "cd opendsme_allinone-20201110",
+                "git clone https://github.com/openDSME/inet.git --single-branch",
+                "cd inet",
+                "git reset --hard 550e4e4592481f005cd135f038d458cf17d857b3",
+                "git submodule update --init",
+                "cd ..",
+                "git clone https://github.com/openDSME/inet-dsme.git --single-branch",
+                "cd inet-dsme",
+                "git reset --hard eb8e76ca6f88f0b8a75db00e5b6c4cdebb1c6bc9",
+                "git submodule update --init",                
+            ],
+            "setenv_commands": [
+                "echo 'Hint: in the `inet-dsme/simulations` folder, use the `./singlerun.sh` command to run the example simulation.'"
+            ],
+            "build_commands": ["cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../inet-dsme/src && opp_makemake -f --deep --make-so -I../../inet/src -I../../inet/src/inet/common -I.. -KINET_PROJ=../../inet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"],
+        },
+
+        {
+            # DONE
+            # core-rg version, compatible with core4inet as well
+            # TODO does this need patched inet so allinone?
+            "name": "openflow", "version": "20231017",      # last commit of master branch as of time of writing
+            "description": "OpenFlow Extension for INET Framework",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/openflow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=1s > /dev/null",
+            ],
+            "required_projects": {"omnetpp": ["5.5.1"], "inet": ["3.6.6"]},
+            # git_url": "https://github.com/inet-framework/openflow.git",
+            # there are no releases, so we use a commit from the master branch
+            "download_url": "https://github.com/CoRE-RG/OpenFlow/archive/72fc3c2bcfb720087225728e130c06fac1c7f0f2.tar.gz",
+            "patch_commands": [
+                "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o openflow|' Makefile",
+                "sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_openflow",
+                "sed -i 's|opp_run_dbg|opp_run|' src/run_openflow",
+                "sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_ROOT/images|' src/run_openflow",
+            ],
+            "setenv_commands": [
+                "export INET_PROJ=$INET_ROOT",
+                "export PATH=$PATH:$OPENFLOW_ROOT/src",
+                "echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"
+            ],
+            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"]
+        },
+
+        {
+            # DONE
+            "name": "ndnomnet", "version": "20200914",      # last commit of master branch as of time of writing
+            "description": "Named Data Networking framework for OMNeT++",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/NDNOMNeT.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; NDNOMNET_LIB=$(echo $NDNOMNET_ROOT/inet/out/*-release/src/*INET*); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; NDNOMNET_LIB=$(echo $NDNOMNET_ROOT/inet/out/*-debug/src/*INET*); fi""",
+                "cd inet/examples/ndn",
+                "opp_run$BUILD_MODE_SUFFIX -l$NDNOMNET_LIB omnetpp.ini -n ../../src:..:. -c NdnDemo -u Cmdenv > /dev/null"
+            ],
+            "nix_packages": ["python2"],
+            "required_projects": {"omnetpp": ["5.1.*"]},
+            # "git_url": "https://github.com/amar-ox/NDNOMNeT.git",
+            # we're using a hash from master because there are no releases
+            "download_url": "https://github.com/amar-ox/NDNOMNeT/archive/d98f80a8b837858e00224e7a37aba35947058002.tar.gz",
+            "patch_commands": [
+                "cd inet",
+                "sed -i.bak 's| python$| python2|' inet_featuretool",
+                "sed -i.bak 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h",
+                "for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
+                "sed -i.bak 's|->spp_hbinterval > 0|->spp_hbinterval->getNum() > 0|' src/inet/applications/packetdrill/PacketDrillApp.cc",
+                "sed -i.bak 's|->spp_pathmaxrxt > 0|->spp_pathmaxrxt->getNum() > 0|' src/inet/applications/packetdrill/PacketDrillApp.cc",
+                "for f in $(grep -Rl 'INT64_PRINTF_FORMAT'); do sed -i.bak 's|INT64_PRINTF_FORMAT|\"l\"|' $f; done",
+                "sed -i.bak 's|precompiled.h|precompiled_$(MODE).h|' src/makefrag",
+                """echo '#include "precompiled.h"' > src/inet/common/precompiled_debug.h""",
+                """echo '#include "precompiled.h"' > src/inet/common/precompiled_release.h""",
+                 "cp src/run_inet src/run_inet_dbg",
+                # "sed -i 's|libveins_inet.so|veins_inet|' src/run_lte_dbg",
+                "sed -i 's|opp_run|opp_run_dbg|' src/run_inet_dbg",
+
+            ],
+            "build_commands": ["cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "setenv_commands": ["echo 'Hint: use the `./run` command in any example simulation folder.'"],
+            "clean_commands": ["cd inet && make clean"],
+        },
+        
+        {
+            # DONE
+            # TODO:  make this work with omnetpp 4.1.*
+            "name": "inet_hnrl", "version": "20100723",     # latest commit of master branch as of the time of writing
+            "description": "Fork of INET developed for hybrid networking research, providing new models in both optical and wireless networking areas and their hybrid.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/INET-HNRL.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX=""; INET_HNRL_LIB=$(echo $INET_HNRL_ROOT/out/*-release/src/*inet*); OPP_RUN_BIN=$(echo $OMNETPP_ROOT/out/*-release/src/envir/opp_run); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; INET_HNRL_LIB=$(echo $INET_HNRL_ROOT/out/*-debug/src/*inet*); OPP_RUN_BIN=$(echo $OMNETPP_ROOT/out/*-debug/src/envir/opp_run); fi""",
+                "$OPP_RUN_BIN -l $INET_HNRL_LIB -n src:examples  -c ARPTest -u Cmdenv examples/ethernet/arptest/omnetpp.ini > /dev/null"
+            ],
+            "nix_packages": ["sqlite"],
+            "required_projects": {"omnetpp": ["4.1.0"]},
+            "download_url": "https://github.com/kyeongsoo/inet-hnrl/archive/refs/tags/master_20100723.tar.gz",
+            "patch_commands": [            # This is the master_20100723 release
+                "sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/headers/sctp.h",
+                "sed -i 's|addr.sin_len|// addr.sin_len|' src/linklayer/ext/*.cc",  # ugly hack? this is needed on apple
+                "sed -i 's|machine/endian|endian|' src/util/headerserializers/headers/defs.h",
+                "chmod +x examples/rundemo",
+            ],
+            "setenv_commands": ["export SQLITE_LIB=${pkgs.sqlite}/lib"],
+            "build_commands": ["make makefiles && make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-std=c++14 -fpermissive -fPIC'"],
+            "clean_commands": ["make clean"],
+        },
+
+        {
+            # DONE
+            "name": "icancloud", "version": "1.0",
+            "description": "Cloud Computing Systems",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/iCanCloud.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; ICANCLOUD_LIB=$(echo $ICANCLOUD_ROOT/out/clang-release/src/*iCanCloud*); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; ICANCLOUD_LIB=$(echo $ICANCLOUD_ROOT/out/clang-debug/src/*iCanCloud*); fi""",
+                "cd simulations/Cloud_A",
+                "opp_run$BUILD_MODE_SUFFIX -l $ICANCLOUD_LIB -n../..:../../simulations:$INET_ROOT/src:../../src -u Cmdenv --sim-time-limit=10s > /dev/null",
+            ],
+            "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.5.0"]},
+            "download_url": "http://sourceforge.net/projects/icancloudsim/files/iCanCloud_v1.0_20150216.tgz/download",
+            "patch_commands": [
+                "sed -i 's|unsigned int requestSize|int requestSize|g' src/Base/Messages/SMS/SMS_MainMemory.cc",
+                "sed -i 's|ned-path|#net-path|g' simulations/*/omnetpp.ini",
+                "sed -i 's|$DIR/../iCanCloud|$DIR/iCanCloud|g' src/run_iCanCloud",
+                "sed -i 's|/simulations|/simulations:$INET_ROOT/src|g' src/run_iCanCloud",
+            ],
+            "setenv_commands": ["echo 'Hint: use the `./run` command in an example simulation folder.'"],
+            "build_commands": ["cd src && opp_makemake -f --deep --make-so -O out -o iCanCloud -pINET -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/util -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/status -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/base -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/transport/udp -L$INET_ROOT/out/\$\(CONFIGNAME\)/src -lz -linet -DINET_IMPORT -KINET_PROJ=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"],
+        },
+
+        {
+            # DONE - compiles and runs, but needs weather API access to test
+            "name": "os3", "version": "1.0",
+            "description": "Open Source Satellite Simulator",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/OS3.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; OS3_LIB=$(echo $OS3_ROOT/out/*-release/src/*cni-os3*); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; OS3_LIB=$(echo $OS3_ROOT/out/*-debug/src/*cni-os3*); fi""",
+                "opp_run$BUILD_MODE_SUFFIX -l $OS3_LIB -n simulations:src:$INET_ROOT/src:$INET_ROOT/examples $INET_ROOT/examples/ethernet/arptest/omnetpp.ini > /dev/null"
+            ],
+            "nix_packages": ["curl", "tcl"],
+            "required_projects": {"omnetpp": ["4.2.*"], "inet": ["2.2.0"]},
+            "download_url": "https://github.com/inet-framework/os3/archive/refs/tags/v1.0.tar.gz",
+            "patch_commands": [
+                "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
+                "sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_cni-os3",
+                "sed -i 's|static const double|constexpr static const double|' src/*/*.h",
+                "sed -i 's|../src/cni_os3|../src/run_cni-os3|' simulations/run",
+            ],
+            "setenv_commands": ["export INET_PROJ=$INET_ROOT",
+                                "export TCL_LIBRARY=$TCLLIBPATH",
+                                "echo 'Hint: use the `./run` command in the simulations folder. For example: `./run Validation/omnetpp.ini`'"],
+            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"]
+        },
+
+        {
+            # DONE - ok
+            # UPDATE: error in example sim in dbg; only tested in release
+            "name": "gptp", "version": "20200311",      # last commit of master branch as of time of writing
+            "description": "IEEE 802.1AS gPTP for Clock Synchronization",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/gPTP.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then cd IEEE8021AS/simulations && ../src/IEEE8021AS -n $INET_ROOT/src:.:../src -c Network_daisy_chain -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
+            ],
+            "required_projects": {"omnetpp": ["5.2.*"], "inet": ["3.6.3"]},
+            # "git_url": "https://gitlab.amd.e-technik.uni-rostock.de/peter.danielis/gptp-implementation.git",
+            # there are no releases, so we use a commit from the master branch
+            "download_url": "https://gitlab.amd.e-technik.uni-rostock.de/peter.danielis/gptp-implementation/-/archive/c498af56431d45b71ab5732cb352d03774344b6c/gptp-implementation-c498af56431d45b71ab5732cb352d03774344b6c.tar.gz",
+            "patch_commands": [
+                "sed -i -E 's|ieee8021as|IEEE8021AS|' IEEE8021AS/simulations/run",
+                "sed -i -E 's|-n.*|-n $INET_ROOT/src:.:../src $*|' IEEE8021AS/simulations/run",
+                "chmod +x IEEE8021AS/simulations/run",
+            ],
+            "setenv_commands": [
+                "export INET_PROJ=$INET_ROOT",
+                "echo 'Hint: use the `./run` command in the simulations folder.'",
+            ],
+            "build_commands": ["cd IEEE8021AS/src && opp_makemake -f --deep -KINET_PROJ=$INET_PROJ -DINET_IMPORT -I$INET_PROJ/src -L$INET_PROJ/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"]
         },
     ]

@@ -974,7 +974,7 @@ def get_project_descriptions():
             "name": "gradys", "version": "0.5",
             "description": "A simulation framework developed for the GrADyS (Ground-and-Air Dynamic sensors networkS) project.",
             "metadata": {
-                "catalog_url": "https://omnetpp.org/download-items/SDNController.html",
+                "catalog_url": "https://omnetpp.org/download-items/GrADyS.html",
             },
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",

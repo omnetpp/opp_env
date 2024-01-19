@@ -37,7 +37,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
     # some versions have machine architecture specific versions (aarch64, x86_64, etc.)
     is_x86_64 = platform.machine().lower() == "x86_64"
-    is_aarch64 = platform.machine().lower() == "arm64"
+    is_aarch64 = platform.machine().lower() == "arm64" or platform.machine().lower() == "aarch64"
     arch_name = "x86_64" if is_x86_64 else "aarch64" if is_aarch64 else "unsupported"
 
     # whether we can support the IDE considering the required JRE on the OS and architecture

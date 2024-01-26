@@ -101,10 +101,10 @@ First, make sure that `pip` is the latest version:
 
 You can install `opp_env` directly from GitHub:
 
-    pip3 install --user git+https://github.com/omnetpp/opp_env.git
+    pip3 install git+https://github.com/omnetpp/opp_env.git
 
 > [!IMPORTANT]
-> On some system, namely recent versions of Ubuntu / Debian, this 
+> On some system, namely recent versions of Ubuntu / Debian, this
 > command stops with an error message: `error: externally-managed-environment`
 >
 > To work around the error, follow the instructions in the printed message, which
@@ -114,10 +114,12 @@ You can install `opp_env` directly from GitHub:
 > and working from there.
 
 When you install `opp_env` using pip, it installs the `opp_env` Python module,
-as well as a small script into your system's path (e.g. `~/.local/bin`) that
-allows you to invoke it from the shell. The `opp_env` command is equivalent to
-running `python -m opp_env`, which also runs the `opp_env` Python module. (Make
-sure that `~/.local/bin` is in your `PATH` environment variable.)
+as well as a small script into your system's path (e.g. `~/.local/bin` or the
+virtual environment's bin directory) that allows you to invoke it from the shell.
+The `opp_env` command is equivalent to running `python -m opp_env`, which also
+runs the `opp_env` Python module. (Make sure that `~/.local/bin` is in
+your `PATH` environment variable. Acivating the python virtual environment 
+does this for you automatically.)
 
 ### Installing opp_env on Windows 10 & 11 (with WSL2)
 
@@ -161,7 +163,7 @@ source code for any reason, you can install the package in editable mode by
 cloning the git repo, changing to its root directory and using
 the following command:
 
-    pip install --user --editable .
+    pip install --editable .
 
 This will install the Python module and the `opp_env` command, but with the
 added ability to make local modifications that will take effect immediately.

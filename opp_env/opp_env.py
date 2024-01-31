@@ -1195,6 +1195,7 @@ class Workspace:
             'function error() { echo "$*" 1>&2; return 1; }; export -f error',
             'function ll() { ls -l $*; }; export -f ll',
             f"export BUILD_MODE=\"{' '.join(build_modes) if build_modes else ''}\"",
+            f"export OPP_ENV_VERSION=\"{get_version()}\"",
             *project_root_environment_variable_assignments,
             *project_version_environment_variable_assignments,
             *(project_shell_hook_commands if nixful else []),

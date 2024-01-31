@@ -107,17 +107,17 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # Vanilla 4.x releases need to be patched to compile under Nix.
     # Compiling with '-std=c++03 -fpermissive' helps, but is not enough.
     source_patch_commands = [
-        # patch the simulator executables/IDE/build system if we are in Nix shell so later it does not allow running outside of a Nix shell
-        """[ -n "$IN_NIX_SHELL" ] && sed -i.bak 's/cStaticFlag dummy;/cStaticFlag dummy;\\n    if (!getenv("IN_NIX_SHELL") || !getenv("OMNETPP_ROOT")) { std::cerr << "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." << std::endl; return 1; }/' """ + ("src/envir/evmain.cc" if version >= "4.2" else "src/envir/main.cc"),
-        """[ -n "$IN_NIX_SHELL" ] && sed -i.bak 's|#!/bin/sh|#!/bin/sh\\n[ -z $IN_NIX_SHELL ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
-        """[ -n "$IN_NIX_SHELL" ] && sed -i.bak 's/OMNETPP_PRODUCT = @OMNETPP_PRODUCT@/ifndef IN_NIX_SHELL\\n  $(error This OMNeT++ installation cannot be used outside an opp_env shell.)\\nendif\\nOMNETPP_PRODUCT = @OMNETPP_PRODUCT@/' Makefile.inc.in""" if version >= "4.0" else None,
+        # patch the simulator executables/IDE/build system if we are in an opp_env shell so later it does not allow running outside of an opp_env shell
+        """[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's/cStaticFlag dummy;/cStaticFlag dummy;\\n    if (!getenv("OPP_ENV_VERSION") || !getenv("OMNETPP_ROOT")) { std::cerr << "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." << std::endl; return 1; }/' """ + ("src/envir/evmain.cc" if version >= "4.2" else "src/envir/main.cc"),
+        """[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's|#!/bin/sh|#!/bin/sh\\n[ -z $OPP_ENV_VERSION ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
+        """[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's/OMNETPP_PRODUCT = @OMNETPP_PRODUCT@/ifndef OPP_ENV_VERSION\\n  $(error This OMNeT++ installation cannot be used outside an opp_env shell.)\\nendif\\nOMNETPP_PRODUCT = @OMNETPP_PRODUCT@/' Makefile.inc.in""" if version >= "4.0" else None,
 
         # disable the IDE launcher scripts on unsupported os/arch
         "sed -i.bak 's/echo Starting the.*/echo The IDE is not supported on this OS and platform ; exit 1/' src/utils/omnetpp src/utils/omnest" if (not is_ide_supported) and version >= "4.0" else None,
 
         # binary patch the IDE so proper glibc and interpreter is used by the eclipse launcher and the JRE executables under the Nix environment
         # Only do it in nix environment. Using glob patterns and enabling nullglob are important because theses file may or may not be present in a distro (depending on the distro version)
-        "[ -n $IN_NIX_SHELL -a -n $NIX_BINTOOLS ] && (shopt -s nullglob && patchelf --set-interpreter $(cat $NIX_BINTOOLS/nix-support/dynamic-linker) ide/*opp_ide ide/*omnetpp ide/*omnetpp64 ide/linux64/*omnetpp ide/plugins/org.eclipse.justj.*/jre/bin/* ; shopt -u nullglob) || true" if is_linux and is_ide_supported else None,
+        "[ -n $OPP_ENV_VERSION -a -n $NIX_BINTOOLS ] && (shopt -s nullglob && patchelf --set-interpreter $(cat $NIX_BINTOOLS/nix-support/dynamic-linker) ide/*opp_ide ide/*omnetpp ide/*omnetpp64 ide/linux64/*omnetpp ide/plugins/org.eclipse.justj.*/jre/bin/* ; shopt -u nullglob) || true" if is_linux and is_ide_supported else None,
 
         # adhoc code signature is required for the IDE native lib on aarch64/macOS systems
         # absolute path required otherwise codesign is not reachable in isolated shells (i.e. durinb install/build)

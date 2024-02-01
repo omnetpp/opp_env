@@ -1166,6 +1166,7 @@ class Workspace:
             make_function("smoke_test_all", [f"smoke_test_{p.name}" for p in reversed(effective_project_descriptions)]),
             make_function("test_all", [f"test_{p.name}" for p in reversed(effective_project_descriptions)]),
             make_function("check_all", [f"check_{p.name}" for p in effective_project_descriptions]),
+            make_function("opp_env", [ "printf 'error: Cannot run opp_env commands in an opp_env shell -- exit the shell to run it.\n' && return 1" ]),
         ]
         return function_definitions
 

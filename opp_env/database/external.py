@@ -178,16 +178,11 @@ def get_project_descriptions():
             "download_url": "https://gitlab.com/ipvs/nesting/-/archive/v0.9.1/nesting-v0.9.1.tar.gz",
             "patch_commands": [
                 "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
-                "sed -i 's|NESTING=.*|#NESTING=|' simulations/runsim-qt",
-                "sed -i -E 's|INET=.*|INET=$INET_ROOT|' simulations/runsim-qt",
-                "sed -i 's|./nesting$D|$NESTING/simulations/nesting$D|' simulations/runsim-qt",
-                "sed -i 's|-n .:|-n $NESTING/simulations:|' simulations/runsim-qt",
-                "sed -i 's|NESTING=.*|#NESTING=|' simulations/runsim",
-                "sed -i -E 's|INET=.*|INET=$INET_ROOT|' simulations/runsim",
-                "sed -i 's|./nesting$D|$NESTING/simulations/nesting$D|' simulations/runsim",
-                "sed -i 's|-n .:|-n $NESTING/simulations:|' simulations/runsim",
+                "sed -i 's|NESTING=.*|#NESTING=|' simulations/runsim simulations/runsim-qt",
+                "sed -i -E 's|INET=.*|INET=$INET_ROOT|' simulations/runsim simulations/runsim-qt",
+                "sed -i 's|./nesting$D|$NESTING/simulations/nesting$D|' simulations/runsim simulations/runsim-qt",
+                "sed -i 's|-n .:|-n $NESTING/simulations:|' simulations/runsim simulations/runsim-qt",
                 "sed -i 's|$1|$@|' simulations/runsim simulations/runsim-qt",
-                # TODO: merge
             ],
             "setenv_commands": ["export INET_PROJ=$INET_ROOT",
                                 "export NESTING=$NESTING_ROOT",
@@ -652,7 +647,7 @@ def get_project_descriptions():
                 """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; STOCHASTICBATTERY_BIN=$(echo $STOCHASTICBATTERY_ROOT/out/*-debug/stochastic_battery); fi""",
                 "$STOCHASTICBATTERY_BIN -u Cmdenv --sim-time-limit=10s > /dev/null",
             ],
-            "required_projects": {"omnetpp": ["5.0.*"]},    # TODO try *
+            "required_projects": {"omnetpp": ["5.0.*"]},
             # "git_url": "https://github.com/brandte/stochastic_battery.git",
             "download_url": "https://github.com/brandte/stochastic_battery/archive/dd999402a0aa7c88a9f78a3ca23f193b8250a925.tar.gz",
             "patch_commands": [
@@ -855,16 +850,22 @@ def get_project_descriptions():
             # }
         },
 
-        	{
-            # DONE
+        {
+            # DONE - release only
             # TODO no catalog entry yet
-            # TODO how to test this?
             "name": "lora_icn", "version": "paper",
             "nix_packages": ["docker"],
             "details": "This project contains code and documentation to reproduce experimental results of the paper 'Long-Range ICN for the IoT: Exploring a LoRa System Design' published in Proc. of the IFIP Networking Conference 2022.",
             # "metadata": {
             #     "catalog_url": "",
             # },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then docker run --rm -it -v "$(pwd)/data:/root/data" inetrg/ccnsim_dsme bash -c "cd ccnsim_dsme && cd simulations && ../src/ccnsim_dsme -m -n ../src:.:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../inet-dsme/src:../../inet-dsme/simulations:../../flora/src:../../ccnSim-0.4/:../../lora_omnetpp/src --image-path=../../inet/images -l ../../inet/src/INET -l ../../lora_omnetpp/src/lora_omnetpp  rfd_repos.ini -c INDICATION  --sim-time-limit=10s -r 0"; fi""",
+                # "sed -i 's|CCNSIM_DSME_ARGS)|CCNSIM_DSME_ARGS) --sim-time-limit=10s -r 0|g' ccnsim_dsme/Makefile",
+                # "cd ccnsim_dsme",
+                # "make run",
+                # "exit",
+            ],
             "download_commands": [
                 "git clone https://github.com/inetrg/IFIP-Networking-LoRa-ICN-2022.git lora_icn-paper",
                 "cd lora_icn-paper",
@@ -1269,7 +1270,6 @@ def get_project_descriptions():
                 """echo '#include "precompiled.h"' > src/inet/common/precompiled_debug.h""",
                 """echo '#include "precompiled.h"' > src/inet/common/precompiled_release.h""",
                  "cp src/run_inet src/run_inet_dbg",
-                # "sed -i 's|libveins_inet.so|veins_inet|' src/run_lte_dbg",
                 "sed -i 's|opp_run|opp_run_dbg|' src/run_inet_dbg",
 
             ],
@@ -1385,5 +1385,22 @@ def get_project_descriptions():
             ],
             "build_commands": ["cd IEEE8021AS/src && opp_makemake -f --deep -KINET_PROJ=$INET_PROJ -DINET_IMPORT -I$INET_PROJ/src -L$INET_PROJ/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"]
+        },
+
+        {
+            # DONE - only builds (and tested) in debug
+            "name": "streetlightsim", "version": "1.0",
+            "description": "Research project for evaluating Autonomous and Adaptive Street Lighting Schemes based on Road User's presence detection over wireless sensor networks.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/StreetlightSim.html",
+            },
+            "required_projects": {"omnetpp": ["4.2.2"]},
+            "nix_packages": ["sumo", "python2"],
+            "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/streetlightsim.tar.gz",
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then cd examples/WSNRouting && ./WSNRouting -u Cmdenv -c flooding -r 0 > /dev/null; fi""",
+            ],
+            "build_commands": ["make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"],
         },
     ]

@@ -602,7 +602,7 @@ class ProjectRegistry:
         if type(project_reference) is str:
             project_reference = ProjectReference.parse(project_reference)
         if project_reference.name not in self.index:
-            raise Exception(f"Cannot resolve '{project_reference}': Unknown project '{project_reference.name}'")
+            raise Exception(f"Cannot resolve '{project_reference}': " + self.get_unknown_project_message(project_reference.name))
         if not project_reference.version:
             raise Exception(f"Which version of '{project_reference.name}' do you mean? (Use '{project_reference.name}-latest' for latest version)")
         project_description = self.index[project_reference.name].get(project_reference.version)
@@ -698,6 +698,22 @@ class ProjectRegistry:
                 else:
                     return selected_project_descriptions
         return result
+
+    def get_unknown_project_message(self, project_name):
+        def jaccard_similarity(word1, word2):
+            set1 = set(word1)
+            set2 = set(word2)
+            intersection = len(set1.intersection(set2))
+            union = len(set1) + len(set2) - intersection
+            similarity = intersection / union if union != 0 else 0
+            return similarity
+        names = self.get_project_names()
+        most_similar =  max(names, key=lambda p: jaccard_similarity(project_name.lower(), p.lower()))
+        more_candidates = [p for p in names if p!=most_similar and (p.lower() in project_name.lower() or project_name.lower() in p.lower())]
+        if more_candidates:
+            return f"Unknown project '{project_name}'. Did you mean one of {[most_similar] + more_candidates}?"
+        else:
+            return f"Unknown project '{project_name}'. Did you mean '{most_similar}'?"
 
 def activate_project_options(project_descriptions, requested_options):
     # check requested options exist at all
@@ -1432,7 +1448,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
             elif project in project_registry.get_project_names():
                 project_descriptions += [project_registry.get_project_description(ProjectReference(project, version)) for version in project_registry.get_project_versions(project)]
             else:
-                raise Exception(f"Unknown project name '{project}'")
+                raise Exception(project_registry.get_unknown_project_message(project))
 
     if raw:
         serializable = [vars(p.activate_project_options(requested_options)) for p in project_descriptions]

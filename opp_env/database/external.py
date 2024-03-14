@@ -702,7 +702,7 @@ def get_project_descriptions():
             "patch_commands": [
                 "sed -i 's|-j 1|-j$NIX_BUILD_CORES|g' bootstrap.sh",
             ],
-            "setenv_commands": ["echo 'Hint: in the `simulations` folder, use the `../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src` command to run the example simulation.'"], 
+            "setenv_commands": ["echo 'Hint: in the `simulations` folder, use the `../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src` command to run the example simulation.'"],
             "build_commands": ["./bootstrap.sh && ./ops-makefile-setup.sh && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"]
         },
@@ -1402,5 +1402,28 @@ def get_project_descriptions():
             ],
             "build_commands": ["make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"],
+        },
+        {
+            # DONE - only tested in debug
+            "name": "processbus_allinone", "version": "20180926",       # latest commit of master branch as of the time of writing
+            "description": "IEC61850 process bus communication (GOOSE and SV) for INET. This version downloads its own copy of INET, and does not use one installed by opp_env.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/ProcessBusIec61850.html",
+            },
+            "required_projects": {"omnetpp": ["4.6.*"]},
+            "download_url": "https://github.com/hectordelahoz/ProcessBusIec61850/archive/c3f76083a52fc36ba086d949dcf1ff91acd788db.tar.gz",
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then cd iec61850InetV2.6/TestInet/simulations && ./run ../src/omnetpp.ini -c IecNetwork -r 0 -u Cmdenv --sim-time-limit=1s > /dev/null; fi""",
+            ],
+            "patch_commands": [
+                "sed -i.bak 's/if (vector_cost<=0)/if (vector_cost == NULL)/' iec61850InetV2.6/inet/src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc",
+                "sed -i 's|testinet|TestInet|' iec61850InetV2.6/TestInet/simulations/run",
+                "chmod +x iec61850InetV2.6/TestInet/simulations/run",
+                "sed -i 's|-n .:../src|-n .:../src:../../inet/src|' iec61850InetV2.6/TestInet/simulations/run",
+                "chmod +x iec61850InetV2.6/inet/src/run_inet",
+            ],
+            "setenv_commands": ["echo 'Hint: in the `iec61850InetV2.6/TestInet/simulations` folder, use the `./run ../src/omnetpp.ini` command to run the example simulation.'"],
+            "build_commands": ["cd iec61850InetV2.6/inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../TestInet/src && opp_makemake -f --deep -I../../inet/src -L../../inet/src -linet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["cd iec61850InetV2.6/inet && make clean && cd ../TestInet && make clean"],
         },
     ]

@@ -22,6 +22,14 @@ def make_veins_project_description(version, inet_versions, sumo_version, omnetpp
             "source setenv" if version >= "5.1" else "",
             "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd subprojects/veins_inet && source setenv; else cd subprojects/veins_inet3 && source setenv; fi" if version >= "5.1" else "",
         ],
+        "smoke_test_commands": [
+            # can't test 4.7.1 -> no sumo before 5.0
+            "./sumo-launchd.py & bg_pid=$! > /dev/null" if version > "4.7.1" else "",
+            "cd examples/veins && ./run --mode=$BUILD_MODE -c Default -u Cmdenv > /dev/null" if version > "4.7.1" else "",
+            "export VEINS_INET_INI_CONFIG='-c plain'" if version > "5.0" else "",
+            "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd ../../subprojects/veins_inet/examples/veins_inet && ./run --mode=$BUILD_MODE $VEINS_INET_INI_CONFIG -u Cmdenv > /dev/null; else cd ../../subprojects/veins_inet3/examples/veins_inet && ./run --mode=$BUILD_MODE -u Cmdenv > /dev/null; fi" if version >= "5.0" else "",
+            "kill $bg_pid > /dev/null" if version > "4.7.1" else ""
+        ],
         "build_commands": [ 
             "./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" if version >= "4.5" else "./configure --with-inet=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
             # this is a hack so that the veins_inet subproject's configure can query the inet version

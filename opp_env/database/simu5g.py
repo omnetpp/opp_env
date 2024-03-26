@@ -7,6 +7,13 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
             "catalog_url": "https://omnetpp.org/download-items/Simu5G.html",
         },
         "required_projects": {"inet": inet_versions, "omnetpp": omnetpp_versions},
+        "smoke_test_commands": [
+            "cd simulations/LTE/demo" if simu5g_version >= "1.2.1" else "cd simulations/demo",
+            "SIMU5G_EMULATION_ROOT=$SIMU5G_ROOT/emulation" if simu5g_version >= "1.2.1" else ""
+            """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+            """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX=""; fi""",
+            "opp_run$BUILD_MODE_SUFFIX -l $SIMU5G_ROOT/src/simu5g -l $INET_ROOT/src/INET -n $SIMU5G_ROOT/simulations:$SIMU5G_EMULATION_ROOT:$SIMU5G_ROOT/src:$INET_ROOT/src -c VideoStreaming -r 0 -u Cmdenv --sim-time-limit=10s > /dev/null",
+        ],
         "download_url": f"https://github.com/Unipisa/Simu5G/archive/refs/tags/v{simu5g_version}.tar.gz",
         "patch_commands": [
             "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",

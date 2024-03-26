@@ -10,6 +10,10 @@ pkgs.python3Packages.buildPythonPackage {
 
   propagatedBuildInputs = with pkgs.python3Packages; [
     packaging
+    pkgs.nix
+    pkgs.curl
+    pkgs.git
+    pkgs.btar
   ];
 
   build-system = with pkgs.python3Packages; [ setuptools-scm ];

@@ -6,6 +6,11 @@ pkgs.python3Packages.buildPythonPackage {
   name = "opp_env";
   src = ./.;
 
+  patches = [
+    ./nix/0001-Fix-permissions-after-copying-templates.patch
+    ./nix/0002-Remove-upgrade-subcommand.patch
+  ];
+
   SETUPTOOLS_SCM_PRETEND_VERSION = version;
 
   propagatedBuildInputs = with pkgs.python3Packages; [

@@ -804,6 +804,7 @@ class Workspace:
         if re.search("\\s", dir):
             raise Exception(f"Whitespace characters are not allowed in the name and path of the workspace directory")
         shutil.copytree(os.path.join(os.path.dirname(__file__), "templates", "workspace"), opp_env_dir)
+        reset_permissions(opp_env_dir)
         if nixless:
             # write an empty file called .nixless to indicate that this is a nixless workspace
             open(os.path.join(opp_env_dir, ".nixless"), "w").close()
@@ -1529,6 +1530,18 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
 def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
     return os.path.commonpath([child_dir, parent_dir]) == parent_dir
+
+def reset_permissions(path):
+    for root, dirs, files in os.walk(path):
+        # Reset permissions for directories
+        for directory in dirs:
+            dir_path = os.path.join(root, directory)
+            os.chmod(dir_path, 0o755)
+
+        # Reset permissions for files
+        for file in files:
+            file_path = os.path.join(root, file)
+            os.chmod(file_path, 0o644)
 
 def check_multiple_versions(project_descriptions):
     name_versions_dict = {}

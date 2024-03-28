@@ -7,7 +7,6 @@ pkgs.python3Packages.buildPythonPackage {
   src = ./.;
 
   patches = [
-    ./nix/0001-Fix-permissions-after-copying-templates.patch
     ./nix/0002-Remove-upgrade-subcommand.patch
     ./nix/0003-Remove-pip-from-dependencies.patch
   ];

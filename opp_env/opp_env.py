@@ -1644,6 +1644,10 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
     workspace.nix_develop(effective_project_descriptions, workspace_directory, commands=commands, **dict(kwargs, suppress_stdout=False))
 
 def upgrade_subcommand_main(dry_run=False, from_pypi=False, check=False, **kwargs):
+    if "NIX_INSTALLED_OPP_ENV" in os.environ:
+        _logger.info(f"This version of opp_env was installed as a Nix package. Please upgrade opp_env via Nix instead.")
+        return
+
     latest_version = get_latest_version_from_pypi() if from_pypi else get_latest_version_from_github()
     version = get_version()
     upgrade_needed = Version(version) < Version(latest_version)

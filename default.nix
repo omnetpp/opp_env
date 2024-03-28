@@ -7,7 +7,6 @@ pkgs.python3Packages.buildPythonPackage {
   src = ./.;
 
   patches = [
-    ./nix/0002-Remove-upgrade-subcommand.patch
     ./nix/0003-Remove-pip-from-dependencies.patch
   ];
 
@@ -28,6 +27,8 @@ pkgs.python3Packages.buildPythonPackage {
   pythonImportsCheck = [
     "opp_env.database"
   ];
+
+  makeWrapperArgs = [ "--set NIX_INSTALLED_OPP_ENV" ];
 
   doCheck = false;
 }

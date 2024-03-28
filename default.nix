@@ -1,0 +1,34 @@
+{ pkgs ? import <nixpkgs> {} }:
+let
+  version = "0.1";
+in
+pkgs.python3Packages.buildPythonPackage {
+  name = "opp_env";
+  src = ./.;
+
+  patches = [
+    ./nix/0003-Remove-pip-from-dependencies.patch
+  ];
+
+  SETUPTOOLS_SCM_PRETEND_VERSION = version;
+
+  propagatedBuildInputs = with pkgs.python3Packages; [
+    packaging
+    pkgs.nix
+    pkgs.curl
+    pkgs.git
+    pkgs.btar
+  ];
+
+  pyproject = true;
+
+  build-system = with pkgs.python3Packages; [ setuptools-scm ];
+
+  pythonImportsCheck = [
+    "opp_env.database"
+  ];
+
+  makeWrapperArgs = [ "--set NIX_INSTALLED_OPP_ENV" ];
+
+  doCheck = false;
+}

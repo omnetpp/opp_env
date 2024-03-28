@@ -1,0 +1,24 @@
+From ee9fd87e56035af418b51d22af34d626afd828ef Mon Sep 17 00:00:00 2001
+From: Alexander Linder <alexander.linder@mondcarion.group>
+Date: Tue, 26 Mar 2024 14:47:52 +0100
+Subject: [PATCH] Remove pip from dependencies
+
+---
+ pyproject.toml | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 949d988..eb04fac 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -19,7 +19,6 @@ classifiers = [
+     "Framework :: OMNeT++ :: 6",
+ ]
+ dependencies = [
+-    'pip >= 23.0.0',
+     'packaging',
+ ]
+ dynamic = ["version"]
+-- 
+2.43.2
+

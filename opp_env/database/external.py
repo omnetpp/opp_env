@@ -1588,4 +1588,27 @@ def get_project_descriptions():
             "build_commands": ["cd src && opp_makemake -f --deep -o crhandover -I$SQLITE_LIB -lmysqlclient -lsqlite3 -lmysqlcppconn -L$MYSQL_LIB && make -j16 MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"],
         },
+
+        {
+            # DONE
+            "name": "veins_vlc", "version": "1.0",
+            "description": "Veins VLC - Realistic Simulation of Vehicular Visible Light Communication",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Veins-VLC.html",
+            },
+            "required_projects": {"omnetpp": ["5.5.*", "5.4.*", "5.3.*"], "inet": ["4.1.1", "4.1.0", "3.6.5"], "veins": ["5.0"]},
+            "details": "Veins VLC extends Veins vehicular network simulation framework with channel models for Vehicular Visible Light Communication (V-VLC).",
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then DEBUG_MODE_OPTION="-d"; fi""",
+                """if [ "$BUILD_MODE" = "release" ]; then DEBUG_MODE_OPTION=""; fi""",
+                "$VEINS_ROOT/sumo-launchd.py & bg_pid=$! > /dev/null",
+                "cd examples/veins-vlc && ./run $DEBUG_MODE_OPTION -c DriveVlc -u Cmdenv > /dev/null",
+                "kill $bg_pid > /dev/null",
+            ],
+            "download_url": "https://github.com/veins/veins_vlc/archive/refs/tags/veins-vlc-1.0.tar.gz",
+            "build_commands": [
+                "./configure --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"
+            ],
+            "clean_commands": ["make clean"],
+        },
     ]

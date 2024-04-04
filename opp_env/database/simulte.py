@@ -10,6 +10,14 @@ def get_simulte_project_description(simulte_version, inet_versions, omnetpp_vers
         "download_url":
             f"https://github.com/inet-framework/simulte/releases/download/v{simulte_version}/simulte-{simulte_version}-src.tgz" if simulte_version == "1.2.0" else
             f"https://github.com/inet-framework/simulte/archive/refs/tags/v{simulte_version}.tar.gz",
+        "smoke_test_commands": [
+            "cd simulations/demo",
+            """if [ "$BUILD_MODE" = "debug" ]; then SIMULTE_LIB=$(echo $SIMULTE_ROOT/out/*-debug/src/*lte*); fi""",
+            """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""" if simulte_version >= "1.1.0" else """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; fi""",
+            """if [ "$BUILD_MODE" = "release" ]; then SIMULTE_LIB=$(echo $SIMULTE_ROOT/out/*-release/src/*lte*); BUILD_MODE_SUFFIX=""; fi""",
+            """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX=""; fi""" if simulte_version >= "1.1.0" else """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; fi""",
+            "opp_run$BUILD_MODE_SUFFIX -l $SIMULTE_LIB -n $SIMULTE_ROOT/simulations:$SIMULTE_ROOT/src:$INET_ROOT/src -c VideoStreaming -r 0 -u Cmdenv --sim-time-limit=10s > /dev/null"
+        ],
         "patch_commands": [
             "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
             "sed -i -E 's|^INET_DIR=.*|INET_DIR=$INET_ROOT/src|' src/run_lte",

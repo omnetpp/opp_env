@@ -348,6 +348,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "release" ]; then cd simulations && ../src/ieee802154inet_standalone -n ..:../src:$INET_ROOT/src -c StartWPAN-1Node_Starting_WPAN -u Cmdenv > /dev/null; fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug, because currently the project only builds in release.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"]},
             # "git_url": "https://github.com/michaelkirsche/IEEE802154INET-Standalone.git",     # master branch
@@ -693,11 +694,10 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "release" ]; then cd simulations && ../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src -c Messenger-Epidemic-SWIM -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
-                # "cd simulations && ../ops-simu$BUILD_MODE_SUFFIX omnetpp-ops.ini -n ../src:.:../modules/inet/src -c Messenger-Epidemic-SWIM --sim-time-limit=10s",
+                """if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in debug mode, because currently the project only builds in release mode.'; fi"""
             ],
             "nix_packages": ["autoconf", "automake", "libtool"],
             "required_projects": {"omnetpp": ["5.4.*"]},
-            # "git_url": "https://github.com/ComNets-Bremen/OPS.git",
             "download_url": "https://github.com/ComNets-Bremen/OPS/archive/57ecc379631eec4bb640b022391f2cf808ff09f4.tar.gz",
             "patch_commands": [
                 "sed -i 's|-j 1|-j$NIX_BUILD_CORES|g' bootstrap.sh",
@@ -716,6 +716,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/SWIMMobility.html",
             },
             "smoke_test_commands": [
+                # This projects doesn't contain any example simulations, so we test an INET example
                 """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 "cd examples/aodv && ../../src/run_inet$BUILD_MODE_SUFFIX -c Static -u Cmdenv --sim-time-limit=10s > /dev/null",
             ],
@@ -735,7 +736,6 @@ def get_project_descriptions():
                 "echo 'Patching INET with SWIM....'",
                 "mkdir swim-src",
                 "cd swim-src",
-                # "git clone https://github.com/ComNets-Bremen/SWIMMobility.git swim-src",      # master branch
                 "curl -L -o master.tar.gz https://github.com/ComNets-Bremen/SWIMMobility/archive/refs/heads/master.tar.gz --progress-bar",
                 "tar -xzf master.tar.gz --strip=1",
                 "rm master.tar.gz",
@@ -861,6 +861,7 @@ def get_project_descriptions():
             # },
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "release" ]; then docker run --rm -it -v "$(pwd)/data:/root/data" inetrg/ccnsim_dsme bash -c "cd ccnsim_dsme && cd simulations && ../src/ccnsim_dsme -m -n ../src:.:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../inet-dsme/src:../../inet-dsme/simulations:../../flora/src:../../ccnSim-0.4/:../../lora_omnetpp/src --image-path=../../inet/images -l ../../inet/src/INET -l ../../lora_omnetpp/src/lora_omnetpp  rfd_repos.ini -c INDICATION  --sim-time-limit=10s -r 0"; fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently the project builds in release mode only.'; fi""",
                 # "sed -i 's|CCNSIM_DSME_ARGS)|CCNSIM_DSME_ARGS) --sim-time-limit=10s -r 0|g' ccnsim_dsme/Makefile",
                 # "cd ccnsim_dsme",
                 # "make run",
@@ -1114,6 +1115,7 @@ def get_project_descriptions():
                 "catalog_url": "",
             },
             "smoke_test_commands": [
+                # This projects doesn't contain any example simulations, so we test the project lib with an INET example
                 """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; WIFIDIRECT_ALLINONE_LIB=$(echo $WIFIDIRECT_ALLINONE_ROOT/out/*-release/src/*INET*); fi""",
                 """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; WIFIDIRECT_ALLINONE_LIB=$(echo $WIFIDIRECT_ALLINONE_ROOT/out/*-debug/src/*INET*); fi""",
                 "cd examples/aodv",
@@ -1140,7 +1142,8 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/libARA.html",
             },
             "smoke_test_commands": [
-                "cd simulations/eara && ./run.sh EARA0ALT12 --test > /dev/null",
+                """if [ "$BUILD_MODE" = "release" ]; then cd simulations/eara && ./run.sh EARA0ALT12 --test > /dev/null; fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently the project only builds in release mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.5.*"]},
             "download_commands": [
@@ -1255,7 +1258,6 @@ def get_project_descriptions():
             ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.1.*"]},
-            # "git_url": "https://github.com/amar-ox/NDNOMNeT.git",
             # we're using a hash from master because there are no releases
             "download_url": "https://github.com/amar-ox/NDNOMNeT/archive/d98f80a8b837858e00224e7a37aba35947058002.tar.gz",
             "patch_commands": [
@@ -1362,6 +1364,7 @@ def get_project_descriptions():
         {
             # DONE - ok
             # UPDATE: error in example sim in dbg; only tested in release
+            # TODO: what error?
             "name": "gptp", "version": "20200311",      # last commit of master branch as of time of writing
             "description": "IEEE 802.1AS gPTP for Clock Synchronization",
             "metadata": {
@@ -1369,6 +1372,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "release" ]; then cd IEEE8021AS/simulations && ../src/IEEE8021AS -n $INET_ROOT/src:.:../src -c Network_daisy_chain -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because the example simulation doesn't work in debug due to an error.'; fi""",
             ],
             "required_projects": {"omnetpp": ["5.2.*"], "inet": ["3.6.3"]},
             # "git_url": "https://gitlab.amd.e-technik.uni-rostock.de/peter.danielis/gptp-implementation.git",
@@ -1399,6 +1403,7 @@ def get_project_descriptions():
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/streetlightsim.tar.gz",
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "debug" ]; then cd examples/WSNRouting && ./WSNRouting -u Cmdenv -c flooding -r 0 > /dev/null; fi""",
+                """if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently the project is only built in debug mode.'; fi""",
             ],
             "build_commands": ["make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"],
@@ -1406,14 +1411,14 @@ def get_project_descriptions():
 
         {
             # DONE - release only
-            "name": "quagga", "version": "20090803",    # TODO is this the latest of master?
+            "name": "quagga", "version": "20090803",
             "description": "Port of the Quagga routing daemon into the INET Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INET-Quagga.html",
             },
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "release" ]; then cd examples/simpleTest && ./run -c OSPF1 -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
-                # TODO echo 'skipping test in debug'
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.1.*"], "inet": ["20100323"]},
             "download_url": "https://github.com/inet-framework/inet-quagga/archive/refs/tags/quagga-20090803.tar.gz",
@@ -1438,7 +1443,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/TCP-Fit-Illinois.html",
             },
             "smoke_test_commands": [
-                # TODO comment: because there is no example simulation, we copy an example from inet
+                # There is no example simulation in this project, so we copy a TCP example from inet and overwrite the TCP congestion control algorithm type
                 "cp $INET_ROOT/examples/inet/tcpwindowscale/omnetpp.ini $INET_ROOT/examples/inet/tcpwindowscale/test.ini",
                 """echo '**.tcpAlgorithmClass="TCPFit"' >> $INET_ROOT/examples/inet/tcpwindowscale/test.ini""",
                 "./tcp_fit_illinois $INET_ROOT/examples/inet/tcpwindowscale/test.ini -n $INET_ROOT/src:$INET_ROOT/examples -u Cmdenv -c WS_enabled --sim-time-limit=10s > /dev/null",
@@ -1601,9 +1606,9 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "debug" ]; then DEBUG_MODE_OPTION="-d"; fi""",
                 """if [ "$BUILD_MODE" = "release" ]; then DEBUG_MODE_OPTION=""; fi""",
-                "$VEINS_ROOT/sumo-launchd.py & bg_pid=$! > /dev/null",
+                "$VEINS_ROOT/sumo-launchd.py &> /dev/null & bg_pid=$! &> /dev/null",
                 "cd examples/veins-vlc && ./run $DEBUG_MODE_OPTION -c DriveVlc -u Cmdenv > /dev/null",
-                "kill $bg_pid > /dev/null",
+                "kill $bg_pid &> /dev/null",
             ],
             "download_url": "https://github.com/veins/veins_vlc/archive/refs/tags/veins-vlc-1.0.tar.gz",
             "build_commands": [

@@ -515,10 +515,11 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/OppBSD-4.0.html",
             },
             "smoke_test_commands": [
-                """if [ "$BUILD_MODE" = "release" ]; then cd examples/TwoSubnets && ./out/gcc-release/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini > /dev/null; fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then cd examples/TwoSubnets && ./out/gcc-release/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini > /dev/null; fi""",
+                """if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently this project only builds in debug mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.2.0"]},
-            "download_url": "https://svn.tm.kit.edu/trac/OppBSD/downloads/2",
+            "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/oppbsd-4.0.tar.gz",
             "build_commands": ["make MODE=$BUILD_MODE"],
             "setenv_commands": ["echo 'Hint: run example simulations from their folder. For example, in examples/TwoSubnets folder: `./out/gcc-debug/TwoSubnets omnetpp.ini`'"],
             "clean_commands": ["make clean"],

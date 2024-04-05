@@ -26,11 +26,11 @@ def make_veins_project_description(version, inet_versions, sumo_version, omnetpp
             # can't test 4.7.1 -> no sumo before 5.0
             """if [ "$BUILD_MODE" = "debug" ]; then DEBUG_POSTFIX="-d"; fi""",
             """if [ "$BUILD_MODE" = "release" ]; then DEBUG_POSTFIX=""; fi""",
-            "./sumo-launchd.py & bg_pid=$! > /dev/null",
+            "./sumo-launchd.py &> /dev/null & bg_pid=$! &> /dev/null",
             "cd examples/veins && ./run $DEBUG_POSTFIX -c Default -u Cmdenv > /dev/null",
             "export VEINS_INET_INI_CONFIG='-c plain'" if version >= "5.1" else "",
             "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd ../../subprojects/veins_inet/examples/veins_inet && ./run $DEBUG_POSTFIX $VEINS_INET_INI_CONFIG -u Cmdenv > /dev/null; else cd ../../subprojects/veins_inet3/examples/veins_inet && ./run $DEBUG_POSTFIX -u Cmdenv > /dev/null; fi",
-            "kill $bg_pid > /dev/null",
+            "kill $bg_pid &> /dev/null",
         ] if version >= "5.0" else ["echo 'Skipping test because required sumo version is not available as a nix package.'"],
         "build_commands": [ 
             "./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" if version >= "4.5" else "./configure --with-inet=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",

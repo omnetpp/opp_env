@@ -568,7 +568,6 @@ def get_project_descriptions():
             ],
             "nix_packages": ["sqlite"],
             "required_projects": {"omnetpp": ["4.2.0"]},
-            # "git_url": "https://github.com/kyeongsoo/inet-hnrl.git",
             "download_url": "https://github.com/kyeongsoo/inet-hnrl/archive/857ae37cd233914fd7271584afc4be10bcf75a61.tar.gz",
             "setenv_commands": ["export SQLITE_LIB=${pkgs.sqlite}/lib"],
             "patch_commands": [

@@ -10,19 +10,41 @@ authors = [
     {name = "Levente Mészáros", email = "levy@omnetpp.org"},
     {name = "Rudolf Hornig", email = "rudi@omnetpp.org"},
 ]
-description = "A tool, that sets up the development environment for OMNeT++ projects"
-readme = "README.md"
-requires-python = ">=3.9"
-keywords = ["omnetpp", "omnest"]
-license = {text = "LGPL-3"}
-classifiers = [
-    "Framework :: OMNeT++ :: 6",
+maintainers = [
+    {name = "Rudolf Hornig", email = "rudi@omnetpp.org"},
 ]
+description = "A tool, that sets up the development environment for OMNeT++ projects"
+keywords = ["omnetpp", "omnest", "simulation", "discrete", "event", "package manager", "model"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Environment :: Console",
+    "Programming Language :: C++",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Telecommunications Industry",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Topic :: Education",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Software Distribution",
+]
+readme = "README.md"
+requires-python = ">=3.11"
 dependencies = [
     'pip >= 23.0.0',
     'packaging',
 ]
 dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://omnetpp.org"
+Documentation = "https://github.com/omnetpp/opp_env/blob/main/README.md"
+Repository = "https://github.com/omnetpp/opp_env"
+Issues = "https://github.com/omnetpp/opp_env/issues"
+Changelog = "https://github.com/omnetpp/opp_env/commits/main"
 
 [project.optional-dependencies]
 
@@ -34,3 +56,4 @@ packages = ["opp_env"]
 
 [tool.setuptools_scm]
 write_to = "opp_env/_version.py"
+

@@ -32,11 +32,8 @@ classifiers = [
     "Topic :: System :: Software Distribution",
 ]
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    'pip >= 23.0.0',
-    'packaging',
-]
+requires-python = ">=3.9"
+dependencies = []
 dynamic = ["version"]
 
 [project.urls]

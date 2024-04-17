@@ -11,7 +11,6 @@ import shutil
 import tempfile
 import importlib
 import importlib.metadata
-from packaging.version import Version
 import platform
 import urllib.request
 
@@ -312,11 +311,6 @@ def create_arg_parser():
         "local"
     ])
 
-    subparser = subparsers.add_parser("upgrade", help="Upgrades opp_env to the latest version", description="Upgrades opp_env to the latest version")
-    subparser.add_argument("-n", "--dry-run", default=False, action='store_true', help="Test if an upgrade is available and simulate the upgrade without actually carrying out the installation")
-    subparser.add_argument("-c", "--check", default=False, action='store_true', help="Only test if an upgrade is available")
-    subparser.add_argument("--from-pypi", default=False, action='store_true', help="Use the latest version from PyPI instead of the latest version from the Git repository")
-
     subparser = subparsers.add_parser("maint", help="Maintenance functions", description="Maintenance functions")
     subparser.add_argument("-u", "--update-catalog", metavar="download-items-dir", dest="catalog_dir", help="Update the opp_env installation commands in the model catalog of omnetpp.org. The argument should point to the `download-items/` subdir of a checked-out copy of the https://github.com/omnetpp/omnetpp.org/ repository.")
 
@@ -371,23 +365,6 @@ To run a simulation model directly with the latest version of OMNeT++, run:
 
 def get_version():
     return importlib.metadata.version("opp_env")
-
-def get_latest_version_from_github():
-    try:
-        response = urllib.request.urlopen("https://api.github.com/repos/omnetpp/opp_env/git/refs/tags")
-        tag_refs = json.loads(response.read().decode('utf-8'))
-        tags = [ tag_ref['ref'].split('/')[-1] for tag_ref in tag_refs ]
-        return max([ tag for tag in tags if is_semver(tag)], key=natural_sort_key)
-    except Exception as e:
-        return None
-
-def get_latest_version_from_pypi():
-    try:
-        response = urllib.request.urlopen("https://pypi.org/pypi/opp_env/json")
-        json_data = json.loads(response.read().decode("utf-8"))
-        return json_data["info"]["version"]
-    except Exception as e:
-        return None
 
 def detect_nix():
     minimum_nix_version = "2.9"
@@ -1630,21 +1607,6 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
     _logger.info(f"Running {'test ' if run_test else 'smoke_test ' if run_smoke_test else ''}command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")
     workspace.nix_develop(effective_project_descriptions, workspace_directory, commands=commands, **dict(kwargs, suppress_stdout=False))
 
-def upgrade_subcommand_main(dry_run=False, from_pypi=False, check=False, **kwargs):
-    latest_version = get_latest_version_from_pypi() if from_pypi else get_latest_version_from_github()
-    version = get_version()
-    upgrade_needed = Version(version) < Version(latest_version)
-    _logger.info(f"An upgrade is available for opp_env" if upgrade_needed else f"opp_env is up-to-date")
-    _logger.info(f"Installed version: {cyan(version)}, latest version: {cyan(latest_version)}")
-    if check:
-        return
-    dry_run_option = "--dry-run" if dry_run else ""
-    module_spec = f"opp_env=={latest_version}" if from_pypi else f"git+https://github.com/omnetpp/opp_env.git@{latest_version}"
-    if upgrade_needed:
-        upgrade_command = f"pip3 install --user --upgrade --break-system-packages {dry_run_option} {module_spec}"
-        _logger.debug(f"Executing command: {upgrade_command}")
-        subprocess.run(["bash", "-c", upgrade_command])
-
 def maint_subcommand_main(catalog_dir, **kwargs):
     update_catalog(catalog_dir)
 
@@ -1705,8 +1667,6 @@ def main():
             shell_subcommand_main(**kwargs)
         elif subcommand == "run":
             run_subcommand_main(**kwargs)
-        elif subcommand == "upgrade":
-            upgrade_subcommand_main(**kwargs)
         elif subcommand == "maint":
             maint_subcommand_main(**kwargs)
         else:

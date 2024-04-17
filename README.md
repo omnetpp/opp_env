@@ -99,9 +99,9 @@ First, make sure that `pip` is the latest version:
 
     pip install --upgrade pip
 
-You can install `opp_env` directly from GitHub:
+You can now install `opp_env`:
 
-    pip3 install git+https://github.com/omnetpp/opp_env.git
+    pip3 install opp-env
 
 > [!IMPORTANT]
 > On some system, namely recent versions of Ubuntu / Debian, this

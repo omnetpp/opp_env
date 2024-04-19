@@ -222,6 +222,7 @@ def get_project_descriptions():
     ]
 
 inet_20100323 = {
+    # release only, because dependent projects (such as quagga) link with the release mode lib
     "name": "inet", "version": "20100323",
     "required_projects": {"omnetpp": ["4.1.0"]},        # TODO: try with 4.1.* -> build error
     "download_url": "https://github.com/inet-framework/inet/releases/download/master_20100323/inet-20100323-src.tgz",
@@ -232,7 +233,7 @@ inet_20100323 = {
         "sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/headers/sctp.h",
         "sed -i 's|addr.sin_len|// addr.sin_len|' src/linklayer/ext/*.cc",  # ugly hack? this is needed on apple
     ],
-    "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+    "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=release"],
     "clean_commands": ["make clean"],
 }
 

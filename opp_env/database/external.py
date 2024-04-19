@@ -526,7 +526,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
+            # DONE - release only
             "name": "rease", "version": "20130819",     # last commit of master branch as of time of writing
             "description": "Realistic Simulation Environments for OMNeT++",
             "metadata": {
@@ -535,8 +535,8 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 "cd Topologies/topo_router",
                 """if [ "$BUILD_MODE" = "release" ]; then REASE_BIN=$(echo $REASE_ROOT/ReaSE/out/*-release/src/rease); fi""",
-                """if [ "$BUILD_MODE" = "debug" ]; then REASE_BIN=$(echo $REASE_ROOT/ReaSE/out/*-debug/src/rease); fi""",
-                "$REASE_BIN -n .:../../ReaSE/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s > /dev/null",
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because the corresponding INET version is only built in release.'; fi""",
+                "$REASE_BIN -n .:../../ReaSE/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s &> /dev/null",
             ],
             "nix_packages": ["libpcap"],
             "required_projects": {"omnetpp": ["4.1.0"], "inet": ["20100323"]},
@@ -549,7 +549,7 @@ def get_project_descriptions():
                 "sed -i 's|-L$(INETDIR)/out/gcc-debug/ -lINET|-L$(INETDIR)/src -linet|' ReaSE/Makefile",
             ],
             "setenv_commands": ["echo 'Hint: in the folder of an example simulation (located in Topologies folder), use the `../../ReaSE/src/rease -n .:../../ReaSE/src:$INET_ROOT/src` command to run the simulation'"],
-            "build_commands": ["cd ReaSE && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "build_commands": ["cd ReaSE && make makefiles && make -j$NIX_BUILD_CORES MODE=release"],
             "clean_commands": ["make clean"],
         },
 
@@ -1410,7 +1410,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - release only
+            # DONE - release only; this project links with the inet release libs
             "name": "quagga", "version": "20090803",
             "description": "Port of the Quagga routing daemon into the INET Framework",
             "metadata": {
@@ -1418,7 +1418,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "release" ]; then cd examples/simpleTest && ./run -c OSPF1 -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
-                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode.'; fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently this project is only built in release mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.1.*"], "inet": ["20100323"]},
             "download_url": "https://github.com/inet-framework/inet-quagga/archive/refs/tags/quagga-20090803.tar.gz",
@@ -1430,7 +1430,7 @@ def get_project_descriptions():
                 "sed -i 's|$DIR/../../inet|$INET_ROOT|g' src/run_inet-quagga",
                 "sed -i 's|include ../../../../Makefile.inc|#include ../../../../Makefile.inc|g' src/quaggasrc/*/*/Makefile",
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && rm src/quagga-20090803"],     # rm is a kludge
+            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=release && rm src/quagga-20090803"],     # rm is a kludge
             "clean_commands": ["make clean"],
         },
 

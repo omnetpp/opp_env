@@ -1107,12 +1107,11 @@ def get_project_descriptions():
 
         {
             # DONE - no example simulation
-            # TODO: metadata catalog url
             "name": "wifidirect_allinone", "version": "3.4",
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.0.*"]},
             "metadata": {
-                "catalog_url": "",
+                "catalog_url": "https://omnetpp.org/download-items/Wifi-Direct.html",
             },
             "smoke_test_commands": [
                 # This projects doesn't contain any example simulations, so we test the project lib with an INET example

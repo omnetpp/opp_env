@@ -39,6 +39,7 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://omnetpp.org"
 Documentation = "https://github.com/omnetpp/opp_env/blob/main/README.md"
+Changes = "https://github.com/omnetpp/opp_env/blob/main/CHANGES.md"
 Repository = "https://github.com/omnetpp/opp_env"
 Issues = "https://github.com/omnetpp/opp_env/issues"
 Changelog = "https://github.com/omnetpp/opp_env/commits/main"

@@ -2,7 +2,13 @@
 
 ## dev branch
 
-### 0.29.0.240422
+### opp_env
+
+- add nix package and a flake file (use `nix shell` to start an opp_env enabled shell)
+
+## 0.29.0.240422
+
+### opp_env2
 
 - removed the `upgrade` subcommand
 

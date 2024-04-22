@@ -1,6 +1,6 @@
 { pkgs ? import <nixpkgs> {} }:
 let
-  version = "0.28.1.240417";
+  version = "0.29.0.240422";
 in
 pkgs.python3Packages.buildPythonPackage {
   name = "opp_env";

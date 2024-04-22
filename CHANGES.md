@@ -1,12 +1,15 @@
 # Changes
 
-## 0.29.0.240419
+## dev branch
 
-### opp_env
+### 0.29.0.240422
 
 - removed the `upgrade` subcommand
 
 ### Frameworks and models
+
+- oppbsd: fixed incorrect download URL
+- inet-2010323, rease, quagga: build only debug version, because inet-20100323 can only support one build at a time
 
 Supported simulation models and frameworks:
 

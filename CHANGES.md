@@ -6,6 +6,18 @@
 
 - add nix package and a flake file (use `nix shell` to start an opp_env enabled shell)
 
+### Frameworks and models
+
+- obs: build properly in both release and debug (still only tested in debug due to segfault)
+- dns, tcp_fit_illinois: build and test properly in both release and debug
+- rspsim: build tools in toolchain directory
+- streetlightsim: build and test in release and debug
+- added rspsim-6.1.3
+- solarleach: only build in release, because omnetpp 3.3 has no distinct debug/release
+- added castalia-3.3pr16. This is the 3.3 version ported to omnetpp-5
+- inet-3.4.0: removed omnetpp-5.0.* from dependencies due to build error
+- inet: use another example for smoke test; also properly test release and debug
+
 ## 0.29.0.240422
 
 ### opp_env2

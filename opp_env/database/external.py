@@ -153,7 +153,6 @@ def get_project_descriptions():
                 "cd examples/async/4x4 && ./run --$BUILD_MODE -u Cmdenv --sim-time-limit=0.01ms > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.5.*"]},
-            # "git_url": "https://github.com/yanivbi/HNOCS.git",
             "download_url": "https://github.com/yanivbi/HNOCS/archive/465754c28977a397e8ea4aef9296ca9987eb4f51.tar.gz",     # there are no releases, so we use a commit from the master branch
             "setenv_commands": [
                 "echo 'Hint: use the `./run_nocs` command in the examples folder.'",
@@ -174,7 +173,6 @@ def get_project_descriptions():
                 "cd simulations/examples && MODE=$BUILD_MODE ../runsim 01_example_strict_priority.ini --sim-time-limit=0.1s > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.4.*"], "inet": ["4.1.0"]},
-            # "git_url": "https://gitlab.com/ipvs/nesting.git",
             "download_url": "https://gitlab.com/ipvs/nesting/-/archive/v0.9.1/nesting-v0.9.1.tar.gz",
             "patch_commands": [
                 "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
@@ -205,8 +203,6 @@ def get_project_descriptions():
             ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["4.1.*"]},
-            # "git_url": "https://github.com/boulis/Castalia.git",  # for master branch version
-            # "required_projects": {"omnetpp": ["4.4"]},
             "download_url": "https://github.com/boulis/Castalia/archive/refs/tags/3.3.tar.gz",
             "patch_commands": [
                 "sed -i 's|bin/python|bin/env python2|' Castalia/bin/Castalia",
@@ -327,7 +323,6 @@ def get_project_descriptions():
                 "cd examples/Demos/UseCase1 && opp_run$BUILD_MODE_SUFFIX omnetpp.ini -u Cmdenv -c Ping -n $RINASIM_ROOT -l $RINASIM_ROOT/policies/rinasim > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.2.*"]},
-            # "git_url": "https://github.com/kvetak/RINA.git",
             "download_url": "https://github.com/kvetak/RINA/archive/eb6baaf1034319245fa9e4b846a61094445c8d8a.tar.gz",
             "patch_commands": [
                 "sed -i -E 's|-O out|-O out -I. -I../src|g' makemakefiles",
@@ -351,7 +346,6 @@ def get_project_descriptions():
                 """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug, because currently the project only builds in release.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"]},
-            # "git_url": "https://github.com/michaelkirsche/IEEE802154INET-Standalone.git",     # master branch
             "download_url": "https://github.com/michaelkirsche/IEEE802154INET-Standalone/archive/28add1dd6a208f9f410f7c5c34631550edd2f371.tar.gz",
             "patch_commands": [
                 "sed -i 's|INETDefs.h|base/INETDefs.h|g' src/*/*.h",
@@ -381,7 +375,6 @@ def get_project_descriptions():
             ],
             "nix_packages": ["libxml2"],
             "required_projects": {"omnetpp": ["4.6.*"]},
-            # "git_url": "https://github.com/Mellanox/DCTrafficGen.git",    # master branch
             "download_url": "https://github.com/Mellanox/DCTrafficGen/archive/dcfa2b9df46b1681634a340731d2242e97c10abd.tar.gz",
             "patch_commands": [
                 "sed -i 's|/usr/include/libxml2/|${pkgs.libxml2.dev}/include/libxml2|g' Makefile dctg_example/Makefile",
@@ -403,7 +396,6 @@ def get_project_descriptions():
                 "cd afdx/simulations && ../src/afdx$BUILD_MODE_SUFFIX -n .:../src:../../queueinglib AutoNetwork.ini -u Cmdenv --sim-time-limit=1s > /dev/null"
             ],
             "required_projects": {"omnetpp": ["6.0.*"]},
-            # "git_url": "https://github.com/badapplexx/AFDX.git",      # master branch
             "download_url": "https://github.com/badapplexx/AFDX/archive/f6ddd70438e1c9ee885a4adef8d2503a5108ade4.tar.gz",
             "patch_commands": [
                 "sed -i 's|.:../src|.:../src:../../queueinglib|g' afdx/simulations/run",
@@ -450,7 +442,6 @@ def get_project_descriptions():
                 "$CELL_BIN -u Cmdenv -c demo-emission -n .. ../networks/demo.ini > /dev/null",
             ],
             "required_projects": {"omnetpp": ["4.0.*"]},
-            # "git_url": "https://github.com/dhuertas/cell-signaling.git",  # master branch
             # we're using a hash from master because there are no releases
             "download_url": "https://github.com/dhuertas/cell-signaling/archive/3434cc00f7ab7bfc33b4ff94e3a355df8e6947bb.tar.gz",
             "setenv_commands": ["echo 'Hint: in the src folder, use the `./cell` command to run simulations. For example: `./cell -n .. ../networks/demo.ini`'"],
@@ -497,7 +488,6 @@ def get_project_descriptions():
             "download_url": "https://github.com/aarizaq/inetmanet-3.x/archive/a206218213f96382217a8653ede21f15974c4e70.tar.gz",
             "patch_commands": [
                 "find . -type f -name 'run' -exec chmod +x {} \;",
-                # "sed -i 's|DIR=`dirname $0`|DIR=`dirname \\$0`/../src|' bin/run_inet",
                 "cp src/run_inet src/run_inet_dbg",
                 "sed -i 's|opp_run|opp_run_dbg|' src/run_inet_dbg",
                 ],
@@ -540,7 +530,6 @@ def get_project_descriptions():
             ],
             "nix_packages": ["libpcap"],
             "required_projects": {"omnetpp": ["4.1.0"], "inet": ["20100323"]},
-            # "git_url": "https://github.com/ToGaKIT/ReaSE.git",    # master branch
             # we're using a hash from master because there are no releases
             "download_url": "https://github.com/ToGaKIT/ReaSE/archive/3f5cd1fd4373da44592a2a0ef160c22331f41967.tar.gz",
             "patch_commands": [
@@ -649,7 +638,6 @@ def get_project_descriptions():
                 "$STOCHASTICBATTERY_BIN -u Cmdenv --sim-time-limit=10s > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.0.*"]},
-            # "git_url": "https://github.com/brandte/stochastic_battery.git",
             "download_url": "https://github.com/brandte/stochastic_battery/archive/dd999402a0aa7c88a9f78a3ca23f193b8250a925.tar.gz",
             "patch_commands": [
                 "rm -r out *.exe",
@@ -671,11 +659,9 @@ def get_project_descriptions():
                 "./chaosmanager$BUILD_MODE_SUFFIX $INET_ROOT/examples/aodv/omnetpp.ini -n $INET_ROOT/src:$INET_ROOT/examples -u Cmdenv --sim-time-limit=10s > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.6.2"], "inet": ["4.2.5"]},
-            # "git_url": "https://github.com/Agr-IoT/WSN-Chaos-Manager.git",
             "download_url": "https://github.com/Agr-IoT/WSN-Chaos-Manager/archive/07272355eb0e8d5fa6216b9dcfb07fcac0a5115b.tar.gz",
             "setenv_commands": [
                 "echo 'Hint: use the `./chaosmanager` command to run simulations. Note that this project does not contain any example simulations.'",
-                # ./chaosmanager $INET_ROOT/examples/aodv/omnetpp.ini -n $INET_ROOT/src:$INET_ROOT/examples -> for testing (or -h -> to load so)
             ],
             "patch_commands": [
                 "sed -i 's|#include \"inet/common/chaos/ChaosEvent_m.h\"|#include \"ChaosEvent_m.h\"|g' ChaosManager.cc",
@@ -709,7 +695,7 @@ def get_project_descriptions():
         
         {
             # DONE
-            # this doesnt contain examples for swim
+            # this does not contain examples for swim
             "name": "swim_allinone", "version": "20180221",     # last commit of master branch as of time of writing
             "description": "Small Worlds in Motion (SWIM) mobility model. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
             "metadata": {
@@ -1000,7 +986,6 @@ def get_project_descriptions():
         
         {
             # DONE
-            # TODO: update catalog -> wrong url
             "name": "omnet_tdma", "version": "1.0.2",
             "description": "An abstract TDMA MAC protocol for the INET Framework",
             "metadata": {
@@ -1224,7 +1209,6 @@ def get_project_descriptions():
                 "cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/openflow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=1s > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.5.1"], "inet": ["3.6.6"]},
-            # git_url": "https://github.com/inet-framework/openflow.git",
             # there are no releases, so we use a commit from the master branch
             "download_url": "https://github.com/CoRE-RG/OpenFlow/archive/72fc3c2bcfb720087225728e130c06fac1c7f0f2.tar.gz",
             "patch_commands": [
@@ -1374,7 +1358,6 @@ def get_project_descriptions():
                 """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because the example simulation doesn't work in debug due to an error.'; fi""",
             ],
             "required_projects": {"omnetpp": ["5.2.*"], "inet": ["3.6.3"]},
-            # "git_url": "https://gitlab.amd.e-technik.uni-rostock.de/peter.danielis/gptp-implementation.git",
             # there are no releases, so we use a commit from the master branch
             "download_url": "https://gitlab.amd.e-technik.uni-rostock.de/peter.danielis/gptp-implementation/-/archive/c498af56431d45b71ab5732cb352d03774344b6c/gptp-implementation-c498af56431d45b71ab5732cb352d03774344b6c.tar.gz",
             "patch_commands": [
@@ -1568,8 +1551,7 @@ def get_project_descriptions():
         },
         
         {
-            # DONE - deleted from github -> found at https://github.com/s2r2010/crSimulator
-            # TODO: update catalog
+            # DONE
             "name": "crsimulator", "version": "20140204",
             "description": "Model for Cognitive Radio Ad hoc Network Simulations in OMNeT++",
             "metadata": {

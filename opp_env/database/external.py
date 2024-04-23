@@ -497,7 +497,7 @@ def get_project_descriptions():
         },
         
         {
-            # DONE - TwoSubnets example works, but segfault when running some other simulations; only tested in release
+            # DONE - TwoSubnets example works, but segfault when running some other simulations; only tested in debug
             # TODO this only builds debug (twice apparently)
             "name": "oppbsd", "version": "4.0",
             "description": "OppBSD integrates essential parts of the real FreeBSD networking stack into OMNeT++ as a simulation model",

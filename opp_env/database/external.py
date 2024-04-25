@@ -609,7 +609,8 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/SolarLEACH.html",
             },
             "smoke_test_commands": [
-                "cd leachDist && ./leachDist -u Cmdenv -L$OMNETPP_ROOT/src/cmdenv/libcmdenv -c Run1 -r 1 --sim-time-limit=10s > /dev/null",
+                """if [ "$BUILD_MODE" = "release" ]; then cd leachDist && ./leachDist -u Cmdenv -L$OMNETPP_ROOT/src/cmdenv/libcmdenv -c Run1 -r 1 --sim-time-limit=10s > /dev/null; fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because this project is only built in release mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["3.3.*"]},
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/SolarLEACH-1.01.tgz",

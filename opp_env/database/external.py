@@ -290,6 +290,28 @@ def get_project_descriptions():
         },
 
         {
+            # DONE
+            # with omnetpp 5.7.*: error: no type named 'cValue' in namespace 'omnetpp'
+            "name": "rspsim", "version": "6.1.3",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/RSPSIM.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv > /dev/null",
+            ],
+            "required_projects": {"omnetpp": ["6.0.*"]},
+            "download_url": "https://github.com/dreibh/rspsim/archive/refs/tags/rspsim-6.1.3.tar.gz",
+            "patch_commands": [
+                "sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/poolelementnode-template.h",
+                "sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/transportaddressblock.c",
+            ],
+            "build_commands": ["cd model && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../toolchain/tools && make"],
+            "setenv_commands": ["echo 'Hint: Use `./model` command in the model folder. For example: ./model test1.ini'"],
+            "clean_commands": ["make clean"],
+        },
+
+        {
             # DONE - ok
             "name": "rspsim", "version": "6.1.2",
             "metadata": {

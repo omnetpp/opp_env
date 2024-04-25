@@ -679,7 +679,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "release" ]; then cd simulations && ../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src -c Messenger-Epidemic-SWIM -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
-                """if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in debug mode, because currently the project only builds in release mode.'; fi"""
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently the project only builds in release mode.'; fi"""
             ],
             "nix_packages": ["autoconf", "automake", "libtool"],
             "required_projects": {"omnetpp": ["5.4.*"]},

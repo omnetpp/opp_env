@@ -1260,7 +1260,7 @@ def get_project_descriptions():
         
         {
             # DONE
-            # TODO:  make this work with omnetpp 4.1.*
+            # with 4.1.1 and 4.1.x: error: non-constant-expression cannot be narrowed from type 'uint32_t' (aka 'unsigned int') to 'int' in initializer list [-Wc++11-narrowing]
             "name": "inet_hnrl", "version": "20100723",     # latest commit of master branch as of the time of writing
             "description": "Fork of INET developed for hybrid networking research, providing new models in both optical and wireless networking areas and their hybrid.",
             "metadata": {

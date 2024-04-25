@@ -1369,7 +1369,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - only builds (and tested) in debug
+            # DONE
             "name": "streetlightsim", "version": "1.0",
             "description": "Research project for evaluating Autonomous and Adaptive Street Lighting Schemes based on Road User's presence detection over wireless sensor networks.",
             "metadata": {
@@ -1379,10 +1379,10 @@ def get_project_descriptions():
             "nix_packages": ["sumo", "python2"],
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/streetlightsim.tar.gz",
             "smoke_test_commands": [
-                """if [ "$BUILD_MODE" = "debug" ]; then cd examples/WSNRouting && ./WSNRouting -u Cmdenv -c flooding -r 0 > /dev/null; fi""",
-                """if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently the project is only built in debug mode.'; fi""",
+                "WSNROUTING_BIN=$(echo $STREETLIGHTSIM_ROOT/out/*-$BUILD_MODE/examples/WSNRouting/WSNRouting)",
+                "cd examples/WSNRouting && $WSNROUTING_BIN -u Cmdenv -c flooding -r 0 > /dev/null",
             ],
-            "build_commands": ["make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "build_commands": ["make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"],
         },
 

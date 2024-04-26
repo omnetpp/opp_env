@@ -624,7 +624,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE -> omnetpp 3.3 so no distinct debug/release
+            # DONE -> only built and tested in release, because omnetpp 3.3 has no distinct debug/release
             "name": "solarleach", "version": "1.01",
             "description": "A simulation of LEACH (Low-Energy Adaptive Clustering Hierarchy) cluster-based protocol for sensor networks with an extension to make it solar-aware.",
             "metadata": {
@@ -643,7 +643,7 @@ def get_project_descriptions():
                 "chmod +x leachDist/runall.sh",
                 "sed -i 's|BS::||g' leachFarBS/bs.h",
             ],
-            "build_commands": ["cd leachDist && opp_makemake -f -N && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../leachFarBS && opp_makemake -f -N && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "build_commands": ["cd leachDist && opp_makemake -f -N && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../leachFarBS && opp_makemake -f -N && make -j$NIX_BUILD_CORES MODE=release"],
             "clean_commands": ["make clean"],
         },
 

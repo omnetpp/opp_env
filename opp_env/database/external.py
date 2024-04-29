@@ -190,6 +190,30 @@ def get_project_descriptions():
         },
 
         {
+            # DONE
+            # Castalia ported to omnetpp 5.4
+            "name": "castalia", "version": "3.3pr16",
+            "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Castalia.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/out/*-release/src/CastaliaBin); fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/out/*-debug/src/CastaliaBin_dbg); fi""",
+                "cd Simulations/BANtest && $CASTALIA_BIN -f omnetpp.ini -u Cmdenv -c TMAC > /dev/null",
+            ],
+            "nix_packages": ["python2"],
+            "required_projects": {"omnetpp": ["5.3.*", "5.4.*", "5.6.*", "5.7.*"]},   # with omnetpp-6.0.*, 5.2.*: opp_msgtool: option is no longer supported: --msg4
+            "download_url": "https://github.com/rhornig/Castalia/archive/refs/heads/topic/omnetpp54-compatibility.tar.gz",
+            "setenv_commands": [
+                "export PATH=$PATH:$CASTALIA_ROOT/Castalia/bin",
+                "echo 'Hint: Use the `Castalia` command to run the examples in the Simulations folder.'"
+            ],
+            "build_commands": ["./makemake && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"]
+        },
+
+        {
             # DONE - ok
             "name": "castalia", "version": "3.3",
             "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",

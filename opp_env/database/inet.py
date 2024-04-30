@@ -106,10 +106,11 @@ def make_inet_project_description(inet_version, omnetpp_versions):
         ],
         "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
         "smoke_test_commands": [
-            "cd examples/adhoc/ieee80211",
-            """if [ "$mode" = "debug" ]; then DBG_SUFFIX="_dbg"; fi""",
-            "./run -c Ping1 -u Cmdenv --sim-time-limit=60s >/dev/null" if inet_version < "4.0" else
-            "inet$DBG_SUFFIX -c Ping1 -u Cmdenv --sim-time-limit=60s >/dev/null"
+            "cd examples/ethernet/arptest",
+            """if [ "$mode" = "debug" ]; then DBG_SUFFIX="_dbg"; INET_LIB=$(echo $INET_ROOT/out/*-debug/src/*INET*); fi""",
+            """if [ "$mode" = "release" ]; then DBG_SUFFIX=""; INET_LIB=$(echo $INET_ROOT/out/*-release/src/*INET*); fi""",
+            "opp_run -l $INET_LIB -n $INET_ROOT/tutorials:$INET_ROOT/examples:.:$INET_ROOT/src -c ARPTest -u Cmdenv --sim-time-limit=10s > /dev/null" if inet_version < "4.0" else
+            "inet$DBG_SUFFIX -c ARPTest -u Cmdenv --sim-time-limit=10s >/dev/null"
         ],
         "options": {
             "from-release": {

@@ -12,7 +12,6 @@ def get_project_descriptions():
                 "cd examples/flexray/dynamic && run_fico4omnet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1s > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.5.*", "5.6.*", "5.7.*"]},
-            # "git_url": "https://github.com/CoRE-RG/FiCo4OMNeT.git",
             "download_url": "https://github.com/CoRE-RG/FiCo4OMNeT/archive/refs/tags/nightly/2021-01-13_00-00-25.tar.gz",       # there are no releases available, so we download the latest nightly
             "patch_commands": [
                 "mkdir bin",
@@ -315,7 +314,6 @@ def get_project_descriptions():
 
         {
             # DONE
-            # with omnetpp 5.7.*: error: no type named 'cValue' in namespace 'omnetpp'
             "name": "rspsim", "version": "6.1.3",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RSPSIM.html",
@@ -324,7 +322,7 @@ def get_project_descriptions():
                 """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 "cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv > /dev/null",
             ],
-            "required_projects": {"omnetpp": ["6.0.*"]},
+            "required_projects": {"omnetpp": ["6.0.*"]}, # with omnetpp 5.7.*: error: no type named 'cValue' in namespace 'omnetpp'
             "download_url": "https://github.com/dreibh/rspsim/archive/refs/tags/rspsim-6.1.3.tar.gz",
             "patch_commands": [
                 "sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/poolelementnode-template.h",
@@ -1177,7 +1175,6 @@ def get_project_descriptions():
                 "cd libara_allinone-20150402",
                 "git reset --hard 5b40a41839167c6709d86400d41be51f1ce51781",
                 "sed -i 's|git:\/\/|https:\/\/|g' .gitmodules",
-                "pwd",
                 "cd inetmanet",
                 "git submodule init",
                 "git submodule update",
@@ -1307,8 +1304,7 @@ def get_project_descriptions():
         
         {
             # DONE
-            # with 4.1.1 and 4.1.x: error: non-constant-expression cannot be narrowed from type 'uint32_t' (aka 'unsigned int') to 'int' in initializer list [-Wc++11-narrowing]
-            "name": "inet_hnrl", "version": "20100723",     # latest commit of master branch as of the time of writing
+            "name": "inet_hnrl", "version": "20100723",     # This is the master_20100723 release
             "description": "Fork of INET developed for hybrid networking research, providing new models in both optical and wireless networking areas and their hybrid.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INET-HNRL.html",
@@ -1319,9 +1315,9 @@ def get_project_descriptions():
                 "$OPP_RUN_BIN -l $INET_HNRL_LIB -n src:examples  -c ARPTest -u Cmdenv examples/ethernet/arptest/omnetpp.ini > /dev/null"
             ],
             "nix_packages": ["sqlite"],
-            "required_projects": {"omnetpp": ["4.1.0"]},
+            "required_projects": {"omnetpp": ["4.1.0"]}, # with 4.1.1 and 4.1.x: error: non-constant-expression cannot be narrowed from type 'uint32_t' (aka 'unsigned int') to 'int' in initializer list [-Wc++11-narrowing]
             "download_url": "https://github.com/kyeongsoo/inet-hnrl/archive/refs/tags/master_20100723.tar.gz",
-            "patch_commands": [            # This is the master_20100723 release
+            "patch_commands": [
                 "sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/headers/sctp.h",
                 "sed -i 's|addr.sin_len|// addr.sin_len|' src/linklayer/ext/*.cc",  # ugly hack? this is needed on apple
                 "sed -i 's|machine/endian|endian|' src/util/headerserializers/headers/defs.h",

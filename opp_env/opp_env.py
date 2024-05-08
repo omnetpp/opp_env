@@ -1570,8 +1570,8 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     _logger.info(f"Starting {cyan(kind)} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
-    if chdir and projects:
-        first_project_description = specified_project_descriptions[0]
+    if chdir and effective_project_descriptions:
+        first_project_description = effective_project_descriptions[0]
         first_project_dir = workspace.get_project_root_directory(first_project_description)
         if chdir == "convenience":
             chdir = not is_subdirectory(os.getcwd(), first_project_dir)  # "is outside the project dir"

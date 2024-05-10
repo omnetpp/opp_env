@@ -1,5 +1,7 @@
 
 def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versions):
+    is_git_branch = simu5g_version == "master"
+    git_branch_or_tag_name = f"v{simu5g_version}" if simu5g_version[0].isdigit() else simu5g_version
     return {
         "name": "simu5g", "version": simu5g_version,
         "description": "5G NR and LTE/LTE-A user-plane simulation model",
@@ -14,7 +16,6 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
             """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX=""; fi""",
             "opp_run$BUILD_MODE_SUFFIX -l $SIMU5G_ROOT/src/simu5g -l $INET_ROOT/src/INET -n $SIMU5G_ROOT/simulations:$SIMU5G_EMULATION_ROOT:$SIMU5G_ROOT/src:$INET_ROOT/src -c VideoStreaming -r 0 -u Cmdenv --sim-time-limit=10s > /dev/null",
         ],
-        "download_url": f"https://github.com/Unipisa/Simu5G/archive/refs/tags/v{simu5g_version}.tar.gz",
         "patch_commands": [
             "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
             "sed -i -E 's|^INET_SRC=.*|INET_SRC=$INET_ROOT/src|' bin/simu5g",
@@ -25,7 +26,22 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
             "source setenv -f"
         ],
         "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
-        "clean_commands": [ "make clean" ]
+        "clean_commands": [ "make clean" ],
+        "options": {
+            "from-release": {
+                "option_description": "Install from release tarball on GitHub",
+                "option_category": "download",
+                "option_is_default": not is_git_branch,
+                "download_url": f"https://github.com/Unipisa/Simu5G/archive/refs/tags/v{simu5g_version}.tar.gz" if not is_git_branch else None,
+            },
+            "from-git": {
+                "option_description": "Install from git repo on GitHub",
+                "option_category": "download",
+                "option_is_default": is_git_branch,
+                "git_url": "https://github.com/Unipisa/Simu5G.git",
+                "git_branch": git_branch_or_tag_name,
+            },
+        },
     }
 
 def get_project_descriptions():
@@ -34,4 +50,5 @@ def get_project_descriptions():
         ["1.2.1", ["4.4.*"], ["6.0.*"]],
         # ["1.2.0", ["4.3.2"], ["6.0pre10"]], -- unavailable because OMNeT++ prereleases are not kept
         ["1.1.0", ["4.2.*"], ["5.6.*", "5.7.*"]],
+        ["master", ["4.5.*"], ["6.0.*"]],
     ]]

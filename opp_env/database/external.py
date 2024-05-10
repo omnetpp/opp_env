@@ -121,7 +121,50 @@ def get_project_descriptions():
 
         {
             # DONE - ok
-            "name": "core4inet", "version": "221109",       # last commit of master branch as of time of writing
+            "name": "core4inet", "version": "240124",
+            "description": "Real-Time Ethernet protocols for INET",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Core4INET.html",
+            },
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s > /dev/null",
+            ],
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"]},
+            "patch_commands": [
+                "sed -i -E 's|INET_PROJ=[^ ]+|INET_PROJ=$(INET_ROOT)|' Makefile",
+                "sed -i -E 's|-L.*/src|-L$$\\\\(INET_PROJ\\\\)/src|' Makefile",
+                "sed -i -E 's|-O out |-O out -o CoRE4INET |' Makefile",
+                "sed -i 's|-lINET$(DBG_SUFFIX)|-lINET$$\\\(D\\\)|' Makefile",
+                "sed -i -E 's|INET_PROJ\); opp_featuretool|INET_PROJ\); ./inet_featuretool|' src/dependencies_makefrag",    # this is needed for the from-git option (but works with the from-release as well)
+            ],
+            "setenv_commands": [
+                "echo 'Hint: use the `./rundemo` command in the examples folder or the `./run` command in any of the example subfolders.'",
+                "export INETPATH=$INET_ROOT",
+                "export INET_PROJ=$INET_ROOT",
+            ],
+            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/CoRE-RG/CoRE4INET/archive/refs/tags/nightly/2024-01-24_15-05-19.tar.gz"
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/CoRE-RG/CoRE4INET.git",
+                    "git_branch": "nightly/2024-01-24_15-05-19",
+                },
+            },
+        },
+
+        {
+            # DONE - ok
+            "name": "core4inet", "version": "221109",
             "description": "Real-Time Ethernet protocols for INET",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Core4INET.html",

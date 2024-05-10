@@ -18,6 +18,8 @@
 - added castalia-3.3pr16. This is the 3.3 version ported to omnetpp-5
 - inet-3.4.0: removed omnetpp-5.0.* from dependencies due to build error
 - inet: use another example for smoke test; also properly test release and debug
+- added from-git-option to simu5g, simulte, fico4omnet, ansa, core4inet, simproctc, rspsim, ops and rina
+- added newer version for core4inet (240124)
 
 ## 0.29.0.240422
 

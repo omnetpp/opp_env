@@ -12,7 +12,6 @@ def get_project_descriptions():
                 "cd examples/flexray/dynamic && run_fico4omnet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1s > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.5.*", "5.6.*", "5.7.*"]},
-            "download_url": "https://github.com/CoRE-RG/FiCo4OMNeT/archive/refs/tags/nightly/2021-01-13_00-00-25.tar.gz",       # there are no releases available, so we download the latest nightly
             "patch_commands": [
                 "mkdir bin",
                 "rm src/run_fico4omnet.cmd",
@@ -23,12 +22,27 @@ def get_project_descriptions():
                 "sed -i 's|opp_run|opp_run_dbg|' bin/run_fico4omnet_dbg",
             ],
             "setenv_commands": [
-                "export NEDPATH=$NEDPATH:$FICO4OMNET_ROOT/src:$FICO4OMNET_ROOT/examples:$FICO4OMNET_ROOT/examples_andl:$FICO4OMNET_ROOT/simulations",
+                "export NEDPATH=$NEDPATH:.:$FICO4OMNET_ROOT/src:$FICO4OMNET_ROOT/examples:$FICO4OMNET_ROOT/examples_andl:$FICO4OMNET_ROOT/simulations",
                 "export PATH=$PATH:$FICO4OMNET_ROOT/bin",
                 "echo 'Hint: use the `run_fico4omnet` command to run the simulations in the examples folder.'"
             ],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": ["make clean"],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/CoRE-RG/FiCo4OMNeT/archive/refs/tags/nightly/2021-01-13_00-00-25.tar.gz",       # there are no releases available, so we download the latest nightly
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/CoRE-RG/FiCo4OMNeT.git",
+                    "git_branch": "nightly/2021-01-13_00-00-25",
+                },
+            },
         },
 
         {
@@ -45,8 +59,6 @@ def get_project_descriptions():
                 "opp_run$BUILD_MODE_SUFFIX -l $ANSA_LIB -n $ANSA_ROOT/tutorials:$ANSA_ROOT/examples:$ANSA_ROOT/src -c EIGRP_unequal_cost_lb -u Cmdenv > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.1.*"]},
-            "git_url": "https://github.com/kvetak/ANSA.git",
-            "git_branch": "ansainet-3.4.0",
             "patch_commands": [
                 "chmod +x inet_featuretool",
                 "chmod +x src/run_inet",
@@ -64,6 +76,21 @@ def get_project_descriptions():
             ],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             "clean_commands": ["make clean"],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/kvetak/ANSA/archive/58982068c3c1efc181631c4edf1e4be4c717a136.tar.gz",       # latest commit on ansainet-3.4.0 branch
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/kvetak/ANSA.git",
+                    "git_branch": "ansainet-3.4.0",
+                },
+            },
         },
 
         {
@@ -104,19 +131,34 @@ def get_project_descriptions():
                 "cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.5.*"], "inet": ["3.6.6"]},
-            "download_url": "https://github.com/CoRE-RG/CoRE4INET/archive/refs/tags/nightly/2022-11-09_00-01-11.tar.gz",
             "patch_commands": [
                 "sed -i -E 's|INET_PROJ=[^ ]+|INET_PROJ=$(INET_ROOT)|' Makefile",
                 "sed -i -E 's|-L.*/src|-L$$\\\\(INET_PROJ\\\\)/src|' Makefile",
                 "sed -i -E 's|-O out |-O out -o CoRE4INET |' Makefile",
-                "sed -i 's|-lINET$(DBG_SUFFIX)|-lINET$$\\\(D\\\)|' Makefile"
+                "sed -i 's|-lINET$(DBG_SUFFIX)|-lINET$$\\\(D\\\)|' Makefile",
+                "sed -i -E 's|INET_PROJ\); opp_featuretool|INET_PROJ\); ./inet_featuretool|' src/dependencies_makefrag",    # this is needed for the from-git option (but works with the from-release as well)
             ],
             "setenv_commands": [
                 "echo 'Hint: use the `./rundemo` command in the examples folder or the `./run` command in any of the example subfolders.'",
                 "export INETPATH=$INET_ROOT",
             ],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": ["make clean"],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/CoRE-RG/CoRE4INET/archive/refs/tags/nightly/2022-11-09_00-01-11.tar.gz"
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/CoRE-RG/CoRE4INET.git",
+                    "git_branch": "nightly/2022-11-09_00-01-11",
+                },
+            },
         },
 
         {
@@ -131,13 +173,27 @@ def get_project_descriptions():
                 "cd example-simulation && ./example-simulation$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s > /dev/null",
             ],
             "required_projects": {"omnetpp": ["6.0.*"]},
-            "download_url": "https://github.com/dreibh/simproctc/archive/refs/tags/simproctc-2.0.2.tar.gz",
             "setenv_commands": [
                 "export OPPMAIN_LIB=$OMNETPP_ROOT/lib",
                 "echo 'Hint: use the `./example_simulation` command in the example-simulation folder.'",
                 ],
             "build_commands": ["cd example-simulation && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": ["make clean"],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/dreibh/simproctc/archive/refs/tags/simproctc-2.0.2.tar.gz",
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/dreibh/simproctc.git",
+                    "git_branch": "simproctc-2.0.2",
+                },
+            },
         },
 
         {
@@ -323,7 +379,6 @@ def get_project_descriptions():
                 "cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv > /dev/null",
             ],
             "required_projects": {"omnetpp": ["6.0.*"]}, # with omnetpp 5.7.*: error: no type named 'cValue' in namespace 'omnetpp'
-            "download_url": "https://github.com/dreibh/rspsim/archive/refs/tags/rspsim-6.1.3.tar.gz",
             "patch_commands": [
                 "sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/poolelementnode-template.h",
                 "sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/transportaddressblock.c",
@@ -331,6 +386,21 @@ def get_project_descriptions():
             "build_commands": ["cd model && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../toolchain/tools && make"],
             "setenv_commands": ["echo 'Hint: Use `./model` command in the model folder. For example: ./model test1.ini'"],
             "clean_commands": ["make clean"],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/dreibh/rspsim/archive/refs/tags/rspsim-6.1.3.tar.gz",
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/dreibh/rspsim.git",
+                    "git_branch": "rspsim-6.1.3",
+                },
+            },
         },
 
         {
@@ -344,7 +414,6 @@ def get_project_descriptions():
                 "cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv > /dev/null",
             ],
             "required_projects": {"omnetpp": ["6.0.*", "5.7.*"]},
-            "download_url": "https://github.com/dreibh/rspsim/archive/refs/tags/rspsim-6.1.2.tar.gz",
             "patch_commands": [
                 "sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/poolelementnode-template.h",
                 "sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/transportaddressblock.c",
@@ -352,6 +421,21 @@ def get_project_descriptions():
             "build_commands": ["cd model && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../toolchain/tools && make"],
             "setenv_commands": ["echo 'Hint: Use `./model` command in the model folder. For example: ./model test1.ini'"],
             "clean_commands": ["make clean"],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/dreibh/rspsim/archive/refs/tags/rspsim-6.1.2.tar.gz",
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/dreibh/rspsim.git",
+                    "git_branch": "rspsim-6.1.2",
+                },
+            },
         },
 
         {
@@ -366,7 +450,6 @@ def get_project_descriptions():
                 "cd examples/Demos/UseCase1 && opp_run$BUILD_MODE_SUFFIX omnetpp.ini -u Cmdenv -c Ping -n $RINASIM_ROOT -l $RINASIM_ROOT/policies/rinasim > /dev/null",
             ],
             "required_projects": {"omnetpp": ["5.2.*"]},
-            "download_url": "https://github.com/kvetak/RINA/archive/eb6baaf1034319245fa9e4b846a61094445c8d8a.tar.gz",
             "patch_commands": [
                 "sed -i -E 's|-O out|-O out -I. -I../src|g' makemakefiles",
             ],
@@ -374,7 +457,22 @@ def get_project_descriptions():
                 "echo 'Hint: use `./simulate.sh examples/Demos/UseCase1/ -G -c Ping`'",
             ],
             "build_commands": ["make -f makemakefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": ["make clean"],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/kvetak/RINA/archive/eb6baaf1034319245fa9e4b846a61094445c8d8a.tar.gz",
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/kvetak/RINA.git",
+                    "git_branch": "master",
+                },
+            },
         },
 
         {
@@ -728,13 +826,27 @@ def get_project_descriptions():
             ],
             "nix_packages": ["autoconf", "automake", "libtool"],
             "required_projects": {"omnetpp": ["5.4.*"]},
-            "download_url": "https://github.com/ComNets-Bremen/OPS/archive/57ecc379631eec4bb640b022391f2cf808ff09f4.tar.gz",
             "patch_commands": [
                 "sed -i 's|-j 1|-j$NIX_BUILD_CORES|g' bootstrap.sh",
             ],
             "setenv_commands": ["echo 'Hint: in the `simulations` folder, use the `../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src` command to run the example simulation.'"],
             "build_commands": ["./bootstrap.sh && ./ops-makefile-setup.sh && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": ["make clean"],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/ComNets-Bremen/OPS/archive/57ecc379631eec4bb640b022391f2cf808ff09f4.tar.gz",
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/ComNets-Bremen/OPS.git",
+                    "git_branch": "master",
+                },
+            },
         },
         
         {

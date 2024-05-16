@@ -4,6 +4,12 @@
 
 ### opp_env
 
+### Frameworks and models
+
+## 0.29.1.240516
+
+### opp_env
+
 - add nix package and a flake file (use `nix shell` to start an opp_env enabled shell)
 - change into project directory when using 'opp_env shell' command without any project arguments
 

@@ -6,6 +6,9 @@
 
 ### Frameworks and models
 
+- veins: fixed image path
+- added artery, neta, space_veins, plexe, rimfading, opencv2x_artery
+
 ## 0.29.1.240516
 
 ### opp_env

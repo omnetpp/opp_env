@@ -1540,7 +1540,10 @@ def get_project_descriptions():
         {
             # DONE - ok
             # UPDATE: error in example sim in dbg; only tested in release
-            # TODO: what error?
+            # the error:
+            # ASSERT: Condition 'frame->getByteLength() >= MIN_ETHERNET_FRAME_BYTES' does not hold in function 'processFrameFromUpperLayer' 
+            # at inet/linklayer/ethernet/EtherMACFullDuplex.cc:126 -- in module (inet::EtherMACFullDuplex) NetworkDaisyChain.gPtpMaster.eth[0].mac 
+            # (id=178), at t=0.135s, event #20
             "name": "gptp", "version": "20200311",      # last commit of master branch as of time of writing
             "description": "IEEE 802.1AS gPTP for Clock Synchronization",
             "metadata": {
@@ -1548,7 +1551,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 """if [ "$BUILD_MODE" = "release" ]; then cd IEEE8021AS/simulations && ../src/IEEE8021AS -n $INET_ROOT/src:.:../src -c Network_daisy_chain -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
-                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because the example simulation doesn't work in debug due to an error.'; fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because the example simulation does not work in debug due to an error.'; fi""",
             ],
             "required_projects": {"omnetpp": ["5.2.*"], "inet": ["3.6.3"]},
             # there are no releases, so we use a commit from the master branch
@@ -1792,5 +1795,246 @@ def get_project_descriptions():
                 "./configure --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"
             ],
             "clean_commands": ["make clean"],
+        },
+
+        {
+            # DONE - debug only; doesn't work with sumo-gui
+            # when running with sumo gui:
+            # FXGLVisual::create: requested OpenGL visual unavailable. -> this issue is POSTPONED
+            "name": "artery_allinone", "version": "20230820",       # last commit of master branch as of time of writing
+            "description": "V2X simulation framework for ETSI ITS-G5. This version downloads its own copy of Veins, INET, SimuLTE, and Vanetza, and does not use ones installed by opp_env.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Artery.html",
+            },
+            "required_projects": {"omnetpp": ["5.6.*"]},
+            "nix_packages": ["cmake", "boost", "cryptopp", "geographiclib", "sumo", "git-lfs" ],
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's| -n | -c veins -u Cmdenv --sim-time-limit=10s -n |g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example > /dev/null && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
+                """if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently this projects is only built in debug mode.'; fi""",
+            ],
+            # we use a hash from master because the opp-summit release needs git to build
+            "download_commands": [
+                "mkdir artery_allinone-20230820",
+                "git clone https://github.com/riebl/artery.git artery_allinone-20230820",
+                "cd artery_allinone-20230820",
+                "git reset --hard ad201f699fb7b22319497b31fe0ea437bb2ef2e3",
+                "git submodule update --init --recursive",
+            ],
+            "patch_commands": [
+            ],
+            "setenv_commands": [
+                "export ARTERY_PATH=$ARTERY_ROOT",
+                "echo 'Hint: use the `cmake --build build --target run_example` command to run the example simulation.'"
+            ],
+            "build_commands": ["mkdir -p build && cd build && cmake .. && make -j$NIX_BUILD_CORES MODE=debug"],
+            "clean_commands": ["make clean"]
+        },
+        
+        {
+            # DONE
+            "name": "neta_allinone", "version": "1.0",
+            "description": "NETwork Attacks Framework for OMNeT++. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/NETA.html",
+            },
+            "required_projects": {"omnetpp": ["4.2.1"]},
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then NETA_BIN=$(echo $NETA_ALLINONE_ROOT/neta/out/*-debug/src/neta); fi""",
+                """if [ "$BUILD_MODE" = "release" ]; then NETA_BIN=$(echo $NETA_ALLINONE_ROOT/neta/out/*-release/src/neta); fi""",
+                "cd neta/src/simulations/AttackScenarios/DelayAttackScenario",
+                "$NETA_BIN Delay.ini -n $NETA_ALLINONE_ROOT/neta/src:$INET_ROOT/src -c BajaCarga -r 0 -u Cmdenv --sim-time-limit=1s > /dev/null",
+            ],
+            "download_commands": [
+                "mkdir -p neta_allinone-1.0/neta",
+                "cd neta_allinone-1.0/neta",
+                "curl -L -o v1.0.tar.gz https://github.com/robertomagan/neta_v1/archive/refs/tags/v1.0.tar.gz --progress-bar",
+                "tar -xzf v1.0.tar.gz --strip=1",
+                "rm v1.0.tar.gz",
+                "cd ..",
+                "curl -L -o inet-2.1.0-src.tgz https://github.com/inet-framework/inet/releases/download/v2.1.0/inet-2.1.0-src.tgz --progress-bar",
+                "tar -xzf inet-2.1.0-src.tgz",
+                "rm inet-2.1.0-src.tgz",
+                ],
+            "patch_commands": [
+                "cd neta",
+                "sed -i 's|ned-path|#ned-path|' simulations/*/*/*.ini",
+                "mv simulations src/",
+                "cd ../inet",
+                "sed -i.bak 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h",
+                "for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
+                "sed -i.bak 's/SensitivityList::iterator it = sensitivityList.find(0.0);/SensitivityList::iterator sit = sensitivityList.find(0.0);/' src/linklayer/radio/Radio.cc",
+                "sed -i.bak 's/if (it == sensitivityList.end())/if (sit == sensitivityList.end())/' src/linklayer/radio/Radio.cc",
+                "sed -i.bak 's/\"LL\"/\" LL \"/' src/networklayer/ipv4/RoutingTableRecorder.cc",
+                "sed -i.bak 's/if (vector_cost<=0)/if (vector_cost == NULL)/' src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc",
+                "sed -i.bak 's/std::make_pair<ManetAddress,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((ManetAddress)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc",
+                "sed -i.bak 's/std::make_pair<ManetAddress,ManetAddress>(dst, gtwy)/std::make_pair((ManetAddress)dst, (ManetAddress)gtwy)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc",
+                "sed -i.bak 's/std::make_pair<ManetAddress,ManetAddress>(destination, nextHop)/std::make_pair((ManetAddress)destination, (ManetAddress)nextHop)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc",
+                "sed -i.bak 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc",
+                "sed -i.bak 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc",
+                "cp -v ../neta/resources/patch/INET_21/ManetRoutingBase.cc src/networklayer/manetrouting/base",
+            ],
+            "setenv_commands": [
+                "export INET_ROOT=$NETA_ALLINONE_ROOT/inet",
+                "echo 'Hint: use the `neta` executable to run simulations. For example, in the `simulations/AttackScenarios/DelayAttackScenario` folder: `$NETA_ALLINONE_ROOT/neta/out/gcc-release/src/neta Dropping.ini -n $NETA_ALLINONE_ROOT/neta/src:$INET_ROOT/src`.'",
+            ],
+            "build_commands": ["cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../neta/src && opp_makemake -f --deep -I../../inet/src/linklayer/ieee80211/mgmt -I../../inet/src/transport/tcp_common -I../../inet/src/base -I../../inet/src/util -I../../inet/src/linklayer/ieee80211/mac -I../../inet/src/world/powercontrol -I../../inet/src/transport/udp -I../../inet/src/linklayer/ieee80211/radio/errormodel -I../../inet/src/linklayer/ieee80211/radio -I../../inet/src/util/headerserializers -I../../inet/src/mobility -I../../inet/src/transport/sctp -I../../inet/src/networklayer/icmpv6 -I../../inet/src/linklayer/radio/propagation -I../../inet/src/transport/contract -I../../inet/src/networklayer/ipv6tunneling -I../../inet/src/world/radio -I../../inet/src/linklayer/contract -I../../inet/src/linklayer/radio -I../../inet/src/world/obstacles -I../../inet/src/util/headerserializers/udp -I../../inet/src/util/headerserializers/tcp -I../../inet/src/networklayer/common -I../../inet/src/linklayer/ethernet -I../../inet/src/networklayer/arp -I../../inet/src/networklayer/ipv6 -I../../inet/src/networklayer/contract -I../../inet/src -I../../inet/src/networklayer/xmipv6 -I../../inet/src/util/headerserializers/sctp -I../../inet/src/networklayer/manetrouting/base -I../../inet/src/battery/models -I../../inet/src/networklayer/ipv4 -I../../inet/src/applications/pingapp -I../../inet/src/util/headerserializers/ipv4 -I../../inet/src/applications/udpapp -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -linet -DWITH_TCP_COMMON -DWITH_TCP_INET -DWITH_IPv4 -DWITH_IPv6 -DWITH_xMIPv6 -DWITH_UDP -DWITH_RTP -DWITH_SCTP -DWITH_ETHERNET -DWITH_PPP -DWITH_EXT_IF -DWITH_MPLS -DWITH_OSPFv2 -DWITH_BGPv4 -DWITH_MANET -DWITH_DHCP -DINET_IMPORT -KINET_PROJ=../../inet && make clean && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["cd neta && make clean && cd ../inet && make clean"],
+        },
+        
+        {
+            # DONE
+            # TODO: add to catalog
+            "name": "space_veins", "version": "0.3",
+            "required_projects": {"omnetpp": ["5.7.x"]},
+            "nix_packages": ["proj", "python2", "sumo"],
+            "download_url": "https://github.com/veins/space_veins/archive/refs/tags/space_Veins-0.3.tar.gz",
+            "patch_commands": [
+                "mv src/makefrag src/makefrag.orig",
+                "export PYTHON2_BIN=${pkgs.python2}/bin/python2",
+                'sed -i "s|/usr/bin/env python2|$PYTHON2_BIN|" run',
+                'sed -i "s|../veins/src/veins|$VEINS_ROOT/src/veins|" run',
+                "mv src/makefrag.orig src/makefrag",
+                """sed -i 's|\\#\\*.satellite\[0\].satelliteMobility.satelliteName = ""|*.satellite[0].satelliteMobility.satelliteName = "ISS (ZARYA)"|' examples/space_veins/omnetpp.ini""",
+                """sed -i 's|\\#\\*.satellite\[0\].satelliteMobility.tle_line_one = ""|*.satellite[0].satelliteMobility.tle_line_one = "1 25544U 98067A   24066.21503963  .00016480  00000+0  29947-3 0  9999"|' examples/space_veins/omnetpp.ini""",
+                """sed -i 's|\\#\\*.satellite\[0\].satelliteMobility.tle_line_two = ""|*.satellite[0].satelliteMobility.tle_line_two = "2 25544  51.6406 105.7199 0005859 331.9893 139.5156 15.49668492442586"|' examples/space_veins/omnetpp.ini""",
+            ],
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then DEBUG_POSTFIX="_dbg"; fi""",
+                "$VEINS_ROOT/sumo-launchd.py &> /dev/null & bg_pid=$! &> /dev/null",
+                "cd examples/space_veins && opp_run$DEBUG_POSTFIX -l ../../src/space_veins -n ../../src:../../src/space_veins:../../src/space_veins/modules:../../src/space_veins/nodes:../../lib/inet/src:../../lib/veins/subprojects/veins_inet/src/veins_inet:../../lib/veins/src/veins:. -u Cmdenv -c Null-Island-Launchd --sim-time-limit=1s > /dev/null",
+                "kill $bg_pid &> /dev/null",
+            ],
+            "setenv_commands": [
+                "echo $PYTHON2_BIN",
+                "export PROJ_ROOT=${pkgs.proj}",
+                "export PROJ_DEV_ROOT=${pkgs.proj.dev}",
+                "export INET_ROOT=$SPACE_VEINS_ROOT/lib/inet",
+                "export VEINS_ROOT=$SPACE_VEINS_ROOT/lib/veins",
+                "export SUMO_ROOT=${pkgs.sumo}",
+                'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images:$INET_ROOT/images"',
+            ],
+            "build_commands": ["source setenv -f && ./configure && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            # this version builds dependencies sequentially:
+            # "build_commands": ["cd lib/inet && source setenv -f && make makefiles && make -j16 MODE=$BUILD_MODE && cd ../veins && source setenv -f && ./configure && make -j16 MODE=$BUILD_MODE && cd subprojects/veins_inet && source setenv -f && ./configure && make -j16 MODE=$BUILD_MODE && cd ../../../.. && make makefiles && cd src && make -j16 MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"]
+        },
+        
+        {
+            # DONE - doesn't work with sumo-gui
+            # FXGLVisual::create: requested OpenGL visual unavailable. -> this comes from sumo
+            # when sumo is closed -> Aborted (core dumped) -> eliminated by mesa package sometimes?; now FATAL: exception not rethrown
+            # -> openGL issue is POSTPONED 
+            # TODO: build subprojects
+            "name": "plexe", "version": "3.1.2",
+            "nix_packages": ["python2", "libxml2"],
+            "required_projects": {"omnetpp": ["5.7.*"], "veins": ["5.2"]},
+            "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.1.2.tar.gz",
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
+                """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_ARG=""; fi""",
+                "cd examples/autolanechange",
+                "plexe_run $BUILD_MODE_ARG -u Cmdenv -c LaneChangeNoGui -r 0 --sim-time-limit=10s > /dev/null",
+            ],
+            "setenv_commands": [
+                                "export SUMO_HOME=${pkgs.sumo}/share/sumo && echo 'sumo home: ' && echo $SUMO_HOME",
+                                "source setenv",
+                                "echo 'Hint: use the `plexe_run` command in an example simulation folder to run the example simulation.'",
+                                ],
+            "patch_commands": [
+                "sed -i 's|from elementtree|from xml.etree|' */*/*/*.py",
+            ],
+            "build_commands": ["./configure --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"],
+        },
+
+        {
+            # DONE - this should be its own project; should this be linked to inet?
+            "name": "rimfading_allinone", "version": "20171123",    # latest master as of time of writing
+            "nix_packages": ["python2"],
+            "required_projects": {"omnetpp": ["5.4.x"]},
+            "smoke_test_commands": [
+                "cp showcases/wireless/pathloss/omnetpp.ini showcases/wireless/pathloss/test.ini",
+                """echo "\n[Config Test]\n*.radioMedium.pathLoss.typename = "RIMFading" " >> showcases/wireless/pathloss/test.ini """,
+                """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                "inet$BUILD_MODE_SUFFIX showcases/wireless/pathloss/test.ini -u Cmdenv -r 0 > /dev/null",
+                "rm showcases/wireless/pathloss/test.ini",
+            ],
+            "download_commands": [
+                "mkdir rimfading_allinone-20171123",
+                "cd rimfading_allinone-20171123",
+                "curl -L -o inet-4.0.0-src.tgz https://github.com/inet-framework/inet/releases/download/v4.0.0/inet-4.0.0-src.tgz --progress-bar",
+                "tar -xzf inet-4.0.0-src.tgz --strip=1",
+                "rm inet-4.0.0-src.tgz",
+                "mkdir rimfading-src",
+                "cd rimfading-src",
+                "curl -L -o 609c3cb5121f50a8481754042ad4122d320008be.tar.gz https://github.com/ComNets-Bremen/RIMFading/archive/609c3cb5121f50a8481754042ad4122d320008be.tar.gz --progress-bar",     # latest master hash as of time of writing
+                "tar -xzf 609c3cb5121f50a8481754042ad4122d320008be.tar.gz --strip=1",
+                "rm 609c3cb5121f50a8481754042ad4122d320008be.tar.gz",
+            ],
+            "patch_commands": [
+                "cd rimfading-src",
+                "echo 'Patching INET....'",
+                "mv -v RIMFading.* ../src/inet/physicallayer/pathloss",
+                "cd ..",
+                "touch tutorials/package.ned",
+                "for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
+            ],
+            "setenv_commands": [
+                "export OMNETPP_IMAGE_PATH=\"$OMNETPP_IMAGE_PATH:$INET_ROOT/images\"",
+                "[ -f setenv ] && INET_ROOT= source setenv -f"
+            ],
+            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"],
+        },
+        
+        {
+            # DONE
+            # this is allinone by default
+            # TODO: debug/release; standalone -> so far builds in release
+            "name": "opencv2x_artery", "version": "1.4.1",
+            "nix_packages": ["boost172", "cmake", "python2", "cryptopp", "geographiclib", "cmakeWithGui", "sumo"],
+            "required_projects": {"omnetpp": ["5.6.1"]},
+            "description": "An abstract TDMA MAC protocol for the INET Framework",
+            "smoke_test_commands": [
+                """if [ "$BUILD_MODE" = "release" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's|-c Base|-c veins --sim-time-limit=10s|g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
+                """if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently this projects is only built in debug mode.'; fi""",
+            ],
+            "download_url": "https://github.com/brianmc95/OpenCV2X/releases/download/v1.4.1/opencv2x.tar.gz",
+            "patch_commands": [
+                "sed -i 's|config.h|config_ver.h|g' extern/vanetza/cmake/FindCryptoPP.cmake",
+                "sed -i 's|NAMES Geographic |NAMES GeographicLib |g' extern/vanetza/cmake/FindGeographicLib.cmake",
+                "sed -i 's|output-vector|#output-vector|g' */*/omnetpp.ini",
+                "sed -i 's|output-scalar|#output-scalar|g' */*/omnetpp.ini",
+                # "sed -i 's|-lINET|-lINET$$\\\(D\\\)|g' extern/simulte/Makefile",
+                # "mv extern/vanetza/cmake/VanetzaConfig.cmake.in extern/vanetza/cmake/VanetzaConfig.cmake",
+                # NAMES GeographicLib
+            ],
+            "setenv_commands": [
+                # "export PATH=extern/cryptopp:$CMAKE_PREFIX_PATH",
+                "export Vanetza_DIR=$OPENCV2X_ARTERY_ROOT/extern/vanetza/cmake",
+                "export CryptoPP_INCLUDE_DIR=${pkgs.cryptopp.dev}/include",
+                "export CryptoPP_LIBRARY=${pkgs.cryptopp}/lib",
+                "export GeographicLib_LIBRARY=${pkgs.geographiclib}/lib",
+                "export GeographicLib_INCLUDE_DIR=${pkgs.geographiclib}/include/GeographicLib",
+                "export SIMULTE_DIR=$OPENCV2X_ARTERY_ROOT/extern/simulte",
+                "export VEINS_DIR=$OPENCV2X_ARTERY_ROOT/extern/veins",
+                "export SUMO_HOME=${pkgs.sumo}",
+                "export INET_ROOT=$OPENCV2X_ARTERY_ROOT/extern/inet",
+                "export INET_DIR=$INET_ROOT",
+                # "echo $CryptoPP_INCLUDE_DIR",
+                # "echo $CryptoPP_LIBRARY",
+                # "echo $GeographicLib_LIBRARY",
+                # "echo $GeographicLib_INCLUDE_DIR",
+            ],
+            "build_commands": [
+                "cd extern/inet && make makefiles && cd ../.. && make inet -j$NIX_BUILD_CORES MODE=release",
+                # "make vanetza -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
+                "cd extern/vanetza && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=release -DBUILD_SHARED_LIBS=ON .. && cd ../../..",
+                "cd extern/simulte && make makefiles && make -j$NIX_BUILD_CORES MODE=release && cd ../..",
+                "cd extern/veins && ./configure & make -j$NIX_BUILD_CORES MODE=release && cd ../..",
+                "cd $OPENCV2X_ARTERY_ROOT && mkdir -p build && cd build && pwd && cmake .. -DCMAKE_BUILD_TYPE=release && cmake -DWITH_SIMULTE=ON -DCMAKE_BUILD_TYPE=release . && cmake --build . --config release -j$NIX_BUILD_CORES",
+                
+            ],
+            "clean_commands": ["make clean && cd extern/simulte && make clean"],
         },
     ]

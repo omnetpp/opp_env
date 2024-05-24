@@ -1798,7 +1798,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - debug only; doesn't work with sumo-gui
+            # DONE - debug only; doesn't work with sumo-gui; from-git only;
             # when running with sumo gui:
             # FXGLVisual::create: requested OpenGL visual unavailable. -> this issue is POSTPONED
             "name": "artery_allinone", "version": "20230820",       # last commit of master branch as of time of writing
@@ -1827,7 +1827,7 @@ def get_project_descriptions():
                 "echo 'Hint: use the `cmake --build build --target run_example` command to run the example simulation.'"
             ],
             "build_commands": ["mkdir -p build && cd build && cmake .. && make -j$NIX_BUILD_CORES MODE=debug"],
-            "clean_commands": ["make clean"]
+            "clean_commands": ["make clean"],
         },
         
         {

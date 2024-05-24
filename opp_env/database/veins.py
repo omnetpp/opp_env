@@ -17,7 +17,7 @@ def make_veins_project_description(version, inet_versions, sumo_version, omnetpp
             "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if version<="4.6" else "",
         ],
         "setenv_commands": [
-            'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images"',
+            'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images:$INET_ROOT/images"',
             "export SUMO_ROOT=${pkgs.sumo}",
             "source setenv" if version >= "5.1" else "",
             "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd subprojects/veins_inet && source setenv; else cd subprojects/veins_inet3 && source setenv; fi" if version >= "5.1" else "",

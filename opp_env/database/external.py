@@ -2037,4 +2037,41 @@ def get_project_descriptions():
             ],
             "clean_commands": ["make clean && cd extern/simulte && make clean"],
         },
+
+        {
+            # DONE
+            "name": "cmm_orbit_mobility_allinone", "version": "20220815",    # latest master as of time of writing
+            "required_projects": {"omnetpp": ["5.5.1"]},
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd examples/mobility/CMM""",
+                r"""inet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=100s > /dev/null""",
+            ],
+            "download_commands": [
+                "mkdir cmm_orbit_mobility_allinone-20220815",
+                "cd cmm_orbit_mobility_allinone-20220815",
+                "curl -L -o inet-src.tgz https://github.com/inet-framework/inet/releases/download/v4.1.1/inet-4.1.1-src.tgz --progress-bar",
+                "tar -xzf inet-src.tgz --strip=1",
+                "rm inet-src.tgz",
+                "mkdir cmm-orbit-src",
+                "cd cmm-orbit-src",
+                "curl -L -o src.tar.gz https://github.com/ComNets-Bremen/Mobility-Models/archive/0efc14a38085719ed91d47e7613764936a5ce15b.tar.gz --progress-bar",     # latest master hash as of time of writing
+                "tar -xzf src.tar.gz --strip=1",
+                "rm src.tar.gz",
+            ],
+            "patch_commands": [
+                "cd cmm-orbit-src/inet",
+                "echo 'Patching INET....'",
+                "cp -rv * ../..",
+                "cd ../..",
+                "touch tutorials/package.ned",
+                "for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done",
+            ],
+            "setenv_commands": [
+                "export OMNETPP_IMAGE_PATH=\"$OMNETPP_IMAGE_PATH:$INET_ROOT/images\"",
+                "[ -f setenv ] && INET_ROOT= source setenv -f"
+            ],
+            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "clean_commands": ["make clean"],
+        },
     ]

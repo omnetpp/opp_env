@@ -26,8 +26,8 @@ def get_project_descriptions():
                 r"""export PATH=$PATH:$FICO4OMNET_ROOT/bin""",
                 r"""echo 'Hint: use the `run_fico4omnet` command to run the simulations in the examples folder.'"""
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
             "options": {
                 "from-release": {
                     "option_description": "Install from release tarball on GitHub",
@@ -74,8 +74,8 @@ def get_project_descriptions():
                 r"""echo 'Hint: use the `run_inet` command to run the simulations in the examples/ansa folder.'""",
                 r"""export PATH=$PATH:$ANSA_ROOT/bin"""
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
             "options": {
                 "from-release": {
                     "option_description": "Install from release tarball on GitHub",
@@ -115,8 +115,8 @@ def get_project_descriptions():
             "setenv_commands": [
                 r"""echo 'Hint: use the `./run` command to run the example in the simulations folder.'""",
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -143,8 +143,8 @@ def get_project_descriptions():
                 r"""export INETPATH=$INET_ROOT""",
                 r"""export INET_PROJ=$INET_ROOT""",
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
             "options": {
                 "from-release": {
                     "option_description": "Install from release tarball on GitHub",
@@ -185,8 +185,8 @@ def get_project_descriptions():
                 r"""echo 'Hint: use the `./rundemo` command in the examples folder or the `./run` command in any of the example subfolders.'""",
                 r"""export INETPATH=$INET_ROOT""",
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
             "options": {
                 "from-release": {
                     "option_description": "Install from release tarball on GitHub",
@@ -220,8 +220,8 @@ def get_project_descriptions():
                 r"""export OPPMAIN_LIB=$OMNETPP_ROOT/lib""",
                 r"""echo 'Hint: use the `./example_simulation` command in the example-simulation folder.'""",
                 ],
-            "build_commands": ["cd example-simulation && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""cd example-simulation && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
             "options": {
                 "from-release": {
                     "option_description": "Install from release tarball on GitHub",
@@ -255,8 +255,8 @@ def get_project_descriptions():
             "setenv_commands": [
                 r"""echo 'Hint: use the `./run_nocs` command in the examples folder.'""",
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -283,8 +283,8 @@ def get_project_descriptions():
             "setenv_commands": [r"""export INET_PROJ=$INET_ROOT""",
                                 r"""export NESTING=$NESTING_ROOT""",
                                 r"""echo 'Hint: use the `../runsim-qt` command to run the examples in the simulations/examples folder.'"""],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -307,8 +307,8 @@ def get_project_descriptions():
                 r"""export PATH=$PATH:$CASTALIA_ROOT/Castalia/bin""",
                 r"""echo 'Hint: Use the `Castalia` command to run the examples in the Simulations folder.'"""
             ],
-            "build_commands": ["./makemake && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""./makemake && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -336,8 +336,8 @@ def get_project_descriptions():
                 r"""export PATH=$PATH:$CASTALIA_ROOT/Castalia/bin""",
                 r"""echo 'Hint: Use the `Castalia` command to run the examples in the Simulations folder.'"""
             ],
-            "build_commands": ["cd Castalia && ./makemake && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""cd Castalia && ./makemake && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -364,8 +364,8 @@ def get_project_descriptions():
                 r"""export PATH=$PATH:$CASTALIA_ROOT/Castalia/bin""",
                 r"""echo 'Hint: Use the `Castalia` command to run the examples in the Simulations folder.'"""
             ],
-            "build_commands": ["cd Castalia && ./makemake && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""cd Castalia && ./makemake && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -388,8 +388,8 @@ def get_project_descriptions():
                 r"""export PATH=$MIXIM_ROOT/src:$PATH""",
                 r"""echo 'Hint: Use `./run` command in the examples and examples-inet subfolders.'"""
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -407,8 +407,8 @@ def get_project_descriptions():
             "download_commands": ["git clone https://github.com/inet-framework/inet-gpl.git inetgpl-1.0"],
             "setenv_commands": [r"""source setenv""",
                                 r"""echo 'Hint: Use `inetgpl` command in any of the example simulation folders.'"""],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -426,9 +426,9 @@ def get_project_descriptions():
                 r"""sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/poolelementnode-template.h""",
                 r"""sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/transportaddressblock.c""",
             ],
-            "build_commands": ["cd model && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../toolchain/tools && make"],
-            "setenv_commands": ["echo 'Hint: Use `./model` command in the model folder. For example: ./model test1.ini'"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""cd model && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../toolchain/tools && make"""],
+            "setenv_commands": [r"""echo 'Hint: Use `./model` command in the model folder. For example: ./model test1.ini'"""],
+            "clean_commands": [r"""make clean"""],
             "options": {
                 "from-release": {
                     "option_description": "Install from release tarball on GitHub",
@@ -461,9 +461,9 @@ def get_project_descriptions():
                 r"""sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/poolelementnode-template.h""",
                 r"""sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/transportaddressblock.c""",
             ],
-            "build_commands": ["cd model && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../toolchain/tools && make"],
-            "setenv_commands": ["echo 'Hint: Use `./model` command in the model folder. For example: ./model test1.ini'"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""cd model && opp_makemake -f && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../toolchain/tools && make"""],
+            "setenv_commands": [r"""echo 'Hint: Use `./model` command in the model folder. For example: ./model test1.ini'"""],
+            "clean_commands": [r"""make clean"""],
             "options": {
                 "from-release": {
                     "option_description": "Install from release tarball on GitHub",
@@ -499,8 +499,8 @@ def get_project_descriptions():
             "setenv_commands": [
                 r"""echo 'Hint: use `./simulate.sh examples/Demos/UseCase1/ -G -c Ping`'""",
             ],
-            "build_commands": ["make -f makemakefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make -f makemakefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
             "options": {
                 "from-release": {
                     "option_description": "Install from release tarball on GitHub",
@@ -539,9 +539,9 @@ def get_project_descriptions():
                 r"""sed -i 's|-n .:../src|-n ..:../src:$\{INET_ROOT\}/src|g' simulations/run""",
                 r"""sed -i 's|opp_makemake -f --deep|opp_makemake -f --deep -I.     -I$(INET_ROOT)/src/.     -I$(INET_ROOT)/src/applications     -I$(INET_ROOT)/src/applications/common     -I$(INET_ROOT)/src/applications/dhcp     -I$(INET_ROOT)/src/applications/ethernet     -I$(INET_ROOT)/src/applications/generic     -I$(INET_ROOT)/src/applications/httptools     -I$(INET_ROOT)/src/applications/pingapp     -I$(INET_ROOT)/src/applications/rtpapp     -I$(INET_ROOT)/src/applications/sctpapp     -I$(INET_ROOT)/src/applications/tcpapp     -I$(INET_ROOT)/src/applications/traci     -I$(INET_ROOT)/src/applications/udpapp     -I$(INET_ROOT)/src/applications/voip     -I$(INET_ROOT)/src/base     -I$(INET_ROOT)/src/battery     -I$(INET_ROOT)/src/battery/models     -I$(INET_ROOT)/src/linklayer     -I$(INET_ROOT)/src/linklayer/common     -I$(INET_ROOT)/src/linklayer/configurator     -I$(INET_ROOT)/src/linklayer/contract     -I$(INET_ROOT)/src/linklayer/ethernet     -I$(INET_ROOT)/src/linklayer/ethernet/switch     -I$(INET_ROOT)/src/linklayer/ext     -I$(INET_ROOT)/src/linklayer/idealwireless     -I$(INET_ROOT)/src/linklayer/ieee80211     -I$(INET_ROOT)/src/linklayer/ieee80211/mac     -I$(INET_ROOT)/src/linklayer/ieee80211/mgmt     -I$(INET_ROOT)/src/linklayer/ieee80211/radio     -I$(INET_ROOT)/src/linklayer/ieee80211/radio/errormodel     -I$(INET_ROOT)/src/linklayer/ieee8021d     -I$(INET_ROOT)/src/linklayer/ieee8021d/common     -I$(INET_ROOT)/src/linklayer/ieee8021d/relay     -I$(INET_ROOT)/src/linklayer/ieee8021d/rstp     -I$(INET_ROOT)/src/linklayer/ieee8021d/stp     -I$(INET_ROOT)/src/linklayer/ieee8021d/tester     -I$(INET_ROOT)/src/linklayer/loopback     -I$(INET_ROOT)/src/linklayer/ppp     -I$(INET_ROOT)/src/linklayer/queue     -I$(INET_ROOT)/src/linklayer/radio     -I$(INET_ROOT)/src/linklayer/radio/propagation     -I$(INET_ROOT)/src/mobility     -I$(INET_ROOT)/src/mobility/common     -I$(INET_ROOT)/src/mobility/contract     -I$(INET_ROOT)/src/mobility/group     -I$(INET_ROOT)/src/mobility/single     -I$(INET_ROOT)/src/mobility/static     -I$(INET_ROOT)/src/networklayer     -I$(INET_ROOT)/src/networklayer/arp     -I$(INET_ROOT)/src/networklayer/autorouting     -I$(INET_ROOT)/src/networklayer/autorouting/ipv4     -I$(INET_ROOT)/src/networklayer/autorouting/ipv6     -I$(INET_ROOT)/src/networklayer/bgpv4     -I$(INET_ROOT)/src/networklayer/bgpv4/BGPMessage     -I$(INET_ROOT)/src/networklayer/common     -I$(INET_ROOT)/src/networklayer/contract     -I$(INET_ROOT)/src/networklayer/diffserv     -I$(INET_ROOT)/src/networklayer/icmpv6     -I$(INET_ROOT)/src/networklayer/internetcloud     -I$(INET_ROOT)/src/networklayer/ipv4     -I$(INET_ROOT)/src/networklayer/ipv6     -I$(INET_ROOT)/src/networklayer/ipv6tunneling     -I$(INET_ROOT)/src/networklayer/ldp     -I$(INET_ROOT)/src/networklayer/manetrouting     -I$(INET_ROOT)/src/networklayer/manetrouting/aodv-uu     -I$(INET_ROOT)/src/networklayer/manetrouting/aodv-uu/aodv-uu     -I$(INET_ROOT)/src/networklayer/manetrouting/base     -I$(INET_ROOT)/src/networklayer/manetrouting/batman     -I$(INET_ROOT)/src/networklayer/manetrouting/batman/batmand     -I$(INET_ROOT)/src/networklayer/manetrouting/batman/batmand/orig     -I$(INET_ROOT)/src/networklayer/manetrouting/dsdv     -I$(INET_ROOT)/src/networklayer/manetrouting/dsr     -I$(INET_ROOT)/src/networklayer/manetrouting/dsr/dsr-uu     -I$(INET_ROOT)/src/networklayer/manetrouting/dymo     -I$(INET_ROOT)/src/networklayer/manetrouting/dymo/dymoum     -I$(INET_ROOT)/src/networklayer/manetrouting/dymo_fau     -I$(INET_ROOT)/src/networklayer/manetrouting/olsr     -I$(INET_ROOT)/src/networklayer/mpls     -I$(INET_ROOT)/src/networklayer/ospfv2     -I$(INET_ROOT)/src/networklayer/ospfv2/interface     -I$(INET_ROOT)/src/networklayer/ospfv2/messagehandler     -I$(INET_ROOT)/src/networklayer/ospfv2/neighbor     -I$(INET_ROOT)/src/networklayer/ospfv2/router     -I$(INET_ROOT)/src/networklayer/routing     -I$(INET_ROOT)/src/networklayer/routing/aodv     -I$(INET_ROOT)/src/networklayer/routing/dymo     -I$(INET_ROOT)/src/networklayer/routing/gpsr     -I$(INET_ROOT)/src/networklayer/routing/rip     -I$(INET_ROOT)/src/networklayer/rsvp_te     -I$(INET_ROOT)/src/networklayer/ted     -I$(INET_ROOT)/src/networklayer/xmipv6     -I$(INET_ROOT)/src/nodes     -I$(INET_ROOT)/src/nodes/aodv     -I$(INET_ROOT)/src/nodes/bgp     -I$(INET_ROOT)/src/nodes/dymo     -I$(INET_ROOT)/src/nodes/ethernet     -I$(INET_ROOT)/src/nodes/gpsr     -I$(INET_ROOT)/src/nodes/httptools     -I$(INET_ROOT)/src/nodes/inet     -I$(INET_ROOT)/src/nodes/internetcloud     -I$(INET_ROOT)/src/nodes/ipv6     -I$(INET_ROOT)/src/nodes/mpls     -I$(INET_ROOT)/src/nodes/ospfv2     -I$(INET_ROOT)/src/nodes/rip     -I$(INET_ROOT)/src/nodes/rtp     -I$(INET_ROOT)/src/nodes/wireless     -I$(INET_ROOT)/src/nodes/xmipv6     -I$(INET_ROOT)/src/status     -I$(INET_ROOT)/src/transport     -I$(INET_ROOT)/src/transport/contract     -I$(INET_ROOT)/src/transport/rtp     -I$(INET_ROOT)/src/transport/rtp/profiles     -I$(INET_ROOT)/src/transport/rtp/profiles/avprofile     -I$(INET_ROOT)/src/transport/sctp     -I$(INET_ROOT)/src/transport/tcp     -I$(INET_ROOT)/src/transport/tcp/flavours     -I$(INET_ROOT)/src/transport/tcp/queues     -I$(INET_ROOT)/src/transport/tcp_common     -I$(INET_ROOT)/src/transport/udp     -I$(INET_ROOT)/src/util     -I$(INET_ROOT)/src/util/headerserializers     -I$(INET_ROOT)/src/util/headerserializers/headers     -I$(INET_ROOT)/src/util/headerserializers/ipv4     -I$(INET_ROOT)/src/util/headerserializers/ipv4/headers     -I$(INET_ROOT)/src/util/headerserializers/ipv6     -I$(INET_ROOT)/src/util/headerserializers/ipv6/headers     -I$(INET_ROOT)/src/util/headerserializers/sctp     -I$(INET_ROOT)/src/util/headerserializers/sctp/headers     -I$(INET_ROOT)/src/util/headerserializers/tcp     -I$(INET_ROOT)/src/util/headerserializers/tcp/headers     -I$(INET_ROOT)/src/util/headerserializers/udp     -I$(INET_ROOT)/src/util/headerserializers/udp/headers     -I$(INET_ROOT)/src/util/messageprinters     -I$(INET_ROOT)/src/world     -I$(INET_ROOT)/src/world/annotations     -I$(INET_ROOT)/src/world/httptools     -I$(INET_ROOT)/src/world/obstacles     -I$(INET_ROOT)/src/world/radio     -I$(INET_ROOT)/src/world/scenario     -I$(INET_ROOT)/src/world/traci -o ieee802154inet_standalone -L$(INET_ROOT)/src -linet|' Makefile""",
             ],
-            "setenv_commands": ["echo 'Hint: use the `./run` command in the simulations folder.'"],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "setenv_commands": [r"""echo 'Hint: use the `./run` command in the simulations folder.'"""],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -563,9 +563,9 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""sed -i 's|/usr/include/libxml2/|${pkgs.libxml2.dev}/include/libxml2|g' Makefile dctg_example/Makefile""",
             ],
-            "setenv_commands": ["echo 'Hint: use the `../src/dctg_example -f omnetpp.ini -n ../../src:../src` command in the dctf_example/simulations folder.'"],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd dctg_example && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "setenv_commands": [r"""echo 'Hint: use the `../src/dctg_example -f omnetpp.ini -n ../../src:../src` command in the dctf_example/simulations folder.'"""],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd dctg_example && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -585,9 +585,9 @@ def get_project_descriptions():
                 r"""sed -i 's|.:../src|.:../src:../../queueinglib|g' afdx/simulations/run""",
                 r"""sed -i 's|-lqueueinglib|-lqueueinglib$$\\\(D\\\)|g' afdx/Makefile""",
             ],
-            "build_commands": ["cd queueinglib && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../afdx && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd simulations && chmod +x run && chmod +x run_ancat"],
-            "setenv_commands": ["echo 'Hint: in the afdx/simulations folder, use the `./run AutoNetwork.ini` command to run the simulation'"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""cd queueinglib && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../afdx && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd simulations && chmod +x run && chmod +x run_ancat"""],
+            "setenv_commands": [r"""echo 'Hint: in the afdx/simulations folder, use the `./run AutoNetwork.ini` command to run the simulation'"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -608,8 +608,8 @@ def get_project_descriptions():
             ],
             "setenv_commands": ["export OMNETPP_IMAGE_PATH=$QUISP_ROOT/quisp/images:$OMNETPP_IMAGE_PATH",
                                 "echo 'Hint: in the quisp folder, use the `./quisp` command to run simulations. For example: `./quisp simulations/two_nodes.ini`'"],
-            "build_commands": ["make IMAGE_PATH=quisp/images/ -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make IMAGE_PATH=quisp/images/ -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -628,9 +628,9 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["4.0.*"]},
             # we're using a hash from master because there are no releases
             "download_url": "https://github.com/dhuertas/cell-signaling/archive/3434cc00f7ab7bfc33b4ff94e3a355df8e6947bb.tar.gz",
-            "setenv_commands": ["echo 'Hint: in the src folder, use the `./cell` command to run simulations. For example: `./cell -n .. ../networks/demo.ini`'"],
-            "build_commands": ["cd src && opp_makemake -f --deep -O out -o cell && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "setenv_commands": [r"""echo 'Hint: in the src folder, use the `./cell` command to run simulations. For example: `./cell -n .. ../networks/demo.ini`'"""],
+            "build_commands": [r"""cd src && opp_makemake -f --deep -O out -o cell && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -650,11 +650,11 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""sed -i.bak 's| python$| python2|' bin/inet_featuretool""",
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "setenv_commands": [
                 r""". setenv -f""",
                 r"""echo 'Hint: use the `inet` command in any example simulation folder.'"""],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -675,9 +675,9 @@ def get_project_descriptions():
                 r"""cp src/run_inet src/run_inet_dbg""",
                 r"""sed -i 's|opp_run|opp_run_dbg|' src/run_inet_dbg""",
                 ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "setenv_commands": ["echo 'Hint: use the `./run` command in any example simulation folder.'"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "setenv_commands": [r"""echo 'Hint: use the `./run` command in any example simulation folder.'"""],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -694,9 +694,9 @@ def get_project_descriptions():
             ],
             "required_projects": {"omnetpp": ["4.2.0"]},
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/oppbsd-4.0.tar.gz",
-            "build_commands": ["make MODE=$BUILD_MODE"],
-            "setenv_commands": ["echo 'Hint: run example simulations from their folder. For example, in examples/TwoSubnets folder: `./out/gcc-debug/TwoSubnets omnetpp.ini`'"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make MODE=$BUILD_MODE"""],
+            "setenv_commands": [r"""echo 'Hint: run example simulations from their folder. For example, in examples/TwoSubnets folder: `./out/gcc-debug/TwoSubnets omnetpp.ini`'"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -721,9 +721,9 @@ def get_project_descriptions():
                 r"""sed -i 's|-u Cmdenv | |' ReaSE/Makefile""",
                 r"""sed -i 's|-L$(INETDIR)/out/gcc-debug/ -lINET|-L$(INETDIR)/src -linet|' ReaSE/Makefile""",
             ],
-            "setenv_commands": ["echo 'Hint: in the folder of an example simulation (located in Topologies folder), use the `../../ReaSE/src/rease -n .:../../ReaSE/src:$INET_ROOT/src` command to run the simulation'"],
-            "build_commands": ["cd ReaSE && make makefiles && make -j$NIX_BUILD_CORES MODE=release"],
-            "clean_commands": ["make clean"],
+            "setenv_commands": [r"""echo 'Hint: in the folder of an example simulation (located in Topologies folder), use the `../../ReaSE/src/rease -n .:../../ReaSE/src:$INET_ROOT/src` command to run the simulation'"""],
+            "build_commands": [r"""cd ReaSE && make makefiles && make -j$NIX_BUILD_CORES MODE=release"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -742,7 +742,7 @@ def get_project_descriptions():
             "nix_packages": ["sqlite"],
             "required_projects": {"omnetpp": ["4.2.0"]},
             "download_url": "https://github.com/kyeongsoo/inet-hnrl/archive/857ae37cd233914fd7271584afc4be10bcf75a61.tar.gz",
-            "setenv_commands": ["export SQLITE_LIB=${pkgs.sqlite}/lib"],
+            "setenv_commands": [r"""export SQLITE_LIB=${pkgs.sqlite}/lib"""],
             "patch_commands": [
                 r"""sed -i 's|INETMANET_PROJ=/media/data/Linux/omnet/inetmanet-inetmanet-00f64c2|INETMANET_PROJ=$(INETMANET_ROOT)|g' Makefile""",
                 r"""sed -i 's|-L/usr/local/lib|-L$(SQLITE_LIB)|g' Makefile""",
@@ -752,8 +752,8 @@ def get_project_descriptions():
                 r"""sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/headers/sctp.h""",
                 r"""sed -i 's|$(OPP_LIBS)|-loppcommon$$\\\(D\\\)|' Makefile""",
             ],
-            "build_commands": ["make makefiles && make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-std=c++14 -fpermissive -fPIC'"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-std=c++14 -fpermissive -fPIC'"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -782,8 +782,8 @@ def get_project_descriptions():
                 r"""sed -i 's|ned-path = ../../../inet/src|#ned-path = ../../../inet/src|g' simulations/cliServExample/omnetpp.ini""",
                 r"""sed -i 's|package SIMCAN|// package SIMCAN|g' simulations/cliServExample/scenario.ned""",
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -806,8 +806,8 @@ def get_project_descriptions():
                 r"""chmod +x leachDist/runall.sh""",
                 r"""sed -i 's|BS::||g' leachFarBS/bs.h""",
             ],
-            "build_commands": ["cd leachDist && opp_makemake -f -N && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../leachFarBS && opp_makemake -f -N && make -j$NIX_BUILD_CORES MODE=release"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""cd leachDist && opp_makemake -f -N && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../leachFarBS && opp_makemake -f -N && make -j$NIX_BUILD_CORES MODE=release"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -828,8 +828,8 @@ def get_project_descriptions():
                 r"""rm -r out *.exe""",
             ],
             "setenv_commands": ["echo 'Hint: use the `./stochasticbattery` command to run the simulation.'",],
-            "build_commands": ["make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -851,8 +851,8 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""sed -i 's|#include \"inet/common/chaos/ChaosEvent_m.h\"|#include \"ChaosEvent_m.h\"|g' ChaosManager.cc""",
             ],
-            "build_commands": ["opp_makemake -f --deep -o chaosmanager -O out -KINET_PROJ=$INET_ROOT -DINET_IMPORT -I. -I$INET_ROOT/src -L$INET_ROOT/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""opp_makemake -f --deep -o chaosmanager -O out -KINET_PROJ=$INET_ROOT -DINET_IMPORT -I. -I$INET_ROOT/src -L$INET_ROOT/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -872,9 +872,9 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""sed -i 's|-j 1|-j$NIX_BUILD_CORES|g' bootstrap.sh""",
             ],
-            "setenv_commands": ["echo 'Hint: in the `simulations` folder, use the `../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src` command to run the example simulation.'"],
-            "build_commands": ["./bootstrap.sh && ./ops-makefile-setup.sh && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "setenv_commands": [r"""echo 'Hint: in the `simulations` folder, use the `../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src` command to run the example simulation.'"""],
+            "build_commands": [r"""./bootstrap.sh && ./ops-makefile-setup.sh && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
             "options": {
                 "from-release": {
                     "option_description": "Install from release tarball on GitHub",
@@ -932,8 +932,8 @@ def get_project_descriptions():
             ],
             "setenv_commands": [
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -983,7 +983,7 @@ def get_project_descriptions():
                 r"""opp_makemake -f --deep -o tsch -KINET_PROJ=../rpl/inet -I../rpl/inet/src -L../rpl/inet/src -lINET\$D -I../rpl/src -L../rpl/src -lrpl\$D -I. -Iapplications -IImobility -Icommon -Ilinklayer -Iradio""",
                 r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
             ],
-            "clean_commands": ["make clean && cd rpl/src && make clean && cd ../inet && make clean"],
+            "clean_commands": [r"""make clean && cd rpl/src && make clean && cd ../inet && make clean"""],
         },
 
         {
@@ -1021,9 +1021,9 @@ def get_project_descriptions():
                 r"""sed -i.bak 's/if (vector_cost<=0)/if (vector_cost == NULL)/' src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc""",
                 r"""find . -type f -name 'run' -exec chmod +x {} \;"""
             ],
-            "setenv_commands": ["echo 'Hint: use the `./run` command in any example simulation folder, located in `examples/can`.'"],
-            "build_commands": ["make makefiles && make clean && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "setenv_commands": [r"""echo 'Hint: use the `./run` command in any example simulation folder, located in `examples/can`.'"""],
+            "build_commands": [r"""make makefiles && make clean && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
             # TODO: this doesnt work
             # "options": {
             #     "with-recommended-deps": {
@@ -1062,7 +1062,7 @@ def get_project_descriptions():
             "build_commands": [
                 r"""docker build -t inetrg/ccnsim_dsme .""",
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -1103,8 +1103,8 @@ def get_project_descriptions():
                 r"""sed -i 's|-I/usr/lib/x86_64-linux-gnu/glib-2.0/include|-L$(GLIB_ROOT)/lib |g' Makefile""",
                 r"""sed -i.bak 's/if (vector_cost<=0)/if (vector_cost == NULL)/' src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc""",
             ],
-            "build_commands": ["make makefiles && make CFLAGS+='-Wno-pointer-compare' CXXFLAGS+='-Wno-pointer-compare' -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-fpermissive -fPIC'"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make CFLAGS+='-Wno-pointer-compare' CXXFLAGS+='-Wno-pointer-compare' -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-fpermissive -fPIC'"""],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -1148,8 +1148,8 @@ def get_project_descriptions():
                 r"""echo 'If Wireshark still complains about permissions, run the following command: `sudo chown root $(which dumpcap) && sudo chmod u+s $(which dumpcap)`.\n'""",
                 r"""echo 'Hint: In the `sdncontroller/simulations` folder, use the `../src/sdncontroller omnetpp.ini -n ../src:$INET_ROOT/src:.` command to run the example simulation.'""",
             ],
-            "build_commands": ["cd inet && opp_featuretool enable ExternalInterface && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../sdncontroller/src && opp_makemake -f --deep -KINET_PROJ=$INET_ROOT -DINET_IMPORT -I$INET_ROOT/src -L$INET_ROOT/src -lINET\$D -I$MYSQL_ROOT -I$MYSQL_LIB -lmysqlcppconn -L$MYSQL_LIB && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean && cd inet && make clean"],
+            "build_commands": [r"""cd inet && opp_featuretool enable ExternalInterface && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../sdncontroller/src && opp_makemake -f --deep -KINET_PROJ=$INET_ROOT -DINET_IMPORT -I$INET_ROOT/src -L$INET_ROOT/src -lINET\$D -I$MYSQL_ROOT -I$MYSQL_LIB -lmysqlcppconn -L$MYSQL_LIB && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean && cd inet && make clean"""],
         },
         
         {
@@ -1176,7 +1176,7 @@ def get_project_descriptions():
             "build_commands": [
                 r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -1202,7 +1202,7 @@ def get_project_descriptions():
             "build_commands": [
                 r"""cd tdma && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1243,7 +1243,7 @@ def get_project_descriptions():
             "build_commands": [
                 r"""opp_featuretool enable SimuLTE_Cars && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -1282,7 +1282,7 @@ def get_project_descriptions():
                 r"""cd .. && opp_makemake --make-so -f --deep -O out -o lre_omnet -KINET_PROJ=$INET_ROOT -I. -I$INET_ROOT/src -L$INET_ROOT/src -lINET\$D -Xlre-src/main""",
                 r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1309,8 +1309,8 @@ def get_project_descriptions():
                 r"""for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done""",
                 r"""for f in $(grep -Rl 'INT64_PRINTF_FORMAT'); do sed -i.bak 's|INT64_PRINTF_FORMAT|\"l\"|' $f; done""",
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -1354,7 +1354,7 @@ def get_project_descriptions():
             "build_commands": [
                 r"""make all -j$NIX_BUILD_CORES MODE=release"""
             ],
-            "clean_commands": ["cd inetmanet && make clean && cd .. && make clean"],
+            "clean_commands": [r"""cd inetmanet && make clean && cd .. && make clean"""],
         },
 
         {
@@ -1385,8 +1385,8 @@ def get_project_descriptions():
             "setenv_commands": [
                 r"""echo 'Hint: in the `inet-dsme/simulations` folder, use the `./singlerun.sh` command to run the example simulation.'"""
             ],
-            "build_commands": ["cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../inet-dsme/src && opp_makemake -f --deep --make-so -I../../inet/src -I../../inet/src/inet/common -I.. -KINET_PROJ=../../inet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../inet-dsme/src && opp_makemake -f --deep --make-so -I../../inet/src -I../../inet/src/inet/common -I.. -KINET_PROJ=../../inet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1416,8 +1416,8 @@ def get_project_descriptions():
                 r"""export PATH=$PATH:$OPENFLOW_ROOT/src""",
                 r"""echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"""
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -1452,9 +1452,9 @@ def get_project_descriptions():
                 r"""sed -i 's|opp_run|opp_run_dbg|' src/run_inet_dbg""",
 
             ],
-            "build_commands": ["cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "setenv_commands": ["echo 'Hint: use the `./run` command in any example simulation folder.'"],
-            "clean_commands": ["cd inet && make clean"],
+            "build_commands": [r"""cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "setenv_commands": [r"""echo 'Hint: use the `./run` command in any example simulation folder.'"""],
+            "clean_commands": [r"""cd inet && make clean"""],
         },
         
         {
@@ -1478,9 +1478,9 @@ def get_project_descriptions():
                 r"""sed -i 's|machine/endian|endian|' src/util/headerserializers/headers/defs.h""",
                 r"""chmod +x examples/rundemo""",
             ],
-            "setenv_commands": ["export SQLITE_LIB=${pkgs.sqlite}/lib"],
-            "build_commands": ["make makefiles && make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-std=c++14 -fpermissive -fPIC'"],
-            "clean_commands": ["make clean"],
+            "setenv_commands": [r"""export SQLITE_LIB=${pkgs.sqlite}/lib"""],
+            "build_commands": [r"""make makefiles && make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-std=c++14 -fpermissive -fPIC'"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1504,9 +1504,9 @@ def get_project_descriptions():
                 r"""sed -i 's|$DIR/../iCanCloud|$DIR/iCanCloud|g' src/run_iCanCloud""",
                 r"""sed -i 's|/simulations|/simulations:$INET_ROOT/src|g' src/run_iCanCloud""",
             ],
-            "setenv_commands": ["echo 'Hint: use the `./run` command in an example simulation folder.'"],
-            "build_commands": ["cd src && opp_makemake -f --deep --make-so -O out -o iCanCloud -pINET -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/util -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/status -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/base -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/transport/udp -L$INET_ROOT/out/\$\(CONFIGNAME\)/src -lz -linet -DINET_IMPORT -KINET_PROJ=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "setenv_commands": [r"""echo 'Hint: use the `./run` command in an example simulation folder.'"""],
+            "build_commands": [r"""cd src && opp_makemake -f --deep --make-so -O out -o iCanCloud -pINET -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/util -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/status -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/base -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/transport/udp -L$INET_ROOT/out/\$\(CONFIGNAME\)/src -lz -linet -DINET_IMPORT -KINET_PROJ=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1533,8 +1533,8 @@ def get_project_descriptions():
             "setenv_commands": ["export INET_PROJ=$INET_ROOT",
                                 r"""export TCL_LIBRARY=$TCLLIBPATH""",
                                 r"""echo 'Hint: use the `./run` command in the simulations folder. For example: `./run Validation/omnetpp.ini`'"""],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -1565,8 +1565,8 @@ def get_project_descriptions():
                 r"""export INET_PROJ=$INET_ROOT""",
                 r"""echo 'Hint: use the `./run` command in the simulations folder.'""",
             ],
-            "build_commands": ["cd IEEE8021AS/src && opp_makemake -f --deep -KINET_PROJ=$INET_PROJ -DINET_IMPORT -I$INET_PROJ/src -L$INET_PROJ/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "build_commands": [r"""cd IEEE8021AS/src && opp_makemake -f --deep -KINET_PROJ=$INET_PROJ -DINET_IMPORT -I$INET_PROJ/src -L$INET_PROJ/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -1583,8 +1583,8 @@ def get_project_descriptions():
                 r"""WSNROUTING_BIN=$(echo $STREETLIGHTSIM_ROOT/out/*-$BUILD_MODE/examples/WSNRouting/WSNRouting)""",
                 r"""cd examples/WSNRouting && $WSNROUTING_BIN -u Cmdenv -c flooding -r 0 > /dev/null""",
             ],
-            "build_commands": ["make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1608,8 +1608,8 @@ def get_project_descriptions():
                 r"""sed -i 's|$DIR/../../inet|$INET_ROOT|g' src/run_inet-quagga""",
                 r"""sed -i 's|include ../../../../Makefile.inc|#include ../../../../Makefile.inc|g' src/quaggasrc/*/*/Makefile""",
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=release && rm src/quagga-20090803"],     # rm is a kludge
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=release && rm src/quagga-20090803"""],     # rm is a kludge
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1633,8 +1633,8 @@ def get_project_descriptions():
                 r"""export INET_PROJ=$INET_ROOT""",
             ],
             "download_url": "https://github.com/SpyrosMArtel/TCP-Fit-Illinois/archive/ba5e56f0bd13d6b40b40892ac61d82d4f9a7ac92.tar.gz",
-            "build_commands": ["opp_makemake -f --deep -o tcp_fit_illinois -KINET_PROJ=$INET_PROJ -DINET_IMPORT -I. -I$INET_ROOT/src/applications -I$INET_ROOT/src/applications/common -I$INET_ROOT/src/applications/dhcp -I$INET_ROOT/src/applications/ethernet -I$INET_ROOT/src/applications/generic -I$INET_ROOT/src/applications/httptools -I$INET_ROOT/src/applications/netperfmeter -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/applications/rtpapp -I$INET_ROOT/src/applications/sctpapp -I$INET_ROOT/src/applications/tcpapp -I$INET_ROOT/src/applications/traci -I$INET_ROOT/src/applications/udpapp -I$INET_ROOT/src/applications/voip -I$INET_ROOT/src/base -I$INET_ROOT/src/battery -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/linklayer/configurator -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/linklayer/ethernet -I$INET_ROOT/src/linklayer/ethernet/switch -I$INET_ROOT/src/linklayer/ext -I$INET_ROOT/src/linklayer/idealwireless -I$INET_ROOT/src/linklayer/ieee80211 -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/linklayer/ieee80211/mgmt -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/ieee8021d -I$INET_ROOT/src/linklayer/ieee8021d/common -I$INET_ROOT/src/linklayer/ieee8021d/relay -I$INET_ROOT/src/linklayer/ieee8021d/rstp -I$INET_ROOT/src/linklayer/ieee8021d/stp -I$INET_ROOT/src/linklayer/ieee8021d/tester -I$INET_ROOT/src/linklayer/loopback -I$INET_ROOT/src/linklayer/ppp -I$INET_ROOT/src/linklayer/queue -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/mobility -I$INET_ROOT/src/mobility/common -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/mobility/group -I$INET_ROOT/src/mobility/single -I$INET_ROOT/src/mobility/static -I$INET_ROOT/src/networklayer -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/networklayer/autorouting -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/networklayer/autorouting/ipv6 -I$INET_ROOT/src/networklayer/bgpv4 -I$INET_ROOT/src/networklayer/bgpv4/BGPMessage -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/diffserv -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/networklayer/internetcloud -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/networklayer/ldp -I$INET_ROOT/src/networklayer/manetrouting -I$INET_ROOT/src/networklayer/manetrouting/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/aodv-uu/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/base -I$INET_ROOT/src/networklayer/manetrouting/batman -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand/orig -I$INET_ROOT/src/networklayer/manetrouting/dsdv -I$INET_ROOT/src/networklayer/manetrouting/dsr -I$INET_ROOT/src/networklayer/manetrouting/dsr/dsr-uu -I$INET_ROOT/src/networklayer/manetrouting/dymo -I$INET_ROOT/src/networklayer/manetrouting/dymo/dymoum -I$INET_ROOT/src/networklayer/manetrouting/dymo_fau -I$INET_ROOT/src/networklayer/manetrouting/olsr -I$INET_ROOT/src/networklayer/mpls -I$INET_ROOT/src/networklayer/ospfv2 -I$INET_ROOT/src/networklayer/ospfv2/interface -I$INET_ROOT/src/networklayer/ospfv2/messagehandler -I$INET_ROOT/src/networklayer/ospfv2/neighbor -I$INET_ROOT/src/networklayer/ospfv2/router -I$INET_ROOT/src/networklayer/routing -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/routing/dymo -I$INET_ROOT/src/networklayer/routing/gpsr -I$INET_ROOT/src/networklayer/routing/rip -I$INET_ROOT/src/networklayer/rsvp_te -I$INET_ROOT/src/networklayer/ted -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/nodes -I$INET_ROOT/src/nodes/aodv -I$INET_ROOT/src/nodes/bgp -I$INET_ROOT/src/nodes/dymo -I$INET_ROOT/src/nodes/ethernet -I$INET_ROOT/src/nodes/gpsr -I$INET_ROOT/src/nodes/httptools -I$INET_ROOT/src/nodes/inet -I$INET_ROOT/src/nodes/internetcloud -I$INET_ROOT/src/nodes/ipv6 -I$INET_ROOT/src/nodes/mpls -I$INET_ROOT/src/nodes/ospfv2 -I$INET_ROOT/src/nodes/rip -I$INET_ROOT/src/nodes/rtp -I$INET_ROOT/src/nodes/wireless -I$INET_ROOT/src/nodes/xmipv6 -I$INET_ROOT/src/status -I$INET_ROOT/src/transport -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/transport/rtp -I$INET_ROOT/src/transport/rtp/profiles -I$INET_ROOT/src/transport/rtp/profiles/avprofile -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/transport/tcp -I$INET_ROOT/src/transport/tcp/flavours -I$INET_ROOT/src/transport/tcp/queues -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/transport/udp -I$INET_ROOT/src/util -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/util/headerserializers/headers -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/util/headerserializers/ipv4/headers -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/util/headerserializers/ipv6/headers -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/util/headerserializers/sctp/headers -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/util/headerserializers/tcp/headers -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/util/headerserializers/udp/headers -I$INET_ROOT/src/util/messageprinters -I$INET_ROOT/src/world -I$INET_ROOT/src/world/annotations -I$INET_ROOT/src/world/httptools -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/world/scenario -I$INET_ROOT/src/world/traci -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -linet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""opp_makemake -f --deep -o tcp_fit_illinois -KINET_PROJ=$INET_PROJ -DINET_IMPORT -I. -I$INET_ROOT/src/applications -I$INET_ROOT/src/applications/common -I$INET_ROOT/src/applications/dhcp -I$INET_ROOT/src/applications/ethernet -I$INET_ROOT/src/applications/generic -I$INET_ROOT/src/applications/httptools -I$INET_ROOT/src/applications/netperfmeter -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/applications/rtpapp -I$INET_ROOT/src/applications/sctpapp -I$INET_ROOT/src/applications/tcpapp -I$INET_ROOT/src/applications/traci -I$INET_ROOT/src/applications/udpapp -I$INET_ROOT/src/applications/voip -I$INET_ROOT/src/base -I$INET_ROOT/src/battery -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/linklayer/configurator -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/linklayer/ethernet -I$INET_ROOT/src/linklayer/ethernet/switch -I$INET_ROOT/src/linklayer/ext -I$INET_ROOT/src/linklayer/idealwireless -I$INET_ROOT/src/linklayer/ieee80211 -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/linklayer/ieee80211/mgmt -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/ieee8021d -I$INET_ROOT/src/linklayer/ieee8021d/common -I$INET_ROOT/src/linklayer/ieee8021d/relay -I$INET_ROOT/src/linklayer/ieee8021d/rstp -I$INET_ROOT/src/linklayer/ieee8021d/stp -I$INET_ROOT/src/linklayer/ieee8021d/tester -I$INET_ROOT/src/linklayer/loopback -I$INET_ROOT/src/linklayer/ppp -I$INET_ROOT/src/linklayer/queue -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/mobility -I$INET_ROOT/src/mobility/common -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/mobility/group -I$INET_ROOT/src/mobility/single -I$INET_ROOT/src/mobility/static -I$INET_ROOT/src/networklayer -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/networklayer/autorouting -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/networklayer/autorouting/ipv6 -I$INET_ROOT/src/networklayer/bgpv4 -I$INET_ROOT/src/networklayer/bgpv4/BGPMessage -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/diffserv -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/networklayer/internetcloud -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/networklayer/ldp -I$INET_ROOT/src/networklayer/manetrouting -I$INET_ROOT/src/networklayer/manetrouting/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/aodv-uu/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/base -I$INET_ROOT/src/networklayer/manetrouting/batman -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand/orig -I$INET_ROOT/src/networklayer/manetrouting/dsdv -I$INET_ROOT/src/networklayer/manetrouting/dsr -I$INET_ROOT/src/networklayer/manetrouting/dsr/dsr-uu -I$INET_ROOT/src/networklayer/manetrouting/dymo -I$INET_ROOT/src/networklayer/manetrouting/dymo/dymoum -I$INET_ROOT/src/networklayer/manetrouting/dymo_fau -I$INET_ROOT/src/networklayer/manetrouting/olsr -I$INET_ROOT/src/networklayer/mpls -I$INET_ROOT/src/networklayer/ospfv2 -I$INET_ROOT/src/networklayer/ospfv2/interface -I$INET_ROOT/src/networklayer/ospfv2/messagehandler -I$INET_ROOT/src/networklayer/ospfv2/neighbor -I$INET_ROOT/src/networklayer/ospfv2/router -I$INET_ROOT/src/networklayer/routing -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/routing/dymo -I$INET_ROOT/src/networklayer/routing/gpsr -I$INET_ROOT/src/networklayer/routing/rip -I$INET_ROOT/src/networklayer/rsvp_te -I$INET_ROOT/src/networklayer/ted -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/nodes -I$INET_ROOT/src/nodes/aodv -I$INET_ROOT/src/nodes/bgp -I$INET_ROOT/src/nodes/dymo -I$INET_ROOT/src/nodes/ethernet -I$INET_ROOT/src/nodes/gpsr -I$INET_ROOT/src/nodes/httptools -I$INET_ROOT/src/nodes/inet -I$INET_ROOT/src/nodes/internetcloud -I$INET_ROOT/src/nodes/ipv6 -I$INET_ROOT/src/nodes/mpls -I$INET_ROOT/src/nodes/ospfv2 -I$INET_ROOT/src/nodes/rip -I$INET_ROOT/src/nodes/rtp -I$INET_ROOT/src/nodes/wireless -I$INET_ROOT/src/nodes/xmipv6 -I$INET_ROOT/src/status -I$INET_ROOT/src/transport -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/transport/rtp -I$INET_ROOT/src/transport/rtp/profiles -I$INET_ROOT/src/transport/rtp/profiles/avprofile -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/transport/tcp -I$INET_ROOT/src/transport/tcp/flavours -I$INET_ROOT/src/transport/tcp/queues -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/transport/udp -I$INET_ROOT/src/util -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/util/headerserializers/headers -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/util/headerserializers/ipv4/headers -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/util/headerserializers/ipv6/headers -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/util/headerserializers/sctp/headers -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/util/headerserializers/tcp/headers -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/util/headerserializers/udp/headers -I$INET_ROOT/src/util/messageprinters -I$INET_ROOT/src/world -I$INET_ROOT/src/world/annotations -I$INET_ROOT/src/world/httptools -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/world/scenario -I$INET_ROOT/src/world/traci -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -linet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -1655,9 +1655,9 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""sed -i 's|INETDefs.h|inet/common/INETDefs.h|g' src/*/*/*.h""",
             ],
-            "setenv_commands": ["echo 'Hint: Use the `../../inet_dns_extension omnetpp.ini -n ../..:$INET_ROOT/src` command in an example simulation folder to run the example simulation.'"],
-            "build_commands": ["cd src && opp_makemake -f --deep -o inet_dns_extension -O out -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -lINET -DINET_IMPORT -KINET_PROJ=$INET_ROOT -I$INET_ROOT/src/inet -I$INET_ROOT/src/inet/applications -I$INET_ROOT/src/inet/applications/base -I$INET_ROOT/src/inet/applications/contract -I$INET_ROOT/src/inet/applications/dhcp -I$INET_ROOT/src/inet/applications/ethernet -I$INET_ROOT/src/inet/applications/generic -I$INET_ROOT/src/inet/applications/httptools -I$INET_ROOT/src/inet/applications/httptools/browser -I$INET_ROOT/src/inet/applications/httptools/common -I$INET_ROOT/src/inet/applications/httptools/configurator -I$INET_ROOT/src/inet/applications/httptools/server -I$INET_ROOT/src/inet/applications/netperfmeter -I$INET_ROOT/src/inet/applications/packetdrill -I$INET_ROOT/src/inet/applications/pingapp -I$INET_ROOT/src/inet/applications/rtpapp -I$INET_ROOT/src/inet/applications/sctpapp -I$INET_ROOT/src/inet/applications/tcpapp -I$INET_ROOT/src/inet/applications/tunapp -I$INET_ROOT/src/inet/applications/udpapp -I$INET_ROOT/src/inet/applications/voip -I$INET_ROOT/src/inet/applications/voipstream -I$INET_ROOT/src/inet/common -I$INET_ROOT/src/inet/common/figures -I$INET_ROOT/src/inet/common/geometry -I$INET_ROOT/src/inet/common/geometry/base -I$INET_ROOT/src/inet/common/geometry/common -I$INET_ROOT/src/inet/common/geometry/container -I$INET_ROOT/src/inet/common/geometry/object -I$INET_ROOT/src/inet/common/geometry/shape -I$INET_ROOT/src/inet/common/geometry/shape/polyhedron -I$INET_ROOT/src/inet/common/lifecycle -I$INET_ROOT/src/inet/common/mapping -I$INET_ROOT/src/inet/common/misc -I$INET_ROOT/src/inet/common/packet -I$INET_ROOT/src/inet/common/queue -I$INET_ROOT/src/inet/common/scenario -I$INET_ROOT/src/inet/common/serializer -I$INET_ROOT/src/inet/common/serializer/headers -I$INET_ROOT/src/inet/common/serializer/headerserializers -I$INET_ROOT/src/inet/common/serializer/headerserializers/arp -I$INET_ROOT/src/inet/common/serializer/headerserializers/ethernet -I$INET_ROOT/src/inet/common/serializer/headerserializers/ieee80211 -I$INET_ROOT/src/inet/common/serializer/headerserializers/ieee80211/headers -I$INET_ROOT/src/inet/common/serializer/ipv4 -I$INET_ROOT/src/inet/common/serializer/ipv4/headers -I$INET_ROOT/src/inet/common/serializer/ipv6 -I$INET_ROOT/src/inet/common/serializer/ipv6/headers -I$INET_ROOT/src/inet/common/serializer/sctp -I$INET_ROOT/src/inet/common/serializer/sctp/headers -I$INET_ROOT/src/inet/common/serializer/tcp -I$INET_ROOT/src/inet/common/serializer/tcp/headers -I$INET_ROOT/src/inet/common/serializer/udp -I$INET_ROOT/src/inet/common/serializer/udp/headers -I$INET_ROOT/src/inet/environment -I$INET_ROOT/src/inet/environment/common -I$INET_ROOT/src/inet/environment/contract -I$INET_ROOT/src/inet/environment/objectcache -I$INET_ROOT/src/inet/linklayer -I$INET_ROOT/src/inet/linklayer/base -I$INET_ROOT/src/inet/linklayer/bmac -I$INET_ROOT/src/inet/linklayer/common -I$INET_ROOT/src/inet/linklayer/configurator -I$INET_ROOT/src/inet/linklayer/contract -I$INET_ROOT/src/inet/linklayer/csma -I$INET_ROOT/src/inet/linklayer/ethernet -I$INET_ROOT/src/inet/linklayer/ethernet/switch -I$INET_ROOT/src/inet/linklayer/ext -I$INET_ROOT/src/inet/linklayer/ideal -I$INET_ROOT/src/inet/linklayer/ieee80211 -I$INET_ROOT/src/inet/linklayer/ieee80211/mac -I$INET_ROOT/src/inet/linklayer/ieee80211/mgmt -I$INET_ROOT/src/inet/linklayer/ieee80211/newmac -I$INET_ROOT/src/inet/linklayer/ieee802154 -I$INET_ROOT/src/inet/linklayer/ieee8021d -I$INET_ROOT/src/inet/linklayer/ieee8021d/common -I$INET_ROOT/src/inet/linklayer/ieee8021d/relay -I$INET_ROOT/src/inet/linklayer/ieee8021d/rstp -I$INET_ROOT/src/inet/linklayer/ieee8021d/stp -I$INET_ROOT/src/inet/linklayer/ieee8021d/tester -I$INET_ROOT/src/inet/linklayer/lmac -I$INET_ROOT/src/inet/linklayer/loopback -I$INET_ROOT/src/inet/linklayer/ppp -I$INET_ROOT/src/inet/linklayer/tun -I$INET_ROOT/src/inet/mobility -I$INET_ROOT/src/inet/mobility/base -I$INET_ROOT/src/inet/mobility/contract -I$INET_ROOT/src/inet/mobility/group -I$INET_ROOT/src/inet/mobility/single -I$INET_ROOT/src/inet/mobility/static -I$INET_ROOT/src/inet/networklayer -I$INET_ROOT/src/inet/networklayer/arp -I$INET_ROOT/src/inet/networklayer/arp/generic -I$INET_ROOT/src/inet/networklayer/arp/ipv4 -I$INET_ROOT/src/inet/networklayer/base -I$INET_ROOT/src/inet/networklayer/common -I$INET_ROOT/src/inet/networklayer/configurator -I$INET_ROOT/src/inet/networklayer/configurator/base -I$INET_ROOT/src/inet/networklayer/configurator/contract -I$INET_ROOT/src/inet/networklayer/configurator/generic -I$INET_ROOT/src/inet/networklayer/configurator/ipv4 -I$INET_ROOT/src/inet/networklayer/configurator/ipv6 -I$INET_ROOT/src/inet/networklayer/contract -I$INET_ROOT/src/inet/networklayer/contract/generic -I$INET_ROOT/src/inet/networklayer/contract/ipv4 -I$INET_ROOT/src/inet/networklayer/contract/ipv6 -I$INET_ROOT/src/inet/networklayer/diffserv -I$INET_ROOT/src/inet/networklayer/flood -I$INET_ROOT/src/inet/networklayer/generic -I$INET_ROOT/src/inet/networklayer/icmpv6 -I$INET_ROOT/src/inet/networklayer/internetcloud -I$INET_ROOT/src/inet/networklayer/ipv4 -I$INET_ROOT/src/inet/networklayer/ipv6 -I$INET_ROOT/src/inet/networklayer/ipv6tunneling -I$INET_ROOT/src/inet/networklayer/ldp -I$INET_ROOT/src/inet/networklayer/mpls -I$INET_ROOT/src/inet/networklayer/multi -I$INET_ROOT/src/inet/networklayer/probabilistic -I$INET_ROOT/src/inet/networklayer/rsvp_te -I$INET_ROOT/src/inet/networklayer/ted -I$INET_ROOT/src/inet/networklayer/wiseroute -I$INET_ROOT/src/inet/networklayer/xmipv6 -I$INET_ROOT/src/inet/node -I$INET_ROOT/src/inet/node/aodv -I$INET_ROOT/src/inet/node/bgp -I$INET_ROOT/src/inet/node/dymo -I$INET_ROOT/src/inet/node/ethernet -I$INET_ROOT/src/inet/node/gpsr -I$INET_ROOT/src/inet/node/httptools -I$INET_ROOT/src/inet/node/inet -I$INET_ROOT/src/inet/node/internetcloud -I$INET_ROOT/src/inet/node/ipv6 -I$INET_ROOT/src/inet/node/mpls -I$INET_ROOT/src/inet/node/ospfv2 -I$INET_ROOT/src/inet/node/packetdrill -I$INET_ROOT/src/inet/node/rip -I$INET_ROOT/src/inet/node/rtp -I$INET_ROOT/src/inet/node/wireless -I$INET_ROOT/src/inet/node/xmipv6 -I$INET_ROOT/src/inet/physicallayer -I$INET_ROOT/src/inet/physicallayer/analogmodel -I$INET_ROOT/src/inet/physicallayer/analogmodel/bitlevel -I$INET_ROOT/src/inet/physicallayer/analogmodel/packetlevel -I$INET_ROOT/src/inet/physicallayer/antenna -I$INET_ROOT/src/inet/physicallayer/apskradio -I$INET_ROOT/src/inet/physicallayer/apskradio/bitlevel -I$INET_ROOT/src/inet/physicallayer/apskradio/bitlevel/errormodel -I$INET_ROOT/src/inet/physicallayer/apskradio/packetlevel -I$INET_ROOT/src/inet/physicallayer/apskradio/packetlevel/errormodel -I$INET_ROOT/src/inet/physicallayer/backgroundnoise -I$INET_ROOT/src/inet/physicallayer/base -I$INET_ROOT/src/inet/physicallayer/base/bitlevel -I$INET_ROOT/src/inet/physicallayer/base/packetlevel -I$INET_ROOT/src/inet/physicallayer/common -I$INET_ROOT/src/inet/physicallayer/common/bitlevel -I$INET_ROOT/src/inet/physicallayer/common/packetlevel -I$INET_ROOT/src/inet/physicallayer/communicationcache -I$INET_ROOT/src/inet/physicallayer/contract -I$INET_ROOT/src/inet/physicallayer/contract/bitlevel -I$INET_ROOT/src/inet/physicallayer/contract/packetlevel -I$INET_ROOT/src/inet/physicallayer/energyconsumer -I$INET_ROOT/src/inet/physicallayer/errormodel -I$INET_ROOT/src/inet/physicallayer/errormodel/bitlevel -I$INET_ROOT/src/inet/physicallayer/errormodel/packetlevel -I$INET_ROOT/src/inet/physicallayer/idealradio -I$INET_ROOT/src/inet/physicallayer/ieee80211 -I$INET_ROOT/src/inet/physicallayer/ieee80211/bitlevel -I$INET_ROOT/src/inet/physicallayer/ieee80211/bitlevel/errormodel -I$INET_ROOT/src/inet/physicallayer/ieee80211/mode -I$INET_ROOT/src/inet/physicallayer/ieee80211/packetlevel -I$INET_ROOT/src/inet/physicallayer/ieee80211/packetlevel/errormodel -I$INET_ROOT/src/inet/physicallayer/ieee802154 -I$INET_ROOT/src/inet/physicallayer/ieee802154/bitlevel -I$INET_ROOT/src/inet/physicallayer/ieee802154/packetlevel -I$INET_ROOT/src/inet/physicallayer/modulation -I$INET_ROOT/src/inet/physicallayer/neighborcache -I$INET_ROOT/src/inet/physicallayer/obstacleloss -I$INET_ROOT/src/inet/physicallayer/pathloss -I$INET_ROOT/src/inet/physicallayer/propagation -I$INET_ROOT/src/inet/power -I$INET_ROOT/src/inet/power/base -I$INET_ROOT/src/inet/power/consumer -I$INET_ROOT/src/inet/power/contract -I$INET_ROOT/src/inet/power/generator -I$INET_ROOT/src/inet/power/storage -I$INET_ROOT/src/inet/routing -I$INET_ROOT/src/inet/routing/aodv -I$INET_ROOT/src/inet/routing/bgpv4 -I$INET_ROOT/src/inet/routing/bgpv4/BGPMessage -I$INET_ROOT/src/inet/routing/contract -I$INET_ROOT/src/inet/routing/dymo -I$INET_ROOT/src/inet/routing/extras -I$INET_ROOT/src/inet/routing/extras/aodv-uu -I$INET_ROOT/src/inet/routing/extras/aodv-uu/aodv-uu -I$INET_ROOT/src/inet/routing/extras/base -I$INET_ROOT/src/inet/routing/extras/batman -I$INET_ROOT/src/inet/routing/extras/batman/batmand -I$INET_ROOT/src/inet/routing/extras/batman/batmand/orig -I$INET_ROOT/src/inet/routing/extras/dsdv -I$INET_ROOT/src/inet/routing/extras/dsr -I$INET_ROOT/src/inet/routing/extras/dsr/dsr-uu -I$INET_ROOT/src/inet/routing/extras/dymo -I$INET_ROOT/src/inet/routing/extras/dymo/dymoum -I$INET_ROOT/src/inet/routing/extras/dymo_fau -I$INET_ROOT/src/inet/routing/extras/olsr -I$INET_ROOT/src/inet/routing/gpsr -I$INET_ROOT/src/inet/routing/ospfv2 -I$INET_ROOT/src/inet/routing/ospfv2/interface -I$INET_ROOT/src/inet/routing/ospfv2/messagehandler -I$INET_ROOT/src/inet/routing/ospfv2/neighbor -I$INET_ROOT/src/inet/routing/ospfv2/router -I$INET_ROOT/src/inet/routing/pim -I$INET_ROOT/src/inet/routing/pim/modes -I$INET_ROOT/src/inet/routing/pim/tables -I$INET_ROOT/src/inet/routing/rip -I$INET_ROOT/src/inet/transportlayer -I$INET_ROOT/src/inet/transportlayer/base -I$INET_ROOT/src/inet/transportlayer/contract -I$INET_ROOT/src/inet/transportlayer/contract/sctp -I$INET_ROOT/src/inet/transportlayer/contract/tcp -I$INET_ROOT/src/inet/transportlayer/contract/udp -I$INET_ROOT/src/inet/transportlayer/rtp -I$INET_ROOT/src/inet/transportlayer/rtp/profiles -I$INET_ROOT/src/inet/transportlayer/rtp/profiles/avprofile -I$INET_ROOT/src/inet/transportlayer/sctp -I$INET_ROOT/src/inet/transportlayer/tcp -I$INET_ROOT/src/inet/transportlayer/tcp/flavours -I$INET_ROOT/src/inet/transportlayer/tcp/queues -I$INET_ROOT/src/inet/transportlayer/tcp_common -I$INET_ROOT/src/inet/transportlayer/tcp_lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/core -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/arch -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv4 -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv4/lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv6 -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv6/lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/netif -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/queues -I$INET_ROOT/src/inet/transportlayer/tcp_nsc -I$INET_ROOT/src/inet/transportlayer/tcp_nsc/queues -I$INET_ROOT/src/inet/transportlayer/udp -Imessages -Inetworks -Icommon -Iapplications -Iutils -I$INET_ROOT/src && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "setenv_commands": [r"""echo 'Hint: Use the `../../inet_dns_extension omnetpp.ini -n ../..:$INET_ROOT/src` command in an example simulation folder to run the example simulation.'"""],
+            "build_commands": [r"""cd src && opp_makemake -f --deep -o inet_dns_extension -O out -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -lINET -DINET_IMPORT -KINET_PROJ=$INET_ROOT -I$INET_ROOT/src/inet -I$INET_ROOT/src/inet/applications -I$INET_ROOT/src/inet/applications/base -I$INET_ROOT/src/inet/applications/contract -I$INET_ROOT/src/inet/applications/dhcp -I$INET_ROOT/src/inet/applications/ethernet -I$INET_ROOT/src/inet/applications/generic -I$INET_ROOT/src/inet/applications/httptools -I$INET_ROOT/src/inet/applications/httptools/browser -I$INET_ROOT/src/inet/applications/httptools/common -I$INET_ROOT/src/inet/applications/httptools/configurator -I$INET_ROOT/src/inet/applications/httptools/server -I$INET_ROOT/src/inet/applications/netperfmeter -I$INET_ROOT/src/inet/applications/packetdrill -I$INET_ROOT/src/inet/applications/pingapp -I$INET_ROOT/src/inet/applications/rtpapp -I$INET_ROOT/src/inet/applications/sctpapp -I$INET_ROOT/src/inet/applications/tcpapp -I$INET_ROOT/src/inet/applications/tunapp -I$INET_ROOT/src/inet/applications/udpapp -I$INET_ROOT/src/inet/applications/voip -I$INET_ROOT/src/inet/applications/voipstream -I$INET_ROOT/src/inet/common -I$INET_ROOT/src/inet/common/figures -I$INET_ROOT/src/inet/common/geometry -I$INET_ROOT/src/inet/common/geometry/base -I$INET_ROOT/src/inet/common/geometry/common -I$INET_ROOT/src/inet/common/geometry/container -I$INET_ROOT/src/inet/common/geometry/object -I$INET_ROOT/src/inet/common/geometry/shape -I$INET_ROOT/src/inet/common/geometry/shape/polyhedron -I$INET_ROOT/src/inet/common/lifecycle -I$INET_ROOT/src/inet/common/mapping -I$INET_ROOT/src/inet/common/misc -I$INET_ROOT/src/inet/common/packet -I$INET_ROOT/src/inet/common/queue -I$INET_ROOT/src/inet/common/scenario -I$INET_ROOT/src/inet/common/serializer -I$INET_ROOT/src/inet/common/serializer/headers -I$INET_ROOT/src/inet/common/serializer/headerserializers -I$INET_ROOT/src/inet/common/serializer/headerserializers/arp -I$INET_ROOT/src/inet/common/serializer/headerserializers/ethernet -I$INET_ROOT/src/inet/common/serializer/headerserializers/ieee80211 -I$INET_ROOT/src/inet/common/serializer/headerserializers/ieee80211/headers -I$INET_ROOT/src/inet/common/serializer/ipv4 -I$INET_ROOT/src/inet/common/serializer/ipv4/headers -I$INET_ROOT/src/inet/common/serializer/ipv6 -I$INET_ROOT/src/inet/common/serializer/ipv6/headers -I$INET_ROOT/src/inet/common/serializer/sctp -I$INET_ROOT/src/inet/common/serializer/sctp/headers -I$INET_ROOT/src/inet/common/serializer/tcp -I$INET_ROOT/src/inet/common/serializer/tcp/headers -I$INET_ROOT/src/inet/common/serializer/udp -I$INET_ROOT/src/inet/common/serializer/udp/headers -I$INET_ROOT/src/inet/environment -I$INET_ROOT/src/inet/environment/common -I$INET_ROOT/src/inet/environment/contract -I$INET_ROOT/src/inet/environment/objectcache -I$INET_ROOT/src/inet/linklayer -I$INET_ROOT/src/inet/linklayer/base -I$INET_ROOT/src/inet/linklayer/bmac -I$INET_ROOT/src/inet/linklayer/common -I$INET_ROOT/src/inet/linklayer/configurator -I$INET_ROOT/src/inet/linklayer/contract -I$INET_ROOT/src/inet/linklayer/csma -I$INET_ROOT/src/inet/linklayer/ethernet -I$INET_ROOT/src/inet/linklayer/ethernet/switch -I$INET_ROOT/src/inet/linklayer/ext -I$INET_ROOT/src/inet/linklayer/ideal -I$INET_ROOT/src/inet/linklayer/ieee80211 -I$INET_ROOT/src/inet/linklayer/ieee80211/mac -I$INET_ROOT/src/inet/linklayer/ieee80211/mgmt -I$INET_ROOT/src/inet/linklayer/ieee80211/newmac -I$INET_ROOT/src/inet/linklayer/ieee802154 -I$INET_ROOT/src/inet/linklayer/ieee8021d -I$INET_ROOT/src/inet/linklayer/ieee8021d/common -I$INET_ROOT/src/inet/linklayer/ieee8021d/relay -I$INET_ROOT/src/inet/linklayer/ieee8021d/rstp -I$INET_ROOT/src/inet/linklayer/ieee8021d/stp -I$INET_ROOT/src/inet/linklayer/ieee8021d/tester -I$INET_ROOT/src/inet/linklayer/lmac -I$INET_ROOT/src/inet/linklayer/loopback -I$INET_ROOT/src/inet/linklayer/ppp -I$INET_ROOT/src/inet/linklayer/tun -I$INET_ROOT/src/inet/mobility -I$INET_ROOT/src/inet/mobility/base -I$INET_ROOT/src/inet/mobility/contract -I$INET_ROOT/src/inet/mobility/group -I$INET_ROOT/src/inet/mobility/single -I$INET_ROOT/src/inet/mobility/static -I$INET_ROOT/src/inet/networklayer -I$INET_ROOT/src/inet/networklayer/arp -I$INET_ROOT/src/inet/networklayer/arp/generic -I$INET_ROOT/src/inet/networklayer/arp/ipv4 -I$INET_ROOT/src/inet/networklayer/base -I$INET_ROOT/src/inet/networklayer/common -I$INET_ROOT/src/inet/networklayer/configurator -I$INET_ROOT/src/inet/networklayer/configurator/base -I$INET_ROOT/src/inet/networklayer/configurator/contract -I$INET_ROOT/src/inet/networklayer/configurator/generic -I$INET_ROOT/src/inet/networklayer/configurator/ipv4 -I$INET_ROOT/src/inet/networklayer/configurator/ipv6 -I$INET_ROOT/src/inet/networklayer/contract -I$INET_ROOT/src/inet/networklayer/contract/generic -I$INET_ROOT/src/inet/networklayer/contract/ipv4 -I$INET_ROOT/src/inet/networklayer/contract/ipv6 -I$INET_ROOT/src/inet/networklayer/diffserv -I$INET_ROOT/src/inet/networklayer/flood -I$INET_ROOT/src/inet/networklayer/generic -I$INET_ROOT/src/inet/networklayer/icmpv6 -I$INET_ROOT/src/inet/networklayer/internetcloud -I$INET_ROOT/src/inet/networklayer/ipv4 -I$INET_ROOT/src/inet/networklayer/ipv6 -I$INET_ROOT/src/inet/networklayer/ipv6tunneling -I$INET_ROOT/src/inet/networklayer/ldp -I$INET_ROOT/src/inet/networklayer/mpls -I$INET_ROOT/src/inet/networklayer/multi -I$INET_ROOT/src/inet/networklayer/probabilistic -I$INET_ROOT/src/inet/networklayer/rsvp_te -I$INET_ROOT/src/inet/networklayer/ted -I$INET_ROOT/src/inet/networklayer/wiseroute -I$INET_ROOT/src/inet/networklayer/xmipv6 -I$INET_ROOT/src/inet/node -I$INET_ROOT/src/inet/node/aodv -I$INET_ROOT/src/inet/node/bgp -I$INET_ROOT/src/inet/node/dymo -I$INET_ROOT/src/inet/node/ethernet -I$INET_ROOT/src/inet/node/gpsr -I$INET_ROOT/src/inet/node/httptools -I$INET_ROOT/src/inet/node/inet -I$INET_ROOT/src/inet/node/internetcloud -I$INET_ROOT/src/inet/node/ipv6 -I$INET_ROOT/src/inet/node/mpls -I$INET_ROOT/src/inet/node/ospfv2 -I$INET_ROOT/src/inet/node/packetdrill -I$INET_ROOT/src/inet/node/rip -I$INET_ROOT/src/inet/node/rtp -I$INET_ROOT/src/inet/node/wireless -I$INET_ROOT/src/inet/node/xmipv6 -I$INET_ROOT/src/inet/physicallayer -I$INET_ROOT/src/inet/physicallayer/analogmodel -I$INET_ROOT/src/inet/physicallayer/analogmodel/bitlevel -I$INET_ROOT/src/inet/physicallayer/analogmodel/packetlevel -I$INET_ROOT/src/inet/physicallayer/antenna -I$INET_ROOT/src/inet/physicallayer/apskradio -I$INET_ROOT/src/inet/physicallayer/apskradio/bitlevel -I$INET_ROOT/src/inet/physicallayer/apskradio/bitlevel/errormodel -I$INET_ROOT/src/inet/physicallayer/apskradio/packetlevel -I$INET_ROOT/src/inet/physicallayer/apskradio/packetlevel/errormodel -I$INET_ROOT/src/inet/physicallayer/backgroundnoise -I$INET_ROOT/src/inet/physicallayer/base -I$INET_ROOT/src/inet/physicallayer/base/bitlevel -I$INET_ROOT/src/inet/physicallayer/base/packetlevel -I$INET_ROOT/src/inet/physicallayer/common -I$INET_ROOT/src/inet/physicallayer/common/bitlevel -I$INET_ROOT/src/inet/physicallayer/common/packetlevel -I$INET_ROOT/src/inet/physicallayer/communicationcache -I$INET_ROOT/src/inet/physicallayer/contract -I$INET_ROOT/src/inet/physicallayer/contract/bitlevel -I$INET_ROOT/src/inet/physicallayer/contract/packetlevel -I$INET_ROOT/src/inet/physicallayer/energyconsumer -I$INET_ROOT/src/inet/physicallayer/errormodel -I$INET_ROOT/src/inet/physicallayer/errormodel/bitlevel -I$INET_ROOT/src/inet/physicallayer/errormodel/packetlevel -I$INET_ROOT/src/inet/physicallayer/idealradio -I$INET_ROOT/src/inet/physicallayer/ieee80211 -I$INET_ROOT/src/inet/physicallayer/ieee80211/bitlevel -I$INET_ROOT/src/inet/physicallayer/ieee80211/bitlevel/errormodel -I$INET_ROOT/src/inet/physicallayer/ieee80211/mode -I$INET_ROOT/src/inet/physicallayer/ieee80211/packetlevel -I$INET_ROOT/src/inet/physicallayer/ieee80211/packetlevel/errormodel -I$INET_ROOT/src/inet/physicallayer/ieee802154 -I$INET_ROOT/src/inet/physicallayer/ieee802154/bitlevel -I$INET_ROOT/src/inet/physicallayer/ieee802154/packetlevel -I$INET_ROOT/src/inet/physicallayer/modulation -I$INET_ROOT/src/inet/physicallayer/neighborcache -I$INET_ROOT/src/inet/physicallayer/obstacleloss -I$INET_ROOT/src/inet/physicallayer/pathloss -I$INET_ROOT/src/inet/physicallayer/propagation -I$INET_ROOT/src/inet/power -I$INET_ROOT/src/inet/power/base -I$INET_ROOT/src/inet/power/consumer -I$INET_ROOT/src/inet/power/contract -I$INET_ROOT/src/inet/power/generator -I$INET_ROOT/src/inet/power/storage -I$INET_ROOT/src/inet/routing -I$INET_ROOT/src/inet/routing/aodv -I$INET_ROOT/src/inet/routing/bgpv4 -I$INET_ROOT/src/inet/routing/bgpv4/BGPMessage -I$INET_ROOT/src/inet/routing/contract -I$INET_ROOT/src/inet/routing/dymo -I$INET_ROOT/src/inet/routing/extras -I$INET_ROOT/src/inet/routing/extras/aodv-uu -I$INET_ROOT/src/inet/routing/extras/aodv-uu/aodv-uu -I$INET_ROOT/src/inet/routing/extras/base -I$INET_ROOT/src/inet/routing/extras/batman -I$INET_ROOT/src/inet/routing/extras/batman/batmand -I$INET_ROOT/src/inet/routing/extras/batman/batmand/orig -I$INET_ROOT/src/inet/routing/extras/dsdv -I$INET_ROOT/src/inet/routing/extras/dsr -I$INET_ROOT/src/inet/routing/extras/dsr/dsr-uu -I$INET_ROOT/src/inet/routing/extras/dymo -I$INET_ROOT/src/inet/routing/extras/dymo/dymoum -I$INET_ROOT/src/inet/routing/extras/dymo_fau -I$INET_ROOT/src/inet/routing/extras/olsr -I$INET_ROOT/src/inet/routing/gpsr -I$INET_ROOT/src/inet/routing/ospfv2 -I$INET_ROOT/src/inet/routing/ospfv2/interface -I$INET_ROOT/src/inet/routing/ospfv2/messagehandler -I$INET_ROOT/src/inet/routing/ospfv2/neighbor -I$INET_ROOT/src/inet/routing/ospfv2/router -I$INET_ROOT/src/inet/routing/pim -I$INET_ROOT/src/inet/routing/pim/modes -I$INET_ROOT/src/inet/routing/pim/tables -I$INET_ROOT/src/inet/routing/rip -I$INET_ROOT/src/inet/transportlayer -I$INET_ROOT/src/inet/transportlayer/base -I$INET_ROOT/src/inet/transportlayer/contract -I$INET_ROOT/src/inet/transportlayer/contract/sctp -I$INET_ROOT/src/inet/transportlayer/contract/tcp -I$INET_ROOT/src/inet/transportlayer/contract/udp -I$INET_ROOT/src/inet/transportlayer/rtp -I$INET_ROOT/src/inet/transportlayer/rtp/profiles -I$INET_ROOT/src/inet/transportlayer/rtp/profiles/avprofile -I$INET_ROOT/src/inet/transportlayer/sctp -I$INET_ROOT/src/inet/transportlayer/tcp -I$INET_ROOT/src/inet/transportlayer/tcp/flavours -I$INET_ROOT/src/inet/transportlayer/tcp/queues -I$INET_ROOT/src/inet/transportlayer/tcp_common -I$INET_ROOT/src/inet/transportlayer/tcp_lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/core -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/arch -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv4 -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv4/lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv6 -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv6/lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/lwip -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/netif -I$INET_ROOT/src/inet/transportlayer/tcp_lwip/queues -I$INET_ROOT/src/inet/transportlayer/tcp_nsc -I$INET_ROOT/src/inet/transportlayer/tcp_nsc/queues -I$INET_ROOT/src/inet/transportlayer/udp -Imessages -Inetworks -Icommon -Iapplications -Iutils -I$INET_ROOT/src && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1675,9 +1675,9 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then $OBS_BIN -n ../..:$INET_ROOT/src -c config0 -u Cmdenv omnetpp.ini > /dev/null; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode due to segfault in debug mode.'; fi""",
             ],
-            "build_commands": ["cd src && opp_makemake -f --deep -o obs -O out -KINET_PROJ=$INET_ROOT -DINET_IMPORT -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -I. -I$INET_ROOT/src -I$INET_ROOT/src/applications -I$INET_ROOT/src/applications/dhcp -I$INET_ROOT/src/applications/ethernet -I$INET_ROOT/src/applications/generic -I$INET_ROOT/src/applications/httptools -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/applications/rtpapp -I$INET_ROOT/src/applications/sctpapp -I$INET_ROOT/src/applications/tcpapp -I$INET_ROOT/src/applications/traci -I$INET_ROOT/src/applications/udpapp -I$INET_ROOT/src/applications/voip -I$INET_ROOT/src/base -I$INET_ROOT/src/battery -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/linklayer/ethernet -I$INET_ROOT/src/linklayer/ethernet/switch -I$INET_ROOT/src/linklayer/ext -I$INET_ROOT/src/linklayer/idealwireless -I$INET_ROOT/src/linklayer/ieee80211 -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/linklayer/ieee80211/mgmt -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/loopback -I$INET_ROOT/src/linklayer/ppp -I$INET_ROOT/src/linklayer/queue -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/mobility -I$INET_ROOT/src/mobility/models -I$INET_ROOT/src/networklayer -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/networklayer/autorouting -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/networklayer/autorouting/ipv6 -I$INET_ROOT/src/networklayer/bgpv4 -I$INET_ROOT/src/networklayer/bgpv4/BGPMessage -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/diffserv -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/networklayer/internetcloud -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/networklayer/ldp -I$INET_ROOT/src/networklayer/manetrouting -I$INET_ROOT/src/networklayer/manetrouting/aodv -I$INET_ROOT/src/networklayer/manetrouting/aodv/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/base -I$INET_ROOT/src/networklayer/manetrouting/batman -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand/orig -I$INET_ROOT/src/networklayer/manetrouting/dsdv -I$INET_ROOT/src/networklayer/manetrouting/dsr -I$INET_ROOT/src/networklayer/manetrouting/dsr/dsr-uu -I$INET_ROOT/src/networklayer/manetrouting/dymo -I$INET_ROOT/src/networklayer/manetrouting/dymo/dymoum -I$INET_ROOT/src/networklayer/manetrouting/dymo_fau -I$INET_ROOT/src/networklayer/manetrouting/olsr -I$INET_ROOT/src/networklayer/mpls -I$INET_ROOT/src/networklayer/ospfv2 -I$INET_ROOT/src/networklayer/ospfv2/interface -I$INET_ROOT/src/networklayer/ospfv2/messagehandler -I$INET_ROOT/src/networklayer/ospfv2/neighbor -I$INET_ROOT/src/networklayer/ospfv2/router -I$INET_ROOT/src/networklayer/rsvp_te -I$INET_ROOT/src/networklayer/ted -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/nodes -I$INET_ROOT/src/nodes/bgp -I$INET_ROOT/src/nodes/ethernet -I$INET_ROOT/src/nodes/httptools -I$INET_ROOT/src/nodes/inet -I$INET_ROOT/src/nodes/internetcloud -I$INET_ROOT/src/nodes/ipv6 -I$INET_ROOT/src/nodes/mpls -I$INET_ROOT/src/nodes/ospfv2 -I$INET_ROOT/src/nodes/rtp -I$INET_ROOT/src/nodes/wireless -I$INET_ROOT/src/nodes/xmipv6 -I$INET_ROOT/src/status -I$INET_ROOT/src/transport -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/transport/rtp -I$INET_ROOT/src/transport/rtp/profiles -I$INET_ROOT/src/transport/rtp/profiles/avprofile -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/transport/tcp -I$INET_ROOT/src/transport/tcp/flavours -I$INET_ROOT/src/transport/tcp/queues -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/transport/udp -I$INET_ROOT/src/util -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/util/headerserializers/headers -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/util/headerserializers/ipv4/headers -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/util/headerserializers/sctp/headers -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/util/headerserializers/tcp/headers -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/util/headerserializers/udp/headers -I$INET_ROOT/src/world -I$INET_ROOT/src/world/annotations -I$INET_ROOT/src/world/httptools -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/world/scenario -I$INET_ROOT/src/world/traci -linet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "setenv_commands": ["export TCL_LIBRARY=${pkgs.tcl-8_6}/lib/tcl8.6 && echo 'Hint: in the folder of an example simulation, use the `../../src/obs -n ../..:$INET_ROOT/src omnetpp.ini` command to run the simulation.'"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""cd src && opp_makemake -f --deep -o obs -O out -KINET_PROJ=$INET_ROOT -DINET_IMPORT -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -I. -I$INET_ROOT/src -I$INET_ROOT/src/applications -I$INET_ROOT/src/applications/dhcp -I$INET_ROOT/src/applications/ethernet -I$INET_ROOT/src/applications/generic -I$INET_ROOT/src/applications/httptools -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/applications/rtpapp -I$INET_ROOT/src/applications/sctpapp -I$INET_ROOT/src/applications/tcpapp -I$INET_ROOT/src/applications/traci -I$INET_ROOT/src/applications/udpapp -I$INET_ROOT/src/applications/voip -I$INET_ROOT/src/base -I$INET_ROOT/src/battery -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/linklayer/ethernet -I$INET_ROOT/src/linklayer/ethernet/switch -I$INET_ROOT/src/linklayer/ext -I$INET_ROOT/src/linklayer/idealwireless -I$INET_ROOT/src/linklayer/ieee80211 -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/linklayer/ieee80211/mgmt -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/loopback -I$INET_ROOT/src/linklayer/ppp -I$INET_ROOT/src/linklayer/queue -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/mobility -I$INET_ROOT/src/mobility/models -I$INET_ROOT/src/networklayer -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/networklayer/autorouting -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/networklayer/autorouting/ipv6 -I$INET_ROOT/src/networklayer/bgpv4 -I$INET_ROOT/src/networklayer/bgpv4/BGPMessage -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/diffserv -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/networklayer/internetcloud -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/networklayer/ldp -I$INET_ROOT/src/networklayer/manetrouting -I$INET_ROOT/src/networklayer/manetrouting/aodv -I$INET_ROOT/src/networklayer/manetrouting/aodv/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/base -I$INET_ROOT/src/networklayer/manetrouting/batman -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand/orig -I$INET_ROOT/src/networklayer/manetrouting/dsdv -I$INET_ROOT/src/networklayer/manetrouting/dsr -I$INET_ROOT/src/networklayer/manetrouting/dsr/dsr-uu -I$INET_ROOT/src/networklayer/manetrouting/dymo -I$INET_ROOT/src/networklayer/manetrouting/dymo/dymoum -I$INET_ROOT/src/networklayer/manetrouting/dymo_fau -I$INET_ROOT/src/networklayer/manetrouting/olsr -I$INET_ROOT/src/networklayer/mpls -I$INET_ROOT/src/networklayer/ospfv2 -I$INET_ROOT/src/networklayer/ospfv2/interface -I$INET_ROOT/src/networklayer/ospfv2/messagehandler -I$INET_ROOT/src/networklayer/ospfv2/neighbor -I$INET_ROOT/src/networklayer/ospfv2/router -I$INET_ROOT/src/networklayer/rsvp_te -I$INET_ROOT/src/networklayer/ted -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/nodes -I$INET_ROOT/src/nodes/bgp -I$INET_ROOT/src/nodes/ethernet -I$INET_ROOT/src/nodes/httptools -I$INET_ROOT/src/nodes/inet -I$INET_ROOT/src/nodes/internetcloud -I$INET_ROOT/src/nodes/ipv6 -I$INET_ROOT/src/nodes/mpls -I$INET_ROOT/src/nodes/ospfv2 -I$INET_ROOT/src/nodes/rtp -I$INET_ROOT/src/nodes/wireless -I$INET_ROOT/src/nodes/xmipv6 -I$INET_ROOT/src/status -I$INET_ROOT/src/transport -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/transport/rtp -I$INET_ROOT/src/transport/rtp/profiles -I$INET_ROOT/src/transport/rtp/profiles/avprofile -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/transport/tcp -I$INET_ROOT/src/transport/tcp/flavours -I$INET_ROOT/src/transport/tcp/queues -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/transport/udp -I$INET_ROOT/src/util -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/util/headerserializers/headers -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/util/headerserializers/ipv4/headers -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/util/headerserializers/sctp/headers -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/util/headerserializers/tcp/headers -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/util/headerserializers/udp/headers -I$INET_ROOT/src/world -I$INET_ROOT/src/world/annotations -I$INET_ROOT/src/world/httptools -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/world/scenario -I$INET_ROOT/src/world/traci -linet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "setenv_commands": [r"""export TCL_LIBRARY=${pkgs.tcl-8_6}/lib/tcl8.6 && echo 'Hint: in the folder of an example simulation, use the `../../src/obs -n ../..:$INET_ROOT/src omnetpp.ini` command to run the simulation.'"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1722,7 +1722,7 @@ def get_project_descriptions():
                 r"""opp_makemake --make-so -f --deep -o rpl -KINET4_PROJ=../inet -DINET_IMPORT -I$INET_ROOT/src -L$INET_ROOT/src -lINET$(D)""", 
                 r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
             ],
-            "clean_commands": ["make clean MODE=$BUILD_MODE && cd inet && make clean MODE=$BUILD_MODE"],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE && cd inet && make clean MODE=$BUILD_MODE"""],
         },
         
         {
@@ -1744,9 +1744,9 @@ def get_project_descriptions():
                 r"""sed -i 's|-n .:../src|-n .:../src:../../inet/src|' iec61850InetV2.6/TestInet/simulations/run""",
                 r"""chmod +x iec61850InetV2.6/inet/src/run_inet""",
             ],
-            "setenv_commands": ["echo 'Hint: in the `iec61850InetV2.6/TestInet/simulations` folder, use the `./run ../src/omnetpp.ini` command to run the example simulation.'"],
-            "build_commands": ["cd iec61850InetV2.6/inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../TestInet/src && opp_makemake -f --deep -I../../inet/src -L../../inet/src -linet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["cd iec61850InetV2.6/inet && make clean && cd ../TestInet && make clean"],
+            "setenv_commands": [r"""echo 'Hint: in the `iec61850InetV2.6/TestInet/simulations` folder, use the `./run ../src/omnetpp.ini` command to run the example simulation.'"""],
+            "build_commands": [r"""cd iec61850InetV2.6/inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../TestInet/src && opp_makemake -f --deep -I../../inet/src -L../../inet/src -linet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""cd iec61850InetV2.6/inet && make clean && cd ../TestInet && make clean"""],
         },
         
         {
@@ -1770,8 +1770,8 @@ def get_project_descriptions():
                 r"""export MYSQL_LIB=${pkgs.libmysqlconnectorcpp}/lib""",
                 r"""echo 'Hint: use the `./run` command in the simulations folder to run the example simulation.'""",
             ],
-            "build_commands": ["cd src && opp_makemake -f --deep -o crhandover -I$SQLITE_LIB -lmysqlclient -lsqlite3 -lmysqlcppconn -L$MYSQL_LIB && make -j16 MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""cd src && opp_makemake -f --deep -o crhandover -I$SQLITE_LIB -lmysqlclient -lsqlite3 -lmysqlcppconn -L$MYSQL_LIB && make -j16 MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1794,7 +1794,7 @@ def get_project_descriptions():
             "build_commands": [
                 r"""./configure --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1826,8 +1826,8 @@ def get_project_descriptions():
                 r"""export ARTERY_PATH=$ARTERY_ROOT""",
                 r"""echo 'Hint: use the `cmake --build build --target run_example` command to run the example simulation.'"""
             ],
-            "build_commands": ["mkdir -p build && cd build && cmake .. && make -j$NIX_BUILD_CORES MODE=debug"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""mkdir -p build && cd build && cmake .. && make -j$NIX_BUILD_CORES MODE=debug"""],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -1877,8 +1877,8 @@ def get_project_descriptions():
                 r"""export INET_ROOT=$NETA_ALLINONE_ROOT/inet""",
                 r"""echo 'Hint: use the `neta` executable to run simulations. For example, in the `simulations/AttackScenarios/DelayAttackScenario` folder: `$NETA_ALLINONE_ROOT/neta/out/gcc-release/src/neta Dropping.ini -n $NETA_ALLINONE_ROOT/neta/src:$INET_ROOT/src`.'""",
             ],
-            "build_commands": ["cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../neta/src && opp_makemake -f --deep -I../../inet/src/linklayer/ieee80211/mgmt -I../../inet/src/transport/tcp_common -I../../inet/src/base -I../../inet/src/util -I../../inet/src/linklayer/ieee80211/mac -I../../inet/src/world/powercontrol -I../../inet/src/transport/udp -I../../inet/src/linklayer/ieee80211/radio/errormodel -I../../inet/src/linklayer/ieee80211/radio -I../../inet/src/util/headerserializers -I../../inet/src/mobility -I../../inet/src/transport/sctp -I../../inet/src/networklayer/icmpv6 -I../../inet/src/linklayer/radio/propagation -I../../inet/src/transport/contract -I../../inet/src/networklayer/ipv6tunneling -I../../inet/src/world/radio -I../../inet/src/linklayer/contract -I../../inet/src/linklayer/radio -I../../inet/src/world/obstacles -I../../inet/src/util/headerserializers/udp -I../../inet/src/util/headerserializers/tcp -I../../inet/src/networklayer/common -I../../inet/src/linklayer/ethernet -I../../inet/src/networklayer/arp -I../../inet/src/networklayer/ipv6 -I../../inet/src/networklayer/contract -I../../inet/src -I../../inet/src/networklayer/xmipv6 -I../../inet/src/util/headerserializers/sctp -I../../inet/src/networklayer/manetrouting/base -I../../inet/src/battery/models -I../../inet/src/networklayer/ipv4 -I../../inet/src/applications/pingapp -I../../inet/src/util/headerserializers/ipv4 -I../../inet/src/applications/udpapp -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -linet -DWITH_TCP_COMMON -DWITH_TCP_INET -DWITH_IPv4 -DWITH_IPv6 -DWITH_xMIPv6 -DWITH_UDP -DWITH_RTP -DWITH_SCTP -DWITH_ETHERNET -DWITH_PPP -DWITH_EXT_IF -DWITH_MPLS -DWITH_OSPFv2 -DWITH_BGPv4 -DWITH_MANET -DWITH_DHCP -DINET_IMPORT -KINET_PROJ=../../inet && make clean && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["cd neta && make clean && cd ../inet && make clean"],
+            "build_commands": [r"""cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../neta/src && opp_makemake -f --deep -I../../inet/src/linklayer/ieee80211/mgmt -I../../inet/src/transport/tcp_common -I../../inet/src/base -I../../inet/src/util -I../../inet/src/linklayer/ieee80211/mac -I../../inet/src/world/powercontrol -I../../inet/src/transport/udp -I../../inet/src/linklayer/ieee80211/radio/errormodel -I../../inet/src/linklayer/ieee80211/radio -I../../inet/src/util/headerserializers -I../../inet/src/mobility -I../../inet/src/transport/sctp -I../../inet/src/networklayer/icmpv6 -I../../inet/src/linklayer/radio/propagation -I../../inet/src/transport/contract -I../../inet/src/networklayer/ipv6tunneling -I../../inet/src/world/radio -I../../inet/src/linklayer/contract -I../../inet/src/linklayer/radio -I../../inet/src/world/obstacles -I../../inet/src/util/headerserializers/udp -I../../inet/src/util/headerserializers/tcp -I../../inet/src/networklayer/common -I../../inet/src/linklayer/ethernet -I../../inet/src/networklayer/arp -I../../inet/src/networklayer/ipv6 -I../../inet/src/networklayer/contract -I../../inet/src -I../../inet/src/networklayer/xmipv6 -I../../inet/src/util/headerserializers/sctp -I../../inet/src/networklayer/manetrouting/base -I../../inet/src/battery/models -I../../inet/src/networklayer/ipv4 -I../../inet/src/applications/pingapp -I../../inet/src/util/headerserializers/ipv4 -I../../inet/src/applications/udpapp -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -linet -DWITH_TCP_COMMON -DWITH_TCP_INET -DWITH_IPv4 -DWITH_IPv6 -DWITH_xMIPv6 -DWITH_UDP -DWITH_RTP -DWITH_SCTP -DWITH_ETHERNET -DWITH_PPP -DWITH_EXT_IF -DWITH_MPLS -DWITH_OSPFv2 -DWITH_BGPv4 -DWITH_MANET -DWITH_DHCP -DINET_IMPORT -KINET_PROJ=../../inet && make clean && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""cd neta && make clean && cd ../inet && make clean"""],
         },
         
         {
@@ -1913,10 +1913,10 @@ def get_project_descriptions():
                 r"""export SUMO_ROOT=${pkgs.sumo}""",
                 r"""export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images:$INET_ROOT/images" """,
             ],
-            "build_commands": ["source setenv -f && ./configure && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "build_commands": [r"""source setenv -f && ./configure && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             # this version builds dependencies sequentially:
-            # "build_commands": ["cd lib/inet && source setenv -f && make makefiles && make -j16 MODE=$BUILD_MODE && cd ../veins && source setenv -f && ./configure && make -j16 MODE=$BUILD_MODE && cd subprojects/veins_inet && source setenv -f && ./configure && make -j16 MODE=$BUILD_MODE && cd ../../../.. && make makefiles && cd src && make -j16 MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            # "build_commands": [r"""cd lib/inet && source setenv -f && make makefiles && make -j16 MODE=$BUILD_MODE && cd ../veins && source setenv -f && ./configure && make -j16 MODE=$BUILD_MODE && cd subprojects/veins_inet && source setenv -f && ./configure && make -j16 MODE=$BUILD_MODE && cd ../../../.. && make makefiles && cd src && make -j16 MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
         },
         
         {
@@ -1943,8 +1943,8 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""sed -i 's|from elementtree|from xml.etree|' */*/*/*.py""",
             ],
-            "build_commands": ["./configure --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""./configure --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -1983,8 +1983,8 @@ def get_project_descriptions():
                 r"""export OMNETPP_IMAGE_PATH=\"$OMNETPP_IMAGE_PATH:$INET_ROOT/images\"""",
                 r"""[ -f setenv ] && INET_ROOT= source setenv -f"""
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -2035,7 +2035,7 @@ def get_project_descriptions():
                 r"""cd $OPENCV2X_ARTERY_ROOT && mkdir -p build && cd build && pwd && cmake .. -DCMAKE_BUILD_TYPE=release && cmake -DWITH_SIMULTE=ON -DCMAKE_BUILD_TYPE=release . && cmake --build . --config release -j$NIX_BUILD_CORES""",
                 
             ],
-            "clean_commands": ["make clean && cd extern/simulte && make clean"],
+            "clean_commands": [r"""make clean && cd extern/simulte && make clean"""],
         },
 
         {
@@ -2071,8 +2071,8 @@ def get_project_descriptions():
                 r"""export OMNETPP_IMAGE_PATH=\"$OMNETPP_IMAGE_PATH:$INET_ROOT/images\"""",
                 r"""[ -f setenv ] && INET_ROOT= source setenv -f"""
             ],
-            "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
         },
 
         # DONE --^
@@ -2101,7 +2101,7 @@ def get_project_descriptions():
                                "sed -i -E \"s|ned-path = .*|ned-path = $INET_ROOT/src;../src|\" simulations/default.ini",],
             "setenv_commands": ["echo 'Hint: use the `../src/OverSim omnetpp.ini` command in the simulations folder.'"],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -2148,7 +2148,7 @@ def get_project_descriptions():
                 "make makefiles && make CFLAGS='-std=c++11'"
                 # "opp_featuretool enable SimuLTE_Cars && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
         
 
@@ -2180,7 +2180,7 @@ def get_project_descriptions():
                 "echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"
             ],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -2208,7 +2208,7 @@ def get_project_descriptions():
                 "echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"
             ],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -2245,7 +2245,7 @@ def get_project_descriptions():
                 "echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"
             ],
             "build_commands": ["cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd .. && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean && cd inet && make clean"]
+            "clean_commands": [r"""make clean && cd inet && make clean"""]
         },
         
                 {
@@ -2287,7 +2287,7 @@ def get_project_descriptions():
                 "opp_makemake -f --deep -o rpl -KINET_PROJ=../inet -I../inet/src/inet -L../inet/src/inet -lINET\$D", 
                 "make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
         
         {
@@ -2346,7 +2346,7 @@ def get_project_descriptions():
                 "cd veins && ./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ..",
                 "make makefiles && cd src && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
                 ],
-            "clean_commands": ["make clean && cd veins && make clean && cd ../inet && make clean"],
+            "clean_commands": [r"""make clean && cd veins && make clean && cd ../inet && make clean"""],
         },
 
         {
@@ -2356,7 +2356,7 @@ def get_project_descriptions():
             "nix_packages": ["cmake", "boost", "geographiclib", "cryptopp"],
             "git_url": "https://github.com/riebl/vanetza.git",
             "build_commands": ["mkdir -p build && cd build && cmake .. && make"],
-            "clean_commands": ["make clean"]
+            "clean_commands": [r"""make clean"""]
         },
         
         # {
@@ -2367,7 +2367,7 @@ def get_project_descriptions():
         #     "git_url": "https://github.com/ComNets-Bremen/KeetchiLib.git",
         #     "git_branch": "master",
         #     "build_commands": ["./bootstrap.sh && ./configure && make"],
-        #     "clean_commands": ["make clean"]
+        #     "clean_commands": [r"""make clean"""]
         # },
 
         # {
@@ -2407,7 +2407,7 @@ def get_project_descriptions():
         #     "build_commands": [
         #         "make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE"
         #     ],
-        #     "clean_commands": ["make clean"],
+        #     "clean_commands": [r"""make clean"""],
         # },
 
         {
@@ -2425,7 +2425,7 @@ def get_project_descriptions():
                 "echo 'Hint: use the `./run_ED_TTL_scenarios.sh` command to run the example simulation in Cmdenv. Note that this script creates ini files for simulation scenarios, which can be run in Tkenv with the `./ccnSim` command.'",
             ],
             "build_commands": ["./scripts/makemake.sh && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
      
         {
@@ -2441,7 +2441,7 @@ def get_project_descriptions():
                 # "echo 'Hint: use the run_inet command to run the simulations in the examples folder.'",
             ],
             "build_commands": ["mkdir -p build && cd build && cmake .. && cmake --build ."],
-            "clean_commands": ["make clean"]
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -2472,7 +2472,7 @@ def get_project_descriptions():
                 # "ln -s $INET_ROOT" extern/inet"
             ],
             "build_commands": ["mkdir -p build && cd build && cmake .. && make"],
-            "clean_commands": ["make clean"]
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -2497,7 +2497,7 @@ def get_project_descriptions():
                 "export PROJ_DEV_ROOT=${pkgs.proj.dev}",
             ],
             "build_commands": ["cd src && opp_makemake -f --deep --no-deep-includes --make-so -I . -o space_veins -O ../out -I $VEINS_ROOT/src -L $VEINS_ROOT/src/ -lveins\$D -I$PROJ_DEV_ROOT/include -L$PROJ_ROOT/lib -lproj && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -2515,7 +2515,7 @@ def get_project_descriptions():
             #     "chmod +x IEEE8021AS/simulations/run",
             ],
             "build_commands": ["opp_makemake -f --deep -O out -KINET4_PROJ=$INET4_PROJ -DINET_IMPORT -I./src -I$INET4_PROJ/src -L$INET4_PROJ/src -lINET$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -2535,7 +2535,7 @@ def get_project_descriptions():
                 "export TK_LIB=${pkgs.tk-8_5}/lib && echo $TK_LIB",
             ],
             # "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": [r"""make clean"""]
         },
 
         {
@@ -2558,7 +2558,7 @@ def get_project_descriptions():
                 # "sed -i 's|opp_makemake -f --deep|opp_makemake -f --deep -I.     -I$(INET_ROOT)/src/.     -I$(INET_ROOT)/src/applications     -I$(INET_ROOT)/src/applications/common     -I$(INET_ROOT)/src/applications/dhcp     -I$(INET_ROOT)/src/applications/ethernet     -I$(INET_ROOT)/src/applications/generic     -I$(INET_ROOT)/src/applications/httptools     -I$(INET_ROOT)/src/applications/pingapp     -I$(INET_ROOT)/src/applications/rtpapp     -I$(INET_ROOT)/src/applications/sctpapp     -I$(INET_ROOT)/src/applications/tcpapp     -I$(INET_ROOT)/src/applications/traci     -I$(INET_ROOT)/src/applications/udpapp     -I$(INET_ROOT)/src/applications/voip     -I$(INET_ROOT)/src/base     -I$(INET_ROOT)/src/battery     -I$(INET_ROOT)/src/battery/models     -I$(INET_ROOT)/src/linklayer     -I$(INET_ROOT)/src/linklayer/common     -I$(INET_ROOT)/src/linklayer/configurator     -I$(INET_ROOT)/src/linklayer/contract     -I$(INET_ROOT)/src/linklayer/ethernet     -I$(INET_ROOT)/src/linklayer/ethernet/switch     -I$(INET_ROOT)/src/linklayer/ext     -I$(INET_ROOT)/src/linklayer/idealwireless     -I$(INET_ROOT)/src/linklayer/ieee80211     -I$(INET_ROOT)/src/linklayer/ieee80211/mac     -I$(INET_ROOT)/src/linklayer/ieee80211/mgmt     -I$(INET_ROOT)/src/linklayer/ieee80211/radio     -I$(INET_ROOT)/src/linklayer/ieee80211/radio/errormodel     -I$(INET_ROOT)/src/linklayer/ieee8021d     -I$(INET_ROOT)/src/linklayer/ieee8021d/common     -I$(INET_ROOT)/src/linklayer/ieee8021d/relay     -I$(INET_ROOT)/src/linklayer/ieee8021d/rstp     -I$(INET_ROOT)/src/linklayer/ieee8021d/stp     -I$(INET_ROOT)/src/linklayer/ieee8021d/tester     -I$(INET_ROOT)/src/linklayer/loopback     -I$(INET_ROOT)/src/linklayer/ppp     -I$(INET_ROOT)/src/linklayer/queue     -I$(INET_ROOT)/src/linklayer/radio     -I$(INET_ROOT)/src/linklayer/radio/propagation     -I$(INET_ROOT)/src/mobility     -I$(INET_ROOT)/src/mobility/common     -I$(INET_ROOT)/src/mobility/contract     -I$(INET_ROOT)/src/mobility/group     -I$(INET_ROOT)/src/mobility/single     -I$(INET_ROOT)/src/mobility/static     -I$(INET_ROOT)/src/networklayer     -I$(INET_ROOT)/src/networklayer/arp     -I$(INET_ROOT)/src/networklayer/autorouting     -I$(INET_ROOT)/src/networklayer/autorouting/ipv4     -I$(INET_ROOT)/src/networklayer/autorouting/ipv6     -I$(INET_ROOT)/src/networklayer/bgpv4     -I$(INET_ROOT)/src/networklayer/bgpv4/BGPMessage     -I$(INET_ROOT)/src/networklayer/common     -I$(INET_ROOT)/src/networklayer/contract     -I$(INET_ROOT)/src/networklayer/diffserv     -I$(INET_ROOT)/src/networklayer/icmpv6     -I$(INET_ROOT)/src/networklayer/internetcloud     -I$(INET_ROOT)/src/networklayer/ipv4     -I$(INET_ROOT)/src/networklayer/ipv6     -I$(INET_ROOT)/src/networklayer/ipv6tunneling     -I$(INET_ROOT)/src/networklayer/ldp     -I$(INET_ROOT)/src/networklayer/manetrouting     -I$(INET_ROOT)/src/networklayer/manetrouting/aodv-uu     -I$(INET_ROOT)/src/networklayer/manetrouting/aodv-uu/aodv-uu     -I$(INET_ROOT)/src/networklayer/manetrouting/base     -I$(INET_ROOT)/src/networklayer/manetrouting/batman     -I$(INET_ROOT)/src/networklayer/manetrouting/batman/batmand     -I$(INET_ROOT)/src/networklayer/manetrouting/batman/batmand/orig     -I$(INET_ROOT)/src/networklayer/manetrouting/dsdv     -I$(INET_ROOT)/src/networklayer/manetrouting/dsr     -I$(INET_ROOT)/src/networklayer/manetrouting/dsr/dsr-uu     -I$(INET_ROOT)/src/networklayer/manetrouting/dymo     -I$(INET_ROOT)/src/networklayer/manetrouting/dymo/dymoum     -I$(INET_ROOT)/src/networklayer/manetrouting/dymo_fau     -I$(INET_ROOT)/src/networklayer/manetrouting/olsr     -I$(INET_ROOT)/src/networklayer/mpls     -I$(INET_ROOT)/src/networklayer/ospfv2     -I$(INET_ROOT)/src/networklayer/ospfv2/interface     -I$(INET_ROOT)/src/networklayer/ospfv2/messagehandler     -I$(INET_ROOT)/src/networklayer/ospfv2/neighbor     -I$(INET_ROOT)/src/networklayer/ospfv2/router     -I$(INET_ROOT)/src/networklayer/routing     -I$(INET_ROOT)/src/networklayer/routing/aodv     -I$(INET_ROOT)/src/networklayer/routing/dymo     -I$(INET_ROOT)/src/networklayer/routing/gpsr     -I$(INET_ROOT)/src/networklayer/routing/rip     -I$(INET_ROOT)/src/networklayer/rsvp_te     -I$(INET_ROOT)/src/networklayer/ted     -I$(INET_ROOT)/src/networklayer/xmipv6     -I$(INET_ROOT)/src/nodes     -I$(INET_ROOT)/src/nodes/aodv     -I$(INET_ROOT)/src/nodes/bgp     -I$(INET_ROOT)/src/nodes/dymo     -I$(INET_ROOT)/src/nodes/ethernet     -I$(INET_ROOT)/src/nodes/gpsr     -I$(INET_ROOT)/src/nodes/httptools     -I$(INET_ROOT)/src/nodes/inet     -I$(INET_ROOT)/src/nodes/internetcloud     -I$(INET_ROOT)/src/nodes/ipv6     -I$(INET_ROOT)/src/nodes/mpls     -I$(INET_ROOT)/src/nodes/ospfv2     -I$(INET_ROOT)/src/nodes/rip     -I$(INET_ROOT)/src/nodes/rtp     -I$(INET_ROOT)/src/nodes/wireless     -I$(INET_ROOT)/src/nodes/xmipv6     -I$(INET_ROOT)/src/status     -I$(INET_ROOT)/src/transport     -I$(INET_ROOT)/src/transport/contract     -I$(INET_ROOT)/src/transport/rtp     -I$(INET_ROOT)/src/transport/rtp/profiles     -I$(INET_ROOT)/src/transport/rtp/profiles/avprofile     -I$(INET_ROOT)/src/transport/sctp     -I$(INET_ROOT)/src/transport/tcp     -I$(INET_ROOT)/src/transport/tcp/flavours     -I$(INET_ROOT)/src/transport/tcp/queues     -I$(INET_ROOT)/src/transport/tcp_common     -I$(INET_ROOT)/src/transport/udp     -I$(INET_ROOT)/src/util     -I$(INET_ROOT)/src/util/headerserializers     -I$(INET_ROOT)/src/util/headerserializers/headers     -I$(INET_ROOT)/src/util/headerserializers/ipv4     -I$(INET_ROOT)/src/util/headerserializers/ipv4/headers     -I$(INET_ROOT)/src/util/headerserializers/ipv6     -I$(INET_ROOT)/src/util/headerserializers/ipv6/headers     -I$(INET_ROOT)/src/util/headerserializers/sctp     -I$(INET_ROOT)/src/util/headerserializers/sctp/headers     -I$(INET_ROOT)/src/util/headerserializers/tcp     -I$(INET_ROOT)/src/util/headerserializers/tcp/headers     -I$(INET_ROOT)/src/util/headerserializers/udp     -I$(INET_ROOT)/src/util/headerserializers/udp/headers     -I$(INET_ROOT)/src/util/messageprinters     -I$(INET_ROOT)/src/world     -I$(INET_ROOT)/src/world/annotations     -I$(INET_ROOT)/src/world/httptools     -I$(INET_ROOT)/src/world/obstacles     -I$(INET_ROOT)/src/world/radio     -I$(INET_ROOT)/src/world/scenario     -I$(INET_ROOT)/src/world/traci -o ieee802154inet_standalone -L$(INET_ROOT)/src -linet|' Makefile",
             ],
             "build_commands": ["opp_makemake -f --deep -o limosim -O out -KINET_PROJ=$INET_ROOT -DINET_IMPORT -X./ui -I. -I$INET_ROOT/src -L$INET_ROOT/src -lINET && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"]
+            "clean_commands": [r"""make clean"""]
             # limosim -n $LIMOSIM_ROOT/omnet:$INET_ROOT/src
         },
 
@@ -2599,7 +2599,7 @@ def get_project_descriptions():
             # ],
             "build_commands": ["make makefiles-using-inet && CXXFLAGS='-Wno-gnu-array-member-paren-init' make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             # "build_commands": ["cd src && opp_makemake -f --deep -o ble -O out -KINET_PROJ=$MIXIM_ROOT -DINET_IMPORT -L$MIXIM_ROOT/src -I. -I$MIXIM_ROOT/src -I$MIXIM_ROOT/base  -I$MIXIM_ROOT/base/connectionManager  -I$MIXIM_ROOT/base/messages  -I$MIXIM_ROOT/base/modules  -I$MIXIM_ROOT/base/phyLayer  -I$MIXIM_ROOT/base/utils  -I$MIXIM_ROOT/inet_stub  -I$MIXIM_ROOT/inet_stub/base  -I$MIXIM_ROOT/inet_stub/linklayer  -I$MIXIM_ROOT/inet_stub/linklayer/contract  -I$MIXIM_ROOT/inet_stub/mobility  -I$MIXIM_ROOT/inet_stub/mobility/models  -I$MIXIM_ROOT/inet_stub/networklayer  -I$MIXIM_ROOT/inet_stub/networklayer/common  -I$MIXIM_ROOT/inet_stub/util  -I$MIXIM_ROOT/modules  -I$MIXIM_ROOT/modules/analogueModel  -I$MIXIM_ROOT/modules/application  -I$MIXIM_ROOT/modules/connectionManager  -I$MIXIM_ROOT/modules/mac  -I$MIXIM_ROOT/modules/messages  -I$MIXIM_ROOT/modules/netw  -I$MIXIM_ROOT/modules/nic  -I$MIXIM_ROOT/modules/node  -I$MIXIM_ROOT/modules/phy  -I$MIXIM_ROOT/modules/power  -I$MIXIM_ROOT/modules/power/battery  -I$MIXIM_ROOT/modules/transport  -I$MIXIM_ROOT/modules/utility && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -2638,7 +2638,7 @@ def get_project_descriptions():
             # ],
             "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             # "build_commands": ["cd src && opp_makemake -f --deep -o ble -O out -KINET_PROJ=$MIXIM_ROOT -DINET_IMPORT -L$MIXIM_ROOT/src -I. -I$MIXIM_ROOT/src -I$MIXIM_ROOT/base  -I$MIXIM_ROOT/base/connectionManager  -I$MIXIM_ROOT/base/messages  -I$MIXIM_ROOT/base/modules  -I$MIXIM_ROOT/base/phyLayer  -I$MIXIM_ROOT/base/utils  -I$MIXIM_ROOT/inet_stub  -I$MIXIM_ROOT/inet_stub/base  -I$MIXIM_ROOT/inet_stub/linklayer  -I$MIXIM_ROOT/inet_stub/linklayer/contract  -I$MIXIM_ROOT/inet_stub/mobility  -I$MIXIM_ROOT/inet_stub/mobility/models  -I$MIXIM_ROOT/inet_stub/networklayer  -I$MIXIM_ROOT/inet_stub/networklayer/common  -I$MIXIM_ROOT/inet_stub/util  -I$MIXIM_ROOT/modules  -I$MIXIM_ROOT/modules/analogueModel  -I$MIXIM_ROOT/modules/application  -I$MIXIM_ROOT/modules/connectionManager  -I$MIXIM_ROOT/modules/mac  -I$MIXIM_ROOT/modules/messages  -I$MIXIM_ROOT/modules/netw  -I$MIXIM_ROOT/modules/nic  -I$MIXIM_ROOT/modules/node  -I$MIXIM_ROOT/modules/phy  -I$MIXIM_ROOT/modules/power  -I$MIXIM_ROOT/modules/power/battery  -I$MIXIM_ROOT/modules/transport  -I$MIXIM_ROOT/modules/utility && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -2658,7 +2658,7 @@ def get_project_descriptions():
             # "build_commands": ["opp_makemake -f --deep --nolink -O out -d src -X. -I$INETMANET_ROOT/src/inet -L$INETMANET_ROOT/out/$CONFIGNAME/src -L./out/$CONFIGNAME/src -linet -KINETMANET_PROJ=$INETMANET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
             # "build_commands": ["cd Vlans/src && opp_makemake -f --deep --make-so -o epon -O out -I. -I/common -I/linklayer -I/networklayer -I/networklayer/autoconfig -I/OLT -I/ONU -I$INETMANET_ROOT/src/inet/util/headerserializers/headers -I$INETMANET_ROOT/src/inet/networklayer/arp -I$INETMANET_ROOT/src/inet/transport/sctp -I$INETMANET_ROOT/src/inet/world -I$INETMANET_ROOT/src/inet/transport/contract -I$INETMANET_ROOT/src/inet/linklayer/mfcore -I$INETMANET_ROOT/src/inet/linklayer/ethernet -I$INETMANET_ROOT/src/inet/util -I$INETMANET_ROOT/src/inet/networklayer/ted -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac -I$INETMANET_ROOT/src/inet/networklayer/common -I$INETMANET_ROOT/src/inet/networklayer/ipv6 -I$INETMANET_ROOT/src/inet/applications/pingapp -I$INETMANET_ROOT/src/inet/networklayer/ldp -I$INETMANET_ROOT/src/inet/transport/tcp -I$INETMANET_ROOT/src/inet/util/headerserializers -I$INETMANET_ROOT/src/inet/networklayer/rsvp_te -I$INETMANET_ROOT/src/inet/transport/udp -I$INETMANET_ROOT/src/inet/networklayer/ipv4 -I$INETMANET_ROOT/src/inet/networklayer/icmpv6 -I$INETMANET_ROOT/src/inet/base -I$INETMANET_ROOT/src/inet/networklayer/contract -I$INETMANET_ROOT/src/inet/networklayer/manetrouting/base -I$INETMANET_ROOT/src/inet/networklayer/mpls -I$INETMANET_ROOT/src/inet/linklayer/contract -I$INETMANET_ROOT/src/inet/networklayer/autorouting -L$INETMANET_ROOT/src -lINET -I$OMNETPP_ROOT/src -KINETMANET_PROJ=$INETMANET_ROOT"],
             "build_commands": ["cd Vlans/src && opp_makemake -f --deep --make-so -o epon -O out -I. -I/common -I/linklayer -I/networklayer -I/networklayer/autoconfig -I/OLT -I/ONU -I$INETMANET_ROOT/src -I$INETMANET_ROOT/src/inet -I$INETMANET_ROOT/src/inet/visualizer -I$INETMANET_ROOT/src/inet/visualizer/scene -I$INETMANET_ROOT/src/inet/visualizer/transportlayer -I$INETMANET_ROOT/src/inet/visualizer/contract -I$INETMANET_ROOT/src/inet/visualizer/util -I$INETMANET_ROOT/src/inet/visualizer/power -I$INETMANET_ROOT/src/inet/visualizer/networklayer -I$INETMANET_ROOT/src/inet/visualizer/integrated -I$INETMANET_ROOT/src/inet/visualizer/mobility -I$INETMANET_ROOT/src/inet/visualizer/common -I$INETMANET_ROOT/src/inet/visualizer/linklayer -I$INETMANET_ROOT/src/inet/visualizer/physicallayer -I$INETMANET_ROOT/src/inet/visualizer/environment -I$INETMANET_ROOT/src/inet/visualizer/base -I$INETMANET_ROOT/src/inet/routing -I$INETMANET_ROOT/src/inet/routing/gpsr -I$INETMANET_ROOT/src/inet/routing/aodv -I$INETMANET_ROOT/src/inet/routing/pim -I$INETMANET_ROOT/src/inet/routing/pim/tables -I$INETMANET_ROOT/src/inet/routing/pim/modes -I$INETMANET_ROOT/src/inet/routing/extras -I$INETMANET_ROOT/src/inet/routing/extras/dsr -I$INETMANET_ROOT/src/inet/routing/extras/dsr/dsr-uu -I$INETMANET_ROOT/src/inet/routing/extras/saors -I$INETMANET_ROOT/src/inet/routing/extras/saors/SimBetTS -I$INETMANET_ROOT/src/inet/routing/extras/saors/SaorsManager -I$INETMANET_ROOT/src/inet/routing/extras/saors/r_dymo -I$INETMANET_ROOT/src/inet/routing/extras/saors/dtrouting -I$INETMANET_ROOT/src/inet/routing/extras/saors/ep_dymo -I$INETMANET_ROOT/src/inet/routing/extras/saors/dt_dymo -I$INETMANET_ROOT/src/inet/routing/extras/saors/base -I$INETMANET_ROOT/src/inet/routing/extras/saors/sampho -I$INETMANET_ROOT/src/inet/routing/extras/PASER -I$INETMANET_ROOT/src/inet/routing/extras/PASER/IPv4_ADAPTED -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_socket -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_configuration -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_buffer -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_timer_management -I$INETMANET_ROOT/src/inet/routing/extras/PASER/simple_kdc -I$INETMANET_ROOT/src/inet/routing/extras/PASER/simple_kdc/kdc_message -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_tables -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_logic -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_logic/message_processing -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_logic/route_discovery -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_logic/route_maintenance -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_logic/cryptography -I$INETMANET_ROOT/src/inet/routing/extras/PASER/paser_message_structure -I$INETMANET_ROOT/src/inet/routing/extras/PASER/generic -I$INETMANET_ROOT/src/inet/routing/extras/aodv-uu -I$INETMANET_ROOT/src/inet/routing/extras/aodv-uu/aodv-uu -I$INETMANET_ROOT/src/inet/routing/extras/dymo -I$INETMANET_ROOT/src/inet/routing/extras/dymo/dymoum -I$INETMANET_ROOT/src/inet/routing/extras/olsr -I$INETMANET_ROOT/src/inet/routing/extras/dsdv -I$INETMANET_ROOT/src/inet/routing/extras/dymo_fau -I$INETMANET_ROOT/src/inet/routing/extras/batman -I$INETMANET_ROOT/src/inet/routing/extras/batman/batmand -I$INETMANET_ROOT/src/inet/routing/extras/batman/batmand/orig -I$INETMANET_ROOT/src/inet/routing/extras/base -I$INETMANET_ROOT/src/inet/routing/rip -I$INETMANET_ROOT/src/inet/routing/contract -I$INETMANET_ROOT/src/inet/routing/ospfv2 -I$INETMANET_ROOT/src/inet/routing/ospfv2/interface -I$INETMANET_ROOT/src/inet/routing/ospfv2/router -I$INETMANET_ROOT/src/inet/routing/ospfv2/neighbor -I$INETMANET_ROOT/src/inet/routing/ospfv2/messagehandler -I$INETMANET_ROOT/src/inet/routing/dymo -I$INETMANET_ROOT/src/inet/routing/bgpv4 -I$INETMANET_ROOT/src/inet/routing/bgpv4/BGPMessage -I$INETMANET_ROOT/src/inet/transportlayer -I$INETMANET_ROOT/src/inet/transportlayer/tcp_nsc -I$INETMANET_ROOT/src/inet/transportlayer/tcp_nsc/queues -I$INETMANET_ROOT/src/inet/transportlayer/tcp -I$INETMANET_ROOT/src/inet/transportlayer/tcp/flavours -I$INETMANET_ROOT/src/inet/transportlayer/tcp/queues -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/core -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv6 -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv6/lwip -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/lwip -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/netif -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/arch -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv4 -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/lwip/include/ipv4/lwip -I$INETMANET_ROOT/src/inet/transportlayer/tcp_lwip/queues -I$INETMANET_ROOT/src/inet/transportlayer/contract -I$INETMANET_ROOT/src/inet/transportlayer/contract/tcp -I$INETMANET_ROOT/src/inet/transportlayer/contract/sctp -I$INETMANET_ROOT/src/inet/transportlayer/contract/udp -I$INETMANET_ROOT/src/inet/transportlayer/rtp -I$INETMANET_ROOT/src/inet/transportlayer/rtp/profiles -I$INETMANET_ROOT/src/inet/transportlayer/rtp/profiles/avprofile -I$INETMANET_ROOT/src/inet/transportlayer/sctp -I$INETMANET_ROOT/src/inet/transportlayer/udp -I$INETMANET_ROOT/src/inet/transportlayer/tcp_common -I$INETMANET_ROOT/src/inet/transportlayer/base -I$INETMANET_ROOT/src/inet/node -I$INETMANET_ROOT/src/inet/node/internetcloud -I$INETMANET_ROOT/src/inet/node/gpsr -I$INETMANET_ROOT/src/inet/node/mpls -I$INETMANET_ROOT/src/inet/node/aodv -I$INETMANET_ROOT/src/inet/node/wireless -I$INETMANET_ROOT/src/inet/node/ipv6 -I$INETMANET_ROOT/src/inet/node/rip -I$INETMANET_ROOT/src/inet/node/ospfv2 -I$INETMANET_ROOT/src/inet/node/rtp -I$INETMANET_ROOT/src/inet/node/xmipv6 -I$INETMANET_ROOT/src/inet/node/dymo -I$INETMANET_ROOT/src/inet/node/inet -I$INETMANET_ROOT/src/inet/node/httptools -I$INETMANET_ROOT/src/inet/node/ethernet -I$INETMANET_ROOT/src/inet/node/bgp -I$INETMANET_ROOT/src/inet/node/packetdrill -I$INETMANET_ROOT/src/inet/neta -I$INETMANET_ROOT/src/inet/neta/attacks -I$INETMANET_ROOT/src/inet/neta/attacks/controlmessages -I$INETMANET_ROOT/src/inet/neta/attacks/controlmessages/droppingAttack -I$INETMANET_ROOT/src/inet/neta/attacks/controlmessages/delayAttack -I$INETMANET_ROOT/src/inet/neta/attacks/controlmessages/sinkholeAttack -I$INETMANET_ROOT/src/inet/neta/attacks/controllers -I$INETMANET_ROOT/src/inet/neta/attacks/controllers/droppingAttack -I$INETMANET_ROOT/src/inet/neta/attacks/controllers/delayAttack -I$INETMANET_ROOT/src/inet/neta/attacks/controllers/sinkholeAttack -I$INETMANET_ROOT/src/inet/neta/nodes -I$INETMANET_ROOT/src/inet/neta/common -I$INETMANET_ROOT/src/inet/neta/common/log -I$INETMANET_ROOT/src/inet/neta/common/utils -I$INETMANET_ROOT/src/inet/neta/hackedmodules -I$INETMANET_ROOT/src/inet/neta/hackedmodules/networklayer -I$INETMANET_ROOT/src/inet/neta/hackedmodules/networklayer/manetrouting -I$INETMANET_ROOT/src/inet/neta/hackedmodules/networklayer/manetrouting/aodv -I$INETMANET_ROOT/src/inet/neta/hackedmodules/networklayer/manetrouting/aodv/NA_aodv-uu -I$INETMANET_ROOT/src/inet/neta/hackedmodules/networklayer/ipv4 -I$INETMANET_ROOT/src/inet/neta/hackedmodules/applications -I$INETMANET_ROOT/src/inet/neta/hackedmodules/applications/udpapp -I$INETMANET_ROOT/src/inet/power -I$INETMANET_ROOT/src/inet/power/contract -I$INETMANET_ROOT/src/inet/power/management -I$INETMANET_ROOT/src/inet/power/generator -I$INETMANET_ROOT/src/inet/power/consumer -I$INETMANET_ROOT/src/inet/power/base -I$INETMANET_ROOT/src/inet/power/storage -I$INETMANET_ROOT/src/inet/networklayer -I$INETMANET_ROOT/src/inet/networklayer/internetcloud -I$INETMANET_ROOT/src/inet/networklayer/mpls -I$INETMANET_ROOT/src/inet/networklayer/ldp -I$INETMANET_ROOT/src/inet/networklayer/wiseroute -I$INETMANET_ROOT/src/inet/networklayer/ted -I$INETMANET_ROOT/src/inet/networklayer/ipv6 -I$INETMANET_ROOT/src/inet/networklayer/contract -I$INETMANET_ROOT/src/inet/networklayer/contract/ipv6 -I$INETMANET_ROOT/src/inet/networklayer/contract/generic -I$INETMANET_ROOT/src/inet/networklayer/contract/ipv4 -I$INETMANET_ROOT/src/inet/networklayer/flood -I$INETMANET_ROOT/src/inet/networklayer/multi -I$INETMANET_ROOT/src/inet/networklayer/ipv6tunneling -I$INETMANET_ROOT/src/inet/networklayer/icmpv6 -I$INETMANET_ROOT/src/inet/networklayer/xmipv6 -I$INETMANET_ROOT/src/inet/networklayer/diffserv -I$INETMANET_ROOT/src/inet/networklayer/common -I$INETMANET_ROOT/src/inet/networklayer/configurator -I$INETMANET_ROOT/src/inet/networklayer/configurator/ipv6 -I$INETMANET_ROOT/src/inet/networklayer/configurator/contract -I$INETMANET_ROOT/src/inet/networklayer/configurator/generic -I$INETMANET_ROOT/src/inet/networklayer/configurator/base -I$INETMANET_ROOT/src/inet/networklayer/configurator/ipv4 -I$INETMANET_ROOT/src/inet/networklayer/probabilistic -I$INETMANET_ROOT/src/inet/networklayer/generic -I$INETMANET_ROOT/src/inet/networklayer/arp -I$INETMANET_ROOT/src/inet/networklayer/arp/generic -I$INETMANET_ROOT/src/inet/networklayer/arp/ipv4 -I$INETMANET_ROOT/src/inet/networklayer/base -I$INETMANET_ROOT/src/inet/networklayer/rsvp_te -I$INETMANET_ROOT/src/inet/networklayer/ipv4 -I$INETMANET_ROOT/src/inet/networklayer/ipv4/ipsec -I$INETMANET_ROOT/src/inet/applications -I$INETMANET_ROOT/src/inet/applications/voipstream -I$INETMANET_ROOT/src/inet/applications/netperfmeter -I$INETMANET_ROOT/src/inet/applications/voip -I$INETMANET_ROOT/src/inet/applications/sctpapp -I$INETMANET_ROOT/src/inet/applications/udpapp -I$INETMANET_ROOT/src/inet/applications/rtpapp -I$INETMANET_ROOT/src/inet/applications/pingapp -I$INETMANET_ROOT/src/inet/applications/contract -I$INETMANET_ROOT/src/inet/applications/tunapp -I$INETMANET_ROOT/src/inet/applications/tcpapp -I$INETMANET_ROOT/src/inet/applications/httptools -I$INETMANET_ROOT/src/inet/applications/httptools/browser -I$INETMANET_ROOT/src/inet/applications/httptools/common -I$INETMANET_ROOT/src/inet/applications/httptools/configurator -I$INETMANET_ROOT/src/inet/applications/httptools/server -I$INETMANET_ROOT/src/inet/applications/dhcp -I$INETMANET_ROOT/src/inet/applications/ethernet -I$INETMANET_ROOT/src/inet/applications/generic -I$INETMANET_ROOT/src/inet/applications/base -I$INETMANET_ROOT/src/inet/applications/trafgen -I$INETMANET_ROOT/src/inet/applications/packetdrill -I$INETMANET_ROOT/src/inet/mobility -I$INETMANET_ROOT/src/inet/mobility/traci -I$INETMANET_ROOT/src/inet/mobility/contract -I$INETMANET_ROOT/src/inet/mobility/group -I$INETMANET_ROOT/src/inet/mobility/static -I$INETMANET_ROOT/src/inet/mobility/single -I$INETMANET_ROOT/src/inet/mobility/base -I$INETMANET_ROOT/src/inet/common -I$INETMANET_ROOT/src/inet/common/misc -I$INETMANET_ROOT/src/inet/common/lifecycle -I$INETMANET_ROOT/src/inet/common/queue -I$INETMANET_ROOT/src/inet/common/scenario -I$INETMANET_ROOT/src/inet/common/geometry -I$INETMANET_ROOT/src/inet/common/geometry/object -I$INETMANET_ROOT/src/inet/common/geometry/shape -I$INETMANET_ROOT/src/inet/common/geometry/shape/polyhedron -I$INETMANET_ROOT/src/inet/common/geometry/common -I$INETMANET_ROOT/src/inet/common/geometry/base -I$INETMANET_ROOT/src/inet/common/geometry/container -I$INETMANET_ROOT/src/inet/common/mapping -I$INETMANET_ROOT/src/inet/common/packet -I$INETMANET_ROOT/src/inet/common/serializer -I$INETMANET_ROOT/src/inet/common/serializer/tcp -I$INETMANET_ROOT/src/inet/common/serializer/tcp/headers -I$INETMANET_ROOT/src/inet/common/serializer/ipv6 -I$INETMANET_ROOT/src/inet/common/serializer/ipv6/headers -I$INETMANET_ROOT/src/inet/common/serializer/headers -I$INETMANET_ROOT/src/inet/common/serializer/sctp -I$INETMANET_ROOT/src/inet/common/serializer/sctp/headers -I$INETMANET_ROOT/src/inet/common/serializer/udp -I$INETMANET_ROOT/src/inet/common/serializer/udp/headers -I$INETMANET_ROOT/src/inet/common/serializer/headerserializers -I$INETMANET_ROOT/src/inet/common/serializer/headerserializers/ieee80211 -I$INETMANET_ROOT/src/inet/common/serializer/headerserializers/ieee80211/headers -I$INETMANET_ROOT/src/inet/common/serializer/headerserializers/ethernet -I$INETMANET_ROOT/src/inet/common/serializer/headerserializers/arp -I$INETMANET_ROOT/src/inet/common/serializer/ipv4 -I$INETMANET_ROOT/src/inet/common/serializer/ipv4/headers -I$INETMANET_ROOT/src/inet/common/figures -I$INETMANET_ROOT/src/inet/underTest -I$INETMANET_ROOT/src/inet/underTest/hip -I$INETMANET_ROOT/src/inet/underTest/hip/nodes -I$INETMANET_ROOT/src/inet/underTest/hip/application -I$INETMANET_ROOT/src/inet/underTest/hip/base -I$INETMANET_ROOT/src/inet/linklayer -I$INETMANET_ROOT/src/inet/linklayer/bmac -I$INETMANET_ROOT/src/inet/linklayer/ppp -I$INETMANET_ROOT/src/inet/linklayer/tun -I$INETMANET_ROOT/src/inet/linklayer/ieee80211mesh -I$INETMANET_ROOT/src/inet/linklayer/ieee80211mesh/nodes -I$INETMANET_ROOT/src/inet/linklayer/ieee80211mesh/hwmp -I$INETMANET_ROOT/src/inet/linklayer/ieee80211mesh/mgmt -I$INETMANET_ROOT/src/inet/linklayer/ieee80211mesh/locator -I$INETMANET_ROOT/src/inet/linklayer/ieee80211mesh/ethernet -I$INETMANET_ROOT/src/inet/linklayer/lmac -I$INETMANET_ROOT/src/inet/linklayer/channels -I$INETMANET_ROOT/src/inet/linklayer/ieee802154 -I$INETMANET_ROOT/src/inet/linklayer/xmac -I$INETMANET_ROOT/src/inet/linklayer/ieee8021d -I$INETMANET_ROOT/src/inet/linklayer/ieee8021d/stp -I$INETMANET_ROOT/src/inet/linklayer/ieee8021d/rstp -I$INETMANET_ROOT/src/inet/linklayer/ieee8021d/tester -I$INETMANET_ROOT/src/inet/linklayer/ieee8021d/common -I$INETMANET_ROOT/src/inet/linklayer/ieee8021d/relay -I$INETMANET_ROOT/src/inet/linklayer/loopback -I$INETMANET_ROOT/src/inet/linklayer/contract -I$INETMANET_ROOT/src/inet/linklayer/ideal -I$INETMANET_ROOT/src/inet/linklayer/csma -I$INETMANET_ROOT/src/inet/linklayer/ext -I$INETMANET_ROOT/src/inet/linklayer/ieee80211 -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/queue -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/sequencenumberassignment -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/blockackreordering -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/lifetime -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/framesequence -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/contract -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/recipient -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/contention -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/channelaccess -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/blockack -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/rateselection -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/common -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/aggregation -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/ratecontrol -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/coordinationfunction -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/statistics -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/protectionmechanism -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/originator -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/fragmentation -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mac/duplicateremoval -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mgmt -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/mgmt/wpa2 -I$INETMANET_ROOT/src/inet/linklayer/ieee80211/oldmac -I$INETMANET_ROOT/src/inet/linklayer/common -I$INETMANET_ROOT/src/inet/linklayer/configurator -I$INETMANET_ROOT/src/inet/linklayer/csmaca -I$INETMANET_ROOT/src/inet/linklayer/ethernet -I$INETMANET_ROOT/src/inet/linklayer/ethernet/switch -I$INETMANET_ROOT/src/inet/linklayer/base -I$INETMANET_ROOT/src/inet/securityModule -I$INETMANET_ROOT/src/inet/securityModule/message -I$INETMANET_ROOT/src/inet/physicallayer -I$INETMANET_ROOT/src/inet/physicallayer/analogmodel -I$INETMANET_ROOT/src/inet/physicallayer/analogmodel/bitlevel -I$INETMANET_ROOT/src/inet/physicallayer/analogmodel/packetlevel -I$INETMANET_ROOT/src/inet/physicallayer/apskradio -I$INETMANET_ROOT/src/inet/physicallayer/apskradio/bitlevel -I$INETMANET_ROOT/src/inet/physicallayer/apskradio/bitlevel/errormodel -I$INETMANET_ROOT/src/inet/physicallayer/apskradio/packetlevel -I$INETMANET_ROOT/src/inet/physicallayer/apskradio/packetlevel/errormodel -I$INETMANET_ROOT/src/inet/physicallayer/idealradio -I$INETMANET_ROOT/src/inet/physicallayer/ieee802154 -I$INETMANET_ROOT/src/inet/physicallayer/ieee802154/bitlevel -I$INETMANET_ROOT/src/inet/physicallayer/ieee802154/packetlevel -I$INETMANET_ROOT/src/inet/physicallayer/antenna -I$INETMANET_ROOT/src/inet/physicallayer/pathloss -I$INETMANET_ROOT/src/inet/physicallayer/backgroundnoise -I$INETMANET_ROOT/src/inet/physicallayer/contract -I$INETMANET_ROOT/src/inet/physicallayer/contract/bitlevel -I$INETMANET_ROOT/src/inet/physicallayer/contract/packetlevel -I$INETMANET_ROOT/src/inet/physicallayer/errormodel -I$INETMANET_ROOT/src/inet/physicallayer/errormodel/bitlevel -I$INETMANET_ROOT/src/inet/physicallayer/errormodel/packetlevel -I$INETMANET_ROOT/src/inet/physicallayer/ieee80211 -I$INETMANET_ROOT/src/inet/physicallayer/ieee80211/mode -I$INETMANET_ROOT/src/inet/physicallayer/ieee80211/bitlevel -I$INETMANET_ROOT/src/inet/physicallayer/ieee80211/bitlevel/errormodel -I$INETMANET_ROOT/src/inet/physicallayer/ieee80211/packetlevel -I$INETMANET_ROOT/src/inet/physicallayer/ieee80211/packetlevel/errormodel -I$INETMANET_ROOT/src/inet/physicallayer/obstacleloss -I$INETMANET_ROOT/src/inet/physicallayer/common -I$INETMANET_ROOT/src/inet/physicallayer/common/bitlevel -I$INETMANET_ROOT/src/inet/physicallayer/common/packetlevel -I$INETMANET_ROOT/src/inet/physicallayer/energyconsumer -I$INETMANET_ROOT/src/inet/physicallayer/propagation -I$INETMANET_ROOT/src/inet/physicallayer/communicationcache -I$INETMANET_ROOT/src/inet/physicallayer/modulation -I$INETMANET_ROOT/src/inet/physicallayer/neighborcache -I$INETMANET_ROOT/src/inet/physicallayer/base -I$INETMANET_ROOT/src/inet/physicallayer/base/bitlevel -I$INETMANET_ROOT/src/inet/physicallayer/base/packetlevel -I$INETMANET_ROOT/src/inet/environment -I$INETMANET_ROOT/src/inet/environment/contract -I$INETMANET_ROOT/src/inet/environment/common -I$INETMANET_ROOT/src/inet/environment/ground -I$INETMANET_ROOT/src/inet/environment/objectcache -L-I$INETMANET_ROOT/src -lINET -I$OMNETPP_ROOT/src -KINETMANET_PROJ=-I$INETMANET_ROOT"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {   # NOT WORKING - builds; model error Error in module (IBGenerator) FABRIC.H_1.gen: has no parameter called `GenModel'
@@ -2673,7 +2673,7 @@ def get_project_descriptions():
                 "sed -i 's|tclsh8.4|tclsh|g' utils/genIni",
             ],
             "build_commands": ["cd utils && make && cd ../src && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -2689,7 +2689,7 @@ def get_project_descriptions():
             ],
             # "build_commands": ["make makefiles && make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-std=c++11 -Wall -Wextra'"],
             "build_commands": ["cd utils && make && cd ../src && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # opp_makemake -N -u Cmdenv -f -I../utils -i '$OMNETPP_ROOT/include/omnetpp.h' -w -o ib_macro_model
         },
 
@@ -2731,7 +2731,7 @@ def get_project_descriptions():
                 "./configure --prefix $PAWIS_ROOT/modlib PAWIS_BASE=$PAWIS_ROOT/sim-framework OMNET_BASE=$OMNETPP_ROOT CXXFLAGS='-ggdb -O0 -Wall' LDFLAGS='-L$LUA_LIBS' LIBS='-llua' --with-tkenv",
             ],
             # "setenv_commands": ["echo 'Hint: run exa - cant find NED includesmple simulations from their folder. For example, in examples/TwoSubnets folder: ./out/gcc-debug/TwoSubnets omnetpp.ini"]
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # ./configure --prefix $PAWIS_ROOT/sim-framework OMNET_BASE=$OMNETPP_ROOT CXXFLAGS="-ggdb -O0 -Wall" LDFLAGS="-L$LUA_LIBS" LIBS="-llua"
         },
 
@@ -2751,7 +2751,7 @@ def get_project_descriptions():
             ],
             "build_commands": ["opp_makemake -f --deep -o PhoenixSim -O out -L$OMNETPP_ROOT/lib -loppsim && make -j16"],
             # "setenv_commands": ["echo 'Hint: run example simulations from their folder. For example, in examples/TwoSubnets folder: ./out/gcc-debug/TwoSubnets omnetpp.ini"]
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # ./configure --prefix $PAWIS_ROOT/sim-framework OMNET_BASE=$OMNETPP_ROOT CXXFLAGS="-ggdb -O0 -Wall" LDFLAGS="-L$LUA_LIBS" LIBS="-llua"
         },
 
@@ -2772,7 +2772,7 @@ def get_project_descriptions():
                 "sed -i.bak 's|inet/physicallayer/pathloss/RIMFading.h|RIMFading.h|' RIMFading.cc",
             ],
             "build_commands": ["opp_makemake -f --deep -o rimfading -I $INET_ROOT/src -L $INET_ROOT/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -2830,7 +2830,7 @@ def get_project_descriptions():
             ],
             "build_commands": ["cd src && opp_makemake -f --deep -I . -I $BOOST_DEV_ROOT/include/boost -I $RAPIDXML_ROOT/include/rapidxml -I $EXPRTK_ROOT -I $GLIBMM_DEV_ROOT/include/glibmm-2.4 -I$GLIBMM_DEV_ROOT/include/giomm-2.4 -I$GLIBMM_ROOT/lib/glibmm-2.4/include -I$GLIBMM_ROOT/lib/giomm-2.4/include -I$GLIBMM_DEV_ROOT/lib/glibmm-2.4/include -I$GLIBMM_DEV_ROOT/lib/glibmm-2.4 -I$GLIBMM_DEV_ROOT/include/glibmm-2.4 -I$GLIBMM_ROOT/lib/glibmm-2.4/include -I$GLIBMM_ROOT/lib/glibmm-2.4 -I$GLIBMM_ROOT/include/glibmm-2.4 -I$GLIB_DEV_ROOT/include/glib-2.0 -I$GLIB_DEV_ROOT/include/glib-2.0/include -I${pkgs.glib.out}/include/glib-2.0 -I${pkgs.glib.out}/lib/glib-2.0/include -I$GTKMM_DEV_ROOT/include/gtkmm-3.0 -I$GTKMM_DEV_ROOT/include/gtkmm-3.0/gtkmm -I$GTKMM_DEV_ROOT/lib/gtkmm-3.0/include -I$GTKMM_DEV_ROOT/include/gdkmm-3.0 -I$GTKMM_DEV_ROOT/include/gdkmm-3.0/gtkmm -I$GTKMM_DEV_ROOT/lib/gdkmm-3.0/include -I$SIGCXX_ROOT/include/sigc++-2.0 -I$SIGCXX_ROOT/include/sigc++-2.0/gtkmm -I$SIGCXX_ROOT/lib/sigc++-2.0/include -I$GTKMM_ROOT/include/gtkmm-3.0 -I$GTKMM_ROOT/include/gtkmm-3.0/gtkmm -I$GTKMM_ROOT/lib/gtkmm-3.0/include -I$GTKMM_ROOT/lib/gdkmm-3.0/include -I$PANGOMM_ROOT/include/pangomm-2.48 -I$PANGOMM_ROOT/include/pangomm-2.48/pangomm -I$PANGOMM_ROOT/lib/pangomm-2.48/include -I$PANGOMM_DEV_ROOT/include/pangomm-2.48 -I$PANGOMM_DEV_ROOT/include/pangomm-2.48/pangomm -I$PANGOMM_DEV_ROOT/lib/pangomm-2.48/include -I$PANGO_ROOT/include/pango-1.0 -I$PANGO_ROOT/include/pango-1.0/pango -I$PANGO_ROOT/lib/pango-1.0/include -I$HB_ROOT/include/harfbuzz -I$CAIROMM_DEV_ROOT/include/cairomm-1.0 -I$CAIROMM_ROOT/lib/cairomm-1.0/include -I$CAIRO_DEV_ROOT/include/cairo -I$ATKMM_DEV_ROOT/include/atkmm-1.6 -I$ATKMM_ROOT/lib/atkmm-1.6/include -I$GTK3_DEV_ROOT/include/gtk-3.0 -I$GDK_PIXBUF_DEV_ROOT/include/gdk-pixbuf-2.0 -I$ATK_DEV_ROOT/include/atk-1.0 -L$(GTK3_ROOT)/lib -L$(GTK3_DEV_ROOT)/lib -L$(LIBXMLXX_ROOT)/lib -L$(GLIBMM_ROOT)/lib -L$(LIBSIGCXX_ROOT)/lib -L$(GLIB_ROOT)/lib -L$(PANGO_ROOT)/lib -L$(BOOST_ROOT)/lib -I$SHARK_ROOT/include -lxml2 -lglibmm-2.4 -lgobject-2.0 -lsigc-2.0 -lglib-2.0 -lboost_atomic -lboost_chrono -lboost_container -lboost_context -lboost_contract -lboost_coroutine -lboost_date_time -lboost_fiber -lboost_filesystem -lboost_graph -lboost_iostreams -lboost_json -lboost_locale -lboost_log_setup -lboost_log -lboost_math_c99f -lboost_math_c99l -lboost_math_c99 -lboost_math_tr1f -lboost_math_tr1l -lboost_math_tr1 -lboost_nowide -lboost_prg_exec_monitor -lboost_program_options -lboost_random -lboost_regex -lboost_serialization -lboost_stacktrace_addr2line -lboost_stacktrace_basic -lboost_stacktrace_noop -lboost_system -lboost_thread -lboost_timer -lboost_type_erasure -lboost_unit_test_framework -lboost_wave -lboost_wserialization -lgtk-3 -lgdk-3 && make -j16"],
             # "build_commands": ["cd src && opp_makemake -f --deep -o vanet -O out -KINET_PROJ=$INET_ROOT -KVEINS_PROJ=$VEINS_ROOT -DINET_IMPORT -DVEINS_IMPORT -I. -I$INET_ROOT/src -I$VEINS_ROOT/src -I. -L$INET_PROJ/src -L$VEINS_ROOT/src -lINET -lveins && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd veins_inet && opp_makemake --nolink -f --deep -o veins_inet -O out -KINET_PROJ=$INET_ROOT -KVEINS_PROJ=$VEINS_ROOT -DINET_IMPORT -DVEINS_IMPORT -I. -I$$\(INET_PROJ\)/src -I$$\(VEINS_PROJ\)/src -I.. -L$$\(INET_PROJ\)/src -L$$\(VEINS_PROJ\)/src -L$VEINS_ROOT/src -lINET$$\(D\) -lveins$$\(D\)"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # run example simulation from src folder with:
             # ./cell -n .. ../networks/demo.ini
         },
@@ -2855,7 +2855,7 @@ def get_project_descriptions():
             ],
             # "build_commands": ["cd src && opp_makemake -f --deep -I . -I $BOOST_ROOT/include/boost -I $RAPIDXML_ROOT/include/rapidxml -I $EXPRTK_ROOT/include/exprtk && make"],
             # "build_commands": ["cd src && opp_makemake -f --deep -o vanet -O out -KINET_PROJ=$INET_ROOT -KVEINS_PROJ=$VEINS_ROOT -DINET_IMPORT -DVEINS_IMPORT -I. -I$INET_ROOT/src -I$VEINS_ROOT/src -I. -L$INET_PROJ/src -L$VEINS_ROOT/src -lINET -lveins && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd veins_inet && opp_makemake --nolink -f --deep -o veins_inet -O out -KINET_PROJ=$INET_ROOT -KVEINS_PROJ=$VEINS_ROOT -DINET_IMPORT -DVEINS_IMPORT -I. -I$$\(INET_PROJ\)/src -I$$\(VEINS_PROJ\)/src -I.. -L$$\(INET_PROJ\)/src -L$$\(VEINS_PROJ\)/src -L$VEINS_ROOT/src -lINET$$\(D\) -lveins$$\(D\)"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # run example simulation from src folder with:
             # ./cell -n .. ../networks/demo.ini
         },
@@ -2866,7 +2866,7 @@ def get_project_descriptions():
             "nix_packages": ["boost168", "cmake"],
             "download_url": "https://github.com/Shark-ML/Shark/archive/refs/tags/v4.0.1.tar.gz",
             "build_commands": ["$CMAKE_ROOT/bin/cmake CMakeLists.txt -DCMAKE_BUILD_TYPE=$BUILD_MODE^ && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -2891,7 +2891,7 @@ def get_project_descriptions():
                 # "sed -i 's|QMAKE_CXXFLAGS += -fopenmp|QMAKE_CXXFLAGS += -fopenmp -std=c++11 -fpermissive -Wextra -Wno-pointer-compare|g' libvns.pro",
             ],
             "build_commands": ["qmake && make -j16 CFLAGS+='-Wno-pointer-compare -fopenmp -std=c++11 -fPIC -fpermissive -Wextra' CXXFLAGS+='-Wno-pointer-compare -fopenmp -std=c++11 -fPIC -fpermissive -Wextra'"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # run example simulation from src folder with:
             # ./cell -n .. ../networks/demo.ini
         },
@@ -2916,7 +2916,7 @@ def get_project_descriptions():
                 "sed -i 's|QMAKE_CXXFLAGS += -fopenmp|QMAKE_CXXFLAGS += -fopenmp -std=c++11 -fPIC -fpermissive -Wextra|g' libvns.pro",
             ],
             "build_commands": ["qmake && make -j16"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # run example simulation from src folder with:
             # ./cell -n .. ../networks/demo.ini
         },
@@ -2941,7 +2941,7 @@ def get_project_descriptions():
                 # "sed -i 's|QMAKE_CXXFLAGS += -fopenmp|QMAKE_CXXFLAGS += -fopenmp -std=c++11 -fpermissive|g' libvns.pro",
             ],
             # "build_commands": ["qmake && make -j16"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # run example simulation from src folder with:
             # ./cell -n .. ../networks/demo.ini
         },
@@ -2967,7 +2967,7 @@ def get_project_descriptions():
                 # "sed -i 's|abs|std::abs|g' src/*/*/*/*.cc",
             ],
             # "build_commands": ["opp_makemake -f --deep --make-so -O out -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/util -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/status -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/base -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/transport/udp -L$INET_ROOT/out/$$\(CONFIGNAME\)/src -lz -linet -DINET_IMPORT -KINET_PROJ=../inet"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # run example simulation from src folder with:
             # ./cell -n .. ../networks/demo.ini
         },
@@ -3000,7 +3000,7 @@ def get_project_descriptions():
                 "sed -i 's|/home/tore/software/omnetpp-4.0|$(OMNETPP_ROOT)|g' oprobe/oprobe.pro src/src.pro inet/inet.pro otwlan.pro",
             ],
             "build_commands": ["opp_makemake -f --deep --make-so -O out -I$QTBASE_ROOT/include -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/util -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/status -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/base -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/transport/udp -L$INET_ROOT/out/$$\(CONFIGNAME\)/src -lz -linet -DINET_IMPORT -KINET_PROJ=../inet"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # run example simulation from src folder with:
             # ./cell -n .. ../networks/demo.ini
         },
@@ -3060,7 +3060,7 @@ def get_project_descriptions():
                 # "cd third_party/parallel-inet-omnet && . setenv && ./configure",
             ],
             # "build_commands": ["cd sdncontroller/src && opp_makemake -f --deep -KINET_PROJ=$INET_ROOT -DINET_IMPORT -I$INET_ROOT/src -L$INET_ROOT/src -lINET -I$MYSQL_ROOT -I$MYSQL_LIB -lmysqlcppconn -L$MYSQL_LIB && make -j16"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # run example simulation from simulations folder with:
             # ../src/sdncontroller omnetpp.ini -n ../src:$INET_ROOT/src:.
         },
@@ -3075,7 +3075,7 @@ def get_project_descriptions():
         #     ],
         #     "patch_commands": ["chmod +x install.sh"],
         #     "build_commands": ["./install.sh -b -p $ANACONDA_ROOT/src"],
-        #     "clean_commands": ["make clean"],
+        #     "clean_commands": [r"""make clean"""],
         # },
 
         {
@@ -3115,7 +3115,7 @@ def get_project_descriptions():
                 "make makefiles && make MODE=release"
             ],
             # "build_commands": ["cd sdncontroller/src && opp_makemake -f --deep -KINET_PROJ=$INET_ROOT -DINET_IMPORT -I$INET_ROOT/src -L$INET_ROOT/src -lINET -I$MYSQL_ROOT -I$MYSQL_LIB -lmysqlcppconn -L$MYSQL_LIB && make -j16"],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
             # run example simulation from simulations folder with:
             # ../src/sdncontroller omnetpp.ini -n ../src:$INET_ROOT/src:.
         },
@@ -3139,7 +3139,7 @@ def get_project_descriptions():
             "build_commands": [
                 # "docker build -t inetrg/ccnsim_dsme .",
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -3169,7 +3169,7 @@ def get_project_descriptions():
             "build_commands": [
                 # "docker build -t inetrg/ccnsim_dsme .",
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
                 {
@@ -3226,7 +3226,7 @@ def get_project_descriptions():
                 "cp -v Castalia-files/input/makefrag Castalia",
                 "cd Castalia && ./makemake && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ..",
 ],            
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         # {
@@ -3253,7 +3253,7 @@ def get_project_descriptions():
         #     "build_commands": [
         #         "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
         #     ],
-        #     "clean_commands": ["make clean"],
+        #     "clean_commands": [r"""make clean"""],
         # },
 
         {
@@ -3275,7 +3275,7 @@ def get_project_descriptions():
             "build_commands": [
                 "cd src && opp_makemake -f --deep -I$INET_ROOT/src -I$OMNET_UTILS_ROOT/src -I$OMNET_UTILS_ROOT/src/Callable -I$OMNET_UTILS_ROOT/src/Channels -I$OMNET_UTILS_ROOT/src/Channels/VolatileDelayChannel -I$OMNET_UTILS_ROOT/src/DynamicSignals -I$OMNET_UTILS_ROOT/src/InitBase -I$OMNET_UTILS_ROOT/src/ParameterParser -KINET_PROJ=$INET_ROOT -DINET_IMPORT -I$INET_ROOT/src/ -I$INET_ROOT/src/applications -I$INET_ROOT/src/applications/common -I$INET_ROOT/src/applications/dhcp -I$INET_ROOT/src/applications/ethernet -I$INET_ROOT/src/applications/generic -I$INET_ROOT/src/applications/httptools -I$INET_ROOT/src/applications/netperfmeter -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/applications/rtpapp -I$INET_ROOT/src/applications/sctpapp -I$INET_ROOT/src/applications/tcpapp -I$INET_ROOT/src/applications/traci -I$INET_ROOT/src/applications/udpapp -I$INET_ROOT/src/applications/voip -I$INET_ROOT/src/base -I$INET_ROOT/src/battery -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/linklayer/configurator -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/linklayer/ethernet -I$INET_ROOT/src/linklayer/ethernet/switch -I$INET_ROOT/src/linklayer/ext -I$INET_ROOT/src/linklayer/idealwireless -I$INET_ROOT/src/linklayer/ieee80211 -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/linklayer/ieee80211/mgmt -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/ieee8021d -I$INET_ROOT/src/linklayer/ieee8021d/common -I$INET_ROOT/src/linklayer/ieee8021d/relay -I$INET_ROOT/src/linklayer/ieee8021d/rstp -I$INET_ROOT/src/linklayer/ieee8021d/stp -I$INET_ROOT/src/linklayer/ieee8021d/tester -I$INET_ROOT/src/linklayer/loopback -I$INET_ROOT/src/linklayer/ppp -I$INET_ROOT/src/linklayer/queue -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/mobility -I$INET_ROOT/src/mobility/common -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/mobility/group -I$INET_ROOT/src/mobility/single -I$INET_ROOT/src/mobility/static -I$INET_ROOT/src/networklayer -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/networklayer/autorouting -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/networklayer/autorouting/ipv6 -I$INET_ROOT/src/networklayer/bgpv4 -I$INET_ROOT/src/networklayer/bgpv4/BGPMessage -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/diffserv -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/networklayer/internetcloud -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/networklayer/ldp -I$INET_ROOT/src/networklayer/manetrouting -I$INET_ROOT/src/networklayer/manetrouting/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/aodv-uu/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/base -I$INET_ROOT/src/networklayer/manetrouting/batman -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand/orig -I$INET_ROOT/src/networklayer/manetrouting/dsdv -I$INET_ROOT/src/networklayer/manetrouting/dsr -I$INET_ROOT/src/networklayer/manetrouting/dsr/dsr-uu -I$INET_ROOT/src/networklayer/manetrouting/dymo -I$INET_ROOT/src/networklayer/manetrouting/dymo/dymoum -I$INET_ROOT/src/networklayer/manetrouting/dymo_fau -I$INET_ROOT/src/networklayer/manetrouting/olsr -I$INET_ROOT/src/networklayer/mpls -I$INET_ROOT/src/networklayer/ospfv2 -I$INET_ROOT/src/networklayer/ospfv2/interface -I$INET_ROOT/src/networklayer/ospfv2/messagehandler -I$INET_ROOT/src/networklayer/ospfv2/neighbor -I$INET_ROOT/src/networklayer/ospfv2/router -I$INET_ROOT/src/networklayer/routing -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/routing/dymo -I$INET_ROOT/src/networklayer/routing/gpsr -I$INET_ROOT/src/networklayer/routing/rip -I$INET_ROOT/src/networklayer/rsvp_te -I$INET_ROOT/src/networklayer/ted -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/nodes -I$INET_ROOT/src/nodes/aodv -I$INET_ROOT/src/nodes/bgp -I$INET_ROOT/src/nodes/dymo -I$INET_ROOT/src/nodes/ethernet -I$INET_ROOT/src/nodes/gpsr -I$INET_ROOT/src/nodes/httptools -I$INET_ROOT/src/nodes/inet -I$INET_ROOT/src/nodes/internetcloud -I$INET_ROOT/src/nodes/ipv6 -I$INET_ROOT/src/nodes/mpls -I$INET_ROOT/src/nodes/ospfv2 -I$INET_ROOT/src/nodes/rip -I$INET_ROOT/src/nodes/rtp -I$INET_ROOT/src/nodes/wireless -I$INET_ROOT/src/nodes/xmipv6 -I$INET_ROOT/src/status -I$INET_ROOT/src/transport -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/transport/rtp -I$INET_ROOT/src/transport/rtp/profiles -I$INET_ROOT/src/transport/rtp/profiles/avprofile -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/transport/tcp -I$INET_ROOT/src/transport/tcp/flavours -I$INET_ROOT/src/transport/tcp/queues -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/transport/udp -I$INET_ROOT/src/util -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/util/headerserializers/headers -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/util/headerserializers/ipv4/headers -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/util/headerserializers/ipv6/headers -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/util/headerserializers/sctp/headers -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/util/headerserializers/tcp/headers -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/util/headerserializers/udp/headers -I$INET_ROOT/src/util/messageprinters -I$INET_ROOT/src/world -I$INET_ROOT/src/world/annotations -I$INET_ROOT/src/world/httptools -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/world/scenario -I$INET_ROOT/src/world/traci -I${pkgs.boost.dev}/include -I$LIBPLN_ROOT/src -I$LIBPLN_ROOT -I${pkgs.fftw.dev}/include -LI${pkgs.fftw.dev} -L$LIBPLN_ROOT/lib/static && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -3290,7 +3290,7 @@ def get_project_descriptions():
             "build_commands": [
                 "cd src && opp_makemake -f --deep && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -3302,7 +3302,7 @@ def get_project_descriptions():
             "build_commands": [
                 "cmake CMakeLists.txt && make all install SimpleDemo TestBench PLN_Generator -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
 
         {
@@ -3335,6 +3335,6 @@ def get_project_descriptions():
             "build_commands": [
                 "opp_featuretool enable SimuLTE_Cars && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"
             ],
-            "clean_commands": ["make clean"],
+            "clean_commands": [r"""make clean"""],
         },
     ]

@@ -108,14 +108,14 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # Compiling with '-std=c++03 -fpermissive' helps, but is not enough.
     source_patch_commands = [
         # patch the simulator executables/IDE/build system if we are in an opp_env shell so later it does not allow running outside of an opp_env shell
-        """[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's/cStaticFlag dummy;/cStaticFlag dummy;\\n    if (!getenv("OPP_ENV_VERSION") || !getenv("OMNETPP_ROOT")) { std::cerr << "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." << std::endl; return 1; }/' """ + ("src/envir/evmain.cc" if version >= "4.2" else "src/envir/main.cc"),
+        """[ -n "$OPP_ENV_VERSION" ] && sed -i 's/cStaticFlag dummy;/cStaticFlag dummy;\\n    if (!getenv("OPP_ENV_VERSION") || !getenv("OMNETPP_ROOT")) { std::cerr << "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." << std::endl; return 1; }/' """ + ("src/envir/evmain.cc" if version >= "4.2" else "src/envir/main.cc"),
         # set the LD_LIBRARY_PATH in opp_ide (or omnetpp/omnest) so the IDE will be able properly access the required dependencies
-        f"""[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's|#!/bin/sh|#!/bin/sh\\nexport LD_LIBRARY_PATH="$LD_LIBRARY_PATH{":${pkgs.zlib}/lib" if "zlib" in ide_packages else ""}{":${pkgs.cairo}/lib" if "cairo" in (tcltk_packages + ide_packages) else ""}{":${pkgs.gtk2}/lib" if "gtk2" in ide_packages else ""}{":${pkgs.gtk3}/lib" if "gtk3" in ide_packages else ""}{":${pkgs.glib.out}/lib" if "glib" in ide_packages else ""}{":${pkgs.libsecret}/lib" if "libsecret" in ide_packages else ""}{":${pkgs.webkitgtk}/lib" if "webkitgtk" in ide_packages else ""}{":${pkgs.xorg.libXtst}/lib" if "xorg.libXtst" in ide_packages else ""}{":${pkgs.stdenv.cc.cc.lib}/lib" if "stdenv.cc.cc.lib" in ide_packages else ""}" |' """ + (" src/utils/opp_ide" if version >= "6.0" else " src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
-        """[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's|#!/bin/sh|#!/bin/sh\\n[ -z $OPP_ENV_VERSION ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
-        """[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's/OMNETPP_PRODUCT = @OMNETPP_PRODUCT@/ifndef OPP_ENV_VERSION\\n  $(error This OMNeT++ installation cannot be used outside an opp_env shell.)\\nendif\\nOMNETPP_PRODUCT = @OMNETPP_PRODUCT@/' Makefile.inc.in""" if version >= "4.0" else None,
+        f"""[ -n "$OPP_ENV_VERSION" ] && sed -i 's|#!/bin/sh|#!/bin/sh\\nexport LD_LIBRARY_PATH="$LD_LIBRARY_PATH{":${pkgs.zlib}/lib" if "zlib" in ide_packages else ""}{":${pkgs.cairo}/lib" if "cairo" in (tcltk_packages + ide_packages) else ""}{":${pkgs.gtk2}/lib" if "gtk2" in ide_packages else ""}{":${pkgs.gtk3}/lib" if "gtk3" in ide_packages else ""}{":${pkgs.glib.out}/lib" if "glib" in ide_packages else ""}{":${pkgs.libsecret}/lib" if "libsecret" in ide_packages else ""}{":${pkgs.webkitgtk}/lib" if "webkitgtk" in ide_packages else ""}{":${pkgs.xorg.libXtst}/lib" if "xorg.libXtst" in ide_packages else ""}{":${pkgs.stdenv.cc.cc.lib}/lib" if "stdenv.cc.cc.lib" in ide_packages else ""}" |' """ + (" src/utils/opp_ide" if version >= "6.0" else " src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
+        """[ -n "$OPP_ENV_VERSION" ] && sed -i 's|#!/bin/sh|#!/bin/sh\\n[ -z $OPP_ENV_VERSION ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
+        """[ -n "$OPP_ENV_VERSION" ] && sed -i 's/OMNETPP_PRODUCT = @OMNETPP_PRODUCT@/ifndef OPP_ENV_VERSION\\n  $(error This OMNeT++ installation cannot be used outside an opp_env shell.)\\nendif\\nOMNETPP_PRODUCT = @OMNETPP_PRODUCT@/' Makefile.inc.in""" if version >= "4.0" else None,
 
         # disable the IDE launcher scripts on unsupported os/arch
-        "sed -i.bak 's/echo Starting the.*/echo The IDE is not supported on this OS and platform ; exit 1/' src/utils/omnetpp src/utils/omnest" if (not is_ide_supported) and version >= "4.0" else None,
+        "sed -i 's/echo Starting the.*/echo The IDE is not supported on this OS and platform ; exit 1/' src/utils/omnetpp src/utils/omnest" if (not is_ide_supported) and version >= "4.0" else None,
 
         # binary patch the IDE so proper glibc and interpreter is used by the eclipse launcher and the JRE executables under the Nix environment
         # Only do it in nix environment. Using glob patterns and enabling nullglob are important because theses file may or may not be present in a distro (depending on the distro version)
@@ -126,46 +126,46 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "/usr/bin/codesign --force -s - ide/opp_ide.app/Contents/Eclipse/plugins/org.omnetpp.ide.nativelibs.macosx*/libopplibs.jnilib" if version >= "6.0" and is_macos and is_aarch64 else None,
 
         # remove deprecated GetCurrentProcess() and TransformProcessType() calls from qtenv.cc (not present on aarch64)
-        "sed -i.bak 's|GetCurrentProcess.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
-        "sed -i.bak 's|TransformProcessType.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
+        "sed -i 's|GetCurrentProcess.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
+        "sed -i 's|TransformProcessType.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
 
         # delete most bundled tools on macOS as they are not required when compiling under Nix (except the debugger helper)
         "find tools/macos.x86_64/bin -mindepth 1 -not -name 'lldbmi2' -delete && (cd tools/macos.x86_64 && rm -rf doc include lib mkspecs plugins share)" if is_macos and is_x86_64 else None, 
 
-        "sed -i.bak 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
-        "sed -i.bak 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
+        "sed -i 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
+        "sed -i 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
 
-        "sed -i.bak '1s|.*|#!/bin/env perl|;2s|.*||' src/nedc/opp_msgc" if version == "3.3.1" else None, # otherwise calling msgc from a Makefile fails
-        "sed -i.bak 's/#build_shared_libs=no/build_shared_libs=no/' configure.user.dist" if version < "4.0" and is_macos else None, # on macOS only static builds were properly supported
+        "sed -i '1s|.*|#!/bin/env perl|;2s|.*||' src/nedc/opp_msgc" if version == "3.3.1" else None, # otherwise calling msgc from a Makefile fails
+        "sed -i 's/#build_shared_libs=no/build_shared_libs=no/' configure.user.dist" if version < "4.0" and is_macos else None, # on macOS only static builds were properly supported
 
         # fix Qtenv build error in isolated mode ("g++ not found") due to a qmake issue
-        "sed -i.bak 's/\\$(QMAKE)/$(QMAKE) -spec linux-clang/' src/qtenv/Makefile" if version.startswith("5.0") else None,
+        "sed -i 's/\\$(QMAKE)/$(QMAKE) -spec linux-clang/' src/qtenv/Makefile" if version.startswith("5.0") else None,
 
-        "sed -i.bak '/#include/a #include <stdio.h> // added by opp_env' src/common/commondefs.h" if version == "4.0" else None, # add missing include in vanilla 4.0 release
-        "sed -i.bak '/#include <stdlib.h>/a #include <unistd.h> // added by opp_env' src/utils/abspath.cc" if not is_modernized and version >= "4.0" and version < "4.3" else None, # add missing include in unpatched 4.0/4.1/4.2
-        "sed -i.bak 's|static inline int64 abs(int64 x)|//static inline int64 abs(int64 x)|' src/common/bigdecimal.cc" if not is_modernized and version >= "4.0" and version < "4.2" else None,
-        "sed -i.bak 's|int64 val = abs(this->intVal);|int64 val = this->intVal < 0 ? -this->intVal : this->intVal;|' src/common/bigdecimal.cc" if not is_modernized and version >= "4.0" and version < "4.2" else None,
-        "sed -i.bak 's/(state)<<1/((state)<0 ? -((-(state))<<1) : (state)<<1)/' include/cfsm.h" if not is_modernized and version >= "4.0" and version < "4.4" else None,
-        "sed -i.bak 's/va_copy/__va_copy/' src/tkenv/tkenv.cc" if not is_modernized and version.startswith("4.") and version >= "4.1" else None,
+        "sed -i '/#include/a #include <stdio.h> // added by opp_env' src/common/commondefs.h" if version == "4.0" else None, # add missing include in vanilla 4.0 release
+        "sed -i '/#include <stdlib.h>/a #include <unistd.h> // added by opp_env' src/utils/abspath.cc" if not is_modernized and version >= "4.0" and version < "4.3" else None, # add missing include in unpatched 4.0/4.1/4.2
+        "sed -i 's|static inline int64 abs(int64 x)|//static inline int64 abs(int64 x)|' src/common/bigdecimal.cc" if not is_modernized and version >= "4.0" and version < "4.2" else None,
+        "sed -i 's|int64 val = abs(this->intVal);|int64 val = this->intVal < 0 ? -this->intVal : this->intVal;|' src/common/bigdecimal.cc" if not is_modernized and version >= "4.0" and version < "4.2" else None,
+        "sed -i 's/(state)<<1/((state)<0 ? -((-(state))<<1) : (state)<<1)/' include/cfsm.h" if not is_modernized and version >= "4.0" and version < "4.4" else None,
+        "sed -i 's/va_copy/__va_copy/' src/tkenv/tkenv.cc" if not is_modernized and version.startswith("4.") and version >= "4.1" else None,
 
         # Early 4.x versions were written for Bison 2.x, but Nix only has Bison 3.x, so the grammar needs to be patched.
-        "sed -i.bak '/%pure_parser/a %lex-param {void *statePtr}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
-        "sed -i.bak '/%pure_parser/a %parse-param {void *statePtr}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
-        "sed -i.bak '/void yyerror (const char \\*s);/a void yyerror (void *statePtr, const char *s) {yyerror(s);}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
+        "sed -i '/%pure_parser/a %lex-param {void *statePtr}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
+        "sed -i '/%pure_parser/a %parse-param {void *statePtr}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
+        "sed -i '/void yyerror (const char \\*s);/a void yyerror (void *statePtr, const char *s) {yyerror(s);}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
 
         # 5.x versions assumed python2 but now we have python3 only and a little patching is needed 
         # for the opp_featuretool to work with python3
-        "sed -i.bak 's/raw_input()/input()/' src/utils/opp_featuretool" if version.startswith("5.") else None,
+        "sed -i 's/raw_input()/input()/' src/utils/opp_featuretool" if version.startswith("5.") else None,
 
         # to avoid "error: invalid argument '-std=c++03' not allowed with 'C'" with tkImgPNG.c
-        "sed -i.bak 's/\\$(CC) -c \\$(COPTS)/\\$(CC) -c /' src/tkenv/Makefile" if not is_modernized and version == "4.0" else None,
+        "sed -i 's/\\$(CC) -c \\$(COPTS)/\\$(CC) -c /' src/tkenv/Makefile" if not is_modernized and version == "4.0" else None,
 
         # some versions detect system-wide Tcl/Tk at fixed paths if TK_CFLAGS is empty, prevent that by giving a dummy include path (Nix will supply the actual one)
-        f"sed -i.bak '/# Compiler and linker options for/a TK_LIBS=\"{tcltk_libs}\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
-        f"sed -i.bak '/# Compiler and linker options for/a TK_CFLAGS=\"-Idummy\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
+        f"sed -i '/# Compiler and linker options for/a TK_LIBS=\"{tcltk_libs}\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
+        f"sed -i '/# Compiler and linker options for/a TK_CFLAGS=\"-Idummy\"' configure.user" if not is_modernized and version >= "4.0" and version < "4.6" else None,
 
         # to disable tkdock calls which is not available on macOS / aarch64
-        "sed -i.bak 's|tkdock::switchIcon|# tkdock::switchIcon|' src/tkenv/startup.tcl" if not is_modernized and version >= "4.5" and version < "5.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkdock is not supported
+        "sed -i 's|tkdock::switchIcon|# tkdock::switchIcon|' src/tkenv/startup.tcl" if not is_modernized and version >= "4.5" and version < "5.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkdock is not supported
     ]
 
     # for older versions we use gcc7 (although a recent compiler with -std=c++03 -fpermissive would also do? -- TODO check)
@@ -189,18 +189,18 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "mkdir -p bin",
         f"echo 'omnetpp-{version}' > Version",
         "[ -f configure.user.dist ] && cp configure.user.dist configure.user", # create default configure.user from configure.user.dist
-        "sed -i.bak 's|^WITH_LIBXML=no|WITH_LIBXML=yes|' configure.user",  # we can use LIBXML even on later version of OMNeT++ where it is optional
-        "sed -i.bak 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
-        "sed -i.bak 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
-        "sed -i.bak 's|^WITH_PARSIM=yes|WITH_PARSIM=no|' configure.user",
-        """sed -i.bak 's|#MPI_LIBS="-lmpi++ -lmpi"   #SGI|#MPI_LIBS="-lmpi++ -lmpi"   #SGI\\nMPI_LIBS="-ldisabled"|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
-        """sed -i.bak 's|#include "parsim/cmemcommbuffer.h"|#ifdef WITH_PARSIM\\n#include "parsim/cmemcommbuffer.h"\\n#endif|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
-        """sed -i.bak 's|cMemCommBuffer buffer;|#ifdef WITH_PARSIM\\ncMemCommBuffer buffer;|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
-        """sed -i.bak 's|delete copy;|delete copy;\\n#else\\nthrow cRuntimeError("Fingerprint is configured to contain MESSAGE_DATA (d),"\\n" but parallel simulation support is disabled (WITH_PARSIM=no)"\\n" which is required for serialization.");\\n#endif|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
-        "sed -i.bak 's|^QT_VERSION=4|QT_VERSION=5|' configure.user" if version.startswith("5.0") else None, # 5.0.x too!
-        "sed -i.bak 's|^WITH_TKENV=yes|WITH_TKENV=no|' configure.user" if version >= "5.0" and version < "6.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkenv is not supported
-        f"sed -i.bak '/^PERL =/i CFLAGS += {extra_cflags}' Makefile.inc.in" if extra_cflags and version >= "4.0" else  # no Makefile.inc.in in 3.x yet
-        f"sed -i.bak 's/^CFLAGS=.*/CFLAGS=\\\"-O2 -DNDEBUG=1 {extra_cflags}\\\"/' configure.user" if extra_cflags and version < "4.0" else None,  # no Makefile.inc.in in 3.x yet
+        "sed -i 's|^WITH_LIBXML=no|WITH_LIBXML=yes|' configure.user",  # we can use LIBXML even on later version of OMNeT++ where it is optional
+        "sed -i 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
+        "sed -i 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
+        "sed -i 's|^WITH_PARSIM=yes|WITH_PARSIM=no|' configure.user",
+        """sed -i 's|#MPI_LIBS="-lmpi++ -lmpi"   #SGI|#MPI_LIBS="-lmpi++ -lmpi"   #SGI\\nMPI_LIBS="-ldisabled"|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
+        """sed -i 's|#include "parsim/cmemcommbuffer.h"|#ifdef WITH_PARSIM\\n#include "parsim/cmemcommbuffer.h"\\n#endif|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
+        """sed -i 's|cMemCommBuffer buffer;|#ifdef WITH_PARSIM\\ncMemCommBuffer buffer;|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
+        """sed -i 's|delete copy;|delete copy;\\n#else\\nthrow cRuntimeError("Fingerprint is configured to contain MESSAGE_DATA (d),"\\n" but parallel simulation support is disabled (WITH_PARSIM=no)"\\n" which is required for serialization.");\\n#endif|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
+        "sed -i 's|^QT_VERSION=4|QT_VERSION=5|' configure.user" if version.startswith("5.0") else None, # 5.0.x too!
+        "sed -i 's|^WITH_TKENV=yes|WITH_TKENV=no|' configure.user" if version >= "5.0" and version < "6.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkenv is not supported
+        f"sed -i '/^PERL =/i CFLAGS += {extra_cflags}' Makefile.inc.in" if extra_cflags and version >= "4.0" else  # no Makefile.inc.in in 3.x yet
+        f"sed -i 's/^CFLAGS=.*/CFLAGS=\\\"-O2 -DNDEBUG=1 {extra_cflags}\\\"/' configure.user" if extra_cflags and version < "4.0" else None,  # no Makefile.inc.in in 3.x yet
     ]
 
     # More recent releases can handle parallel build

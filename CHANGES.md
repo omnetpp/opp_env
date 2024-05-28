@@ -4,6 +4,9 @@
 
 ### opp_env
 
+- fix: certain programs that were executed from the host environment (like midnight commander)
+       failed to load because opp_env was modifying the LD_LIBRARY_PATH.
+
 ### Frameworks and models
 
 - veins: fixed image path

@@ -109,6 +109,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     source_patch_commands = [
         # patch the simulator executables/IDE/build system if we are in an opp_env shell so later it does not allow running outside of an opp_env shell
         """[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's/cStaticFlag dummy;/cStaticFlag dummy;\\n    if (!getenv("OPP_ENV_VERSION") || !getenv("OMNETPP_ROOT")) { std::cerr << "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." << std::endl; return 1; }/' """ + ("src/envir/evmain.cc" if version >= "4.2" else "src/envir/main.cc"),
+        # set the LD_LIBRARY_PATH in opp_ide (or omnetpp/omnest) so the IDE will be able properly access the required dependencies
+        f"""[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's|#!/bin/sh|#!/bin/sh\\nexport LD_LIBRARY_PATH="$LD_LIBRARY_PATH{":${pkgs.zlib}/lib" if "zlib" in ide_packages else ""}{":${pkgs.cairo}/lib" if "cairo" in (tcltk_packages + ide_packages) else ""}{":${pkgs.gtk2}/lib" if "gtk2" in ide_packages else ""}{":${pkgs.gtk3}/lib" if "gtk3" in ide_packages else ""}{":${pkgs.glib.out}/lib" if "glib" in ide_packages else ""}{":${pkgs.libsecret}/lib" if "libsecret" in ide_packages else ""}{":${pkgs.webkitgtk}/lib" if "webkitgtk" in ide_packages else ""}{":${pkgs.xorg.libXtst}/lib" if "xorg.libXtst" in ide_packages else ""}{":${pkgs.stdenv.cc.cc.lib}/lib" if "stdenv.cc.cc.lib" in ide_packages else ""}" |' """ + (" src/utils/opp_ide" if version >= "6.0" else " src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
         """[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's|#!/bin/sh|#!/bin/sh\\n[ -z $OPP_ENV_VERSION ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
         """[ -n "$OPP_ENV_VERSION" ] && sed -i.bak 's/OMNETPP_PRODUCT = @OMNETPP_PRODUCT@/ifndef OPP_ENV_VERSION\\n  $(error This OMNeT++ installation cannot be used outside an opp_env shell.)\\nendif\\nOMNETPP_PRODUCT = @OMNETPP_PRODUCT@/' Makefile.inc.in""" if version >= "4.0" else None,
 
@@ -236,15 +238,6 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.qt5.qtwayland.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if "qt5.qtwayland" in qt_packages else None,
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,
             "export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"" if "libxml2" in other_packages else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.zlib}/lib\"" if "zlib" in ide_packages else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.cairo}/lib\"" if "cairo" in (tcltk_packages + ide_packages) else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.gtk2}/lib\"" if "gtk2" in ide_packages else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.gtk3}/lib\"" if "gtk3" in ide_packages else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.glib.out}/lib\"" if "glib" in ide_packages else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.libsecret}/lib\"" if "libsecret" in ide_packages else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.webkitgtk}/lib\"" if "webkitgtk" in ide_packages else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.xorg.libXtst}/lib\"" if "xorg.libXtst" in ide_packages else None,
-            "export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:${pkgs.stdenv.cc.cc.lib}/lib\"" if "stdenv.cc.cc.lib" in ide_packages else None,
             "export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH" if not is_macos else None,
             "export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules" if "gtk3" in ide_packages else None,
             "export TK_LIBRARY=\"${pkgs.tk-8_5}/lib/tk8.5\"" if "tcl-8_5" in tcltk_packages else None,

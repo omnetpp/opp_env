@@ -1335,7 +1335,7 @@ def get_project_descriptions():
                 r"""git submodule update""",
             ],
             "patch_commands": [
-                """sed -i 's|if \[ $2 == "--debug" \]; then|if [ $2 == "--test" ]; then $RELATIVE_PATH_TO_ROOT/omnetpp/ara-sim -u Cmdenv -c $experimentName -n "$nedPath" omnetpp.ini -r 0 --sim-time-limit=10s; fi\\nif [ $2 == "--debug" ]; then|' simulations/run.sh""",
+                r"""sed -i 's|if \[ $2 == "--debug" \]; then|if [ $2 == "--test" ]; then $RELATIVE_PATH_TO_ROOT/omnetpp/ara-sim -u Cmdenv -c $experimentName -n "$nedPath" omnetpp.ini -r 0 --sim-time-limit=10s; fi\\nif [ $2 == "--debug" ]; then|' simulations/run.sh""",
                 r"""cd inetmanet""",
                 r"""sed -i.bak 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h""",
                 r"""for f in $(grep -Rls 'defined(linux)'); do sed -i.bak 's|defined(linux)|defined(__linux__)|' $f; done""",
@@ -1349,7 +1349,7 @@ def get_project_descriptions():
                 r"""sed -i.bak 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc""",
                 r"""sed -i.bak 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc""",
             ],
-            "setenv_commands": ["export INETMANET_FOLDER=$LIBARA_ROOT/inetmanet",
+            "setenv_commands": [r"""export INETMANET_FOLDER=$LIBARA_ROOT/inetmanet""",
                                 r"""echo 'Hint: in an example simulation folder, use the `./run.sh` command to run the example simulation. Note: this project is only available in release mode.'"""],
             "build_commands": [
                 r"""make all -j$NIX_BUILD_CORES MODE=release"""

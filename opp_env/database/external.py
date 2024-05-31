@@ -606,8 +606,8 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""git reset --hard eddfe7ee80535a624987941653c59da2ce138929""",    # the releases need git, so we're using a commit of the master branch
             ],
-            "setenv_commands": ["export OMNETPP_IMAGE_PATH=$QUISP_ROOT/quisp/images:$OMNETPP_IMAGE_PATH",
-                                "echo 'Hint: in the quisp folder, use the `./quisp` command to run simulations. For example: `./quisp simulations/two_nodes.ini`'"],
+            "setenv_commands": [r"""export OMNETPP_IMAGE_PATH=$QUISP_ROOT/quisp/images:$OMNETPP_IMAGE_PATH""",
+                                r"""echo 'Hint: in the quisp folder, use the `./quisp` command to run simulations. For example: `./quisp simulations/two_nodes.ini`'"""],
             "build_commands": [r"""make IMAGE_PATH=quisp/images/ -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean"""],
         },
@@ -827,7 +827,7 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""rm -r out *.exe""",
             ],
-            "setenv_commands": ["echo 'Hint: use the `./stochasticbattery` command to run the simulation.'",],
+            "setenv_commands": [r"""echo 'Hint: use the `./stochasticbattery` command to run the simulation.'""",],
             "build_commands": [r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean"""],
         },
@@ -1055,7 +1055,7 @@ def get_project_descriptions():
                 r"""git submodule update --init --recursive""",
             ],
             "setenv_commands": [
-                """echo 'Hint: To generate all simulations, run the `docker run --rm -it -v "$(pwd)/data:/root/data" inetrg/ccnsim_dsme` command. \
+                r"""echo 'Hint: To generate all simulations, run the `docker run --rm -it -v "$(pwd)/data:/root/data" inetrg/ccnsim_dsme` command. \
                 Note that this may take hours to execute all configurations. The collected data will be stored under data. Note that you need to use `sudo` to delete the `data` folder.\n \
                     Link to the paper: https://arxiv.org/pdf/2204.11040.pdf'""",
             ],
@@ -1530,7 +1530,7 @@ def get_project_descriptions():
                 r"""sed -i 's|static const double|constexpr static const double|' src/*/*.h""",
                 r"""sed -i 's|../src/cni_os3|../src/run_cni-os3|' simulations/run""",
             ],
-            "setenv_commands": ["export INET_PROJ=$INET_ROOT",
+            "setenv_commands": [r"""export INET_PROJ=$INET_ROOT""",
                                 r"""export TCL_LIBRARY=$TCLLIBPATH""",
                                 r"""echo 'Hint: use the `./run` command in the simulations folder. For example: `./run Validation/omnetpp.ini`'"""],
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
@@ -1706,7 +1706,7 @@ def get_project_descriptions():
                 r"""rm inet-4.2.5-src.tgz""",
             ],
             "patch_commands": [
-                """echo 'rsync -abuvP --include="*/" --include="*.cc" --include="*.h" --include="*.ned"  --exclude="*"  inet_replacement_files/  $1/src/inet/ \nfind $1/src/inet -name "*.*~" -delete' > replace_inet_files.sh""",
+                r"""echo 'rsync -abuvP --include="*/" --include="*.cc" --include="*.h" --include="*.ned"  --exclude="*"  inet_replacement_files/  $1/src/inet/ \nfind $1/src/inet -name "*.*~" -delete' > replace_inet_files.sh""",
                 r"""chmod +x replace_inet_files.sh""",
                 r"""./replace_inet_files.sh inet""",
             ],
@@ -1939,7 +1939,7 @@ def get_project_descriptions():
                                 r"""export SUMO_HOME=${pkgs.sumo}/share/sumo && echo 'sumo home: ' && echo $SUMO_HOME""",
                                 r"""source setenv""",
                                 r"""echo 'Hint: use the `plexe_run` command in an example simulation folder to run the example simulation.'""",
-                                ],
+            ],
             "patch_commands": [
                 r"""sed -i 's|from elementtree|from xml.etree|' */*/*/*.py""",
             ],

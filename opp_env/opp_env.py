@@ -922,6 +922,7 @@ class Workspace:
     DOWNLOADED = "DOWNLOADED"
 
     WORKSPACE_ADMIN_DIR = ".opp_env_workspace"
+    WORKSPACE_IDE_METADATA_DIR = ".metadata"
     PROJECT_ADMIN_DIR = ".opp_env"
 
     def __init__(self, root_directory, default_nixos=None, default_stdenv=None):
@@ -966,6 +967,7 @@ class Workspace:
         if not os.path.isdir(dir):
             raise Exception(f"Directory does not exist: {dir}")
         opp_env_dir = os.path.join(dir, Workspace.WORKSPACE_ADMIN_DIR)
+        ide_metadata_dir = os.path.join(dir, Workspace.WORKSPACE_IDE_METADATA_DIR)
         if os.path.isdir(opp_env_dir):
             if allow_existing:
                 _logger.debug(f"Using existing workspace in folder {cyan(dir)}")
@@ -978,6 +980,8 @@ class Workspace:
         if nixless:
             # write an empty file called .nixless to indicate that this is a nixless workspace
             open(os.path.join(opp_env_dir, ".nixless"), "w").close()
+        # create .metadata directory for the IDE workspace
+        shutil.copytree(os.path.join(os.path.dirname(__file__), "templates", "metadata"), ide_metadata_dir)
         _logger.info(f"Workspace created in folder {cyan(dir)}")
 
     def get_workspace_admin_directory(self):
@@ -1576,6 +1580,32 @@ def update_saved_project_dependencies(effective_project_descriptions, workspace)
         starting_with = [ p.get_full_name() for p in Workspace._get_dependencies(project_description, effective_project_descriptions) ]
         workspace.update_project_state(project_description, last_started_with=starting_with)
 
+def init_ide_workspace(effective_project_descriptions: ProjectDescription, workspace: Workspace):
+    # Create a import_projects.bsh bean shell file so the IDE will be able to auto import the
+    # project dependencies on the first start. The .metadata folder contains a startup.bsh file
+    # that is run by the IDE (on 6.1 and later). startup.bsh pulls in the import_projects.bsh
+
+    dot_metadata_dir = f"{workspace.root_directory}/{workspace.WORKSPACE_IDE_METADATA_DIR}"
+    os.makedirs(dot_metadata_dir, exist_ok=True)
+    with open(f"{dot_metadata_dir}/import_projects.bsh", "w") as bf:
+        for project_description in reversed(effective_project_descriptions):
+            # Skip the omnetpp project as we do not import that into the workspace
+            if project_description.name == "omnetpp":
+                continue
+
+            bf.write(f'importAndOpenProject("{project_description.get_full_name()}");\n')
+
+            # Patch project dependencies in the .project file
+            dependencies = [ p.get_full_name() for p in Workspace._get_dependencies(project_description, effective_project_descriptions) ]
+            project_file = f"{workspace.root_directory}/{project_description.get_full_name()}/.project"
+            with open(project_file, "r", errors = "ignore") as pf:
+                content = pf.read()
+            pattern = r'<projects>(.*?)</projects>'
+            replacement = '<projects>\n\t\t'+'\n\t\t'.join([f'<project>{dep}</project>' for dep in dependencies if not dep.startswith('omnetpp-')])+'\n\t</projects>'
+            content = re.sub(pattern, replacement, content, 1, re.DOTALL)
+            with open(project_file, "w") as pf:
+                pf.write(content)
+
 def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwargs):
     global project_registry
     projects = project_registry.get_all_project_descriptions()
@@ -1779,6 +1809,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
             workspace.download_project_if_needed(project_description, effective_project_descriptions, git_branch=git_branches.get(project_description.get_full_name()), **kwargs)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
+    init_ide_workspace(effective_project_descriptions, workspace)
 
     project_names = [p.name for p in effective_project_descriptions]
     function_list = "; ".join([f"`build_{p}`, `clean_{p}`, `test_{p}`, `smoke_test_{p}`, `check_{p}`" for p in ["all"] + project_names])
@@ -1835,6 +1866,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
             workspace.download_project_if_needed(project_description, effective_project_descriptions, git_branch=git_branches.get(project_description.get_full_name()), **kwargs)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
+    init_ide_workspace(effective_project_descriptions, workspace)
 
     commands = []
     if build or (install and not install_without_build):

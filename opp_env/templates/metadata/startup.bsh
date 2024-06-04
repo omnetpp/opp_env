@@ -1,0 +1,23 @@
+// utility functions for startup scripts
+
+void importAndOpenProject(String projectName) {
+    ws = org.eclipse.core.resources.ResourcesPlugin.getWorkspace();
+    projectDir = ws.getRoot().getLocation().append(projectName);
+    projectFile = projectDir.append(".project");
+    description = ws.loadProjectDescription(projectFile);
+    description.setName(projectName);
+    project = ws.getRoot().getProject(description.getName());
+
+    if (!project.exists()) {
+        project.create(description, null);
+    }
+
+    if (!project.isOpen())
+        project.open(null);
+}
+
+// call import_projects.bsh script if it exists
+ip_bsh = "import_projects.bsh";
+if (pathToFile(dirname(getSourceFileInfo()) + "/" + ip_bsh).exists()) {
+    sourceRelative(ip_bsh);
+}

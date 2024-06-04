@@ -168,6 +168,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
         # to disable tkdock calls which is not available on macOS / aarch64
         "sed -i 's|tkdock::switchIcon|# tkdock::switchIcon|' src/tkenv/startup.tcl" if not is_modernized and version >= "4.5" and version < "5.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkdock is not supported
+
+        # use the opp_env workspace as the default IDE workspace (on 6.1 or later where auto importing of projects are supported)
+        "sed -i 's|../samples|../..|' src/utils/opp_ide""" if version >= "6.1" else None
     ]
 
     # for older versions we use gcc7 (although a recent compiler with -std=c++03 -fpermissive would also do? -- TODO check)

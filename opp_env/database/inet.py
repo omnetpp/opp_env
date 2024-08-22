@@ -145,6 +145,40 @@ def make_inet_project_description(inet_version, omnetpp_versions):
                 "git_url": "https://github.com/inet-framework/inet.git",
                 "git_branch": git_branch_or_tag_name,
             },
+            **({"with-emulation": {
+                "option_description": "Enable support for network emulation and Mininet (only on Linux)",
+                "nix_packages": [
+                    "python311Packages.mininet-python",
+                    "vlc",
+                    "xterm",
+                    "babeld",
+                    "iproute2",
+                    "wireshark",
+                    "unixtools.nettools",
+                    "tunctl",
+                    # the default items need to be added due to the option overwriting the default
+                    "z3" if inet_version >= "4.4" else None,  # ffmpeg needed for VoIPStream
+                    "ffmpeg-headless" if inet_version >= "4.5" else "ffmpeg_4-headless" if inet_version >= "4.0" else None,  # ffmpeg needed for VoIPStream
+                    "python3" if inet_version >= "3.6.7" or is_modernized else "python2" # up to inet-3.6.6, inet_featuretool uses python2 in original, and python3 in modernized versions
+                ],
+                "option_category": "nix_package",
+                "option_is_default": False,
+                "setenv_commands": [
+                    "export MININET_ROOT=${pkgs.python311Packages.mininet-python}",
+                    # the default items need to be added due to the option overwriting the default
+                    'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',
+                    "[ -f setenv ] && INET_ROOT= source setenv -f", # note: actually, setenv ought to contain adding INET to NEDPATH and OMNETPP_IMAGE_PATH
+                    "echo '\nNote on the Emulation feature: after installation, make sure to add the necessary capabilities to omnetpp executables by running the following commands:\n\nsudo setcap cap_sys_admin+ep /$OMNETPP_ROOT/bin/opp_run_release\nsudo setcap cap_sys_admin+ep /$OMNETPP_ROOT/bin/opp_run_dbg\n'",
+                ],
+                "build_commands": [
+                    # the default items need to be added due to the option overwriting the default
+                    "[ -f src/Makefile ] || opp_featuretool -v enable Z3GateSchedulingConfigurator" if inet_version >= "4.4" else "",
+                    "[ -f src/Makefile ] || opp_featuretool -v enable VoipStream VoipStreamExamples" if inet_version >= "4.3" else
+                    "[ -f src/Makefile ] || opp_featuretool -v enable VoIPStream VoIPStream_examples" if inet_version >= "4.0" else "",
+                    "[ -f src/Makefile ] || opp_featuretool -v enable NetworkEmulationSupport NetworkEmulationExamples NetworkEmulationShowcases" if inet_version >= "4.0" else "",
+                    "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
+                ],
+            }} if inet_version >= "4.5" else {}),   # TODO update this to the next inet release which contains the mininet version of the voip showcase
         }
     }
 

@@ -144,6 +144,32 @@ def make_inet_project_description(inet_version, omnetpp_versions):
                 "git_url": "https://github.com/inet-framework/inet.git",
                 "git_branch": git_branch_or_tag_name,
             },
+            **({"full": {
+                "option_description": "Enable all INET project features, e.g. support for network emulation and Mininet. Most of these features only work on Linux.",
+                "nix_packages": [
+                    "@append",
+                    "python311Packages.mininet-python",
+                    "vlc",
+                    "xterm",
+                    "babeld",
+                    "iproute2",
+                    "wireshark",
+                    "unixtools.nettools",
+                    "tunctl",
+                ],
+                "option_category": "nix_package",
+                "option_is_default": False,
+                "setenv_commands": [
+                    "@append",
+                    "export MININET_ROOT=${pkgs.python311Packages.mininet-python}",
+                    "echo '\nNote on the Emulation feature: after installation, make sure to add the necessary capabilities to omnetpp executables by running the following commands:\n\nsudo setcap cap_sys_admin+ep /$OMNETPP_ROOT/bin/opp_run_release\nsudo setcap cap_sys_admin+ep /$OMNETPP_ROOT/bin/opp_run_dbg\n'",
+                    "if [ \"$(uname -s)\" != 'Linux' ]; then echo 'WARNING: Network-emulation-related functionality only works on Linux.'; fi",
+                ],
+                "patch_commands": [
+                    "@append",
+                    "$OPP_FEATURETOOL -v enable NetworkEmulationSupport NetworkEmulationExamples NetworkEmulationShowcases" if inet_version >= "4.0" else "",
+                ],
+            }} if inet_version >= "4.5" else {}),   # TODO update this to the next inet release which contains the mininet version of the voip showcase
         }
     }
 

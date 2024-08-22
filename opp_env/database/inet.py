@@ -27,7 +27,11 @@ def make_inet_project_description(inet_version, omnetpp_versions):
         "nix_packages": [
             "z3" if inet_version >= "4.4" else None,  # ffmpeg needed for VoIPStream
             "ffmpeg-headless" if inet_version >= "4.5" else "ffmpeg_4-headless" if inet_version >= "4.0" else None,  # ffmpeg needed for VoIPStream
-            "python3" if inet_version >= "3.6.7" or is_modernized else "python2" # up to inet-3.6.6, inet_featuretool uses python2 in original, and python3 in modernized versions
+            "python3" if inet_version >= "3.6.7" or is_modernized else "python2", # up to inet-3.6.6, inet_featuretool uses python2 in original, and python3 in modernized versions
+            "python3Packages.ipython" if inet_version >= "4.4" else None,
+            "python3Packages.dask" if inet_version >= "4.4" else None,
+            "python3Packages.distributed" if inet_version >= "4.4" else None,
+            "python3Packages.py4j" if inet_version >= "4.4" else None,
             ],
         "patch_commands": [
             # we do have z3 and avcodec (in ffmpeg), so turn on the project features that use them
@@ -98,6 +102,8 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "sed -i 's|precompiled.h|precompiled_$(MODE).h|' src/makefrag" if inet_version.startswith("3.5") else None,
             """echo '#include "precompiled.h"' > src/inet/common/precompiled_debug.h""" if inet_version.startswith("3.5") else None,
             """echo '#include "precompiled.h"' > src/inet/common/precompiled_release.h""" if inet_version.startswith("3.5") else None,
+
+            """sed -i.bak 's|import optimparallel|import importlib.util\\nif importlib.util.find_spec("optimparallel"):\\n    import optimparallel|' python/inet/simulation/optimize.py""" if inet_version.startswith("4.5") else None,
             ],
         "setenv_commands": [
             'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images"',

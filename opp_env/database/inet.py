@@ -227,6 +227,11 @@ inet_20100323 = {
     "name": "inet", "version": "20100323",
     "required_projects": {"omnetpp": ["4.1.0"]},        # TODO: try with 4.1.* -> build error
     "download_url": "https://github.com/inet-framework/inet/releases/download/master_20100323/inet-20100323-src.tgz",
+    # smoke test fails with segfault
+    # "smoke_test_commands": [
+    #     r"""if [ "$mode" = "release" ]; then cd examples/ethernet/arptest && ./run -l $OMNETPP_ROOT/lib/oppcmdenv -c ARPTest --sim-time-limit=1s; fi""",
+    #     r"""if [ "$mode" = "debug" ]; then echo 'Skipping test in debug mode, because this project is currently only built in release mode.'; fi""",
+    # ],
     "patch_commands": [
         "sed -i 's|  int octals\\[8\\] = |  unsigned int octals[8] = |' src/networklayer/contract/IPv6Address.cc",
         "sed -i 's|findGap(int \\*octals|findGap(unsigned int *octals|' src/networklayer/contract/IPv6Address.cc",
@@ -234,6 +239,7 @@ inet_20100323 = {
         "sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/headers/sctp.h",
         "sed -i 's|addr.sin_len|// addr.sin_len|' src/linklayer/ext/*.cc",  # ugly hack? this is needed on apple
     ],
+    "setenv_commands": ["export TCL_LIBRARY=${pkgs.tcl-8_6}/lib/tcl8.6"],
     "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=release"],
     "clean_commands": ["make clean"],
 }

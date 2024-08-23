@@ -1249,7 +1249,7 @@ class Workspace:
             });
         }"""
 
-        tools_nix_packages = ["bashInteractive", "git", "openssh", "curl", "gzip", "which", "gnused", "gnutar", "perl", "findutils", "coreutils"]
+        tools_nix_packages = ["bashInteractive", "gitFull", "openssh", "curl", "gzip", "which", "gnused", "gnutar", "perl", "findutils", "coreutils"]
         nix_packages = uniq(nix_packages + tools_nix_packages)
 
         shell_options = "-exo pipefail" if tracing else "-eo pipefail"

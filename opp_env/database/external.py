@@ -1927,7 +1927,7 @@ def get_project_descriptions():
             # TODO: build subprojects
             "name": "plexe", "version": "3.1.2",
             "nix_packages": ["python2", "libxml2"],
-            "required_projects": {"omnetpp": ["5.7.*"], "veins": ["5.2"]},
+            "required_projects": {"omnetpp": ["6.0.*", "5.7.*"], "veins": ["5.2"]},
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.1.2.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",

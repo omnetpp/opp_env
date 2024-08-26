@@ -4,13 +4,16 @@
 
 ### opp_env
 
-- fix: certain programs that were executed from the host environment (like midnight commander)
-       failed to load because opp_env was modifying the LD_LIBRARY_PATH.
+- fix: use gitFull nix package instead of git (so that we have git gui in opp_env)
 
 ### Frameworks and models
 
-- veins: fixed image path
-- added artery, neta, space_veins, plexe, rimfading, opencv2x_artery
+- fix: certain programs that were executed from the host environment (like midnight commander)
+       failed to load because opp_env was modifying the LD_LIBRARY_PATH.
+- veins: added new inet versions needed for omnetpp-6; fixed image path
+- added artery, neta, space_veins, plexe, rimfading, opencv2x_artery, cmm_solar_mobility
+- inet: disabled smoke test commands for inet_20100323
+- plexe: added omnetpp-6
 
 ## 0.29.1.240516
 

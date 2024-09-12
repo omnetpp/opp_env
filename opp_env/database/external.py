@@ -1,8 +1,53 @@
 def get_project_descriptions():
     return [
         {
+            # DONE
+            "name": "fico4omnet", "version": "240124",        # last commit of master branch as of time of writing
+            "description": "Fieldbus Communication (CAN and FlexRay)",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/FiCo4OMNeT.html",
+            },
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd examples/flexray/dynamic && run_fico4omnet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1s > /dev/null""",
+            ],
+            "required_projects": {"omnetpp": ["6.0.*"]},
+            "patch_commands": [
+                r"""mkdir bin""",
+                r"""rm src/run_fico4omnet.cmd""",
+                r"""mv src/run_fico4omnet bin""",
+                r"""sed -i 's|DIR=`dirname $0`|DIR=`dirname \\$0`/../src|' bin/run_fico4omnet""",
+                r"""sed -i 's|MAKEMAKE_OPTIONS .* -I.|& -o FiCo4OMNeT|' Makefile""",
+                r"""cp bin/run_fico4omnet bin/run_fico4omnet_dbg""",
+                r"""sed -i 's|opp_run|opp_run_dbg|' bin/run_fico4omnet_dbg""",
+            ],
+            "setenv_commands": [
+                r"""export NEDPATH=$NEDPATH:.:$FICO4OMNET_ROOT/src:$FICO4OMNET_ROOT/examples:$FICO4OMNET_ROOT/examples_andl:$FICO4OMNET_ROOT/simulations""",
+                r"""export PATH=$PATH:$FICO4OMNET_ROOT/bin""",
+                r"""echo 'Hint: use the `run_fico4omnet` command to run the simulations in the examples folder.'"""
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/CoRE-RG/FiCo4OMNeT/archive/refs/tags/nightly/2024-01-24_15-04-06.tar.gz",       # there are no releases available, so we download the latest nightly
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/CoRE-RG/FiCo4OMNeT.git",
+                    "git_branch": "nightly/2024-01-24_15-04-06",
+                },
+            },
+        },
+        
+        {
             # DONE - ok
-            "name": "fico4omnet", "version": "20210113",        # last commit of master branch as of time of writing
+            "name": "fico4omnet", "version": "20210113",
             "description": "Fieldbus Communication (CAN and FlexRay)",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/FiCo4OMNeT.html",

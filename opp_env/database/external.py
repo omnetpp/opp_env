@@ -2119,4 +2119,27 @@ def get_project_descriptions():
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
-    ]
+
+        {
+            # DONE
+            # TODO: add from-git option, as core4inet and fico4omnet both has them
+            "name": "signals_and_gateways", "version": "240124",    # latest master as of time of writing
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["240124"], "core4inet": ["240124"]},
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd examples/majorNetwork && opp_run$BUILD_MODE_SUFFIX -l ../../src/signals_and_gateways omnetpp.ini -n $INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/examples --sim-time-limit=10s -u Cmdenv > /dev/null"""
+            ],
+            "download_url": "https://github.com/CoRE-RG/SignalsAndGateways/archive/refs/tags/nightly/2024-01-24_15-06-21.tar.gz",
+            "patch_commands": [
+                r"""sed -i 's|$(DBG_SUFFIX)|$$\\\(D\\\)|g' Makefile""",
+                r"""sed -i 's|-O out|-O out -o signals_and_gateways|' Makefile""",
+            ],
+            "setenv_commands": [
+                r"""export INET_PROJ=$INET_ROOT""",
+                r"""export CORE4INET_PROJ=$CORE4INET_ROOT""",
+                r"""export FICO4OMNET_PROJ=$FICO4OMNET_ROOT"""
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
+

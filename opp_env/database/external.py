@@ -2124,7 +2124,7 @@ def get_project_descriptions():
             # DONE
             # TODO: add from-git option, as core4inet and fico4omnet both has them
             "name": "signals_and_gateways", "version": "240124",    # latest master as of time of writing
-            "required_projects": {"omnetpp": ["6.0.2"], "inet": ["3.8.3"], "fico4omnet": ["240124"], "core4inet": ["240124"]},
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["240124"], "core4inet": ["240124"]},
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/majorNetwork && opp_run$BUILD_MODE_SUFFIX -l ../../src/signals_and_gateways omnetpp.ini -n $INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/examples --sim-time-limit=10s -u Cmdenv > /dev/null"""

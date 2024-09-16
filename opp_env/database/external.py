@@ -1437,6 +1437,38 @@ def get_project_descriptions():
         {
             # DONE
             # core-rg version, compatible with core4inet as well
+            "name": "openflow", "version": "240124",      # last commit of master branch as of time of writing
+            "description": "OpenFlow Extension for INET Framework",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
+            },
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=1s > /dev/null""",
+            ],
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"]},
+            # there are no releases, so we use a commit from the master branch
+            "download_url": "https://github.com/CoRE-RG/OpenFlow/archive/refs/tags/nightly/2024-01-24_15-05-30.tar.gz",
+            "patch_commands": [
+                r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o OpenFlow|' Makefile""",
+                r"""sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_openflow""",
+                r"""sed -i 's|opp_run_dbg|opp_run|' src/run_openflow""",
+                r"""sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_ROOT/images|' src/run_openflow""",
+                r"""sed -i 's|DIR/openflow -n|DIR/OpenFlow -n|' src/run_openflow""",    # this is changed so that it matches SDN4CORE
+            ],
+            "setenv_commands": [
+                r"""export INET_PROJ=$INET_ROOT""",
+                r"""export PATH=$PATH:$OPENFLOW_ROOT/src""",
+                r"""export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$OPENFLOW_ROOT/images""",
+                r"""echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"""
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
+        },
+
+        {
+            # DONE
+            # core-rg version, compatible with core4inet as well
             # TODO does this need patched inet so allinone?
             "name": "openflow", "version": "20231017",      # last commit of master branch as of time of writing
             "description": "OpenFlow Extension for INET Framework",

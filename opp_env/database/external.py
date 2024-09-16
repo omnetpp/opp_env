@@ -2176,3 +2176,28 @@ def get_project_descriptions():
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
 
+        {
+            # DONE
+            # TODO: add from-git option, as core4inet and fico4omnet both has them
+            "name": "soa4core", "version": "240124",    # latest master as of time of writing
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["240124"], "core4inet": ["240124"], "signals_and_gateways": ["240124"]},
+            "description": "Service-Oriented Architecture for Communication over Realtime Ethernet (SOA4CoRE)",
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd examples/qosnp/small_network && opp_run$BUILD_MODE_SUFFIX -l $SOA4CORE_ROOT/src/SOA4CoRE omnetpp.ini -c SomeIPSD_QoS_STDUDPMCAST -n $SOA4CORE_ROOT/src:$SOA4CORE_ROOT/examples:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src --sim-time-limit=1s -u Cmdenv > /dev/null"""
+            ],
+            "download_url": "https://github.com/CoRE-RG/SOA4CoRE/archive/refs/tags/nightly/2024-01-24_15-06-45.tar.gz",
+            "patch_commands": [
+                r"""sed -i 's|$(DBG_SUFFIX)|$$\\\(D\\\)|g' Makefile""",
+                r"""sed -i 's|-O out|-O out -o SOA4CoRE|' Makefile""",
+            ],
+            "setenv_commands": [
+                r"""export INET_PROJ=$INET_ROOT""",
+                r"""export CORE4INET_PROJ=$CORE4INET_ROOT""",
+                r"""export FICO4OMNET_PROJ=$FICO4OMNET_ROOT""",
+                r"""export SIGNALSANDGATEWAYS_PROJ=$SIGNALS_AND_GATEWAYS_ROOT""",
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
+

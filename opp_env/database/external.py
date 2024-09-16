@@ -2201,3 +2201,30 @@ def get_project_descriptions():
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
 
+        {
+            # DONE
+            # TODO: add from-git option, as core4inet and fico4omnet both has them
+            "name": "sdn4core", "version": "240124",    # latest master as of time of writing
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["240124"], "core4inet": ["240124"], "signals_and_gateways": ["240124"], "soa4core": ["240124"], "openflow": ["240124"]},
+            "description": "Software-Defined Networking for Communication over Realtime Ethernet (SDN4CoRE)",
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd examples/papers/omnetsummit2019/configanalysis && opp_run$BUILD_MODE_SUFFIX -l $SDN4CORE_ROOT/src/SDN4CoRE omnetpp.ini -c CaseStudy_WithCT -n $SDN4CORE_ROOT/src:$SDN4CORE_ROOT/examples:$SOA4CORE_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src:$OPENFLOW_ROOT/src --sim-time-limit=1s -u Cmdenv > /dev/null"""
+            ],
+            "download_url": "https://github.com/CoRE-RG/SDN4CoRE/archive/refs/tags/nightly/2024-01-24_15-06-58.tar.gz",
+            "patch_commands": [
+                r"""sed -i 's|$(DBG_SUFFIX)|$$\\\(D\\\)|g' Makefile""",
+                r"""sed -i 's|-O out|-O out -o SDN4CoRE|' Makefile""",
+            ],
+            "setenv_commands": [
+                r"""export INET_PROJ=$INET_ROOT""",
+                r"""export CORE4INET_PROJ=$CORE4INET_ROOT""",
+                r"""export FICO4OMNET_PROJ=$FICO4OMNET_ROOT""",
+                r"""export SIGNALSANDGATEWAYS_PROJ=$SIGNALS_AND_GATEWAYS_ROOT""",
+                r"""export SOA4CORE_PROJ=$SOA4CORE_ROOT""",
+                r"""export OPENFLOW_PROJ=$OPENFLOW_ROOT""",
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
+

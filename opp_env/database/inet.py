@@ -152,7 +152,6 @@ def make_inet_project_description(inet_version, omnetpp_versions):
 
 def get_all_inet_released_versions():
     return [ make_inet_project_description(inet_version, omnetpp_versions) for inet_version, omnetpp_versions in [
-        ["4.5.3", ["6.1rc1", "6.0.*"]],
         ["4.5.2", ["6.1.*", "6.0.*"]],  # these versions need patching for omnetpp-6.1
         ["4.5.1", ["6.1.*", "6.0.*"]],
         ["4.5.0", ["6.1.*", "6.0.*"]],
@@ -161,6 +160,7 @@ def get_all_inet_released_versions():
         ["4.3.9", ["6.1.*", "6.0.*"]],
         ["4.3.8", ["6.1.*", "6.0.*"]],
         ["4.3.7", ["6.1.*", "6.0.*"]],
+        ["4.5.3", ["6.1rc1"]],
         # ["4.3.6", ["6.0.*"]],  Note: these versions only worked with preview versions of OMNeT++ 6.0, which are no longer available
         # ["4.3.5", ["6.0.*"]],
         # ["4.3.4", ["6.0.*"]],

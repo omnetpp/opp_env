@@ -137,9 +137,11 @@ def make_inet_project_description(inet_version, omnetpp_versions):
 
 def get_all_inet_released_versions():
     return [ make_inet_project_description(inet_version, omnetpp_versions) for inet_version, omnetpp_versions in [
+        ["4.5.3", ["6.1rc1", "6.0.*"]],
         ["4.5.2", ["6.0.*"]],
         ["4.5.1", ["6.0.*"]],
         ["4.5.0", ["6.0.*"]],
+        ["4.4.2", ["6.1rc1", "6.0.*"]],
         ["4.4.1", ["6.0.*"]],
         ["4.4.0", ["6.0.*"]],
         ["4.3.9", ["6.0.*"]],
@@ -168,6 +170,7 @@ def get_all_inet_released_versions():
         ["4.1.0", ["5.4.2", "5.4.1", "5.4.x"]], # with omnetpp-5.5.1: error: PacketQueue.cc:23: cPacketQueue constructor call is ambiguous
         ["4.0.0", ["5.4.2", "5.4.1", "5.4.x"]], # with omnetpp-5.5.1: error: PacketQueue.cc:23: cPacketQueue constructor call is ambiguous
 
+        ["3.8.4", ["6.1rc1", "6.0.*"]],
         ["3.8.3", ["5.7.*", "6.0.*"]],
         ["3.8.2", ["5.7.*", "6.0.*"]],
         ["3.8.1", ["5.7.*"]],

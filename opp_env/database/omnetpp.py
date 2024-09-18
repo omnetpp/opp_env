@@ -12,7 +12,8 @@ def trim_lines(text):
     return '\n'.join(trimmed_lines)
 
 def make_omnetpp_project_description(version, base_version=None, is_modernized=False):
-    canonical_version = version.replace("p", ".") if re.match(r"\d+\.\d+p\d+", version) else version+".0" if version.count('.') == 1 else version
+    canonical_version = version.replace("p", ".") if re.match(r"\d+\.\d+p\d+", version) else \
+                        version if re.match(r"\d+\.\d+rc\d+", version) else version+".0" if version.count('.') == 1 else version
 
     # Some patch releases are installed by downloading the preceding release ("base version"),
     # and patching them from the repo.
@@ -86,7 +87,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
     # note: "python3Packages.pyqt5" are needed by matplotlib in opp_charttool
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc", "python3Packages.pyqt5"] if version >= "6.0" else []
-
+    python3package_packages += ["python3Packages.setuptools"] if version >= "6.1" else []
+    
     # Unreleased patch versions are produced by downloading the preceding release, then applying the diff downloaded from github.
     base_release_to_actual_version_patch_commands = [] if version == base_version else [
         f"echo 'Patching vanilla omnetpp-{base_version} to {git_branch_or_tag_name} from git...'",
@@ -330,6 +332,7 @@ def get_project_descriptions():
     # Modernized versions build/work with modern a C++ compiler, bison/flex
     # and other tools and libraries, and also to have similar setenv scripts.
     released_versions = [
+        "6.1rc1*",
         "6.0.3*", "6.0.2*", "6.0.1", "6.0",
         "5.7.1*", "5.7",
         "5.6.3*", "5.6.2", "5.6.1", "5.6",
@@ -348,6 +351,7 @@ def get_project_descriptions():
         "4.0.2*", "4.0p1",
         "3.3.2*", "3.3.1",
         # branches
+        "6.x:6.1rc1",
         "6.0.x:6.0.3",
         "5.7.x:5.7.1", "5.6.x:5.6.3", "5.5.x:5.5.2", "5.4.x:5.4.2", "5.3.x:5.3.1", "5.2.x:5.2.2", "5.1.x:5.1.2", "5.0.x:5.0.1",
         "4.6.x:4.6.1", "4.5.x:4.5.1", "4.4.x:4.4.2", "4.3.x:4.3.2", "4.2.x:4.2.3", "4.1.x:4.1.1", "4.0.x:4.0.2",
@@ -362,7 +366,3 @@ def get_project_descriptions():
     master_description = make_omnetpp_project_description("master", None, True)
 
     return descriptions + [ master_description ]
-
-
-
-

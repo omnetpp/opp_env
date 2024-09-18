@@ -12,7 +12,8 @@ def trim_lines(text):
     return '\n'.join(trimmed_lines)
 
 def make_omnetpp_project_description(version, base_version=None, is_modernized=False):
-    canonical_version = version.replace("p", ".") if re.match(r"\d+\.\d+p\d+", version) else version+".0" if version.count('.') == 1 else version
+    canonical_version = version.replace("p", ".") if re.match(r"\d+\.\d+p\d+", version) else \
+                        version if re.match(r"\d+\.\d+rc\d+", version) else version+".0" if version.count('.') == 1 else version
 
     # Some patch releases are installed by downloading the preceding release ("base version"),
     # and patching them from the repo.
@@ -86,9 +87,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
     # note: "python3Packages.pyqt5" are needed by matplotlib in opp_charttool
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc", "python3Packages.pyqt5"] if version >= "6.0" else []
-
     python3package_packages += ["python3Packages.setuptools"] if version >= "6.1" else []
-
+    
     # Unreleased patch versions are produced by downloading the preceding release, then applying the diff downloaded from github.
     base_release_to_actual_version_patch_commands = [] if version == base_version else [
         f"echo 'Patching vanilla omnetpp-{base_version} to {git_branch_or_tag_name} from git...'",
@@ -365,7 +365,3 @@ def get_project_descriptions():
     master_description = make_omnetpp_project_description("git", None, True)
 
     return descriptions + [ master_description ]
-
-
-
-

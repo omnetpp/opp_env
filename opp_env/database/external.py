@@ -2,7 +2,7 @@ def get_project_descriptions():
     return [
         {
             # DONE
-            "name": "fico4omnet", "version": "240124",        # last commit of master branch as of time of writing
+            "name": "fico4omnet", "version": "20240124",        # last commit of master branch as of time of writing
             "description": "Fieldbus Communication (CAN and FlexRay)",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/FiCo4OMNeT.html",
@@ -166,7 +166,7 @@ def get_project_descriptions():
 
         {
             # DONE - ok
-            "name": "core4inet", "version": "240124",
+            "name": "core4inet", "version": "20240124",
             "description": "Real-Time Ethernet protocols for INET",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Core4INET.html",
@@ -1437,7 +1437,7 @@ def get_project_descriptions():
         {
             # DONE
             # core-rg version, compatible with core4inet as well
-            "name": "openflow", "version": "240124",      # last commit of master branch as of time of writing
+            "name": "openflow", "version": "20240124",      # last commit of master branch as of time of writing
             "description": "OpenFlow Extension for INET Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
@@ -2155,8 +2155,8 @@ def get_project_descriptions():
         {
             # DONE
             # TODO: add from-git option, as core4inet and fico4omnet both has them
-            "name": "signals_and_gateways", "version": "240124",    # latest master as of time of writing
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["240124"], "core4inet": ["240124"]},
+            "name": "signals_and_gateways", "version": "20240124",    # latest master as of time of writing
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"]},
             "description": "SignalsAndGateways enables a heterogeneous network simulation using CoRE4INET, INET and FiCo4OMNeT, with gateway components for communication between Ethernet and bus technologies.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
@@ -2179,8 +2179,8 @@ def get_project_descriptions():
         {
             # DONE
             # TODO: add from-git option, as core4inet and fico4omnet both has them
-            "name": "soa4core", "version": "240124",    # latest master as of time of writing
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["240124"], "core4inet": ["240124"], "signals_and_gateways": ["240124"]},
+            "name": "soa4core", "version": "20240124",    # latest master as of time of writing
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"]},
             "description": "Service-Oriented Architecture for Communication over Realtime Ethernet (SOA4CoRE)",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
@@ -2204,8 +2204,8 @@ def get_project_descriptions():
         {
             # DONE
             # TODO: add from-git option, as core4inet and fico4omnet both has them
-            "name": "sdn4core", "version": "240124",    # latest master as of time of writing
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["240124"], "core4inet": ["240124"], "signals_and_gateways": ["240124"], "soa4core": ["240124"], "openflow": ["240124"]},
+            "name": "sdn4core", "version": "20240124",    # latest master as of time of writing
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"], "soa4core": ["20240124"], "openflow": ["20240124"]},
             "description": "Software-Defined Networking for Communication over Realtime Ethernet (SDN4CoRE)",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",

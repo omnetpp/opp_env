@@ -9,10 +9,10 @@ def join_nonempty_items(sep, list):
     return sep.join([x for x in list if x])
 
 def make_inet_project_description(inet_version, omnetpp_versions):
-    is_git_branch = inet_version == "master" or inet_version.endswith(".x")
-    is_modernized = inet_version == "master" or inet_version.endswith(".x") # TODO and the patch-release tags on .x branches
+    is_git_branch = inet_version == "git" or inet_version.endswith(".x")
+    is_modernized = inet_version == "git" or inet_version.endswith(".x") # TODO and the patch-release tags on .x branches
 
-    git_branch_or_tag_name = f"v{inet_version}" if inet_version[0].isdigit() else inet_version
+    git_branch_or_tag_name = f"v{inet_version}" if inet_version[0].isdigit() else "master" if inet_version == "git" else inet_version
 
     # Some version tags have no entry on the Releases page
     missing_releases = [ "3.2.2", "3.1.0" ]
@@ -219,7 +219,7 @@ def get_project_descriptions():
     return [
         *get_all_inet_released_versions(),
         inet_20100323, inet_20061020, # hand-picked time-stamped versions
-        make_inet_project_description("master", ["6.0.*"]),
+        make_inet_project_description("git", ["6.0.*"]),
     ]
 
 inet_20100323 = {

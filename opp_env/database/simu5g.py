@@ -1,7 +1,7 @@
 
 def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versions):
-    is_git_branch = simu5g_version == "master"
-    git_branch_or_tag_name = f"v{simu5g_version}" if simu5g_version[0].isdigit() else simu5g_version
+    is_git_branch = simu5g_version == "git"
+    git_branch_or_tag_name = f"v{simu5g_version}" if simu5g_version[0].isdigit() else "master" if simu5g_version == "git" else simu5g_version
     return {
         "name": "simu5g", "version": simu5g_version,
         "description": "5G NR and LTE/LTE-A user-plane simulation model",
@@ -50,5 +50,5 @@ def get_project_descriptions():
         ["1.2.1", ["4.4.*"], ["6.0.*"]],
         # ["1.2.0", ["4.3.2"], ["6.0pre10"]], -- unavailable because OMNeT++ prereleases are not kept
         ["1.1.0", ["4.2.*"], ["5.6.*", "5.7.*"]],
-        ["master", ["4.5.*"], ["6.0.*"]],
+        ["git", ["4.5.*"], ["6.0.*"]],
     ]]

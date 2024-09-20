@@ -20,9 +20,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     github_url = "https://github.com/omnetpp/omnetpp"
 
     # Github automatically makes source archives available under a different URL for tags and branches.
-    is_git_branch = version.endswith(".x") or version=="master"
+    is_git_branch = version.endswith(".x") or version=="git"
 
-    git_branch_or_tag_name = f"omnetpp-{version}" if version[0].isdigit() else version
+    git_branch_or_tag_name = f"omnetpp-{version}" if version[0].isdigit() else "master" if version == "git" else version
 
     # Some versions have no release tarballs on github, some don't even have an entry on the Releases page (5.4, 5.5).
     # Source tarballs that github automatically makes are still available at URLs of the form
@@ -130,7 +130,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i 's|TransformProcessType.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
 
         # delete most bundled tools on macOS as they are not required when compiling under Nix (except the debugger helper)
-        "find tools/macos.x86_64/bin -mindepth 1 -not -name 'lldbmi2' -delete && (cd tools/macos.x86_64 && rm -rf doc include lib mkspecs plugins share)" if is_macos and is_x86_64 else None, 
+        "find tools/macos.x86_64/bin -mindepth 1 -not -name 'lldbmi2' -delete && (cd tools/macos.x86_64 && rm -rf doc include lib mkspecs plugins share)" if is_macos and is_x86_64 else None,
 
         "sed -i 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
@@ -153,7 +153,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i '/%pure_parser/a %parse-param {void *statePtr}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
         "sed -i '/void yyerror (const char \\*s);/a void yyerror (void *statePtr, const char *s) {yyerror(s);}' src/common/matchexpression.y" if not is_modernized and version >= "4.0" and version < "4.4" else None,
 
-        # 5.x versions assumed python2 but now we have python3 only and a little patching is needed 
+        # 5.x versions assumed python2 but now we have python3 only and a little patching is needed
         # for the opp_featuretool to work with python3
         "sed -i 's/raw_input()/input()/' src/utils/opp_featuretool" if version.startswith("5.") else None,
 
@@ -218,7 +218,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
                 "Specifically, most simulation models won't work, because they use activity(), and the coroutine library in this release has become broken due to changes in the standard C library implementation of setjmp()/longjmp(). This issue has been resolved in modernized patchlevel releases.)" if not is_modernized and version.startswith("3.") else None,
                 "Specifically, this version could only be made to compile with the combination of compiler options (C++03, permissiveness, warning suppression, etc.), patching (e.g. due to changes in Bison), and using an older Tcl/Tk library." if not is_modernized and version >= "4.0" and version < "4.3" else None,
             ]),
-            "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "master" else None,
+            "The OMNeT++ IDE will not be available because this version is installed from source instead of a release tarball." if version in missing_releases or version == "git" else None,
             "The OMNeT++ IDE will not be available because a matching JRE is not available." if (version < "4.2" or (is_macos and is_aarch64 and version < "5.7")) and version >= "4.0" else None,
         ]),
         "metadata": {
@@ -259,7 +259,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "smoke_test_commands": [
             """if [ "$BUILD_MODE" = "debug" ]; then DEBUG_SUFFIX="_dbg"; fi """ if base_version >= "5.2" else None,
             "nedtool -h >/dev/null" if base_version.startswith("3.") else
-            "cd samples/dyna; ./dyna$DEBUG_SUFFIX -u Cmdenv >/dev/null" 
+            "cd samples/dyna; ./dyna$DEBUG_SUFFIX -u Cmdenv >/dev/null"
         ],
         "test_commands": [
             None if base_version < "6.0" else
@@ -284,9 +284,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "from-release": {
                 "option_description": "Install from release tarball on GitHub",
                 "option_category": "download",
-                "option_is_default": version not in missing_releases and version != "master",
+                "option_is_default": version not in missing_releases and version != "git",
                 "download_url":
-                    "" if version in missing_releases or version == "master" else
+                    "" if version in missing_releases or version == "git" else
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("3.") else
                     f"{github_url}/releases/download/omnetpp-4.0/omnetpp-4.0p1-src.tgz" if base_version == '4.0p1' else # special name for v4.0
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-src.tgz" if base_version.startswith("4.") else # for versions 4.1 - 4.6 there is a single tarball for all OSes
@@ -314,7 +314,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "from-git": {
                 "option_description": "Install from git repo on GitHub (IDE will not be available)",
                 "option_category": "download",
-                "option_is_default": version == "master",
+                "option_is_default": version == "git",
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
                 "git_branch": git_branch_or_tag_name,
                 "patch_commands": [
@@ -359,7 +359,7 @@ def get_project_descriptions():
         base_version = version.split(":")[1] if ":" in version else None
         is_modernized = base_version is not None or "*" in version
         descriptions.append(make_omnetpp_project_description(version_name, base_version, is_modernized))
-    master_description = make_omnetpp_project_description("master", None, True)
+    master_description = make_omnetpp_project_description("git", None, True)
 
     return descriptions + [ master_description ]
 

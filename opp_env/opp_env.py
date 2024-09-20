@@ -861,7 +861,7 @@ class Workspace:
         data.update(kwargs)
         self.write_project_state_file(project_description, data)
 
-    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, **kwargs):
+    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, **kwargs):
         def get_env(varname, what):
             value = os.environ.get(varname)
             _logger.debug(f"Checking {cyan('$'+varname)} for {what}: {cyan(value)}")
@@ -878,6 +878,8 @@ class Workspace:
                 commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.download_commands ]
                 self.nix_develop(effective_project_descriptions, self.root_directory, commands, run_setenv=False, **kwargs)
             elif project_description.download_url:
+                if git_branch:
+                    raise Exception(f"Git branch ('@{git_branch}') may only be specified when project is installed from git")
                 if not local:
                     self.download_and_unpack_tarball(project_description.download_url, project_dir)
                 else:
@@ -892,7 +894,9 @@ class Workspace:
                     git_url = project_description.git_url
                 else:
                     git_url = get_env(project_description.name.upper() + "_REPO", f"the location of the '{project_description.name}' git repository on the local disk")
-                branch_option = "-b " + project_description.git_branch if project_description.git_branch else ""
+                git_branch = git_branch or project_description.git_branch
+                print(git_branch)
+                branch_option = "-b " + git_branch if git_branch else ""
                 self.run_command(f"git clone --config advice.detachedHead=false {branch_option} {git_url} {project_dir}") #TODO maybe optionally use --single-branch
             else:
                 raise Exception(f"{project_description}: No download_url or download_commands in project description -- check project options for alternative download means (enter 'opp_env info {project_description}')")
@@ -995,10 +999,10 @@ class Workspace:
         else:
             return list(values)[0]
 
-    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, **kwargs):
+    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, git_branch=None, **kwargs):
         project_state = self.get_project_status(project_description)
         if project_state == Workspace.ABSENT:
-            self.download_project(project_description, effective_project_descriptions, patch, cleanup, **kwargs)
+            self.download_project(project_description, effective_project_descriptions, patch, cleanup, git_branch=git_branch, **kwargs)
         elif project_state == Workspace.INCOMPLETE:
             raise Exception(f"Cannot download '{project_description}': Directory already exists")
         elif project_state == Workspace.DOWNLOADED:
@@ -1329,6 +1333,19 @@ class Workspace:
             raise Exception(f"Child process exit code {result.returncode}")
         return result
 
+def chop_branch_names(project_names):
+    # if a project name contains "@", the part after that is a git branch name
+    git_branches = {}
+    stripped_projects = []
+    for project_name in project_names:
+        if "@" in project_name:
+            stripped_name, branch = project_name.split("@")
+            stripped_projects.append(stripped_name)
+            git_branches[stripped_name] = branch
+        else:
+            stripped_projects.append(project_name)
+    return stripped_projects, git_branches
+
 def resolve_projects(project_full_names, remove_trailing_slash=True):
     global project_registry
     project_descriptions = [project_registry.get_project_description(ProjectReference.parse(p.rstrip('/') if remove_trailing_slash else p)) for p in project_full_names]
@@ -1500,6 +1517,10 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
+    projects, git_branches = chop_branch_names(projects)
+    if git_branches:
+        _logger.info(f"Requested Git branches: {git_branches}")
+
     specified_project_descriptions = resolve_projects(projects)
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
@@ -1512,7 +1533,7 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     for project_description in effective_project_descriptions:
-        workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
+        workspace.download_project_if_needed(project_description, effective_project_descriptions, git_branch=git_branches.get(project_description.get_full_name()), **kwargs)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -1541,6 +1562,12 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
+    projects, git_branches = chop_branch_names(projects)
+    if git_branches and not install:
+        raise Exception("Git branch may only be specified when the project is installed")
+    if git_branches:
+        _logger.info(f"Requested Git branches: {git_branches}")
+
     specified_project_descriptions = resolve_projects(projects) if projects else workspace.get_installed_projects()
     check_multiple_versions(specified_project_descriptions)
     if no_dependency_resolution:
@@ -1560,7 +1587,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     if install:
         for project_description in effective_project_descriptions:
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, git_branch=git_branches.get(project_description.get_full_name()), **kwargs)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -1588,6 +1615,12 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
+    projects, git_branches = chop_branch_names(projects)
+    if git_branches and not install:
+        raise Exception("Git branch may only be specified when the project is installed")
+    if git_branches:
+        _logger.info(f"Requested Git branches: {git_branches}")
+
     specified_project_descriptions = resolve_projects(projects) if projects else workspace.get_installed_projects()
     check_multiple_versions(specified_project_descriptions)
     if no_dependency_resolution:
@@ -1607,7 +1640,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
 
     if install:
         for project_description in effective_project_descriptions:
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, **kwargs)
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, git_branch=git_branches.get(project_description.get_full_name()), **kwargs)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 

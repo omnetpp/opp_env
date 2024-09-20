@@ -1,26 +1,26 @@
 import re
 
-def make_veins_project_description(version, inet_versions, sumo_version, omnetpp_versions):
-    is_git_branch = (version == "master")
-    git_branch_or_tag_name = version if is_git_branch else f"veins-{version}"
+def make_veins_project_description(veins_version, inet_versions, sumo_version, omnetpp_versions):
+    is_git_branch = (veins_version == "master")
+    git_branch_or_tag_name = veins_version if is_git_branch else f"veins-{veins_version}"
     heads_or_tags = 'heads' if is_git_branch else 'tags'
 
     return {
-        "name": "veins", "version": version,
+        "name": "veins", "version": veins_version,
         "description": "The open source vehicular network simulation framework.",
         "metadata": {
             "catalog_url": "https://omnetpp.org/download-items/Veins.html",
         },
         "required_projects": {"omnetpp": omnetpp_versions, "inet": inet_versions},
-        "nix_packages": ["sumo" if version >= "5.0" else None, "python2" if version < "5.2" else None],
+        "nix_packages": ["sumo" if veins_version >= "5.0" else None, "python2" if veins_version < "5.2" else None],
         "patch_commands": [
-            "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if version<="4.6" else "",
+            "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if veins_version<="4.6" else "",
         ],
         "setenv_commands": [
             'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images:$INET_ROOT/images"',
             "export SUMO_ROOT=${pkgs.sumo}",
-            "source setenv" if version >= "5.1" else "",
-            "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd subprojects/veins_inet && source setenv; else cd subprojects/veins_inet3 && source setenv; fi" if version >= "5.1" else "",
+            "source setenv" if veins_version >= "5.1" else "",
+            "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd subprojects/veins_inet && source setenv; else cd subprojects/veins_inet3 && source setenv; fi" if veins_version >= "5.1" else "",
         ],
         "smoke_test_commands": [
             # can't test 4.7.1 -> no sumo before 5.0
@@ -28,33 +28,33 @@ def make_veins_project_description(version, inet_versions, sumo_version, omnetpp
             """if [ "$BUILD_MODE" = "release" ]; then DEBUG_POSTFIX=""; fi""",
             "./sumo-launchd.py &> /dev/null & bg_pid=$! &> /dev/null",
             "cd examples/veins && ./run $DEBUG_POSTFIX -c Default -u Cmdenv > /dev/null",
-            "export VEINS_INET_INI_CONFIG='-c plain'" if version >= "5.1" else "",
+            "export VEINS_INET_INI_CONFIG='-c plain'" if veins_version >= "5.1" else "",
             "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd ../../subprojects/veins_inet/examples/veins_inet && ./run $DEBUG_POSTFIX $VEINS_INET_INI_CONFIG -u Cmdenv > /dev/null; else cd ../../subprojects/veins_inet3/examples/veins_inet && ./run $DEBUG_POSTFIX -u Cmdenv > /dev/null; fi",
             "kill $bg_pid &> /dev/null",
-        ] if version >= "5.0" else ["echo 'Skipping test because required sumo version is not available as a nix package.'"],
-        "build_commands": [ 
-            "./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" if version >= "4.5" else "./configure --with-inet=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
+        ] if veins_version >= "5.0" else ["echo 'Skipping test because required sumo version is not available as a nix package.'"],
+        "build_commands": [
+            "./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" if veins_version >= "4.5" else "./configure --with-inet=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
             # this is a hack so that the veins_inet subproject's configure can query the inet version
-            "cd $INET_ROOT && mkdir -p _scripts && echo 'echo $INET_VERSION' > _scripts/get_version && chmod +x _scripts/get_version && cd -" if version == "5.0" else "cd $INET_ROOT && mkdir -p _scripts && echo '#!/usr/bin/env sh\n\necho $INET_VERSION' > _scripts/get_version && chmod +x _scripts/get_version && cd -",
-            "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd subprojects/veins_inet && ./configure --with-inet=$INET_ROOT --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE; else cd subprojects/veins_inet3 && ./configure --with-inet=$INET_ROOT --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE; fi" if version >= "5.0" else "",
-            "cd subprojects/veins_inet && ./configure --with-inet=$INET_ROOT --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" if version >= "4.5" and version < "5.0" else "",
+            "cd $INET_ROOT && mkdir -p _scripts && echo 'echo $INET_VERSION' > _scripts/get_version && chmod +x _scripts/get_version && cd -" if veins_version == "5.0" else "cd $INET_ROOT && mkdir -p _scripts && echo '#!/usr/bin/env sh\n\necho $INET_VERSION' > _scripts/get_version && chmod +x _scripts/get_version && cd -",
+            "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd subprojects/veins_inet && ./configure --with-inet=$INET_ROOT --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE; else cd subprojects/veins_inet3 && ./configure --with-inet=$INET_ROOT --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE; fi" if veins_version >= "5.0" else "",
+            "cd subprojects/veins_inet && ./configure --with-inet=$INET_ROOT --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" if veins_version >= "4.5" and veins_version < "5.0" else "",
             ],
         "warnings": [
-            f"This version requires an older version of SUMO, which is not available in opp_env. Please install the appropriate SUMO version ({''.join(sumo_version)}) manually." if version < "5.0" else "",
+            f"This version requires an older version of SUMO, which is not available in opp_env. Please install the appropriate SUMO version ({''.join(sumo_version)}) manually." if veins_version < "5.0" else "",
         ],
         "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
         "options": {
             "from-source-archive": {
                 "option_description": "Install from source archive on GitHub",
                 "option_category": "download",
-                "option_is_default": version != "master",
+                "option_is_default": veins_version != "master",
                 # currently unused: "download_commands": [ "curl -LO https://veins.car2x.org/download/veins-5.2.zip && unzip veins-5.2.zip && rm veins-5.2.zip && mv veins-veins-5.2 veins-5.2" ],
                 "download_url": f"https://github.com/sommer/veins/archive/refs/{heads_or_tags}/{git_branch_or_tag_name}.tar.gz",
             },
             "from-git": {
                 "option_description": "Install from git repo on GitHub",
                 "option_category": "download",
-                "option_is_default": version == "master",
+                "option_is_default": veins_version == "master",
                 "git_url": "https://github.com/sommer/veins.git",
                 "git_branch": git_branch_or_tag_name,
             },

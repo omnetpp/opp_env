@@ -787,14 +787,17 @@ def get_project_descriptions():
             "nix_packages": ["sqlite"],
             "required_projects": {"omnetpp": ["4.2.0"]},
             "download_url": "https://github.com/kyeongsoo/inet-hnrl/archive/857ae37cd233914fd7271584afc4be10bcf75a61.tar.gz",
-            "setenv_commands": [r"""export SQLITE_LIB=${pkgs.sqlite}/lib"""],
+            "setenv_commands": [
+                r"""export SQLITE_LIB=${pkgs.sqlite}/lib""",
+                r"""echo 'Hint: Use the `./run` command in an example simulation folder to run the simulation.'"""
+            ],
             "patch_commands": [
                 r"""sed -i 's|INETMANET_PROJ=/media/data/Linux/omnet/inetmanet-inetmanet-00f64c2|INETMANET_PROJ=$(INETMANET_ROOT)|g' Makefile""",
                 r"""sed -i 's|-L/usr/local/lib|-L$(SQLITE_LIB)|g' Makefile""",
                 r"""sed -i 's|-I/usr/local/include||g' Makefile""",
                 r"""sed -i 's|addr.sin_len|// addr.sin_len|' src/linklayer/ext/*.cc""",  # ugly hack? this is needed on apple
                 r"""sed -i 's|machine/endian|endian|' src/util/headerserializers/headers/defs.h""",
-                r"""sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/headers/sctp.h""",
+                r"""sed -i 's|info\[\]|info[0]|' src/util/headerserializers/headers/sctp.h""",
                 r"""sed -i 's|$(OPP_LIBS)|-loppcommon$$\\\(D\\\)|' Makefile""",
             ],
             "build_commands": [r"""make makefiles && make all -j$NIX_BUILD_CORES MODE=$BUILD_MODE CFLAGS='-std=c++14 -fpermissive -fPIC'"""],
@@ -1350,7 +1353,7 @@ def get_project_descriptions():
             ],
             "patch_commands": [
                 r"""sed -i 's| python$| python2|' inet_featuretool""",
-                r"""sed -i 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h""",
+                r"""sed -i 's|info\[\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h""",
                 r"""for f in $(grep -Rls 'defined(linux)'); do sed -i 's|defined(linux)|defined(__linux__)|' $f; done""",
                 r"""for f in $(grep -Rl 'INT64_PRINTF_FORMAT'); do sed -i 's|INT64_PRINTF_FORMAT|\"l\"|' $f; done""",
             ],
@@ -1382,7 +1385,7 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""sed -i 's|if \[ $2 == "--debug" \]; then|if [ $2 == "--test" ]; then $RELATIVE_PATH_TO_ROOT/omnetpp/ara-sim -u Cmdenv -c $experimentName -n "$nedPath" omnetpp.ini -r 0 --sim-time-limit=10s; fi\\nif [ $2 == "--debug" ]; then|' simulations/run.sh""",
                 r"""cd inetmanet""",
-                r"""sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h""",
+                r"""sed -i 's|info\[\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h""",
                 r"""for f in $(grep -Rls 'defined(linux)'); do sed -i 's|defined(linux)|defined(__linux__)|' $f; done""",
                 r"""sed -i 's/SensitivityList::iterator it = sensitivityList.find(0.0);/SensitivityList::iterator sit = sensitivityList.find(0.0);/' src/linklayer/radio/Radio.cc""",
                 r"""sed -i 's/if (it == sensitivityList.end())/if (sit == sensitivityList.end())/' src/linklayer/radio/Radio.cc""",
@@ -1391,8 +1394,8 @@ def get_project_descriptions():
                 r"""sed -i 's/std::make_pair<ManetAddress,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((ManetAddress)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc""",
                 r"""sed -i 's/std::make_pair<ManetAddress,ManetAddress>(dst, gtwy)/std::make_pair((ManetAddress)dst, (ManetAddress)gtwy)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc""",
                 r"""sed -i 's/std::make_pair<ManetAddress,ManetAddress>(destination, nextHop)/std::make_pair((ManetAddress)destination, (ManetAddress)nextHop)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc""",
-                r"""sed -i 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc""",
-                r"""sed -i 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc""",
+                r"""sed -i 's/  int groups\[8\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc""",
+                r"""sed -i 's/findGap(int \*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc""",
             ],
             "setenv_commands": [r"""export INETMANET_FOLDER=$LIBARA_ROOT/inetmanet""",
                                 r"""echo 'Hint: in an example simulation folder, use the `./run.sh` command to run the example simulation. Note: this project is only available in release mode.'"""],
@@ -1550,7 +1553,7 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["4.1.0"]}, # with 4.1.1 and 4.1.x: error: non-constant-expression cannot be narrowed from type 'uint32_t' (aka 'unsigned int') to 'int' in initializer list [-Wc++11-narrowing]
             "download_url": "https://github.com/kyeongsoo/inet-hnrl/archive/refs/tags/master_20100723.tar.gz",
             "patch_commands": [
-                r"""sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/headers/sctp.h""",
+                r"""sed -i 's|info\[\]|info[0]|' src/util/headerserializers/headers/sctp.h""",
                 r"""sed -i 's|addr.sin_len|// addr.sin_len|' src/linklayer/ext/*.cc""",  # ugly hack? this is needed on apple
                 r"""sed -i 's|machine/endian|endian|' src/util/headerserializers/headers/defs.h""",
                 r"""chmod +x examples/rundemo""",

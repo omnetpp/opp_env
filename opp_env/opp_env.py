@@ -716,6 +716,7 @@ class ProjectRegistry:
             "simu5g",
             "external",
             "testproject"
+            "wip"
         ]
 
         json_files = [

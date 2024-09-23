@@ -1,19 +1,25 @@
 def get_project_descriptions():
     return [
         {
-            # NOT WORKING - simulations start but segfault after some time -> runtime error, can't test
+            # NOT WORKING - simulations start but segfault after some time -> runtime error, can't test; update: other configs work
             # UPDATE: this needs parsim in omnetpp
             "name": "oversim", "version": "20190424",       # last commit of master branch as of time of writing
             "description": "Overlay and Peer-to-Peer Network Simulation Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OverSim.html",
             },
-            "smoke_test_commands": ["cd simulations && ../src/OverSim omnetpp.ini -c Vast -u Cmdenv --sim-time-limit=10s",],
+            "smoke_test_commands": [
+                r"""cd simulations && ../src/OverSim omnetpp.ini -c Vast -u Cmdenv --sim-time-limit=10s""",
+            ],
             "required_projects": {"inet": ["3.6.*"], "omnetpp": ["5.4.*"]},
             "download_url": "https://github.com/inet-framework/oversim/archive/refs/tags/v20190424.tar.gz",
-            "patch_commands": [r"""sed -i -E 's|INETDIR = .*|INETDIR = $(INET_ROOT)|' Makefile""",
-                               r"""sed -i -E \"s|ned-path = .*|ned-path = $INET_ROOT/src;../src|\" simulations/default.ini""",],
-            "setenv_commands": [r"""echo 'Hint: use the `../src/OverSim omnetpp.ini` command in the simulations folder.'"""],
+            "patch_commands": [
+                r"""sed -i -E 's|INETDIR = .*|INETDIR = $(INET_ROOT)|' Makefile""",
+                """sed -i -E "s|ned-path = .*|ned-path = $INET_ROOT/src;../src|" simulations/default.ini""",    # TODO this should keep the rease line
+            ],
+            "setenv_commands": [
+                r"""echo 'Hint: use the `../src/OverSim omnetpp.ini` command in the simulations folder.'"""
+            ],
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean"""],
         },
@@ -401,16 +407,16 @@ def get_project_descriptions():
                 "export PYTHON2_BIN=${pkgs.python2}/bin/python2",
                 'sed -i "s|/usr/bin/env python2|$PYTHON2_BIN|" run',
                 'sed -i "s|../veins/src/veins|$VEINS_ROOT/src/veins|" run',
-                """sed -i 's|\\#\\*.satellite\[0\].satelliteMobility.satelliteName = ""|*.satellite[0].satelliteMobility.satelliteName = "ISS (ZARYA)"|' examples/space_veins/omnetpp.ini""",
-                """sed -i 's|\\#\\*.satellite\[0\].satelliteMobility.tle_line_one = ""|*.satellite[0].satelliteMobility.tle_line_one = "1 25544U 98067A   24066.21503963  .00016480  00000+0  29947-3 0  9999"|' examples/space_veins/omnetpp.ini""",
-                """sed -i 's|\\#\\*.satellite\[0\].satelliteMobility.tle_line_two = ""|*.satellite[0].satelliteMobility.tle_line_two = "2 25544  51.6406 105.7199 0005859 331.9893 139.5156 15.49668492442586"|' examples/space_veins/omnetpp.ini""",
+                r"""sed -i 's|\\#\\*.satellite\[0\].satelliteMobility.satelliteName = ""|*.satellite[0].satelliteMobility.satelliteName = "ISS (ZARYA)"|' examples/space_veins/omnetpp.ini""",
+                r"""sed -i 's|\\#\\*.satellite\[0\].satelliteMobility.tle_line_one = ""|*.satellite[0].satelliteMobility.tle_line_one = "1 25544U 98067A   24066.21503963  .00016480  00000+0  29947-3 0  9999"|' examples/space_veins/omnetpp.ini""",
+                r"""sed -i 's|\\#\\*.satellite\[0\].satelliteMobility.tle_line_two = ""|*.satellite[0].satelliteMobility.tle_line_two = "2 25544  51.6406 105.7199 0005859 331.9893 139.5156 15.49668492442586"|' examples/space_veins/omnetpp.ini""",
             ],
             "setenv_commands": [
                 "echo $PYTHON2_BIN",
                 "export PROJ_ROOT=${pkgs.proj}",
                 "export PROJ_DEV_ROOT=${pkgs.proj.dev}",
             ],
-            "build_commands": ["cd src && opp_makemake -f --deep --no-deep-includes --make-so -I . -o space_veins -O ../out -I $VEINS_ROOT/src -L $VEINS_ROOT/src/ -lveins\$D -I$PROJ_DEV_ROOT/include -L$PROJ_ROOT/lib -lproj && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "build_commands": [r"""cd src && opp_makemake -f --deep --no-deep-includes --make-so -I . -o space_veins -O ../out -I $VEINS_ROOT/src -L $VEINS_ROOT/src/ -lveins\$D -I$PROJ_DEV_ROOT/include -L$PROJ_ROOT/lib -lproj && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean"""]
         },
 
@@ -438,7 +444,7 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["3.3.1"]},
             "download_url": "https://sourceforge.net/projects/fieldbus.berlios/files/FIELDBUS.tar.gz/download",
             "patch_commands": [
-                "sed -i 's|/usr/share/omnetpp-3.2pre4|\$(OMNETPP_ROOT)|g' fieldbusconfig",
+                r"""sed -i 's|/usr/share/omnetpp-3.2pre4|\$(OMNETPP_ROOT)|g' fieldbusconfig""",
                 "sed -i 's|-gstabs+3|-gstabs+|g' fieldbusconfig",
                 "sed -i 's|TK_LIBS=-L/usr/lib|TK_LIB=-L$(TK_LIBS)|g' fieldbusconfig",
                 # "chmod +x simulations/run",
@@ -499,7 +505,7 @@ def get_project_descriptions():
                                "sed -i 's|package inet.|package inet_stub.|' src/inet_stub/*/*.ned",
                                "sed -i 's|package inet.|package inet_stub.|' src/inet_stub/*/*/*.ned",
                                "sed -i 's|ChannelTbl({1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1})|ChannelTbl{1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1}|' src/modules/utility/ConstsBLE.h",
-                               "find . -type f -name 'run' -exec chmod +x {} \;",
+                               r"""find . -type f -name 'run' -exec chmod +x {} \;""",
             ],
             "setenv_commands": [
                 "export INET_PROJ=$INET_ROOT",
@@ -685,7 +691,7 @@ def get_project_descriptions():
             "patch_commands": [
                 "sed -i 's|inet/physicallayer/pathloss/RIMFading.h|RIMFading.h|' RIMFading.cc",
             ],
-            "build_commands": ["opp_makemake -f --deep -o rimfading -I $INET_ROOT/src -L $INET_ROOT/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"],
+            "build_commands": [r"""opp_makemake -f --deep -o rimfading -I $INET_ROOT/src -L $INET_ROOT/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean"""],
         },
 
@@ -913,7 +919,7 @@ def get_project_descriptions():
                 "sed -i 's|/home/tore/software/inetmanet_inetmanet_v4/INET/src|$(INETMANET_ROOT)/src/inet|g' oprobe/oprobe.pro src/src.pro inet/inet.pro otwlan.pro",
                 "sed -i 's|/home/tore/software/omnetpp-4.0|$(OMNETPP_ROOT)|g' oprobe/oprobe.pro src/src.pro inet/inet.pro otwlan.pro",
             ],
-            "build_commands": ["opp_makemake -f --deep --make-so -O out -I$QTBASE_ROOT/include -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/util -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/status -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/base -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/transport/udp -L$INET_ROOT/out/$$\(CONFIGNAME\)/src -lz -linet -DINET_IMPORT -KINET_PROJ=../inet"],
+            "build_commands": [r"""opp_makemake -f --deep --make-so -O out -I$QTBASE_ROOT/include -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/util -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/status -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/base -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/transport/udp -L$INET_ROOT/out/$$\(CONFIGNAME\)/src -lz -linet -DINET_IMPORT -KINET_PROJ=../inet"""],
             "clean_commands": [r"""make clean"""],
             # run example simulation from src folder with:
             # ./cell -n .. ../networks/demo.ini
@@ -1230,13 +1236,13 @@ def get_project_descriptions():
             "details": "An open source implementation of the 3GPP standard CV2X (Rel 14) Mode 4. It is based on an extended version of the SimuLTE OMNeT++ simulator which enables LTE network simulations.",
             "download_url": "https://github.com/brianmc95/simulte/archive/refs/tags/v1.4.1.tar.gz",
             "patch_commands": [
-                "find . -type f -name 'run' -exec chmod +x {} \;",
+                r"""find . -type f -name 'run' -exec chmod +x {} \;""",
                 "sed -i 's|../../inet|$(INET_ROOT)|g' Makefile",
-                "sed -i 's|-lINET|-lINET$$\\\(D\\\)|g' Makefile",
-                "sed -i 's|\$DIR/../../inet|$INET_ROOT|g' src/run_lte",
+                r"""sed -i 's|-lINET|-lINET$$\\\(D\\\)|g' Makefile""",
+                r"""sed -i 's|\$DIR/../../inet|$INET_ROOT|g' src/run_lte""",
                 "sed -i 's|INET_DIR\"|INET_DIR:$VEINS_ROOT/src/veins:$VEINS_ROOT/subprojects/veins_inet3/src/veins_inet\"|g' src/run_lte",
                 "sed -i 's|-l $INET_DIR/INET|-l $INET_DIR/INET -l $VEINS_ROOT/subprojects/veins_inet3/src/libveins_inet.so|g' src/run_lte",
-                """find . -name '*.launchd.xml' -exec bash -c 'sed -i "s|UPDATE-WITH-YOUR-PATH|$(pwd)/{}|g" {}' \;""",
+                r"""find . -name '*.launchd.xml' -exec bash -c 'sed -i "s|UPDATE-WITH-YOUR-PATH|$(pwd)/{}|g" {}' \;""",
                 "sed -i 's|/highway.launchd.xml||g' simulations/*/*/*/*.launchd.xml",
                 "sed -i 's|/./|/|g' simulations/*/*/*/*.launchd.xml",
             ],

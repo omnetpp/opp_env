@@ -823,7 +823,8 @@ class ProjectRegistry:
             "simulte",
             "simu5g",
             "external",
-            "testproject"
+            "testproject",
+            "wip"
         ]
 
         json_files = [

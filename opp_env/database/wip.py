@@ -76,7 +76,7 @@ def get_project_descriptions():
             "description": "OpenFlow Extension for INET Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
-                "test_command": "cd openflow-20220615/scenarios/usa && run_openflow Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv --sim-time-limit=1s",
+                "test_commands": "cd openflow-20220615/scenarios/usa && run_openflow Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv --sim-time-limit=1s",
             },
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["4.4.*", "4.3.*"]},
             # git_url": "https://github.com/inet-framework/openflow.git",
@@ -105,7 +105,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
-            "test_command": "cd openflow-20220615/scenarios/usa && run_openflow Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv --sim-time-limit=1s",
+            "test_commands": "cd openflow-20220615/scenarios/usa && run_openflow Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv --sim-time-limit=1s",
             "required_projects": {"omnetpp": ["5.4.0"], "inet": ["3.6.*"]},
             # git_url": "https://github.com/inet-framework/openflow.git",
             # there are no releases, so we use a commit from the master branch

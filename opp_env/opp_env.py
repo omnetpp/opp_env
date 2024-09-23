@@ -536,7 +536,8 @@ class ProjectRegistry:
             "veins",
             "simulte",
             "simu5g",
-            "external"
+            "external",
+            "wip"
         ]
 
         json_files = [

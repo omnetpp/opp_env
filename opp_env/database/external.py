@@ -1881,6 +1881,40 @@ def get_project_descriptions():
             # DONE - debug only; doesn't work with sumo-gui; from-git only;
             # when running with sumo gui:
             # FXGLVisual::create: requested OpenGL visual unavailable. -> this issue is POSTPONED
+            "name": "artery_allinone", "version": "20240807",       # last commit of master branch as of time of writing
+            "description": "V2X simulation framework for ETSI ITS-G5. This version downloads its own copy of Veins, INET, SimuLTE, and Vanetza, and does not use ones installed by opp_env.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Artery.html",
+            },
+            "required_projects": {"omnetpp": ["5.7.1"]},
+            "nix_packages": ["cmake", "boost", "cryptopp", "geographiclib", "sumo", "git-lfs" ],
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's| -n | -c veins -u Cmdenv --sim-time-limit=10s -n |g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example > /dev/null && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently this projects is only built in debug mode.'; fi""",
+            ],
+            # we use a hash from master because the opp-summit release needs git to build
+            "download_commands": [
+                r"""mkdir artery_allinone-20240807""",
+                r"""git clone https://github.com/riebl/artery.git artery_allinone-20240807""",
+                r"""cd artery_allinone-20240807""",
+                r"""git reset --hard b3927adbdcb62faaf6b3fe5cd089100e6db66014""",
+                r"""git submodule update --init --recursive""",
+            ],
+            "patch_commands": [
+                r"""touch .project"""   # kludge
+            ],
+            "setenv_commands": [
+                r"""export ARTERY_PATH=$ARTERY_ROOT""",
+                r"""echo 'Hint: use the `cmake --build build --target run_example` command to run the example simulation.'"""
+            ],
+            "build_commands": [r"""mkdir -p build && cd build && cmake .. && make -j$NIX_BUILD_CORES MODE=debug"""],
+            "clean_commands": [r"""make clean"""],
+        },
+
+        {
+            # DONE - debug only; doesn't work with sumo-gui; from-git only;
+            # when running with sumo gui:
+            # FXGLVisual::create: requested OpenGL visual unavailable. -> this issue is POSTPONED
             "name": "artery_allinone", "version": "20230820",       # last commit of master branch as of time of writing
             "description": "V2X simulation framework for ETSI ITS-G5. This version downloads its own copy of Veins, INET, SimuLTE, and Vanetza, and does not use ones installed by opp_env.",
             "metadata": {

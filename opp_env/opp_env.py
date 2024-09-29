@@ -142,12 +142,45 @@ def version_matches(wildcard_version, version):
         return wildcard_version == version
 
 def create_arg_parser():
-    parser = argparse.ArgumentParser(prog="opp_env", description=
-        "Provides automated installation of various versions of OMNeT++ and simulation frameworks -- enter 'opp_env list' for a list of supported projects. "
-        "Uses Nix (nixos.org) to ensure a controlled software environment (compiler, libraries, tool) for building and running simulations. "
-        "Projects are downloaded and built in dedicated directories called workspaces. "
-        "Typical usage: mkdir workspace && cd workspace && opp_env init && opp_env install inet-latest && opp_env shell inet-latest",
-        epilog="For command-specific help, type: opp_env COMMAND -h")
+    def dedent(text):
+        # remove the common indentation from all lines
+        lines = text.split("\n")
+        min_indent = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
+        text = "\n".join(line[min_indent:] for line in lines)
+        # join adjacent nonempty non-indented lines (i.e. join multi-line paragraphs into one line)
+        text = re.sub(r"([^\n])\n(?=[^\s])", r"\1 ", text)
+        return text
+
+    parser = argparse.ArgumentParser(prog="opp_env", description=dedent(
+        """
+        Provides automated installation of various versions of OMNeT++ and
+        simulation frameworks; enter 'opp_env list' for a list of supported
+        projects. Projects are downloaded and built in dedicated directories
+        called workspaces.
+
+        opp_env uses the Nix package manager (nixos.org) to ensure a controlled
+        software environment (defined versions of compiler, libraries, and tools)
+        for building and running simulations. In opp_env sessions, Nix isolates
+        you from the system environment (i.e. /usr/bin, /usr/local/bin, etc.)
+        mainly by replacing the PATH environment variable so that entries point
+        into the Nix store (a custom directory tree) instead of system directories.
+
+        A typical session:
+
+            $ mkdir workspace    # create and enter a workspace directory
+            $ cd workspace
+            $ opp_env init       # initialize the workspace
+            $ opp_env install inet-latest  # download and build INET and a matching version of OMNeT++
+            $ opp_env shell      # start an interactive shell for working with INET
+
+        The last three commands may be abbreviated as:
+
+            $ opp_env shell --init --install inet-latest
+        """),
+        epilog=
+        "For command-specific help, type 'opp_env COMMAND -h'. For example, 'opp_env install -h' prints a "
+        "detailed description and the available options of the 'install' subcommand.",
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--help-intro", default=False, action='store_true', help="Prints a short introduction to the opp_env tool")
     parser.add_argument("-d", "--debug", default=False, action='store_true', help="Equivalent to '--print-stacktrace --log-level DEBUG'")
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Log level of output")
@@ -169,62 +202,108 @@ def create_arg_parser():
     group.add_argument("--expand", dest="list_mode", action="store_const", const="expand", help="Expand dependency list of each matching project in the default version combination")
     group.add_argument("--expand-all", dest="list_mode", action="store_const", const="expand-all", help="Expand dependency list of each matching project in all supported version combinations")
 
-    subparser = subparsers.add_parser("info", help="Describes the specified project", description="Describes the specified project")
-    subparser.add_argument("projects", nargs="*", help="The list of projects to describe. You can specify exact versions like 'inet-4.0' or project names like 'inet'. The latter will print info on all versions of the project. An empty list prints info on all projects.")
-    subparser.add_argument("--raw", action='store_true', default=False, help="Print the project descriptions in a raw form. The output is well-formed JSON, so you can use tools like 'jq' to further query it and extract the desired data.")
-    subparser.add_argument("--options", action='append', metavar='name1,project:name2,...', help="Print the project description as if the given project options were selected")
+    subparser = subparsers.add_parser("info", help="Describes the specified project", description=
+        """
+        Prints the description(s) of the specified project(s). The default mode prints
+        a human-readable summary; use '--raw' to get the full project description with all details.
+        """)
+    subparser.add_argument("projects", nargs="*", help=
+        """
+        The list of projects to describe. You can specify exact versions like 'inet-4.0' or project names like 'inet'.
+        The latter will print info on all versions of the project. An empty list prints info on all projects.
+        """)
+    subparser.add_argument("--raw", action='store_true', default=False, help=
+        """
+        Print the full project descriptions in a raw form.
+        The output includes details such as the download URL, the required projects with their acceptable versions,
+        the required NIX packages, the patch / setenv / build / clean commands, the available installation options, and more.
+        The output is well-formed JSON, so you can use tools like 'jq' to further query it and extract the desired data.
+        """)
+    subparser.add_argument("--options", action='append', metavar='[PROJECT:]NAME,...', help="Print the project description as if the given project options were selected")
 
     def add_argument(subparser, name):
         if name=="projects":     subparser.add_argument("projects", nargs="+", help=
-            "List of projects with versions to work with, e.g. 'inet-4.2'. "
-            "Abbreviated version numbers are understood as the latest minor/patchlevel version that "
-            "matches the abbreviated version, e.g. 'inet-3' and 'inet-3.8' both refer to 'inet-3.8.3'. "
-            "The pseudo-version 'latest' translates to the latest version of the project, e.g. 'inet-latest' stood for 'inet-4.5.0' at the time of writing. "
-            "If the specified projects have dependencies, they will also be selected (unless the --no-deps option is present)."
             """
+            List of projects with versions to work with, e.g. 'inet-4.2'.
+            Abbreviated version numbers are understood as the latest minor/patchlevel version that
+            matches the abbreviated version, e.g. 'inet-3' and 'inet-3.8' both refer to 'inet-3.8.3'.
+            The pseudo-version 'latest' translates to the latest version of the project, e.g. 'inet-latest' stood for 'inet-4.5.0' at the time of writing.
+            If the specified projects have dependencies, they will also be selected (unless the --no-deps option is present).
             When a project is installed from a git repository (for example, the "git" version of "inet" named 'inet-git'), the installed branch is
-            usually the 'master' or 'main' branch. This can be overridden by specifying the branch name in the project name after an '@'
-            character. For example, 'opp_env install inet-git@topic/mybranch' checks out 'topic/mybranch' from the git repo, then patches and
-            builds it in the same way it would with the 'master' branch. This is a convenient way to set up a work environment if you want to work on
-            (or contribute to) a specific project.
+            usually the 'master' or 'main' branch. This can be overridden by specifying a branch name in the project name after an '@'
+            character. For example, 'opp_env install inet-git@topic/mybranch' checks out 'topic/mybranch' from the git repo (the branch must exist),
+            then patches and builds it in the same way it would with the 'master' branch. This is a convenient way to set up a work environment
+            if you want to work on (or contribute to) a specific project.
             """)
         elif name=="projects-optional": subparser.add_argument("projects", nargs="*", help=
-            "List of projects with versions to work with, e.g. 'inet-4.2'. "
-            "Defaults to all projects in the workspace. "
-            "Abbreviated version numbers are understood as the latest minor/patchlevel version that "
-            "matches the abbreviated version, e.g. 'inet-3' and 'inet-3.8' both refer to 'inet-3.8.3'. "
-            "The pseudo-version 'latest' translates to the latest version of the project, e.g. 'inet-latest' stood for 'inet-4.5.0' at the time of writing. "
-            "If the specified projects have dependencies, they will also be selected (unless the --no-deps option is present).")
+            """
+            List of projects with versions to work with, e.g. 'inet-4.2'.
+            Defaults to all projects in the workspace.
+            Abbreviated version numbers are understood as the latest minor/patchlevel version that
+            matches the abbreviated version, e.g. 'inet-3' and 'inet-3.8' both refer to 'inet-3.8.3'.
+            The pseudo-version 'latest' translates to the latest version of the project, e.g. 'inet-latest' stood for 'inet-4.5.0' at the time of writing.
+            If the specified projects have dependencies, they will also be selected (unless the --no-deps option is present).
+            """)
         elif name=="quiet":      subparser.add_argument("-q", "--quiet", dest="suppress_stdout", default=False, action='store_true', help="Suppress the standard output of executed commands")
         elif name=="force-init": subparser.add_argument("-f", "--force", default=False, action='store_true', help="Force turning a non-empty directory into a workspace")
         elif name=="init":       subparser.add_argument("--init", default=False, action='store_true', help=
             "Turn the current directory (or the directory specified via -w/--workspace) into a workspace if it is not already one")
         elif name=="workspace":  subparser.add_argument("-w", "--workspace", metavar='DIR', dest="workspace_directory", help=
-            "Specifies the workspace directory. When this option is missing and opp_env needs to find the workspace, "
-            "it will do so by searching up from the current directory.")
+            """
+            Specifies the workspace directory. When this option is missing and opp_env needs to find the workspace,
+            it will do so by searching up from the current directory.
+            """)
         elif name=="no-pause":   subparser.add_argument("-n", "--no-pause", dest="pause_after_warnings", default=True, action='store_false', help="Do not pause after printing warnings")
         elif name=="no-deps":    subparser.add_argument("--no-deps", "--no-dependency-resolution", dest="no_dependency_resolution", default=False, action='store_true', help=
-            "Ignore dependencies among projects, only operate on the projects explicitly listed on the command line. "
-            "This allows projects to be used together in previously untested or \"unofficial\" combinations.")
-        elif name=="options":    subparser.add_argument("--options", action='append', metavar='[PROJECT:]NAME,...', help="Project options to use; use 'opp_env info' to see what options a selected project has. An option applies to all effective projects that support them, unless qualified with a project name.")
+            """
+            Ignore dependencies among projects, only operate on the projects explicitly listed on the command line.
+            This allows projects to be used together in previously untested or "unofficial" combinations.
+            """)
+        elif name=="options":    subparser.add_argument("--options", action='append', metavar='[PROJECT:]NAME,...', help=
+            """
+            Select project options to use; use 'opp_env info' to see what options a selected project has.
+            An option applies to all effective projects that support them, unless qualified with a project name.
+            """)
         elif name=="no-patch":   subparser.add_argument("--no-patch", dest="patch", default=True, action='store_false', help="Do not patch the project after download")
-        elif name=="no-cleanup": subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help="Do not delete a partially downloaded project if download or patching fails or is interrupted")
+        elif name=="no-cleanup": subparser.add_argument("--no-cleanup", dest="cleanup", default=True, action='store_false', help=
+            "Do not delete a partially downloaded project if download or patching fails or is interrupted")
         elif name=="nixless-workspace":    subparser.add_argument("--nixless-workspace", default=False, action='store_true', help=
-            "When creating a workspace, designate the new workspace as nixless. In a nixless workspace, projects are installed and run without Nix. "
-            "A nixless workspace requires that all packages that the projects and opp_env itself require are already installed in the system. "
-            "For opp_env itself, this translates to having 'curl' and/or 'git', and basic tools like 'tar' and 'gzip' available for downloading packages. "
-            "The packages that OMNeT++ requires are documented in the Installation Guide of the particular version.")
+            """
+            When creating a workspace, designate the new workspace as nixless. In a nixless workspace, projects are installed and run without Nix.
+            A nixless workspace requires that all packages that the projects and opp_env itself require are already installed and available in the system.
+            For opp_env itself, this translates to having 'curl', 'git', 'tar', 'gzip' and other basic tools available for downloading and extracting packages.
+            The packages that OMNeT++ requires, such as a C++ compiler, 'bison' and 'flex', are documented in the Installation Guide of the particular version.
+            In addition to package availability, versions are also important. Nix ensures that definite versions of packages are used,
+            but in nixless mode, the versions are those provided by the host OS. If they are incompatible, projects may fail to
+            build or work correctly.
+            """)
         elif name=="keep":       subparser.add_argument("-k", "--keep", action='append', metavar='NAME,...', help=
             "Keep the specified environment variables, i.e. pass them into shells spawned by opp_env.")
         elif name=="local":      subparser.add_argument("--local", default=False, action='store_true', help=
-            "Replaces internet access with file access. When specified, opp_env will use a local downloads directory and "
-            "locally cloned Git repositories as installation sources instead of network access. "
-            "It expects the file system locations to be passed in via environment variables. "
-            "It is primarily useful for testing purposes.")
+            """
+            Replaces internet access with file access. When specified, opp_env will use a local downloads directory and
+            locally cloned Git repositories as installation sources instead of network access.
+            It expects the file system locations to be passed in via environment variables.
+            It is primarily useful for testing purposes.
+            """)
         elif name=="isolated":    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help=
-            "Run in a Nix-based isolated environment from the host operating system. The default is to run non-isolated.")
+            """
+            Run in a Nix-based isolated environment from the host operating system. The default is to run non-isolated.
+            Isolated mode means that only programs (or in general, software packages) provided by Nix are accessible in the session,
+            but those installed on the host OS are not. In non-isolated mode, both Nix and host OS programs are available.
+            Non-isolated mode is convenient in an interactive shell session because it lets the user access all their installed software,
+            such as their favorite text editor.
+            However, due to the interference of various library versions in Nix and the host OS, etc, things can break in unexpected ways.
+            """)
         elif name=="no-isolated": subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help=
-            "Run in a Nix-based isolated environment from the host operating system. The default is to run in an isolated environment.")
+            """
+            Run in a Nix-based isolated environment from the host operating system. The default is to run in an isolated environment.
+            Isolated mode means that only programs (or in general, software packages) provided by Nix are accessible in the session,
+            but those installed on the host OS are not. In non-isolated mode, both Nix and host OS programs are available.
+            Non-isolated mode is convenient in an interactive shell session because it lets the user access all their installed software,
+            such as their favorite text editor.
+            However, due to the interference of various library versions in Nix and the host OS, etc, things can break in unexpected ways.
+            """)
         elif name=="mode":       subparser.add_argument("--mode", metavar='MODE,...', default="release,debug", help="Build mode(s), e.g. 'release' or 'debug', separated by commas.")
         elif name=="install":    subparser.add_argument("--install", dest='install', default=False, action='store_true', help="Download and build missing projects")
         elif name=="build":      subparser.add_argument("--build", dest='build', default=False, action='store_true', help="Build projects")
@@ -232,26 +311,53 @@ def create_arg_parser():
         elif name=="smoke-test": subparser.add_argument("--smoke-test", dest='run_smoke_test', default=False, action='store_true', help="Run a short test to ensure that the project executables are working")
         elif name=="test":       subparser.add_argument("--test", dest='run_test', default=False, action='store_true', help="Run the project's test suite to ensure it is working correctly")
         elif name=="chdir":      subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="convenience", help=
-            "Whether to change into the workspace directory (--chdir), or stay in the current working directory (--no-chdir). "
-            "If neither is given, the default action to try doing what is likely the most convenient for the user, "
-            "which is to change into the root of the (first) project if the current working directory is outside that project's directory tree, "
-            "and stay in the current directory (inside the project) otherwise.")
-        elif name=="command":    subparser.add_argument("-c", "--command", help="Specifies the command that is run in the environment")
+            """
+            Whether to change into the workspace directory (--chdir), or stay in the current working directory (--no-chdir).
+            If neither is given, the default action to try doing what is likely the most convenient for the user,
+            which is to change into the root of the (first) project if the current working directory is outside that project's directory tree,
+            and stay in the current directory (inside the project) otherwise.
+            """)
+        elif name=="command":    subparser.add_argument("-c", "--command", help="""Specifies the command that is run in the environment""")
         else: raise Exception(f"Internal error: unrecognized option name '{name}'")
 
     def add_arguments(subparser, names):
         for name in names:
             add_argument(subparser, name)
 
-    subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace", description="Designates the current working directory to be an opp_env workspace")
+    subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace", description=
+        "Designates the current working directory to be an opp_env workspace.",
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     add_arguments(subparser, [
         "workspace",
         "force-init",
         "nixless-workspace"
     ])
 
-    subparser = subparsers.add_parser("install", help="Downloads and builds the specified projects in their environment",
-        description="Downloads and builds the specified projects in their environment. Skips the download step if project is already downloaded.")
+    subparser = subparsers.add_parser("install", help="Downloads and builds the specified projects in their environment", description=dedent(
+        """
+        Downloads the specified project or projects along with their dependencies in the current workspace,
+        patches or configures them as needed, and builds them.
+        (The patching step is used for things like adjusting the setenv, Makefile or makefrag files
+        so that dependencies are found, running the configure script, or applying minor changes
+        to the source code to fix compilation errors due to compiler or library changes.)
+
+        The download step is skipped for projects that are already downloaded.
+        Any step of the process can be turned off using command-line options.
+        Installation by cloning the Git repository and checking out a specific branch
+        (for setting up a development environment for contributing to the project) is also supported.
+
+        To ensure maximum reproducibility, the 'install' command runs the session in isolated mode.
+        This can be changed by specifying the '--non-isolated' option.
+
+        Examples:
+            $ opp_env install inet-latest  # installs the latest version of INET, with a matching OMNeT++ version
+            $ opp_env install inet-latest omnetpp-6.0.1  # like above, but with a specific OMNeT++ version
+            $ opp_env install inet-latest --no-deps --no-patch --no-build  # downloads and unpacks INET only (without patching/building it)
+            $ opp_env install inet-git  # installs INET by checking out the 'master' branch from its Git repository
+            $ opp_env install inet-4.2.10 --options=inet:from-git  # installs INET by checking out the 'v4.2.10' tag from its Git repository
+            $ opp_env install inet-git@topic/mybranch  # installs INET by checking out the 'topic/mybranch' branch from its Git repository, allowing further development
+        """),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     add_arguments(subparser, [
         "projects",
         "quiet",
@@ -270,8 +376,30 @@ def create_arg_parser():
         "local"
     ])
 
-    subparser = subparsers.add_parser("shell", help="Runs a shell in the environment of the specified projects",
-        description="Runs a shell in the environment of the specified projects. It can also be asked to perform workspace initialization and project installation as well.")
+    subparser = subparsers.add_parser("shell", help="Opens a shell in the environment of the specified projects", description=dedent("""
+        Opens a shell in the environment of the specified projects.
+        If no projects are specified, all projects in the current workspace are used.
+        Many options are available to request additional operations (building, testing, or
+        even workspace initialization and project installation) and for controlling further details.
+
+        The shell opens with the environment variables already set up for working with the projects,
+        e.g. the 'setenv' scripts (of projects that have one) are sourced. Additionally, the location of each project
+        is made available in its '<projectname>_ROOT' environment variable: 'OMNETPP_ROOT', 'INET_ROOT', etc.
+        Shortcut commands are also available in the shell for building, cleaning, checking, etc.
+        each project: 'build_inet', 'build_omnetpp', 'build_all', 'clean_inet', 'clean_omnetpp', 'clean_all', etc.
+        The 'check_inet', check_omnetpp', 'check_all', etc. commands verify that the projects' files
+        have not been changed since the download+patching step. (This is made possible by 'shasum' and 'diff'.)
+
+        For the convenience of the user, the shell session is created in non-isolated mode, meaning that
+        programs installed in the host OS are also accessible in addition to the packages provided via Nix.
+        This sometimes causes things to break in unexpected ways; if that happens, use the '--isolated' option.
+
+        Examples:
+            $ opp_env shell  # opens the shell for working with all projects in the workspace
+            $ opp_env shell inet-latest  # opens a shell with the existing INET installation in the workspace
+            $ opp_env shell --install inet-latest  # installs INET if not yet installed, then opens a shell for working with it
+        """),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     add_arguments(subparser, [
         "projects-optional",
         "init",
@@ -293,8 +421,23 @@ def create_arg_parser():
         "local"
     ])
 
-    subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects",
-        description="Runs a command in the environment of the specified projects. It can also be asked to perform workspace initialization and project installation as well.")
+    subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects", description=dedent("""
+        Runs a command in the environment of the specified projects.
+        If no projects are specified, all projects in the current workspace are used.
+        Many options are available to request addition operations (building, testing, or
+        even workspace initialization and project installation) and for controlling further details.
+
+        The environment in which the command is executed is the same as for the 'shell' command.
+        Unlike the 'shell' command which tries to change into the first project's directory for the user's convenience,
+        'run' does NOT change the current directory before running the command.
+
+        To ensure maximum reproducibility, the 'run' command runs the session in isolated mode.
+        This can be changed by specifying the '--non-isolated' option.
+
+        Examples:
+            $ opp_env run omnetpp-6.0.3 -c 'cd omnetpp-6.0.3/samples/aloha && ./aloha'  # runs the 'aloha' simulation then exits
+        """),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     add_arguments(subparser, [
         "projects-optional",
         "init",
@@ -318,7 +461,7 @@ def create_arg_parser():
         "local"
     ])
 
-    subparser = subparsers.add_parser("maint", help="Maintenance functions", description="Maintenance functions")
+    subparser = subparsers.add_parser("maint", help="Maintenance functions", description="Maintenance functions for internal use.")
     subparser.add_argument("-u", "--update-catalog", metavar="download-items-dir", dest="catalog_dir", help="Update the opp_env installation commands in the model catalog of omnetpp.org. The argument should point to the `download-items/` subdir of a checked-out copy of the https://github.com/omnetpp/omnetpp.org/ repository.")
 
     return parser
@@ -1514,7 +1657,8 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
             print("\n--------")
     print()
     print("Note: Specify `--raw` to `opp_env info` for more details.")
-    print("Note: Options can be selected by adding `--options <optionname>` to the opp_env command line, see help. Options active by default are marked with '*'.")
+    print("Note: Options can be selected by adding `--options=[PROJECT:]NAME` to the opp_env command line, see e.g. `opp_env install --help`.")
+    print()
 
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     init_workspace(workspace_directory, force=force, nixless=nixless_workspace)

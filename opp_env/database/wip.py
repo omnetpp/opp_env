@@ -1,19 +1,25 @@
 def get_project_descriptions():
     return [
         {
-            # NOT WORKING - simulations start but segfault after some time -> runtime error, can't test
+            # NOT WORKING - simulations start but segfault after some time -> runtime error, can't test; update: other configs work
             # UPDATE: this needs parsim in omnetpp
             "name": "oversim", "version": "20190424",       # last commit of master branch as of time of writing
             "description": "Overlay and Peer-to-Peer Network Simulation Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OverSim.html",
             },
-            "smoke_test_commands": ["cd simulations && ../src/OverSim omnetpp.ini -c Vast -u Cmdenv --sim-time-limit=10s",],
+            "smoke_test_commands": [
+                r"""cd simulations && ../src/OverSim omnetpp.ini -c Vast -u Cmdenv --sim-time-limit=10s""",
+            ],
             "required_projects": {"inet": ["3.6.*"], "omnetpp": ["5.4.*"]},
             "download_url": "https://github.com/inet-framework/oversim/archive/refs/tags/v20190424.tar.gz",
-            "patch_commands": [r"""sed -i -E 's|INETDIR = .*|INETDIR = $(INET_ROOT)|' Makefile""",
-                               r"""sed -i -E \"s|ned-path = .*|ned-path = $INET_ROOT/src;../src|\" simulations/default.ini""",],
-            "setenv_commands": [r"""echo 'Hint: use the `../src/OverSim omnetpp.ini` command in the simulations folder.'"""],
+            "patch_commands": [
+                r"""sed -i -E 's|INETDIR = .*|INETDIR = $(INET_ROOT)|' Makefile""",
+                """sed -i -E "s|ned-path = .*|ned-path = $INET_ROOT/src;../src|" simulations/default.ini""",    # TODO this should keep the rease line
+            ],
+            "setenv_commands": [
+                r"""echo 'Hint: use the `../src/OverSim omnetpp.ini` command in the simulations folder.'"""
+            ],
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean"""],
         },

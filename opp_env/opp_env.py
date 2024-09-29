@@ -180,7 +180,14 @@ def create_arg_parser():
             "Abbreviated version numbers are understood as the latest minor/patchlevel version that "
             "matches the abbreviated version, e.g. 'inet-3' and 'inet-3.8' both refer to 'inet-3.8.3'. "
             "The pseudo-version 'latest' translates to the latest version of the project, e.g. 'inet-latest' stood for 'inet-4.5.0' at the time of writing. "
-            "If the specified projects have dependencies, they will also be selected (unless the --no-deps option is present).")
+            "If the specified projects have dependencies, they will also be selected (unless the --no-deps option is present)."
+            """
+            When a project is installed from a git repository (for example, the "git" version of "inet" named 'inet-git'), the installed branch is
+            usually the 'master' or 'main' branch. This can be overridden by specifying the branch name in the project name after an '@'
+            character. For example, 'opp_env install inet-git@topic/mybranch' checks out 'topic/mybranch' from the git repo, then patches and
+            builds it in the same way it would with the 'master' branch. This is a convenient way to set up a work environment if you want to work on
+            (or contribute to) a specific project.
+            """)
         elif name=="projects-optional": subparser.add_argument("projects", nargs="*", help=
             "List of projects with versions to work with, e.g. 'inet-4.2'. "
             "Defaults to all projects in the workspace. "
@@ -352,14 +359,14 @@ def process_arguments():
 
 def print_intro():
     print("""To see all the supported simulation models, run:
-  opp_env list          
+  opp_env list
 
 To create a new workspace and install the latest version of OMNeT++, run:
   mkdir workspace && cd workspace && opp_env init && opp_env install omnetpp-latest && opp_env shell omnetpp-latest
 
 To install and use the latest version of the INET Framework with a single command, run:
   opp_env shell --install inet-latest
-          
+
 To run a simulation model directly with the latest version of OMNeT++, run:
   opp_env run --install omnetpp-latest -c 'cd $OMNETPP_ROOT/samples/aloha;./aloha'""")
 

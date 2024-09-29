@@ -1080,7 +1080,7 @@ def get_project_descriptions():
                 r"""opp_run$BUILD_MODE_SUFFIX -l $SEAPP_LIB omnetpp.ini -n ../..:../../../src -u Cmdenv -c Simple_attack > /dev/null""",
             ],
             "nix_packages": ["python2", "glibmm", "libxml2", "libsigcxx", "libxmlxx", "glib"],
-            "required_projects": {"omnetpp": ["4.6.x", "4.6.1", "4.6.0"]},
+            "required_projects": {"omnetpp": ["4.6.1", "4.6.0"]},
             "download_url": "https://github.com/seapp/seapp_stable/archive/75bde5636917610b04e0dcaec21fbd3438063b79.tar.gz",    # latest master hash as of time of writing
             "setenv_commands": [
                                 r"""export GLIBMM_ROOT=${pkgs.glibmm}""",
@@ -1885,7 +1885,7 @@ def get_project_descriptions():
             # DONE
             # TODO: add to catalog
             "name": "space_veins", "version": "0.3",
-            "required_projects": {"omnetpp": ["5.7.x"]},
+            "required_projects": {"omnetpp": ["5.7.1"]},
             "nix_packages": ["proj", "python2", "sumo"],
             "download_url": "https://github.com/veins/space_veins/archive/refs/tags/space_Veins-0.3.tar.gz",
             "patch_commands": [
@@ -1951,7 +1951,7 @@ def get_project_descriptions():
             # DONE - this should be its own project; should this be linked to inet?
             "name": "rimfading_allinone", "version": "20171123",    # latest master as of time of writing
             "nix_packages": ["python2"],
-            "required_projects": {"omnetpp": ["5.4.x"]},
+            "required_projects": {"omnetpp": ["5.4.2"]},
             "smoke_test_commands": [
                 r"""cp showcases/wireless/pathloss/omnetpp.ini showcases/wireless/pathloss/test.ini""",
                 r"""echo "\n[Config Test]\n*.radioMedium.pathLoss.typename = "RIMFading" " >> showcases/wireless/pathloss/test.ini """,

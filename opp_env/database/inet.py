@@ -158,15 +158,15 @@ def get_all_inet_released_versions():
         ["4.2.7", ["5.7.*"]],
         ["4.2.6", ["5.7.*"]],
         ["4.2.5", ["5.6.*", "5.7.*"]],
-        ["4.2.4", ["5.4.2", "5.4.1", "5.4.x", "5.5.*", "5.6.*", "5.7.*"]],
-        ["4.2.3", ["5.4.2", "5.4.1", "5.4.x", "5.5.*", "5.6.*", "5.7.*"]],
-        ["4.2.2", ["5.4.2", "5.4.1", "5.4.x", "5.5.*", "5.6.*", "5.7.*"]],
-        ["4.2.1", ["5.4.2", "5.4.1", "5.4.x", "5.5.*", "5.6.*", "5.7.*"]],
-        ["4.2.0", ["5.4.2", "5.4.1", "5.4.x", "5.5.*", "5.6.*", "5.7.*"]],
-        ["4.1.2", ["5.4.2", "5.4.1", "5.4.x", "5.5.*"]], # with omnetpp-5.6.*, omnetpp-5.7.*: error: Direct deletion of a module is illegal, use deleteModule() instead
-        ["4.1.1", ["5.4.2", "5.4.1", "5.4.x", "5.5.*"]], # with omnetpp-5.6.*, omnetpp-5.7.*: error: Direct deletion of a module is illegal, use deleteModule() instead
-        ["4.1.0", ["5.4.2", "5.4.1", "5.4.x"]], # with omnetpp-5.5.1: error: PacketQueue.cc:23: cPacketQueue constructor call is ambiguous
-        ["4.0.0", ["5.4.2", "5.4.1", "5.4.x"]], # with omnetpp-5.5.1: error: PacketQueue.cc:23: cPacketQueue constructor call is ambiguous
+        ["4.2.4", ["5.4.2", "5.4.1", "5.5.*", "5.6.*", "5.7.*"]],
+        ["4.2.3", ["5.4.2", "5.4.1", "5.5.*", "5.6.*", "5.7.*"]],
+        ["4.2.2", ["5.4.2", "5.4.1", "5.5.*", "5.6.*", "5.7.*"]],
+        ["4.2.1", ["5.4.2", "5.4.1", "5.5.*", "5.6.*", "5.7.*"]],
+        ["4.2.0", ["5.4.2", "5.4.1", "5.5.*", "5.6.*", "5.7.*"]],
+        ["4.1.2", ["5.4.2", "5.4.1", "5.5.*"]], # with omnetpp-5.6.*, omnetpp-5.7.*: error: Direct deletion of a module is illegal, use deleteModule() instead
+        ["4.1.1", ["5.4.2", "5.4.1", "5.5.*"]], # with omnetpp-5.6.*, omnetpp-5.7.*: error: Direct deletion of a module is illegal, use deleteModule() instead
+        ["4.1.0", ["5.4.2", "5.4.1"]], # with omnetpp-5.5.1: error: PacketQueue.cc:23: cPacketQueue constructor call is ambiguous
+        ["4.0.0", ["5.4.2", "5.4.1"]], # with omnetpp-5.5.1: error: PacketQueue.cc:23: cPacketQueue constructor call is ambiguous
 
         ["3.8.3", ["5.7.*", "6.0.*"]],
         ["3.8.2", ["5.7.*", "6.0.*"]],

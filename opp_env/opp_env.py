@@ -1481,7 +1481,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
             print("\nAvailable options:")
             for option_name, option in project_description.options.items():
                 option_description = option.get('option_description')
-                default_mark = "*" if option.get('is_default') else "";
+                default_mark = " (default)" if option.get('option_is_default') else "";
                 if option_description:
                     print(f"- {cyan(option_name)}{default_mark}: {option_description}")
                 else:

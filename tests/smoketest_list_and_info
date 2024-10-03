@@ -1,0 +1,167 @@
+#!/bin/bash
+
+. testlib.inc || exit 1
+
+run opp_env list  # same as --grouped
+assert_num_lines 65 80
+assert_contains_line 'omnetpp  * .* 6.0.3  6.0.2  6.0.1  6.0.0  5.7.1  5.7.0  5.6.3  5.6.2  5.6.1  5.6.0  5.5.2  5.5.1  5.5.0  5.4.2  5.4.1  5.4.0  5.3.1  5.3.0  5.2.2  5.2.1  5.2.0  5.1.2  5.1.1  5.1.0  5.0.1  5.0.0  4.6.1  4.6.0  4.5.1  4.5.0  4.4.2  4.4.1  4.4.0  4.3.2  4.3.1  4.3.0  4.2.3  4.2.2  4.2.1  4.2.0  4.1.1  4.1.0  4.0.2  4.0.1  3.3.2  3.3.1  git'
+assert_contains_line 'inet  * .* 4.5.2  4.5.1  4.5.0  4.4.1  4.4.0  4.3.9  4.3.8  4.3.7  4.2.10  4.2.9  4.2.8  4.2.7  4.2.6  4.2.5  4.2.4  4.2.3  4.2.2  4.2.1  4.2.0  4.1.2  4.1.1  4.1.0  4.0.0  3.8.3  3.8.2  3.8.1  3.8.0  3.7.1  3.7.0  3.6.8  3.6.7  3.6.6  3.6.5  3.6.4  3.6.3  3.6.2  3.6.1  3.6.0  3.5.x  3.5.0  3.4.0  3.3.0  3.2.4  3.2.3  3.2.2  3.2.1  3.2.0  3.1.x  3.1.1  3.1.0  3.0.x  3.0.0  2.6.x  2.6.0  2.5.x  2.5.0  2.4.x  2.4.0  2.3.x  2.3.0  2.2.x  2.2.0  2.1.x  2.1.0  2.0.x  2.0.0  20100323  20061020  git'
+assert_contains_line 'afdx  * 20220904'
+assert_contains_line 'ansa  * 3.4.0'
+assert_contains_line 'artery_allinone  * 20230820'
+assert_contains_line 'can_allinone  * 0.1.0'
+
+run opp_env list --flat
+assert_num_lines 200 250
+assert_contains_line 'omnetpp-6.0.3'
+assert_contains_line 'omnetpp-6.0.2'
+assert_contains_line 'omnetpp-6.0.1'
+assert_contains_line 'omnetpp-6.0.0'
+assert_contains_line 'omnetpp-3.3.2'
+assert_contains_line 'omnetpp-3.3.1'
+assert_contains_line 'omnetpp-git'
+assert_contains_line 'inet-4.5.2'
+assert_contains_line 'inet-4.5.1'
+assert_contains_line 'inet-4.5.0'
+assert_contains_line 'simu5g-1.2.2'
+assert_contains_line 'simu5g-1.2.1'
+
+run opp_env list --grouped
+assert_num_lines 65 80
+assert_contains_line 'omnetpp  * .* 6.0.3  6.0.2  6.0.1  6.0.0  5.7.1  5.7.0  5.6.3  5.6.2  5.6.1  5.6.0  5.5.2  5.5.1  5.5.0  5.4.2  5.4.1  5.4.0  5.3.1  5.3.0  5.2.2  5.2.1  5.2.0  5.1.2  5.1.1  5.1.0  5.0.1  5.0.0  4.6.1  4.6.0  4.5.1  4.5.0  4.4.2  4.4.1  4.4.0  4.3.2  4.3.1  4.3.0  4.2.3  4.2.2  4.2.1  4.2.0  4.1.1  4.1.0  4.0.2  4.0.1  3.3.2  3.3.1  git'
+assert_contains_line 'inet  * .* 4.5.2  4.5.1  4.5.0  4.4.1  4.4.0  4.3.9  4.3.8  4.3.7  4.2.10  4.2.9  4.2.8  4.2.7  4.2.6  4.2.5  4.2.4  4.2.3  4.2.2  4.2.1  4.2.0  4.1.2  4.1.1  4.1.0  4.0.0  3.8.3  3.8.2  3.8.1  3.8.0  3.7.1  3.7.0  3.6.8  3.6.7  3.6.6  3.6.5  3.6.4  3.6.3  3.6.2  3.6.1  3.6.0  3.5.x  3.5.0  3.4.0  3.3.0  3.2.4  3.2.3  3.2.2  3.2.1  3.2.0  3.1.x  3.1.1  3.1.0  3.0.x  3.0.0  2.6.x  2.6.0  2.5.x  2.5.0  2.4.x  2.4.0  2.3.x  2.3.0  2.2.x  2.2.0  2.1.x  2.1.0  2.0.x  2.0.0  20100323  20061020  git'
+assert_contains_line 'afdx  * 20220904'
+assert_contains_line 'ansa  * 3.4.0'
+assert_contains_line 'artery_allinone  * 20230820'
+assert_contains_line 'can_allinone  * 0.1.0'
+
+run opp_env list --names
+assert_num_lines 65 80
+assert_contains_line 'omnetpp'
+assert_contains_line 'inet'
+assert_contains_line 'afdx'
+assert_contains_line 'ansa'
+assert_contains_line 'artery_allinone'
+assert_contains_line 'can_allinone'
+assert_contains_line 'castalia'
+assert_contains_line 'cell'
+assert_contains_line 'chaosmanager'
+assert_contains_line 'cmm_orbit_mobility_allinone'
+assert_contains_line 'core4inet'
+
+run opp_env list --names .*net.*
+assert_num_lines 12 15
+assert_contains_line 'omnetpp'
+assert_contains_line 'inet'
+assert_contains_line 'core4inet'
+assert_contains_line 'fico4omnet'
+assert_contains_line 'inet_hnrl'
+assert_contains_line 'inetgpl'
+assert_contains_line 'inetmanet3'
+assert_contains_line 'inetmanet4'
+assert_contains_line 'lre_omnet'
+assert_contains_line 'ndnomnet'
+assert_contains_line 'neta_allinone'
+assert_contains_line 'omnet_tdma'
+
+run opp_env list --descriptions
+assert_num_lines 65 80
+assert_contains_line 'omnetpp  * OMNeT++ base system'
+assert_contains_line 'inet  * INET Framework is an open-source OMNeT++ model suite for wired, wireless and mobile networks.'
+assert_contains_line 'afdx  * Avionics Full-Duplex Switched Ethernet model for OMNeT++'
+assert_contains_line 'ansa  * Automated Network Simulation and Analysis'
+
+run opp_env list --aliases
+assert_num_lines 165 180
+assert_contains_line 'omnetpp-5 -> omnetpp-5.7.1'
+assert_contains_line 'omnetpp-5.7 -> omnetpp-5.7.1'
+assert_contains_line 'omnetpp-5.6 -> omnetpp-5.6.3'
+assert_contains_line 'omnetpp-5.1 -> omnetpp-5.1.2'
+assert_contains_line 'omnetpp-5.0 -> omnetpp-5.0.1'
+assert_contains_line 'omnetpp-4 -> omnetpp-4.6.1'
+assert_contains_line 'omnetpp-4.6 -> omnetpp-4.6.1'
+assert_contains_line 'omnetpp-4.1 -> omnetpp-4.1.1'
+assert_contains_line 'omnetpp-4.0 -> omnetpp-4.0.2'
+assert_contains_line 'fico4omnet-latest -> fico4omnet-20210113'
+assert_contains_line 'ansa-3 -> ansa-3.4.0'
+assert_contains_line 'ansa-3.4 -> ansa-3.4.0'
+assert_contains_line 'ansa-latest -> ansa-3.4.0'
+
+run opp_env list --expand
+assert_num_lines 200 220
+assert_contains_line 'omnetpp-6.0.3'
+assert_contains_line 'omnetpp-6.0.2'
+assert_contains_line 'omnetpp-6.0.1'
+assert_contains_line 'omnetpp-6.0.0'
+assert_contains_line 'inet-4.5.2 omnetpp-6.0.3'
+assert_contains_line 'inet-4.5.1 omnetpp-6.0.3'
+assert_contains_line 'inet-4.5.0 omnetpp-6.0.3'
+assert_contains_line 'inet-4.4.1 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.2 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.1 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.1.0 inet-4.2.10 omnetpp-5.7.1'
+assert_not_contains ' omnetpp-6.0.2'  # because it only offers the latest patchlevel of 6.0, 6.0.3
+
+run opp_env list --expand simu5g
+assert_num_lines 4 6
+assert_contains_line 'simu5g-1.2.2 inet-4.5.2 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.1 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.1.0 inet-4.2.10 omnetpp-5.7.1'
+assert_contains_line 'simu5g-git inet-4.5.2 omnetpp-6.0.3'
+assert_not_contains ' omnetpp-6.0.2'  # because it only offers the latest patchlevel of 6.0, 6.0.3
+
+run opp_env list --expand-all
+assert_num_lines 1200 1300
+assert_contains_line 'inet-4.5.2 omnetpp-6.0.3'
+assert_contains_line 'inet-4.5.2 omnetpp-6.0.2'
+assert_contains_line 'inet-4.5.2 omnetpp-6.0.1'
+assert_contains_line 'inet-4.5.2 omnetpp-6.0.0'
+assert_contains_line 'inet-4.5.1 omnetpp-6.0.3'
+assert_contains_line 'inet-4.5.1 omnetpp-6.0.2'
+assert_contains_line 'inet-4.5.1 omnetpp-6.0.1'
+assert_contains_line 'inet-4.5.1 omnetpp-6.0.0'
+assert_contains_line 'inet-4.5.0 omnetpp-6.0.3'
+
+run opp_env list --expand-all simu5g
+assert_num_lines 78 90
+assert_contains_line 'simu5g-1.2.2 inet-4.5.2 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.1 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.0 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.2 omnetpp-6.0.2'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.1 omnetpp-6.0.2'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.0 omnetpp-6.0.2'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.2 omnetpp-6.0.1'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.1 omnetpp-6.0.1'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.0 omnetpp-6.0.1'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.2 omnetpp-6.0.0'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.1 omnetpp-6.0.0'
+assert_contains_line 'simu5g-1.2.2 inet-4.5.0 omnetpp-6.0.0'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.1 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.0 omnetpp-6.0.3'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.1 omnetpp-6.0.2'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.0 omnetpp-6.0.2'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.1 omnetpp-6.0.1'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.0 omnetpp-6.0.1'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.1 omnetpp-6.0.0'
+assert_contains_line 'simu5g-1.2.1 inet-4.4.0 omnetpp-6.0.0'
+
+run opp_env info simu5g
+assert_num_lines 52 60
+
+run opp_env info simu5g-1.1
+assert_num_lines 14 16
+assert_contains_line 'simu5g-1.1.0: 5G NR and LTE/LTE-A user-plane simulation model'
+assert_contains_line 'Requires:'
+assert_contains_line '- inet: 4.2.10 / 4.2.9 / 4.2.8 / 4.2.7 / 4.2.6 / 4.2.5 / 4.2.4 / 4.2.3 / 4.2.2 / 4.2.1 / 4.2.0'
+assert_contains_line '- omnetpp: 5.6.3 / 5.6.2 / 5.6.1 / 5.6.0 / 5.7.1 / 5.7.0'
+assert_contains_line 'Available options:'
+assert_contains_line '- from-release (default): Install from release tarball on GitHub'
+assert_contains_line '- from-git: Install from git repo on GitHub'
+
+run opp_env info --option from-git simu5g-1.1
+#note: output is same as above (--option does not change it)
+
+run opp_env info --option simu5g:from-git simu5g-1.1
+#note: output is same as above (--option does not change it)
+
+echo PASSED

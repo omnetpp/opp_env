@@ -1,0 +1,151 @@
+#!/bin/bash
+
+. testlib.inc || exit 1
+
+#
+# check init and basic install
+#
+
+TMPDIR=${TMPDIR:-/tmp}
+WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
+
+run opp_env init -w $WORKSPACE
+
+run opp_env install -w $WORKSPACE opp_env_testproject-latest
+assert_contains_line 'hello from patch command'
+assert_contains_line 'hello from setenv command'
+assert_contains_line 'make MODE=debug invoked'
+assert_contains_line 'make MODE=release invoked'
+
+#
+# check run isolated (default) and non-isolated
+#
+
+export HELLO='hello-from-host'
+export KVAR='keep-this'
+
+COMMANDS_FILE=$WORKSPACE/commands.txt
+echo 'echo hello world; echo pwd=$(pwd); echo HELLO=$HELLO; echo KVAR=$KVAR' > $COMMANDS_FILE
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -k KVAR -c "source $COMMANDS_FILE"
+assert_contains_line 'hello world'
+assert_contains_line "pwd=$(pwd)"
+assert_not_contains 'hello-from-host' # host vars NOT visible
+assert_contains_line "KVAR=keep-this"
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -k KVAR  -c "source $COMMANDS_FILE" --no-isolated
+assert_contains_line 'hello world'
+assert_contains_line "pwd=$(pwd)"
+assert_contains_line 'HELLO=hello-from-host'  # host vars visible
+assert_contains_line "KVAR=keep-this"
+
+#
+# check shell isolated and non-isolated (default)
+#
+
+cat $COMMANDS_FILE | run  opp_env shell -w $WORKSPACE opp_env_testproject-latest -k KVAR  --isolated
+assert_contains_line 'hello world'
+assert_contains_line "pwd=$WORKSPACE/opp_env_testproject-0.1"
+assert_not_contains 'hello-from-host' # host vars NOT visible
+assert_contains_line "KVAR=keep-this"
+
+cat $COMMANDS_FILE | run opp_env shell -w $WORKSPACE opp_env_testproject-latest -k KVAR
+assert_contains_line 'hello world'
+assert_contains_line "pwd=$WORKSPACE/opp_env_testproject-0.1"
+assert_contains_line 'HELLO=hello-from-host'  # host vars visible
+assert_contains_line "KVAR=keep-this"
+
+#
+# check install --no-patch, --no-build
+#
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --no-patch
+assert_not_contains 'hello from patch command'
+assert_contains_line 'hello from setenv command'
+assert_contains_line 'make MODE=debug invoked'
+assert_contains_line 'make MODE=release invoked'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --no-build
+assert_contains_line 'hello from patch command'
+# assert_contains_line 'hello from setenv command'
+assert_not_contains 'make MODE=debug invoked'
+assert_not_contains 'make MODE=release invoked'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --no-patch --no-build
+assert_not_contains 'hello from patch command'
+# assert_contains_line 'hello from setenv command'
+assert_not_contains 'make MODE=debug invoked'
+assert_not_contains 'make MODE=release invoked'
+
+
+#
+# check build modes
+#
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --mode=debug
+assert_contains_line 'make MODE=debug invoked'
+assert_not_contains 'make MODE=release invoked'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --mode=release
+assert_contains_line 'make MODE=release invoked'
+assert_not_contains 'make MODE=debug invoked'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --mode=foo,bar
+assert_contains_line 'make MODE=foo invoked'
+assert_contains_line 'make MODE=bar invoked'
+assert_not_contains 'make MODE=release invoked'
+assert_not_contains 'make MODE=debug invoked'
+
+#
+# check build_all and other shell functions
+#
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -c "build_all"
+assert_contains_line 'make MODE=debug invoked'
+assert_contains_line 'make MODE=release invoked'
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -c "build_all foo bar"
+assert_contains_line 'make MODE=foo invoked'
+assert_contains_line 'make MODE=bar invoked'
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -c "clean_all"
+assert_contains_line 'make clean MODE=debug invoked'
+assert_contains_line 'make clean MODE=release invoked'
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -c "clean_all foo bar"
+assert_contains_line 'make clean MODE=foo invoked'
+assert_contains_line 'make clean MODE=bar invoked'
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -c "test_all"
+assert_contains_line 'make test invoked'
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -c "smoke_test_all"
+assert_contains_line 'make smoketest invoked'
+
+
+#
+# check installing from git repo, and --options
+#
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --options=from-git
+assert_contains 'Cloning into' # from git
+assert_contains_line 'make MODE=debug invoked'
+assert_contains_line 'make MODE=release invoked'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --options=opp_env_testproject:from-git
+assert_contains 'Cloning into' # from git
+assert_contains_line 'make MODE=debug invoked'
+assert_contains_line 'make MODE=release invoked'
+
+# cleanup
+rm -rf $WORKSPACE
+echo PASSED
+

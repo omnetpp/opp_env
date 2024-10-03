@@ -1495,7 +1495,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     init_workspace(workspace_directory, force=force, nixless=nixless_workspace)
 
-def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, isolated=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1517,7 +1517,7 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
     if not install_without_build:
-        workspace.nix_develop(effective_project_descriptions, commands=["build_all"])
+        workspace.nix_develop(effective_project_descriptions, commands=["build_all"], isolated=isolated)
 
 def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
@@ -1621,7 +1621,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     _logger.info(f"Running {'test ' if run_test else 'smoke_test ' if run_smoke_test else ''}command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")
-    workspace.nix_develop(effective_project_descriptions, workspace_directory, commands=commands, **dict(kwargs, suppress_stdout=False))
+    workspace.nix_develop(effective_project_descriptions, workspace_directory, commands=commands, isolated=isolated, **dict(kwargs, suppress_stdout=False))
 
 def maint_subcommand_main(catalog_dir, **kwargs):
     update_catalog(catalog_dir)

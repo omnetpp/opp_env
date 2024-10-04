@@ -158,12 +158,13 @@ def create_arg_parser():
         projects. Projects are downloaded and built in dedicated directories
         called workspaces.
 
-        opp_env uses the Nix package manager (nixos.org) to ensure a controlled
-        software environment (defined versions of compiler, libraries, and tools)
-        for building and running simulations. In opp_env sessions, Nix isolates
-        you from the system environment (i.e. /usr/bin, /usr/local/bin, etc.)
-        mainly by replacing the PATH environment variable so that entries point
-        into the Nix store (a custom directory tree) instead of system directories.
+        The opp_env uses the Nix package manager (nixos.org) to provide a controlled
+        software environment, ensuring specific versions of compilers, libraries, and
+        tools are used for building and running simulations. It achieves isolation by
+        modifying environment variables, mainly adjusting the PATH to prioritize the Nix
+        store (a custom directory tree) over system directories. This method is not
+        virtualization, so users still have access to the same file system and
+        permissions as they would in a regular host OS session.
 
         A typical session:
 
@@ -173,9 +174,11 @@ def create_arg_parser():
             $ opp_env install inet-latest  # download and build INET and a matching version of OMNeT++
             $ opp_env shell      # start an interactive shell for working with INET
 
-        The last three commands may be abbreviated as:
+        The above sequence may be written as a single command:
 
-            $ opp_env shell --init --install inet-latest
+            $ opp_env shell -w workspace --init --install inet-latest
+
+        Note: Our GitHub repository is at https://github.com/omnetpp/opp_env.
         """),
         epilog=
         "For command-specific help, type 'opp_env COMMAND -h'. For example, 'opp_env install -h' prints a "
@@ -189,7 +192,12 @@ def create_arg_parser():
 
     subparsers = parser.add_subparsers(help='', dest='subcommand', metavar='COMMAND')
 
-    subparser = subparsers.add_parser("list", help="Lists all available projects", description="Lists all available projects")
+    subparser = subparsers.add_parser("list", help="Lists all available projects", description=
+        """
+        Lists all available projects. If you want to add a new project to the database,
+        send a pull request against our GitHub repository at https://github.com/omnetpp/opp_env,
+        or simpler, open an issue and ask us to do it.
+        """)
     subparser.add_argument("project_name_patterns", nargs="*", metavar="project-name-or-pattern", help=
                            "Project names, project names with versions, or in general, regular expressions that match "
                            "the beginning of the project names with versions to be selected. Omit to list all projects.")
@@ -324,8 +332,13 @@ def create_arg_parser():
         for name in names:
             add_argument(subparser, name)
 
-    subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace", description=
-        "Designates the current working directory to be an opp_env workspace.",
+    subparser = subparsers.add_parser("init", help="Designates the current working directory to be an opp_env workspace", description=dedent(
+        """
+        Designates the current working directory, or the directory specified via -w or --workspace,
+        to be an opp_env workspace. The directory is expected to be empty.
+        If the directory does not exist, it is created (only a single directory level).
+        If the directory is already an opp_env workspace, an error is raised.
+        """),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     add_arguments(subparser, [
         "workspace",
@@ -421,7 +434,8 @@ def create_arg_parser():
         "local"
     ])
 
-    subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects", description=dedent("""
+    subparser = subparsers.add_parser("run", help="Runs a command in the environment of the specified projects", description=dedent(
+        """
         Runs a command in the environment of the specified projects.
         If no projects are specified, all projects in the current workspace are used.
         Many options are available to request addition operations (building, testing, or
@@ -434,8 +448,15 @@ def create_arg_parser():
         To ensure maximum reproducibility, the 'run' command runs the session in isolated mode.
         This can be changed by specifying the '--non-isolated' option.
 
-        Examples:
-            $ opp_env run omnetpp-6.0.3 -c 'cd omnetpp-6.0.3/samples/aloha && ./aloha'  # runs the 'aloha' simulation then exits
+        Examples :
+
+            # Run the 'aloha' example in OMNeT++ 6.0.3 then exit
+            # (expects the current directory to be a workspace with OMNeT++ already installed):
+            $ opp_env run omnetpp-6.0.3 -c 'cd omnetpp-6.0.3/samples/aloha && ./aloha'
+
+            # Install OMNeT++ and INET, then run the MANET Routing showcase simulation:
+            $ opp_env run inet-4.5.0 -w inet-workspace --init --install --chdir \\
+                -c 'cd inet-4.5.0/showcases/routing/manet && inet'
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     add_arguments(subparser, [

@@ -1,0 +1,54 @@
+name: Run smoke tests
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  smoketests:
+    name: Smoke tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Install locally
+      run: python3 -m pip install -e .
+
+    - name: '"Nixless" smoke test'
+      working-directory: tests
+      run: ./smoketest_nixless
+
+    - uses: cachix/install-nix-action@v30
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+
+    - name: '"List and info" smoke test'
+      working-directory: tests
+      run: ./smoketest_list_and_info
+
+    - name: '"Install and run" smoke test'
+      working-directory: tests
+      run: ./smoketest_install_and_run
+
+    - name: Show output
+      if: always()
+      run: |
+        echo "::group::Output"
+        cat tests/out.txt || echo '(no output)'
+        echo "::endgroup::"
+
+        echo "::group::Cumulative output"
+        cat tests/cumulative_out.txt || echo '(no output)'
+        echo "::endgroup::"

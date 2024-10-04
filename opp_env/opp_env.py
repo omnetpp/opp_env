@@ -1522,23 +1522,25 @@ def resolve_projects(project_full_names, remove_trailing_slash=True):
     project_descriptions = [project_registry.get_project_description(ProjectReference.parse(p.rstrip('/') if remove_trailing_slash else p)) for p in project_full_names]
     return project_descriptions
 
-def init_workspace(workspace_directory, force=False, allow_existing=False, nixless=False):
+def create_or_init_workspace(workspace_directory, allow_create=True, allow_existing=False, allow_nonempty=False, nixless=False):
     workspace_directory = workspace_directory or os.getcwd()
     if os.path.isdir(workspace_directory):
         if not Workspace.is_workspace(workspace_directory):
-            if os.listdir(workspace_directory) and not force: # dir not empty
+            if os.listdir(workspace_directory) and not allow_nonempty: # dir not empty
                 raise Exception(f"Refusing to turn non-empty directory '{workspace_directory}' into an opp_env workspace -- use 'opp_env init --force' if it was intentional")
-    else:
+    elif allow_create:
         parent_dir = os.path.dirname(os.path.abspath(workspace_directory))
         if not os.path.isdir(parent_dir):
             raise Exception(f"Cannot create workspace at '{workspace_directory}': refusing to create more than one level of directories")
         os.mkdir(workspace_directory)
+    else:
+        raise Exception(f"Workspace directory '{workspace_directory}' does not exist")
     Workspace.init_workspace(workspace_directory, allow_existing=allow_existing, nixless=nixless)
     return workspace_directory
 
 def resolve_workspace(workspace_directory, init, nixless_workspace):
     if init:
-        workspace_directory = init_workspace(workspace_directory, allow_existing=True, nixless=nixless_workspace)
+        workspace_directory = create_or_init_workspace(workspace_directory, nixless=nixless_workspace)
         workspace = Workspace(workspace_directory, nixless_workspace)
     else:
         if nixless_workspace:
@@ -1682,7 +1684,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
     print()
 
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
-    init_workspace(workspace_directory, force=force, nixless=nixless_workspace)
+    create_or_init_workspace(workspace_directory, allow_nonempty=force, nixless=nixless_workspace)
 
 def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, isolated=True, **kwargs):
     global project_registry

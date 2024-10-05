@@ -1047,7 +1047,7 @@ class Workspace:
         try:
             if project_description.download_commands:
                 commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.download_commands ]
-                self.nix_develop(effective_project_descriptions, self.root_directory, commands, run_setenv=False, **kwargs)
+                self.run_commands_with_projects(effective_project_descriptions, self.root_directory, commands, run_setenv=False, **kwargs)
             elif project_description.download_url:
                 if git_branch:
                     raise Exception(f"Git branch ('@{git_branch}') may only be specified when project is installed from git")
@@ -1081,7 +1081,7 @@ class Workspace:
                         self.download_and_apply_patch(project_description.patch_url, project_dir)
                     if project_description.patch_commands:
                         commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.patch_commands ]
-                        self.nix_develop(effective_project_descriptions, project_dir, commands, run_setenv=False, **kwargs)
+                        self.run_commands_with_projects(effective_project_descriptions, project_dir, commands, run_setenv=False, **kwargs)
                 else:
                     _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
 
@@ -1338,7 +1338,14 @@ class Workspace:
         ]
         return function_definitions
 
-    def nix_develop(self, effective_project_descriptions, working_directory=None, commands=[], vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_modes=None, tracing=False, **kwargs):
+    def run_command(self, command, suppress_stdout=False, check_exitcode=True, tracing=False):
+        if not self.nixless:
+            return self._nix_develop(nixos=self.default_nixos, stdenv=self.default_stdenv, session_name="run_command", script=command,
+                        interactive=False, isolated=True, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
+        else:
+            return self._run_command_nixless(command, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
+
+    def run_commands_with_projects(self, effective_project_descriptions, working_directory=None, commands=[], vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_modes=None, tracing=False, **kwargs):
 
         nixful = not self.nixless
 
@@ -1380,7 +1387,7 @@ class Workspace:
         script = join_lines(shell_hook_lines)
 
         if nixful:
-            return self._do_nix_develop(nixos=nixos, stdenv=stdenv, nix_packages=project_nix_packages,
+            return self._nix_develop(nixos=nixos, stdenv=stdenv, nix_packages=project_nix_packages,
                         session_name=session_name, script=script, vars_to_keep=vars_to_keep, interactive=interactive,
                         isolated=isolated, check_exitcode=check_exitcode, suppress_stdout=suppress_stdout, tracing=tracing)
         else:
@@ -1388,9 +1395,9 @@ class Workspace:
                 # launch an interactive bash session; setting PROMPT_COMMAND ensures the custom prompt
                 # takes effect despite PS1 normally being overwritten by the user's profile and rc files
                 script += f"\nPROMPT_COMMAND=\"PS1='{prompt}'\" bash -i"
-            return self._do_run_command(script, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
+            return self._run_command_nixless(script, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
 
-    def _do_nix_develop(self, nixos, stdenv, nix_packages=[], session_name="", script="", vars_to_keep=None, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, tracing=False):
+    def _nix_develop(self, nixos, stdenv, nix_packages=[], session_name="", script="", vars_to_keep=None, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, tracing=False):
         if not nixos or not stdenv:
             raise Exception(f"The nixos or stdenv field is not defined in any of the effective projects! {nixos=} {stdenv=}")
 
@@ -1471,21 +1478,14 @@ class Workspace:
         # perl: warning: Setting locale failed. / Please check that your locale settings: / LANGUAGE = (unset), / LC_ALL = (unset), ... / Falling back to the standard locale ("C").
         env["LC_ALL"] = "C"
 
-        result = self._do_run_command(nix_develop_command, env=env, suppress_stdout=not interactive and suppress_stdout, check_exitcode=check_exitcode)
+        result = self._run_command_nixless(nix_develop_command, env=env, suppress_stdout=not interactive and suppress_stdout, check_exitcode=check_exitcode)
 
         # cleanup: remove temporary home dir, as we don't want it to interfere with subsequent sessions
         if isolated:
             shutil.rmtree(temp_home)
         return result
 
-    def run_command(self, command, suppress_stdout=False, check_exitcode=True, tracing=False):
-        if not self.nixless:
-            return self._do_nix_develop(nixos=self.default_nixos, stdenv=self.default_stdenv, session_name="run_command", script=command,
-                        interactive=False, isolated=True, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
-        else:
-            return self._do_run_command(command, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
-
-    def _do_run_command(self, command, env=None, suppress_stdout=False, check_exitcode=True, tracing=False):
+    def _run_command_nixless(self, command, env=None, suppress_stdout=False, check_exitcode=True, tracing=False):
         if "\n" not in command:
             _logger.debug(f"Running command: {command}")
         else:
@@ -1712,7 +1712,7 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
     if not install_without_build:
-        workspace.nix_develop(effective_project_descriptions, commands=["build_all"], isolated=isolated)
+        workspace.run_commands_with_projects(effective_project_descriptions, commands=["build_all"], isolated=isolated)
 
 def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
@@ -1782,7 +1782,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
         else:
             _logger.debug(f"No need to change directory, wd={cyan(os.getcwd())} is already under the first project's directory {cyan(first_project_dir)}")
 
-    workspace.nix_develop(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
+    workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
 def run_subcommand_main(projects, command=None, workspace_directory=None, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
@@ -1828,7 +1828,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     _logger.info(f"Running {'test ' if run_test else 'smoke_test ' if run_smoke_test else ''}command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")
-    workspace.nix_develop(effective_project_descriptions, workspace_directory, commands=commands, isolated=isolated, **dict(kwargs, suppress_stdout=False))
+    workspace.run_commands_with_projects(effective_project_descriptions, workspace_directory, commands=commands, isolated=isolated, **dict(kwargs, suppress_stdout=False))
 
 def maint_subcommand_main(catalog_dir, **kwargs):
     update_catalog(catalog_dir)

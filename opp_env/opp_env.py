@@ -325,6 +325,11 @@ def create_arg_parser():
             which is to change into the root of the (first) project if the current working directory is outside that project's directory tree,
             and stay in the current directory (inside the project) otherwise.
             """)
+        elif name=="chdir@run":  subparser.add_argument("--chdir", default=False, action='store_true', help=
+            """
+            Change into the workspace directory before running the command.
+            (The default is to stay in the current directory.)
+            """)
         elif name=="command":    subparser.add_argument("-c", "--command", help="""Specifies the command that is run in the environment""")
         else: raise Exception(f"Internal error: unrecognized option name '{name}'")
 
@@ -466,6 +471,7 @@ def create_arg_parser():
         "workspace",
         "command",
         "options",
+        "chdir@run",
         "no-deps",
         "no-pause",
         "no-cleanup",
@@ -1784,7 +1790,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1827,8 +1833,9 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, reques
     commands = ["build_all", command] if build or (install and not install_without_build) else [command]
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
+    working_directory = workspace_directory if chdir else None
     _logger.info(f"Running {'test ' if run_test else 'smoke_test ' if run_smoke_test else ''}command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")
-    workspace.run_commands_with_projects(effective_project_descriptions, workspace_directory, commands=commands, isolated=isolated, **dict(kwargs, suppress_stdout=False))
+    workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, command=command, commands=commands, isolated=isolated, **dict(kwargs, suppress_stdout=False))
 
 def maint_subcommand_main(catalog_dir, **kwargs):
     update_catalog(catalog_dir)

@@ -266,7 +266,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "cd test/core; MODE=$BUILD_MODE ./runtest"
         ],
         "clean_commands": [
-            "make clean MODE=$BUILD_MODE"
+            "make clean MODE=$BUILD_MODE"  #TODO plain "make clean" in early versions?
         ],
         "options": {  # note: git master doesn't have all these download options
             "gcc7": {

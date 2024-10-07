@@ -27,13 +27,13 @@ def get_simulte_project_description(simulte_version, inet_versions, omnetpp_vers
             # Note: no setenv script in SimuLTE
         ],
         "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
-        "clean_commands": [ "make clean" ],
+        "clean_commands": [ "make clean MODE=$BUILD_MODE" ],
         "options": {
             "from-release": {
                 "option_description": "Install from release tarball on GitHub",
                 "option_category": "download",
                 "option_is_default": not is_git_branch,
-                "download_url": 
+                "download_url":
                     f"https://github.com/inet-framework/simulte/releases/download/v{simulte_version}/simulte-{simulte_version}-src.tgz" if simulte_version == "1.2.0" else
                     f"https://github.com/inet-framework/simulte/archive/refs/tags/v{simulte_version}.tar.gz",
             },

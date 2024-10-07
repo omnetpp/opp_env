@@ -104,7 +104,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             # build
             "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"
         ],
-        "clean_commands": [ "[ ! -f src/Makefile ] || make clean" ],
+        "clean_commands": [ "[ ! -f src/Makefile ] || make clean MODE=$BUILD_MODE" ],
         "smoke_test_commands": [
             "cd examples/ethernet/arptest",
             """if [ "$mode" = "debug" ]; then DBG_SUFFIX="_dbg"; INET_LIB=$(echo $INET_ROOT/out/*-debug/src/*INET*); fi""",
@@ -241,7 +241,7 @@ inet_20100323 = {
     ],
     "setenv_commands": ["export TCL_LIBRARY=${pkgs.tcl-8_6}/lib/tcl8.6"],
     "build_commands": ["make makefiles && make -j$NIX_BUILD_CORES MODE=release"],
-    "clean_commands": ["make clean"],
+    "clean_commands": ["make clean MODE=$BUILD_MODE"],
 }
 
 inet_20061020 = {

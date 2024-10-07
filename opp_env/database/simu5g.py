@@ -26,7 +26,7 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
             "source setenv -f"
         ],
         "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
-        "clean_commands": [ "make clean" ],
+        "clean_commands": [ "make clean MODE=$BUILD_MODE" ],
         "options": {
             "from-release": {
                 "option_description": "Install from release tarball on GitHub",

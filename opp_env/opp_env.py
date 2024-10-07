@@ -1692,7 +1692,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     create_or_init_workspace(workspace_directory, allow_nonempty=force, nixless=nixless_workspace)
 
-def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, isolated=True, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, isolated=True, build_modes=None, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1718,7 +1718,7 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
     if not install_without_build:
-        workspace.run_commands_with_projects(effective_project_descriptions, commands=["build_all"], isolated=isolated)
+        workspace.run_commands_with_projects(effective_project_descriptions, commands=["build_all"], isolated=isolated, build_modes=build_modes)
 
 def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
@@ -1737,7 +1737,7 @@ def check_multiple_versions(project_descriptions):
             def q(l): return "[" + ", ".join(l) + "]"
             raise Exception(f"Multiple versions specified for project {cyan(name)}: {cyan(q(versions))} -- only one version of a project may be active at a time")
 
-def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, pause_after_warnings=True, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, build_modes=None, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1788,9 +1788,9 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
         else:
             _logger.debug(f"No need to change directory, wd={cyan(os.getcwd())} is already under the first project's directory {cyan(first_project_dir)}")
 
-    workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, **kwargs)
+    workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, build_modes=build_modes, **kwargs)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, build_modes=None, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1835,7 +1835,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     working_directory = workspace_directory if chdir else None
     _logger.info(f"Running {'test ' if run_test else 'smoke_test ' if run_smoke_test else ''}command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")
-    workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, command=command, commands=commands, isolated=isolated, **dict(kwargs, suppress_stdout=False))
+    workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, commands=commands, isolated=isolated, build_modes=build_modes, **dict(kwargs, suppress_stdout=False))
 
 def maint_subcommand_main(catalog_dir, **kwargs):
     update_catalog(catalog_dir)

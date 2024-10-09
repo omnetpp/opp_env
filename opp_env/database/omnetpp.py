@@ -87,6 +87,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # note: "python3Packages.pyqt5" are needed by matplotlib in opp_charttool
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc", "python3Packages.pyqt5"] if version >= "6.0" else []
 
+    python3package_packages += ["python3Packages.setuptools"] if version >= "6.1" else []
+
     # Unreleased patch versions are produced by downloading the preceding release, then applying the diff downloaded from github.
     base_release_to_actual_version_patch_commands = [] if version == base_version else [
         f"echo 'Patching vanilla omnetpp-{base_version} to {git_branch_or_tag_name} from git...'",
@@ -229,7 +231,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
         # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS.
         # IT MUST BE A TAG (i.e 22.11) AND NOT A BRANCH (nixos-22.11)
-        "nixos": "22.11" if version < "6.0.0" else "23.05",
+        "nixos": "22.11" if version < "6.0.0" else "23.05" if version < "6.1.0" else "24.05",
         "stdenv": None, # defined as default option
         "nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
@@ -330,6 +332,7 @@ def get_project_descriptions():
     # Modernized versions build/work with modern a C++ compiler, bison/flex
     # and other tools and libraries, and also to have similar setenv scripts.
     released_versions = [
+        "6.1.0*",
         "6.0.3*", "6.0.2*", "6.0.1", "6.0",
         "5.7.1*", "5.7",
         "5.6.3*", "5.6.2", "5.6.1", "5.6",

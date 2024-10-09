@@ -1584,7 +1584,7 @@ def update_saved_project_dependencies(effective_project_descriptions, workspace)
         workspace.update_project_state(project_description, last_started_with=starting_with)
 
 def set_ide_project_dependencies(workspace, project_description, dependencies):
-    project_file = workspace.get_project_root_directory(project_description) + "/.project"
+    project_file = os.path.join(workspace.get_project_root_directory(project_description), ".project")
     with open(project_file, "r") as pf:
         content = pf.read()
     pattern = r'<projects>(.*?)</projects>'
@@ -1600,9 +1600,7 @@ def update_ide_workspace(effective_project_descriptions: ProjectDescription, wor
 
     dot_metadata_dir = f"{workspace.root_directory}/{workspace.WORKSPACE_IDE_METADATA_DIR}"
     os.makedirs(dot_metadata_dir, exist_ok=True)
-    ide_projects = [ project_description for project_description in reversed(effective_project_descriptions)
-                 if project_description.name != "omnetpp" and
-                 os.path.isfile(workspace.get_project_root_directory(project_description) + "/.project") ]
+    ide_projects = [ p for p in effective_project_descriptions if os.path.isfile(workspace.get_project_root_directory(p) + "/.project") and p.name != "omnetpp" ]
 
     # generate an import_projects.bsh that imports all relevant projects (TODO close all the others??? how?)
     with open(f"{dot_metadata_dir}/import_projects.bsh", "w") as bf:

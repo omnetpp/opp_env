@@ -1,3 +1,5 @@
+![smoke tests](https://github.com/omnetpp/opp_env/actions/workflows/smoketest.yml/badge.svg)
+
 # opp_env: Automated Installation of OMNeT++ Simulation Frameworks
 
 `opp_env` is a powerful tool that allows for the easy and automated installation

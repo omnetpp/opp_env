@@ -387,6 +387,8 @@ def create_arg_parser():
         "nixless-workspace",
         "workspace",
         "options",
+        "smoke-test",
+        "test",
         "no-deps",
         "no-pause",
         "no-cleanup",
@@ -1694,7 +1696,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     create_or_init_workspace(workspace_directory, allow_nonempty=force, nixless=nixless_workspace)
 
-def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, isolated=True, build_modes=None, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, isolated=True, build_modes=None, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1719,8 +1721,14 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
+    commands = [ "build_all" ]
+    if run_test:
+        commands.append("test_all")
+    if run_smoke_test:
+        commands.append("smoke_test_all")
+
     if not install_without_build:
-        workspace.run_commands_with_projects(effective_project_descriptions, commands=["build_all"], isolated=isolated, build_modes=build_modes)
+        workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, isolated=isolated, build_modes=build_modes)
 
 def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
@@ -1829,13 +1837,15 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
-    if run_test:
-        command = "test_all"
-
-    if run_smoke_test:
-        command = "smoke_test_all"
-
-    commands = ["build_all", command] if build or (install and not install_without_build) else [command]
+    commands = []
+    if build or (install and not install_without_build):
+        commands = ["build_all"]
+        if run_test:
+            commands.append("test_all")
+        if run_smoke_test:
+            commands.append("smoke_test_all")
+    if command:
+        commands.append(command)
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     working_directory = workspace_directory if chdir else None

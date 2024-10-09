@@ -1267,7 +1267,9 @@ class Workspace:
                         set -eo pipefail
                         cd '{directory}'
                         BUILD_MODE=$mode
+                        true ============== Project-specific commands: ==============
                         {build_commands}
+                        true ========================================================
                     ); then
                         echo -e "{SHELL_GREEN}Done {function_name} $mode{SHELL_NOCOLOR}"
                     else
@@ -1772,7 +1774,10 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
-    hint_command = f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean, test or check a project, use the `build_*`, `clean_*`, `test_*`, `smoke_test_*` and `check_*` commands.'"
+    project_names = [p.name for p in effective_project_descriptions]
+    function_list = "; ".join([f"`build_{p}`, `clean_{p}`, `test_{p}`, `smoke_test_{p}`, `check_{p}`" for p in ["all"] + project_names])
+    hint_command = f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean, test or check a project or all projects, use the following commands: {function_list}. (Use `declare -f <command>` to check what they do.)'"
+
     commands = ["build_all", hint_command] if build or (install and not install_without_build) else [hint_command]
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"

@@ -311,7 +311,12 @@ def create_arg_parser():
             such as their favorite text editor.
             However, due to the interference of various library versions in Nix and the host OS, etc, things can break in unexpected ways.
             """)
-        elif name=="mode":       subparser.add_argument("--mode", metavar='MODE,...', default="release,debug", help="Build mode(s), e.g. 'release' or 'debug', separated by commas.")
+        elif name=="build-mode":  subparser.add_argument("--build-mode", metavar='MODE,...', default="release,debug",  help=
+            """
+            Defines the BUILD_MODES environment variable for the session, which is obeyed by many commands, e.g. `build_all`,
+            `build_<projectname>`, `clean_all`, `clean_<projectname>`, and similar ones defined by opp_env.
+            The value is a comma-separated list of build modes, e.g. 'release' or 'debug'.
+            """)
         elif name=="install":    subparser.add_argument("--install", dest='install', default=False, action='store_true', help="Download and build missing projects")
         elif name=="build":      subparser.add_argument("--build", dest='build', default=False, action='store_true', help="Build projects")
         elif name=="no-build":   subparser.add_argument("--no-build", dest='install_without_build', default=False, action='store_true', help="Do not build the projects after download")
@@ -387,7 +392,7 @@ def create_arg_parser():
         "no-cleanup",
         "no-patch",
         "no-build",
-        "mode",
+        "build-mode",
         "no-isolated",
         "keep",
         "local"
@@ -402,8 +407,12 @@ def create_arg_parser():
         The shell opens with the environment variables already set up for working with the projects,
         e.g. the 'setenv' scripts (of projects that have one) are sourced. Additionally, the location of each project
         is made available in its '<projectname>_ROOT' environment variable: 'OMNETPP_ROOT', 'INET_ROOT', etc.
+        The 'BUILD_MODES' environment variable contains the build modes passed to the '--build-mode' option.
+
         Shortcut commands are also available in the shell for building, cleaning, checking, etc.
         each project: 'build_inet', 'build_omnetpp', 'build_all', 'clean_inet', 'clean_omnetpp', 'clean_all', etc.
+        These commands accept one or more build modes, such as 'debug' or 'release'; if none is specified,
+        the default is the modes in the 'BUILD_MODES' environment variable.
         The 'check_inet', check_omnetpp', 'check_all', etc. commands verify that the projects' files
         have not been changed since the download+patching step. (This is made possible by 'shasum' and 'diff'.)
 
@@ -431,7 +440,7 @@ def create_arg_parser():
         "install",
         "no-build", # with --install
         "build",
-        "mode",
+        "build-mode",
         "quiet",
         "isolated",
         "keep",
@@ -487,7 +496,7 @@ def create_arg_parser():
         "build",
         "smoke-test",
         "test",
-        "mode",
+        "build-mode",
         "quiet",
         "no-isolated",
         "keep",
@@ -525,9 +534,9 @@ def process_arguments():
         # split up and flatten list
         kwargs["vars_to_keep"] = [name for arg in args.keep for name in arg.split(",")]
         del kwargs["keep"]
-    if "mode" in kwargs:
-        kwargs["build_modes"] = args.mode.split(",")
-        del kwargs["mode"]
+    if "build_mode" in kwargs:
+        kwargs["build_modes"] = args.build_mode.split(",")
+        del kwargs["build_mode"]
     return kwargs
 
 def get_version():
@@ -1238,10 +1247,10 @@ class Workspace:
             return f"""
                 function {function_name} ()
                 {{
-                    # Collect build modes from args and $BUILD_MODE; if there is one, build it;
+                    # Collect build modes from args and $BUILD_MODES; if there is one, build it;
                     # if there are several, recursively call this this function for each.
                     local modes="$*"
-                    if [ -z "$modes" ]; then modes="$BUILD_MODE"; fi
+                    if [ -z "$modes" ]; then modes="$BUILD_MODES"; fi
                     if [ -z "$modes" ]; then modes="release debug"; fi
                     local mode_count=$(echo "$modes" | wc -w)
                     if [ "$mode_count" -gt 1 ]; then
@@ -1369,7 +1378,7 @@ class Workspace:
         shell_hook_lines = [
             'function error() { echo "$*" 1>&2; return 1; }; export -f error',
             'function ll() { ls -l $*; }; export -f ll',
-            f"export BUILD_MODE=\"{' '.join(build_modes) if build_modes else ''}\"",
+            f"export BUILD_MODES=\"{' '.join(build_modes) if build_modes else ''}\"",
             f"export OPP_ENV_VERSION=\"{get_version()}\"",
             *project_root_environment_variable_assignments,
             *project_version_environment_variable_assignments,

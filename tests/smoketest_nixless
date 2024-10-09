@@ -86,17 +86,17 @@ assert_not_contains 'make MODE=release invoked'
 #
 
 rm -rf $WORKSPACE/opp_env_testproject-*
-run opp_env install -w $WORKSPACE opp_env_testproject-latest --mode=debug
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --build-mode=debug
 assert_contains_line 'make MODE=debug invoked'
 assert_not_contains 'make MODE=release invoked'
 
 rm -rf $WORKSPACE/opp_env_testproject-*
-run opp_env install -w $WORKSPACE opp_env_testproject-latest --mode=release
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --build-mode=release
 assert_contains_line 'make MODE=release invoked'
 assert_not_contains 'make MODE=debug invoked'
 
 rm -rf $WORKSPACE/opp_env_testproject-*
-run opp_env install -w $WORKSPACE opp_env_testproject-latest --mode=foo,bar
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --build-mode=foo,bar
 assert_contains_line 'make MODE=foo invoked'
 assert_contains_line 'make MODE=bar invoked'
 assert_not_contains 'make MODE=release invoked'

@@ -1245,7 +1245,7 @@ class Workspace:
         return deps
 
     def _define_shell_functions(self, effective_project_descriptions):
-        def make_build_function(function_name, directory, build_commands):
+        def make_build_function(function_name, directory_var, build_commands):
             return f"""
                 function {function_name} ()
                 {{
@@ -1266,7 +1266,7 @@ class Workspace:
                     echo -e "{SHELL_GREEN}Invoking {function_name} $mode:{SHELL_NOCOLOR}"
                     if (
                         set -eo pipefail
-                        cd '{directory}'
+                        cd {directory_var}
                         BUILD_MODE=$mode
                         true ============== Project-specific commands: ==============
                         {build_commands}
@@ -1281,14 +1281,14 @@ class Workspace:
                 export -f {function_name}
             """
 
-        def make_check_function(function_name, project_name, directory):
+        def make_check_function(function_name, project_name, directory_var):
             return f"""
                 function {function_name} ()
                 {{
                     (
                     echo -e "{SHELL_GREEN}Invoking {function_name}:{SHELL_NOCOLOR}"
                     echo 'Checking whether files have changed since download...'
-                    cd '{directory}'
+                    cd {directory_var}
                     tmp=.opp_env/postdownload.out
                     if shasum --check --quiet .opp_env/postdownload.sha > $tmp 2>/dev/null; then
                         echo OK
@@ -1309,27 +1309,27 @@ class Workspace:
             export -f {function_name}"""
 
         project_build_function_commands = [
-            make_build_function("build_" + p.name, self.get_project_root_directory(p), join_commands(p.build_commands))
+            make_build_function("build_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.build_commands))
             for p in effective_project_descriptions
         ]
 
         project_clean_function_commands = [
-            make_build_function("clean_" + p.name, self.get_project_root_directory(p), join_commands(p.clean_commands))
+            make_build_function("clean_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.clean_commands))
             for p in effective_project_descriptions
         ]
 
         project_smoke_test_function_commands = [
-            make_build_function("smoke_test_" + p.name, self.get_project_root_directory(p), join_commands(p.smoke_test_commands if p.smoke_test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No smoke test commands were specified'"]))
+            make_build_function("smoke_test_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.smoke_test_commands if p.smoke_test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No smoke test commands were specified'"]))
             for p in effective_project_descriptions
         ]
 
         project_test_function_commands = [
-            make_build_function("test_" + p.name, self.get_project_root_directory(p), join_commands(p.test_commands if p.test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No test commands were specified'"]))
+            make_build_function("test_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.test_commands if p.test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No test commands were specified'"]))
             for p in effective_project_descriptions
         ]
 
         project_check_function_commands = [
-            make_check_function("check_" + p.name, p.get_full_name(), self.get_project_root_directory(p))
+            make_check_function("check_" + p.name, p.get_full_name(), f"${p.name.upper()}_ROOT")
             for p in effective_project_descriptions
         ]
 

@@ -1715,7 +1715,7 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
 
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
-    for project_description in effective_project_descriptions:
+    for project_description in reversed(effective_project_descriptions):
         workspace.download_project_if_needed(project_description, effective_project_descriptions, git_branch=git_branches.get(project_description.get_full_name()), **kwargs)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)

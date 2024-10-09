@@ -1594,6 +1594,7 @@ def set_ide_project_dependencies(workspace, project_description, dependencies):
         pf.write(content)
 
 def update_ide_workspace(effective_project_descriptions: ProjectDescription, workspace: Workspace):
+    #TODO only for omnetpp > 6.1? maybe move into omnetpp.py somehow?
     # Create a import_projects.bsh bean shell file so the IDE will be able to auto import the
     # project dependencies on the first start. The .metadata folder contains a startup.bsh file
     # that is run by the IDE (on 6.1 and later). startup.bsh pulls in the import_projects.bsh

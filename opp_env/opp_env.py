@@ -184,7 +184,6 @@ def create_arg_parser():
         "For command-specific help, type 'opp_env COMMAND -h'. For example, 'opp_env install -h' prints a "
         "detailed description and the available options of the 'install' subcommand.",
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--help-intro", default=False, action='store_true', help="Prints a short introduction to the opp_env tool")
     parser.add_argument("-d", "--debug", default=False, action='store_true', help="Equivalent to '--print-stacktrace --log-level DEBUG'")
     parser.add_argument("-l", "--log-level", choices=["ERROR", "WARN", "INFO", "DEBUG"], default="INFO", help="Log level of output")
     parser.add_argument("-p", "--print-stacktrace", default=False, action='store_true', help="Print stack trace on error")
@@ -503,9 +502,7 @@ def create_arg_parser():
 def process_arguments():
     parser = create_arg_parser()
     args = parser.parse_args(sys.argv[1:])
-    if args.help_intro:
-        print_intro()
-    elif args.subcommand == None:
+    if args.subcommand == None:
         parser.print_help()
 
     if args.debug:
@@ -532,20 +529,6 @@ def process_arguments():
         kwargs["build_modes"] = args.mode.split(",")
         del kwargs["mode"]
     return kwargs
-
-
-def print_intro():
-    print("""To see all the supported simulation models, run:
-  opp_env list
-
-To create a new workspace and install the latest version of OMNeT++, run:
-  mkdir workspace && cd workspace && opp_env init && opp_env install omnetpp-latest && opp_env shell omnetpp-latest
-
-To install and use the latest version of the INET Framework with a single command, run:
-  opp_env shell --install inet-latest
-
-To run a simulation model directly with the latest version of OMNeT++, run:
-  opp_env run --install omnetpp-latest -c 'cd $OMNETPP_ROOT/samples/aloha;./aloha'""")
 
 def get_version():
     return importlib.metadata.version("opp_env")

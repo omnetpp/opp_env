@@ -163,8 +163,8 @@ def create_arg_parser():
         tools are used for building and running simulations. It achieves isolation by
         modifying environment variables, mainly adjusting the PATH to prioritize the Nix
         store (a custom directory tree) over system directories. This method is not
-        virtualization, so users still have access to the same file system and
-        permissions as they would in a regular host OS session.
+        virtualization, so users still have access to the same file system and have the
+        same permissions as they would in a regular host OS session.
 
         A typical session:
 
@@ -462,6 +462,13 @@ def create_arg_parser():
             # Install OMNeT++ and INET, then run the MANET Routing showcase simulation:
             $ opp_env run inet-4.5.0 -w inet-workspace --init --install --chdir \\
                 -c 'cd inet-4.5.0/showcases/routing/manet && inet'
+
+            # Smoke test an existing INET installation:
+            $ opp_env run inet-4.5.0 --smoke-test
+
+            # Rebuild all projects
+            $ opp_env run -c "clean_all && build_all"
+
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     add_arguments(subparser, [

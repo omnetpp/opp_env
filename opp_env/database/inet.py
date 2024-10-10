@@ -56,9 +56,9 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             # 6b4b6e1934 ("UdpBasicBurst: fix errors introduced by recent "misc: fix incorrect enum declarations" commit", 2024-04-11)
             "sed -i 's!Register_Enum2(destAddrMode,!Register_Enum(inet::UdpBasicBurst::ChooseDestAddrMode, (UdpBasicBurst::ONCE, UdpBasicBurst::PER_BURST, UdpBasicBurst::PER_SEND));  /*Register_Enum2(destAddrMode,!' src/inet/applications/udpapp/UdpBasicBurst.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
             "sed -i 's!        ));!)); */!' src/inet/applications/udpapp/UdpBasicBurst.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
-            "sed -i 's/int addrMode = cEnum::get(\"inet::ChooseDestAddrMode\")->lookup(addrModeStr);/std::string addrModeEnumStr = opp_replacesubstring(opp_strupper(addrModeStr), \"PER\", \"PER_\", false); int addrMode = cEnum::get(\"inet::UdpBasicBurst::ChooseDestAddrMode\")->lookup(addrModeEnumStr.c_str());/' src/inet/applications/udpapp/UdpBasicBurst.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
-            "sed -i 's/Register_Enum(inet::NodeStatus,/Register_Enum(inet::NodeStatus::State,/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
-            "sed -i 's/cEnum::get(\"inet::NodeStatus\")/cEnum::get(\"inet::NodeStatus::State\")/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
+            "sed -i 's/int addrMode = cEnum::get(\"inet::ChooseDestAddrMode\")->lookup(addrModeStr);/std::string addrModeEnumStr = opp_replacesubstring(opp_strupper(addrModeStr), \"PER\", \"PER_\", false); int addrMode = cEnum::get(\"inet::UdpBasicBurst::ChooseDestAddrMode\")->lookup(addrModeEnumStr.c_str());/' src/inet/applications/udpapp/UdpBasicBurst.cc" if inet_version >= "4.3" and inet_version <= "4.5.3" else "",
+            "sed -i 's/Register_Enum(inet::NodeStatus,/Register_Enum(inet::NodeStatus::State,/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version >= "4.3" and inet_version <= "4.5.3" else "",
+            "sed -i 's/cEnum::get(\"inet::NodeStatus\")/cEnum::get(\"inet::NodeStatus::State\")/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version >= "4.3" and inet_version <= "4.5.3" else "",
 
             # fix "error: flexible array member in union" in sctp.h, later renamed to sctphdr.h
             "sed -i 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h" if inet_version.startswith("3.") else "",

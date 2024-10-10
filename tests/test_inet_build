@@ -1,3 +1,3 @@
 #!/bin/bash
 MY_DIR=$(dirname "$0")
-"$MY_DIR/test_oppenv" install inet
+"$MY_DIR/project_tester" install inet

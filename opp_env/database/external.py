@@ -104,7 +104,7 @@ def get_project_descriptions():
                 r"""""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""""",
                 r"""cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s > /dev/null""",
             ],
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["4.4.0"]},
+            "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["4.4.0"]},
             "download_url": "https://github.com/florasim/flora/releases/download/v1.1.0/flora-1.1.0.tgz",
             "patch_commands": [
                 r"""sed -i -E 's|INET_DIR = [^ ]+|INET_DIR = $(INET_ROOT)|' Makefile""",
@@ -130,7 +130,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s > /dev/null""",
             ],
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"]},
+            "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["3.8.3"]},
             "patch_commands": [
                 r"""sed -i -E 's|INET_PROJ=[^ ]+|INET_PROJ=$(INET_ROOT)|' Makefile""",
                 r"""sed -i -E 's|-L.*/src|-L$$\\\(INET_PROJ\\\)/src|' Makefile""",
@@ -215,7 +215,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd example-simulation && ./example-simulation$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s > /dev/null""",
             ],
-            "required_projects": {"omnetpp": ["6.0.*"]},
+            "required_projects": {"omnetpp": ["6.1.*", "6.0.*"]},
             "setenv_commands": [
                 r"""export OPPMAIN_LIB=$OMNETPP_ROOT/lib""",
                 r"""echo 'Hint: use the `./example_simulation` command in the example-simulation folder.'""",
@@ -403,7 +403,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s > /dev/null""",
             ],
-            "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.0.*"]},
+            "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.1.*", "6.0.*"]},
             "download_commands": ["git clone https://github.com/inet-framework/inet-gpl.git inetgpl-1.0"],
             "setenv_commands": [r"""source setenv""",
                                 r"""echo 'Hint: Use `inetgpl` command in any of the example simulation folders.'"""],
@@ -421,7 +421,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv > /dev/null""",
             ],
-            "required_projects": {"omnetpp": ["6.0.*"]}, # with omnetpp 5.7.*: error: no type named 'cValue' in namespace 'omnetpp'
+            "required_projects": {"omnetpp": ["6.1.*", "6.0.*"]}, # with omnetpp 5.7.*: error: no type named 'cValue' in namespace 'omnetpp'
             "patch_commands": [
                 r"""sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/poolelementnode-template.h""",
                 r"""sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/transportaddressblock.c""",
@@ -456,7 +456,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv > /dev/null""",
             ],
-            "required_projects": {"omnetpp": ["6.0.*", "5.7.*"]},
+            "required_projects": {"omnetpp": ["6.1.*", "6.0.*", "5.7.*"]},
             "patch_commands": [
                 r"""sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/poolelementnode-template.h""",
                 r"""sed -i -E 's|<ext_socket.h>|\"ext_socket.h\"|' model/transportaddressblock.c""",
@@ -579,7 +579,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd afdx/simulations && ../src/afdx$BUILD_MODE_SUFFIX -n .:../src:../../queueinglib AutoNetwork.ini -u Cmdenv --sim-time-limit=1s > /dev/null"""
             ],
-            "required_projects": {"omnetpp": ["6.0.*"]},
+            "required_projects": {"omnetpp": ["6.1.*", "6.0.*"]},
             "download_url": "https://github.com/badapplexx/AFDX/archive/f6ddd70438e1c9ee885a4adef8d2503a5108ade4.tar.gz",
             "patch_commands": [
                 r"""sed -i 's|.:../src|.:../src:../../queueinglib|g' afdx/simulations/run""",
@@ -1927,7 +1927,7 @@ def get_project_descriptions():
             # TODO: build subprojects
             "name": "plexe", "version": "3.1.2",
             "nix_packages": ["python2", "libxml2"],
-            "required_projects": {"omnetpp": ["6.0.*", "5.7.*"], "veins": ["5.2"]},
+            "required_projects": {"omnetpp": ["6.1.*", "6.0.*", "5.7.*"], "veins": ["5.2"]},
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.1.2.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",

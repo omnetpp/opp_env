@@ -2264,4 +2264,35 @@ def get_project_descriptions():
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
+
+        {
+            # WIP
+            "name": "ecmp", "version": "master",    # latest master as of time of writing
+            "required_projects": {"omnetpp": ["6.0.1"], "inet": ["4.4.1"]},
+            "description": "",
+            "smoke_test_commands": [
+                # r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                # r"""cd examples/papers/omnetsummit2019/configanalysis && opp_run$BUILD_MODE_SUFFIX -l $SDN4CORE_ROOT/src/SDN4CoRE omnetpp.ini -c CaseStudy_WithCT -n $SDN4CORE_ROOT/src:$SDN4CORE_ROOT/examples:$SOA4CORE_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src:$OPENFLOW_ROOT/src --sim-time-limit=1s -u Cmdenv > /dev/null"""
+            ],
+            "download_url": "https://github.com/adamgeorge309/ecmp/archive/refs/heads/main.tar.gz",
+            # "download_commands": [
+            #     "mkdir ecmp-master",
+            #     "cd ecmp-master",
+            #     "git clone "
+            # ],
+            "patch_commands": [
+                # r"""sed -i 's|$(DBG_SUFFIX)|$$\\\(D\\\)|g' Makefile""",
+                # r"""sed -i 's|-O out|-O out -o SDN4CoRE|' Makefile""",
+            ],
+            "setenv_commands": [
+                # r"""export INET_PROJ=$INET_ROOT""",
+                # r"""export CORE4INET_PROJ=$CORE4INET_ROOT""",
+                # r"""export FICO4OMNET_PROJ=$FICO4OMNET_ROOT""",
+                # r"""export SIGNALSANDGATEWAYS_PROJ=$SIGNALS_AND_GATEWAYS_ROOT""",
+                # r"""export SOA4CORE_PROJ=$SOA4CORE_ROOT""",
+                # r"""export OPENFLOW_PROJ=$OPENFLOW_ROOT""",
+            ],
+            # "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
     ]

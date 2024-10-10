@@ -56,6 +56,13 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "sed -i 's/Register_Enum(inet::NodeStatus,/Register_Enum(inet::NodeStatus::State,/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
             "sed -i 's/cEnum::get(\"inet::NodeStatus\")/cEnum::get(\"inet::NodeStatus::State\")/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
 
+            # version 4.5.3 needs a similar patch, as it has only been partially patched, and wrongly
+            # (the code should work with both 6.0.3 anf 6.1):
+            "sed -i 's/Register_Enum(UdpBasicBurst::ChooseDestAddrMode,/Define_Module(UdpBasicBurst);\\nRegister_Enum(inet::UdpBasicBurst::ChooseDestAddrMode,/' src/inet/applications/udpapp/UdpBasicBurst.cc" if inet_version == "4.5.3" else "",
+            "sed -i 's/cEnum::get(\"inet::ChooseDestAddrMode\")/cEnum::get(\"inet::UdpBasicBurst::ChooseDestAddrMode\")/' src/inet/applications/udpapp/UdpBasicBurst.cc" if inet_version == "4.5.3" else "",
+            "sed -i 's/Register_Enum(NodeStatus::State,/Register_Enum(inet::NodeStatus::State,/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version == "4.5.3" else "",
+            "sed -i 's/cEnum::get(\"inet::NodeStatus\")/cEnum::get(\"inet::NodeStatus::State\")/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version == "4.5.3" else "",
+
             # fix "error: flexible array member in union" in sctp.h, later renamed to sctphdr.h
             "sed -i 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h" if inet_version.startswith("3.") else "",
             "sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h" if inet_version.startswith("2.") else "",
@@ -155,6 +162,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
 
 def get_all_inet_released_versions():
     return [ make_inet_project_description(inet_version, omnetpp_versions) for inet_version, omnetpp_versions in [
+        ["4.5.3", ["6.1.*", "6.0.*"]],  # these versions need patching for omnetpp-6.1
         ["4.5.2", ["6.1.*", "6.0.*"]],  # these versions need patching for omnetpp-6.1
         ["4.5.1", ["6.1.*", "6.0.*"]],
         ["4.5.0", ["6.1.*", "6.0.*"]],

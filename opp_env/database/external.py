@@ -2265,3 +2265,28 @@ def get_project_descriptions():
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
 
+        {
+            # DONE
+            # original project: https://gitraap.i3a.info/jfclemente/ecmp
+            "name": "ecmp_allinone", "version": "20230713",    # latest master as of time of writing
+            "required_projects": {"omnetpp": ["6.0.1"]},
+            "description": "Equal-cost multi-path routing (ECMP) implementation for INET 4.4.1. This version downloads its own copy of INET, and does not use one installed by opp_env.",
+            "details": "Implemented by Juan Francisco Clemente Camacho. Original project: https://gitraap.i3a.info/jfclemente/ecmp",
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd examples/ecmp/FatTreeExample && inet$BUILD_MODE_SUFFIX --sim-time-limit=1s -c ECMP_PACKET -r 0 -u Cmdenv > /dev/null"""
+            ],
+            "download_url": "https://github.com/inet-framework/inet-clos-ecmp/archive/4e17afe51cdfc0843b019341af7fb42cf73cf099.tar.gz",
+            "patch_commands": [
+                r"""for f in $(grep -Rls 'defined(linux)'); do sed -i 's|defined(linux)|defined(__linux__)|' $f; done""",
+            ],
+            "setenv_commands": [
+                r"""echo 'Hint: use the `inet` (or `inet_dbg`) command in one of the example simulation folders (`examples/ecmp`) to run the example simulation.'""",
+                r"""export OMNETPP_IMAGE_PATH=\"$OMNETPP_IMAGE_PATH:$INET_ROOT/images\" """,
+                # r"""[ -f setenv ] && INET_ROOT= source setenv -f"""
+                r""". setenv -f""",     # kludge because the above doesn't work for some reason
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
+    ]

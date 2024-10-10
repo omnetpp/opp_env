@@ -5,11 +5,13 @@ import sys
 import os
 import argparse
 import itertools
+import tempfile
 
 parser = argparse.ArgumentParser(description="Run tests for a project.")
+parser.add_argument("--workspace", help="Path to the workspace to use for the test. Default is a temporary directory.")
 parser.add_argument("--dry-run", default=False, action='store_true', help="Do not actually run the test program")
 parser.add_argument("--really", default=False, action='store_true', help="Do not be deterred if the number of test cases is too high")
-parser.add_argument("--mode", action='append', metavar='debug,release,...', help="Build mode(s)")
+parser.add_argument("--build-mode", action='append', metavar='debug,release,...', help="Build mode(s)")
 parser.add_argument("--precmd", help="Command to run before each test case. Not affected by --dry-run.")
 parser.add_argument("--postcmd", help="Command to run after each test case. Not affected by --dry-run.")
 parser.add_argument("-f", "--testcase-file", help="File that contains one test case (one or more project filters) per line. These test cases will be done in addition to the ones specified on the command line.")
@@ -27,7 +29,9 @@ command = args.command
 project_filters = args.project_filters
 dry_run = args.dry_run
 really = args.really
-mode = ",".join(args.mode) if args.mode else ""
+build_mode = ",".join(args.build_mode) if args.build_mode else ""
+workspace = args.workspace
+smoke_test = True
 
 # Produce list of test cases
 def expand_project_filter(project_filter):
@@ -57,6 +61,14 @@ if args.testcase_file: #TODO multiple args!
 
 test_cases = combinations + testcases_from_file
 
+#
+# Create / check workspace
+#
+if not workspace:
+    workspace = tempfile.mkdtemp()
+print(f"Using workspace: {workspace}")
+
+
 # Set variables for counts and failures
 total_runs = 0
 total_failures = 0
@@ -70,12 +82,14 @@ for project_list in test_cases:
     projects_string = " ".join(project_list)
 
     options = "-n"
-    if mode:
-        options += f" --mode {mode}"
+    if build_mode:
+        options += f" --build-mode {build_mode}"
     if "cannot be installed in the standard way" in subprocess.check_output(f"opp_env info {projects_string}", shell=True, text=True):
         options += " --options=source-archive"
+    if smoke_test:
+        options += " --smoke-test"
 
-    test_command = f"opp_env -lDEBUG {command} {options} {projects_string}"
+    test_command = f"opp_env -lDEBUG {command} -w {workspace} --init {options} {projects_string}"
 
     print(f"Running #{total_runs} {test_command} : ", end="")
     sys.stdout.flush()

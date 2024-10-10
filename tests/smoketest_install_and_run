@@ -21,23 +21,29 @@ assert_contains_line 'make MODE=release invoked'
 # check run isolated (default) and non-isolated
 #
 
-export HELLO='hello-from-host'
+export HOSTVAR='hello-from-host'
 export KVAR='keep-this'
 
 COMMANDS_FILE=$WORKSPACE/commands.txt
-echo 'echo hello world; echo pwd=$(pwd); echo HELLO=$HELLO; echo KVAR=$KVAR' > $COMMANDS_FILE
+echo 'echo hello world; echo pwd=$(pwd); echo SETENV_VAR=$SETENV_VAR; echo HOSTVAR=$HOSTVAR; echo KVAR=$KVAR; echo PATH=$PATH' > $COMMANDS_FILE
 
 run opp_env run -w $WORKSPACE opp_env_testproject-latest -k KVAR -c "source $COMMANDS_FILE"
 assert_contains_line 'hello world'
 assert_contains_line "pwd=$(pwd)"
+assert_contains_line "SETENV_VAR=hello-from-setenv"
 assert_not_contains 'hello-from-host' # host vars NOT visible
 assert_contains_line "KVAR=keep-this"
+assert_contains_line 'PATH=.*:/nix/store/.*'  # in Nix
+assert_not_contains  'PATH=.*:/usr/bin.*'     # isolated
 
 run opp_env run -w $WORKSPACE opp_env_testproject-latest -k KVAR  -c "source $COMMANDS_FILE" --no-isolated
 assert_contains_line 'hello world'
 assert_contains_line "pwd=$(pwd)"
-assert_contains_line 'HELLO=hello-from-host'  # host vars visible
+assert_contains_line "SETENV_VAR=hello-from-setenv"
+assert_contains_line 'HOSTVAR=hello-from-host'  # host vars visible
 assert_contains_line "KVAR=keep-this"
+assert_contains_line 'PATH=.*:/nix/store/.*'  # in Nix
+assert_contains_line 'PATH=.*:/usr/bin.*'     # non-isolated
 
 #
 # check shell isolated and non-isolated (default)
@@ -46,14 +52,20 @@ assert_contains_line "KVAR=keep-this"
 cat $COMMANDS_FILE | run  opp_env shell -w $WORKSPACE opp_env_testproject-latest -k KVAR  --isolated
 assert_contains_line 'hello world'
 assert_contains_line "pwd=$WORKSPACE/opp_env_testproject-0.1"
+assert_contains_line "SETENV_VAR=hello-from-setenv"
 assert_not_contains 'hello-from-host' # host vars NOT visible
 assert_contains_line "KVAR=keep-this"
+assert_contains_line 'PATH=.*:/nix/store/.*'  # in Nix
+assert_not_contains  'PATH=.*:/usr/bin.*'     # isolated
 
 cat $COMMANDS_FILE | run opp_env shell -w $WORKSPACE opp_env_testproject-latest -k KVAR
 assert_contains_line 'hello world'
 assert_contains_line "pwd=$WORKSPACE/opp_env_testproject-0.1"
-assert_contains_line 'HELLO=hello-from-host'  # host vars visible
+assert_contains_line "SETENV_VAR=hello-from-setenv"
+assert_contains_line 'HOSTVAR=hello-from-host'  # host vars visible
 assert_contains_line "KVAR=keep-this"
+assert_contains_line 'PATH=.*:/nix/store/.*'  # in Nix
+assert_contains_line 'PATH=.*:/usr/bin.*'     # non-isolated
 
 #
 # check install --no-patch, --no-build
@@ -80,6 +92,25 @@ assert_not_contains 'hello from patch command'
 assert_not_contains 'make MODE=debug invoked'
 assert_not_contains 'make MODE=release invoked'
 
+#
+# check install --smoke-test, --test
+#
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --smoke-test
+assert_contains_line 'hello from patch command'
+assert_contains_line 'hello from setenv command'
+assert_contains_line 'make MODE=debug invoked'
+assert_contains_line 'make MODE=release invoked'
+assert_contains_line 'make smoketest invoked'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --test
+assert_contains_line 'hello from patch command'
+assert_contains_line 'hello from setenv command'
+assert_contains_line 'make MODE=debug invoked'
+assert_contains_line 'make MODE=release invoked'
+assert_contains_line 'make test invoked'
 
 #
 # check --build-mode  (should set $BUILD_MODES)

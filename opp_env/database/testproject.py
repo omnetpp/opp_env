@@ -4,7 +4,7 @@ def get_project_descriptions():
             "name": "opp_env_testproject", "version": "0.1",
             "description": "Dummy project for testing opp_env",
             "patch_commands": ["echo hello from patch command"],
-            "setenv_commands": ["echo hello from setenv command", "export FOO=bar", "echo BUILD_MODES=$BUILD_MODES"],
+            "setenv_commands": ["echo hello from setenv command", "export SETENV_VAR=hello-from-setenv", "echo BUILD_MODES=$BUILD_MODES"],
             "build_commands": ["make MODE=$BUILD_MODE"],
             "clean_commands": ["make clean MODE=$BUILD_MODE"],
             "test_commands":  ["make test"],

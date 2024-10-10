@@ -45,6 +45,17 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             # fix up shebang line in inet_featuretool (python -> python2)
             "sed -i 's| python$| python2|' inet_featuretool" if inet_version >= "3.0" and inet_version < "3.6.7" and not is_modernized else "",
 
+            # versions 4.3.x-4.5.2 need patching for omnetpp-6.1; patch is based on the following commits
+            # (but with modifications to ensure code works with both 6.0.3 anf 6.1):
+            # 46fd419c14 ("misc: fix incorrect enum declarations (fixes build error for recent OMNeT++ commits)", 2024-04-08)
+            # 3656055607 ("NodeStatus: follow enum registration fix.", 2024-04-10)
+            # 6b4b6e1934 ("UdpBasicBurst: fix errors introduced by recent "misc: fix incorrect enum declarations" commit", 2024-04-11)
+            "sed -i 's!Register_Enum2(destAddrMode,!Register_Enum(inet::UdpBasicBurst::ChooseDestAddrMode, (UdpBasicBurst::ONCE, UdpBasicBurst::PER_BURST, UdpBasicBurst::PER_SEND));  /*Register_Enum2(destAddrMode,!' src/inet/applications/udpapp/UdpBasicBurst.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
+            "sed -i 's!        ));!)); */!' src/inet/applications/udpapp/UdpBasicBurst.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
+            "sed -i 's/int addrMode = cEnum::get(\"inet::ChooseDestAddrMode\")->lookup(addrModeStr);/std::string addrModeEnumStr = opp_replacesubstring(opp_strupper(addrModeStr), \"PER\", \"PER_\", false); int addrMode = cEnum::get(\"inet::UdpBasicBurst::ChooseDestAddrMode\")->lookup(addrModeEnumStr.c_str());/' src/inet/applications/udpapp/UdpBasicBurst.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
+            "sed -i 's/Register_Enum(inet::NodeStatus,/Register_Enum(inet::NodeStatus::State,/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
+            "sed -i 's/cEnum::get(\"inet::NodeStatus\")/cEnum::get(\"inet::NodeStatus::State\")/' src/inet/common/lifecycle/NodeStatus.cc" if inet_version >= "4.3" and inet_version <= "4.5.2" else "",
+
             # fix "error: flexible array member in union" in sctp.h, later renamed to sctphdr.h
             "sed -i 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h" if inet_version.startswith("3.") else "",
             "sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h" if inet_version.startswith("2.") else "",
@@ -144,14 +155,14 @@ def make_inet_project_description(inet_version, omnetpp_versions):
 
 def get_all_inet_released_versions():
     return [ make_inet_project_description(inet_version, omnetpp_versions) for inet_version, omnetpp_versions in [
-        ["4.5.2", ["6.0.*"]],
-        ["4.5.1", ["6.0.*"]],
-        ["4.5.0", ["6.0.*"]],
-        ["4.4.1", ["6.0.*"]],
-        ["4.4.0", ["6.0.*"]],
-        ["4.3.9", ["6.0.*"]],
-        ["4.3.8", ["6.0.*"]],
-        ["4.3.7", ["6.0.*"]],
+        ["4.5.2", ["6.1.*", "6.0.*"]],  # these versions need patching for omnetpp-6.1
+        ["4.5.1", ["6.1.*", "6.0.*"]],
+        ["4.5.0", ["6.1.*", "6.0.*"]],
+        ["4.4.1", ["6.1.*", "6.0.*"]],
+        ["4.4.0", ["6.1.*", "6.0.*"]],
+        ["4.3.9", ["6.1.*", "6.0.*"]],
+        ["4.3.8", ["6.1.*", "6.0.*"]],
+        ["4.3.7", ["6.1.*", "6.0.*"]],
         # ["4.3.6", ["6.0.*"]],  Note: these versions only worked with preview versions of OMNeT++ 6.0, which are no longer available
         # ["4.3.5", ["6.0.*"]],
         # ["4.3.4", ["6.0.*"]],

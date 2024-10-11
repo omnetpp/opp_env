@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description="Run tests for a project.")
 parser.add_argument("--workspace", help="Path to the workspace to use for the test. Default is a temporary directory.")
 parser.add_argument("--dry-run", default=False, action='store_true', help="Do not actually run the test program")
 parser.add_argument("--really", default=False, action='store_true', help="Do not be deterred if the number of test cases is too high")
-parser.add_argument("--build-mode", action='append', metavar='debug,release,...', help="Build mode(s)")
+parser.add_argument("--build-modes", action='append', metavar='debug,release,...', help="Build mode(s)")
 parser.add_argument("--precmd", help="Command to run before each test case. Not affected by --dry-run.")
 parser.add_argument("--postcmd", help="Command to run after each test case. Not affected by --dry-run.")
 parser.add_argument("-f", "--testcase-file", help="File that contains one test case (one or more project filters) per line. These test cases will be done in addition to the ones specified on the command line.")
@@ -29,7 +29,7 @@ command = args.command
 project_filters = args.project_filters
 dry_run = args.dry_run
 really = args.really
-build_mode = ",".join(args.build_mode) if args.build_mode else ""
+build_modes = ",".join(args.build_modes) if args.build_modes else ""
 workspace = args.workspace
 smoke_test = True
 
@@ -82,8 +82,8 @@ for project_list in test_cases:
     projects_string = " ".join(project_list)
 
     options = "-n"
-    if build_mode:
-        options += f" --build-mode {build_mode}"
+    if build_modes:
+        options += f" --build-modes {build_modes}"
     if "cannot be installed in the standard way" in subprocess.check_output(f"opp_env info {projects_string}", shell=True, text=True):
         options += " --options=source-archive"
     if smoke_test:

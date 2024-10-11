@@ -311,7 +311,7 @@ def create_arg_parser():
             such as their favorite text editor.
             However, due to the interference of various library versions in Nix and the host OS, etc, things can break in unexpected ways.
             """)
-        elif name=="build-mode":  subparser.add_argument("--build-mode", metavar='MODE,...', default="release,debug",  help=
+        elif name=="build-modes":  subparser.add_argument("--build-modes", metavar='MODE,...', default="release,debug",  help=
             """
             Defines the BUILD_MODES environment variable for the session, which is obeyed by many commands, e.g. `build_all`,
             `build_<projectname>`, `clean_all`, `clean_<projectname>`, and similar ones defined by opp_env.
@@ -394,7 +394,7 @@ def create_arg_parser():
         "no-cleanup",
         "no-patch",
         "no-build",
-        "build-mode",
+        "build-modes",
         "no-isolated",
         "keep",
         "local"
@@ -409,7 +409,7 @@ def create_arg_parser():
         The shell opens with the environment variables already set up for working with the projects,
         e.g. the 'setenv' scripts (of projects that have one) are sourced. Additionally, the location of each project
         is made available in its '<projectname>_ROOT' environment variable: 'OMNETPP_ROOT', 'INET_ROOT', etc.
-        The 'BUILD_MODES' environment variable contains the build modes passed to the '--build-mode' option.
+        The 'BUILD_MODES' environment variable contains the build modes passed to the '--build-modes' option.
 
         Shortcut commands are also available in the shell for building, cleaning, checking, etc.
         each project: 'build_inet', 'build_omnetpp', 'build_all', 'clean_inet', 'clean_omnetpp', 'clean_all', etc.
@@ -442,7 +442,7 @@ def create_arg_parser():
         "install",
         "no-build", # with --install
         "build",
-        "build-mode",
+        "build-modes",
         "quiet",
         "isolated",
         "keep",
@@ -498,7 +498,7 @@ def create_arg_parser():
         "build",
         "smoke-test",
         "test",
-        "build-mode",
+        "build-modes",
         "quiet",
         "no-isolated",
         "keep",
@@ -536,9 +536,8 @@ def process_arguments():
         # split up and flatten list
         kwargs["vars_to_keep"] = [name for arg in args.keep for name in arg.split(",")]
         del kwargs["keep"]
-    if "build_mode" in kwargs:
-        kwargs["build_modes"] = args.build_mode.split(",")
-        del kwargs["build_mode"]
+    if "build_modes" in kwargs:
+        kwargs["build_modes"] = args.build_modes.split(",")
     return kwargs
 
 def get_version():

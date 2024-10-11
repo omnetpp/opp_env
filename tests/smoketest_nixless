@@ -108,23 +108,23 @@ assert_contains_line 'make MODE=release invoked'
 assert_contains_line 'make test invoked'
 
 #
-# check --build-mode  (should set $BUILD_MODES)
+# check --build-modes  (should set $BUILD_MODES)
 #
 
 rm -rf $WORKSPACE/opp_env_testproject-*
-run opp_env install -w $WORKSPACE opp_env_testproject-latest --build-mode=debug
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --build-modes=debug
 assert_contains_line 'BUILD_MODES=debug'
 assert_contains_line 'make MODE=debug invoked'
 assert_not_contains 'make MODE=release invoked'
 
 rm -rf $WORKSPACE/opp_env_testproject-*
-run opp_env install -w $WORKSPACE opp_env_testproject-latest --build-mode=release
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --build-modes=release
 assert_contains_line 'BUILD_MODES=release'
 assert_contains_line 'make MODE=release invoked'
 assert_not_contains 'make MODE=debug invoked'
 
 rm -rf $WORKSPACE/opp_env_testproject-*
-run opp_env install -w $WORKSPACE opp_env_testproject-latest --build-mode=foo,bar
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --build-modes=foo,bar
 assert_contains_line 'BUILD_MODES=foo bar'
 assert_contains_line 'make MODE=foo invoked'
 assert_contains_line 'make MODE=bar invoked'

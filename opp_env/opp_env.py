@@ -1371,7 +1371,7 @@ class Workspace:
         project_version_environment_variable_assignments = [f"export {p.name.upper()}_VERSION=\"{p.version}\"" for p in effective_project_descriptions]
 
         # a custom prompt spec to help users distinguish an opp_env shell from a normal terminal session
-        prompt = f"\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\[\\e[01;34m\\]\\w\[\\e[00m\\]\\$ "
+        prompt = f"\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\\[\\e[01;34m\\]\\w\\[\\e[00m\\]\\$ "
 
         is_macos = platform.system().lower() == "darwin"
         nproc_command = "nproc" if not is_macos else "sysctl -n hw.ncpu"

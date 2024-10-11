@@ -313,7 +313,7 @@ def create_arg_parser():
             """)
         elif name=="build-modes":  subparser.add_argument("--build-modes", metavar='MODE,...', default="release,debug",  help=
             """
-            Defines the BUILD_MODES environment variable for the session, which is obeyed by many commands, e.g. `build_all`,
+            Defines the BUILD_MODES environment variable for the session, which is taken into account by many commands, e.g. `build_all`,
             `build_<projectname>`, `clean_all`, `clean_<projectname>`, and similar ones defined by opp_env.
             The value is a comma-separated list of build modes, e.g. 'release' or 'debug'.
             """)

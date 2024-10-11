@@ -116,6 +116,9 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "opp_run$DBG_SUFFIX -l $INET_LIB -n $INET_ROOT/tutorials:$INET_ROOT/examples:.:$INET_ROOT/src -c ARPTest -u Cmdenv --sim-time-limit=10s > /dev/null" if inet_version < "4.0" else
             "inet$DBG_SUFFIX -c ARPTest -u Cmdenv --sim-time-limit=10s >/dev/null"
         ],
+        "test_commands": [
+            "cd tests/fingerprint && ./fingerprinttest",
+        ],
         "options": {
             "from-release": {
                 "option_description": "Install from release tarball on GitHub",

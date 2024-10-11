@@ -1,0 +1,82 @@
+//
+// This is the startup script for the OMNeT++ IDE, added by opp_env.
+// It is automatically executed when the IDE starts up. It ensures that
+// projects active in the opp_env session are imported and opened,
+// and the project references are correctly set up.
+//
+
+//System.out.println("startup.bsh: Running");
+
+void importAndOpenProject(String projectName, String[] referencedProjectNames) {
+    workspace = org.eclipse.core.resources.ResourcesPlugin.getWorkspace();
+    projectDir = workspace.getRoot().getLocation().append(projectName);
+    projectFile = projectDir.append(".project");
+    if (projectFile.toFile().exists()) {
+        //System.out.println("startup.bsh: Importing/opening " + projectName);
+        description = workspace.loadProjectDescription(projectFile);
+        description.setName(projectName);
+        project = workspace.getRoot().getProject(description.getName());
+        if (!project.exists())
+            project.create(description, null);
+        if (!project.isOpen())
+            project.open(null);
+
+        referencedProjects = new org.eclipse.core.resources.IProject[referencedProjectNames.length];
+        for (int i = 0; i < referencedProjectNames.length; i++)
+            referencedProjects[i] = workspace.getRoot().getProject(referencedProjectNames[i]);
+        description = project.getDescription();
+        description.setReferencedProjects(referencedProjects);
+        project.setDescription(description, null);
+    }
+}
+
+void closeOtherProjects(ArrayList projectNames) {
+    workspace = org.eclipse.core.resources.ResourcesPlugin.getWorkspace();
+    workspaceProjects = workspace.getRoot().getProjects();
+    for (int j = 0; j < workspaceProjects.length; j++)
+        if (!projectNames.contains(workspaceProjects[j].getName()) && workspaceProjects[j].isOpen()) {
+            //System.out.println("startup.bsh: Closing " + workspaceProjects[j].getName());
+            workspaceProjects[j].close(null);
+        }
+}
+
+void importAndOpenProjectsWithDependencies(String projectDepsEnv) {
+    collectedProjectNames = new ArrayList<String>();
+
+    if (projectDepsEnv != null && !projectDepsEnv.isEmpty()) {
+        // Split by ';' to get each project definition
+        String[] projectEntries = projectDepsEnv.split(";");
+
+        // Iterate over each project entry to parse the dependencies and call importAndOpenProject
+        for (int i = 0; i < projectEntries.length; i++) {
+            String entry = projectEntries[i].trim();
+            if (entry.isEmpty())
+                continue;
+
+            // Split by ':' to separate the project name from its dependencies, and split up the dependencies
+            String[] parts = entry.split(":", 2);
+            String projectName = parts[0].trim();
+            String dependencies = parts.length > 1 ? parts[1].trim() : "";
+            String[] referencedProjectNames = dependencies.isEmpty() ? new String[0] : dependencies.split("[ ,]+");
+
+            // Collect the project name
+            collectedProjectNames.add(projectName);
+
+            // Import / open project
+            if (!projectName.startsWith("omnetpp-"))
+                importAndOpenProject(projectName, referencedProjectNames);
+        }
+    }
+
+    closeOtherProjects(collectedProjectNames);
+}
+
+// Read the OPP_ENV_PROJECT_DEPS environment variable.
+// The OPP_ENV_PROJECT_DEPS environment variable is formatted as a semicolon-separated list
+// of project entries, where each entry consists of a project name optionally
+// followed by a colon and a list of dependencies separated by spaces or commas
+// (e.g., "proj1: dep1 dep2 dep3; proj2: dep4,dep5; proj3; proj4:dep6").
+String projectDepsEnv = System.getenv("OPP_ENV_PROJECT_DEPS");
+importAndOpenProjectsWithDependencies(projectDepsEnv);
+
+//System.out.println("startup.bsh: Completed");

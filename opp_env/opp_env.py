@@ -1363,6 +1363,11 @@ class Workspace:
             stdenv = Workspace._get_unique_project_attribute(effective_project_descriptions, "stdenv", self.default_stdenv)
 
         session_name = '+'.join([str(d) for d in reversed(effective_project_descriptions)])
+        project_names = [p.get_full_name() for p in effective_project_descriptions]
+        project_deps = "; ".join([
+            p.get_full_name() + ": " + " ".join([ dep.get_full_name() for dep in Workspace._get_dependencies(p, effective_project_descriptions) ])
+            for p in effective_project_descriptions
+        ])
         project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
         project_nix_packages = sum([p.nix_packages for p in effective_project_descriptions], [])
         project_vars_to_keep = sum([p.vars_to_keep for p in effective_project_descriptions], [])
@@ -1380,7 +1385,10 @@ class Workspace:
             'function error() { echo "$*" 1>&2; return 1; }; export -f error',
             'function ll() { ls -l $*; }; export -f ll',
             f"export BUILD_MODES=\"{' '.join(build_modes) if build_modes else ''}\"",
+            f"export OPP_ENV_DIR=\"{os.path.dirname(os.path.realpath(__file__))}\"",
             f"export OPP_ENV_VERSION=\"{get_version()}\"",
+            f"export OPP_ENV_PROJECTS=\"{' '.join(project_names)}\"",
+            f"export OPP_ENV_PROJECT_DEPS=\"{project_deps}\"",
             *project_root_environment_variable_assignments,
             *project_version_environment_variable_assignments,
             *(project_shell_hook_commands if nixful else []),

@@ -53,8 +53,8 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/ANSA.html",
             },
             "smoke_test_commands": [
-                r"""""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; ANSA_LIB=$(echo $ANSA_ROOT/out/*-release/src/*INET*); fi""""",
-                r"""""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; ANSA_LIB=$(echo $ANSA_ROOT/out/*-debug/src/*INET*); fi""""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; ANSA_LIB=$(echo $ANSA_ROOT/out/*-release/src/*INET*); fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; ANSA_LIB=$(echo $ANSA_ROOT/out/*-debug/src/*INET*); fi""",
                 r"""cd examples/ansa/eigrp/basic""",
                 r"""opp_run$BUILD_MODE_SUFFIX -l $ANSA_LIB -n $ANSA_ROOT/tutorials:$ANSA_ROOT/examples:$ANSA_ROOT/src -c EIGRP_unequal_cost_lb -u Cmdenv > /dev/null""",
             ],
@@ -101,7 +101,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/FLoRA.html",
             },
             "smoke_test_commands": [
-                r"""""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s > /dev/null""",
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["4.4.0"]},

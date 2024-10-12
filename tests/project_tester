@@ -17,11 +17,10 @@ parser.add_argument("--postcmd", help="Command to run after each test case. Not 
 parser.add_argument("-f", "--testcase-file", help="File that contains one test case (one or more project filters) per line. These test cases will be done in addition to the ones specified on the command line.")
 parser.add_argument("command", help="opp_env subcommand to use for running the tests: download, build, etc.")
 parser.add_argument("project_filters", nargs="*", metavar="project-filter", help="""
-Projects to include in the test runs. Explicit project versions, project names, and their
-regular expressions are accepted (substring match is done). The Cartesian product of the expanded lists
-from each argument generate the test runs. Be sure to protect regexes with single quotes to prevent the
-shell from expanding them with the list of files/directories in the current directory.""".replace("\n", " "))
-
+    Projects to include in the test runs. Explicit project versions, project names, and their
+    regular expressions are accepted (substring match is done). The Cartesian product of the expanded lists
+    from each argument generate the test runs. Be sure to protect regexes with single quotes to prevent the
+    shell from expanding them with the list of files/directories in the current directory.""")
 args = parser.parse_args()
 
 # Set variables for program names

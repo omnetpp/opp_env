@@ -710,7 +710,7 @@ def get_project_descriptions():
                 r"""cd Topologies/topo_router""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then REASE_BIN=$(echo $REASE_ROOT/ReaSE/out/*-release/src/rease); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because the corresponding INET version is only built in release.'; fi""",
-                r"""$REASE_BIN -n .:../../ReaSE/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s &""",
+                r"""$REASE_BIN -n .:../../ReaSE/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s""",
             ],
             "nix_packages": ["libpcap"],
             "required_projects": {"omnetpp": ["4.1.0"], "inet": ["20100323"]},

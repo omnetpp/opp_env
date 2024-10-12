@@ -27,9 +27,9 @@ def make_veins_project_description(veins_version, inet_versions, sumo_version, o
             """if [ "$BUILD_MODE" = "debug" ]; then DEBUG_POSTFIX="-d"; fi""",
             """if [ "$BUILD_MODE" = "release" ]; then DEBUG_POSTFIX=""; fi""",
             "./sumo-launchd.py &> /dev/null & bg_pid=$! &> /dev/null",
-            "cd examples/veins && ./run $DEBUG_POSTFIX -c Default -u Cmdenv > /dev/null",
+            "cd examples/veins && ./run $DEBUG_POSTFIX -c Default -u Cmdenv",
             "export VEINS_INET_INI_CONFIG='-c plain'" if veins_version >= "5.1" else "",
-            "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd ../../subprojects/veins_inet/examples/veins_inet && ./run $DEBUG_POSTFIX $VEINS_INET_INI_CONFIG -u Cmdenv > /dev/null; else cd ../../subprojects/veins_inet3/examples/veins_inet && ./run $DEBUG_POSTFIX -u Cmdenv > /dev/null; fi",
+            "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd ../../subprojects/veins_inet/examples/veins_inet && ./run $DEBUG_POSTFIX $VEINS_INET_INI_CONFIG -u Cmdenv; else cd ../../subprojects/veins_inet3/examples/veins_inet && ./run $DEBUG_POSTFIX -u Cmdenv; fi",
             "kill $bg_pid &> /dev/null",
         ] if veins_version >= "5.0" else ["echo 'Skipping test because required sumo version is not available as a nix package.'"],
         "build_commands": [

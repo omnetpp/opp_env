@@ -9,7 +9,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/flexray/dynamic && run_fico4omnet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1s > /dev/null""",
+                r"""cd examples/flexray/dynamic && run_fico4omnet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1s""",
             ],
             "required_projects": {"omnetpp": ["5.5.*", "5.6.*", "5.7.*"]},
             "patch_commands": [
@@ -56,7 +56,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; ANSA_LIB=$(echo $ANSA_ROOT/out/*-release/src/*INET*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; ANSA_LIB=$(echo $ANSA_ROOT/out/*-debug/src/*INET*); fi""",
                 r"""cd examples/ansa/eigrp/basic""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $ANSA_LIB -n $ANSA_ROOT/tutorials:$ANSA_ROOT/examples:$ANSA_ROOT/src -c EIGRP_unequal_cost_lb -u Cmdenv > /dev/null""",
+                r"""opp_run$BUILD_MODE_SUFFIX -l $ANSA_LIB -n $ANSA_ROOT/tutorials:$ANSA_ROOT/examples:$ANSA_ROOT/src -c EIGRP_unequal_cost_lb -u Cmdenv""",
             ],
             "required_projects": {"omnetpp": ["5.1.*"]},
             "patch_commands": [
@@ -102,7 +102,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["4.4.0"]},
             "download_url": "https://github.com/florasim/flora/releases/download/v1.1.0/flora-1.1.0.tgz",
@@ -128,7 +128,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s > /dev/null""",
+                r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s""",
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["3.8.3"]},
             "patch_commands": [
@@ -171,7 +171,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s > /dev/null""",
+                r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s""",
             ],
             "required_projects": {"omnetpp": ["5.5.*"], "inet": ["3.6.6"]},
             "patch_commands": [
@@ -213,7 +213,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd example-simulation && ./example-simulation$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""cd example-simulation && ./example-simulation$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*"]},
             "setenv_commands": [
@@ -248,7 +248,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/async/4x4 && ./run --$BUILD_MODE -u Cmdenv --sim-time-limit=0.01ms > /dev/null""",
+                r"""cd examples/async/4x4 && ./run --$BUILD_MODE -u Cmdenv --sim-time-limit=0.01ms""",
             ],
             "required_projects": {"omnetpp": ["5.5.*"]},
             "download_url": "https://github.com/yanivbi/HNOCS/archive/465754c28977a397e8ea4aef9296ca9987eb4f51.tar.gz",     # there are no releases, so we use a commit from the master branch
@@ -268,7 +268,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd simulations/examples && MODE=$BUILD_MODE ../runsim 01_example_strict_priority.ini --sim-time-limit=0.1s > /dev/null""",
+                r"""cd simulations/examples && MODE=$BUILD_MODE ../runsim 01_example_strict_priority.ini --sim-time-limit=0.1s""",
             ],
             "required_projects": {"omnetpp": ["5.4.*"], "inet": ["4.1.0"]},
             "download_url": "https://gitlab.com/ipvs/nesting/-/archive/v0.9.1/nesting-v0.9.1.tar.gz",
@@ -298,7 +298,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/out/*-release/src/CastaliaBin); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/out/*-debug/src/CastaliaBin_dbg); fi""",
-                r"""cd Simulations/BANtest && $CASTALIA_BIN -f omnetpp.ini -u Cmdenv -c TMAC > /dev/null""",
+                r"""cd Simulations/BANtest && $CASTALIA_BIN -f omnetpp.ini -u Cmdenv -c TMAC""",
             ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.3.*", "5.4.*", "5.6.*", "5.7.*"]},   # with omnetpp-6.0.*, 5.2.*: opp_msgtool: option is no longer supported: --msg4
@@ -321,7 +321,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/Castalia/out/*-release/CastaliaBin); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/Castalia/out/*-debug/CastaliaBin); fi""",
-                r"""cd Castalia/Simulations/BANtest && $CASTALIA_BIN -f omnetpp.ini -c TMAC > /dev/null""",
+                r"""cd Castalia/Simulations/BANtest && $CASTALIA_BIN -f omnetpp.ini -c TMAC""",
             ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["4.1.*"]},
@@ -350,7 +350,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/Castalia/out/*-release/CastaliaBin); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then CASTALIA_BIN=$(echo $CASTALIA_ROOT/Castalia/out/*-debug/CastaliaBin); fi""",
-                r"""cd Castalia/Simulations/BANtest && $CASTALIA_BIN -f omnetpp.ini -c TMAC > /dev/null""",
+                r"""cd Castalia/Simulations/BANtest && $CASTALIA_BIN -f omnetpp.ini -c TMAC""",
             ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["4.1.0"]},
@@ -379,7 +379,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX='_release'; MIXIM_LIB=$(echo $MIXIM_ROOT/out/*-release/src/*mixim*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then MIXIM_LIB=$(echo $MIXIM_ROOT/out/*-debug/src/*mixim*); fi""",
                 r"""cd examples/bmac""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $MIXIM_LIB -n ..:../../src/base:../../src/modules:../../src/inet_stub > /dev/null""",
+                r"""opp_run$BUILD_MODE_SUFFIX -l $MIXIM_LIB -n ..:../../src/base:../../src/modules:../../src/inet_stub""",
             ],
             "required_projects": {"omnetpp": ["4.6.*", "4.5.*", "4.4.*", "4.3.*", "4.2.*"], "inet": ["2.1.0"]},
             "download_url": "https://github.com/omnetpp-models/mixim/archive/refs/tags/2.3.tar.gz",
@@ -401,7 +401,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s > /dev/null""",
+                r"""cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s""",
             ],
             "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.1.*", "6.0.*"]},
             "download_commands": ["git clone https://github.com/inet-framework/inet-gpl.git inetgpl-1.0"],
@@ -419,7 +419,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv > /dev/null""",
+                r"""cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv""",
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*"]}, # with omnetpp 5.7.*: error: no type named 'cValue' in namespace 'omnetpp'
             "patch_commands": [
@@ -454,7 +454,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv > /dev/null""",
+                r"""cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv""",
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*", "5.7.*"]},
             "patch_commands": [
@@ -490,7 +490,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/Demos/UseCase1 && opp_run$BUILD_MODE_SUFFIX omnetpp.ini -u Cmdenv -c Ping -n $RINASIM_ROOT -l $RINASIM_ROOT/policies/rinasim > /dev/null""",
+                r"""cd examples/Demos/UseCase1 && opp_run$BUILD_MODE_SUFFIX omnetpp.ini -u Cmdenv -c Ping -n $RINASIM_ROOT -l $RINASIM_ROOT/policies/rinasim""",
             ],
             "required_projects": {"omnetpp": ["5.2.*"]},
             "patch_commands": [
@@ -526,7 +526,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/IEEE802154INET-Standalone.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "release" ]; then cd simulations && ../src/ieee802154inet_standalone -n ..:../src:$INET_ROOT/src -c StartWPAN-1Node_Starting_WPAN -u Cmdenv > /dev/null; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then cd simulations && ../src/ieee802154inet_standalone -n ..:../src:$INET_ROOT/src -c StartWPAN-1Node_Starting_WPAN -u Cmdenv; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug, because currently the project only builds in release.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"]},
@@ -555,7 +555,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then DCTRAFFICGEN_BIN=$(echo $DCTRAFFICGEN_ROOT/dctg_example/out/*-release/src/dctg_example); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then DCTRAFFICGEN_BIN=$(echo $DCTRAFFICGEN_ROOT/dctg_example/out/*-debug/src/dctg_example); fi""",
                 r"""cd dctg_example/simulations""",
-                r"""$DCTRAFFICGEN_BIN -f omnetpp.ini -n ../../src:../src -u Cmdenv -c FrontEnd --sim-time-limit=10s > /dev/null""",
+                r"""$DCTRAFFICGEN_BIN -f omnetpp.ini -n ../../src:../src -u Cmdenv -c FrontEnd --sim-time-limit=10s""",
             ],
             "nix_packages": ["libxml2"],
             "required_projects": {"omnetpp": ["4.6.*"]},
@@ -577,7 +577,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd afdx/simulations && ../src/afdx$BUILD_MODE_SUFFIX -n .:../src:../../queueinglib AutoNetwork.ini -u Cmdenv --sim-time-limit=1s > /dev/null"""
+                r"""cd afdx/simulations && ../src/afdx$BUILD_MODE_SUFFIX -n .:../src:../../queueinglib AutoNetwork.ini -u Cmdenv --sim-time-limit=1s"""
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*"]},
             "download_url": "https://github.com/badapplexx/AFDX/archive/f6ddd70438e1c9ee885a4adef8d2503a5108ade4.tar.gz",
@@ -599,7 +599,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd quisp && ./quisp$BUILD_MODE_SUFFIX simulations/two_nodes.ini -c two_node_MIM -u Cmdenv --sim-time-limit=10s > /dev/null"""
+                r"""cd quisp && ./quisp$BUILD_MODE_SUFFIX simulations/two_nodes.ini -c two_node_MIM -u Cmdenv --sim-time-limit=10s"""
             ],
             "required_projects": {"omnetpp": ["6.0.0"]},
             "git_url": "https://github.com/sfc-aqua/quisp.git",
@@ -623,7 +623,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; CELL_BIN=$(echo $CELL_ROOT/src/out/*-release/cell); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; CELL_BIN=$(echo $CELL_ROOT/src/out/*-debug/cell); fi""",
                 r"""cd src""",
-                r"""$CELL_BIN -u Cmdenv -c demo-emission -n .. ../networks/demo.ini > /dev/null""",
+                r"""$CELL_BIN -u Cmdenv -c demo-emission -n .. ../networks/demo.ini""",
             ],
             "required_projects": {"omnetpp": ["4.0.*"]},
             # we're using a hash from master because there are no releases
@@ -642,7 +642,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/aodv && inet$BUILD_MODE_SUFFIX -u Cmdenv -c Static --sim-time-limit=10s > /dev/null""",
+                r"""cd examples/aodv && inet$BUILD_MODE_SUFFIX -u Cmdenv -c Static --sim-time-limit=10s""",
             ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.4.*"]},
@@ -666,7 +666,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/aodv && ../../src/run_inet$BUILD_MODE_SUFFIX -u Cmdenv -c Static --sim-time-limit=10s > /dev/null""",
+                r"""cd examples/aodv && ../../src/run_inet$BUILD_MODE_SUFFIX -u Cmdenv -c Static --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["5.7.*"]},
             "download_url": "https://github.com/aarizaq/inetmanet-3.x/archive/a206218213f96382217a8653ede21f15974c4e70.tar.gz",
@@ -689,7 +689,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/OppBSD-4.0.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "debug" ]; then cd examples/TwoSubnets && ./out/gcc-release/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini > /dev/null; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then cd examples/TwoSubnets && ./out/gcc-release/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently this project only builds in debug mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.2.0"]},
@@ -710,7 +710,7 @@ def get_project_descriptions():
                 r"""cd Topologies/topo_router""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then REASE_BIN=$(echo $REASE_ROOT/ReaSE/out/*-release/src/rease); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because the corresponding INET version is only built in release.'; fi""",
-                r"""$REASE_BIN -n .:../../ReaSE/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s &> /dev/null""",
+                r"""$REASE_BIN -n .:../../ReaSE/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s &""",
             ],
             "nix_packages": ["libpcap"],
             "required_projects": {"omnetpp": ["4.1.0"], "inet": ["20100323"]},
@@ -737,7 +737,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; INET_HNRL_LIB=$(echo $INET_HNRL_ROOT/out/*-release/src/*inet*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; INET_HNRL_LIB=$(echo $INET_HNRL_ROOT/out/*-debug/src/*inet*); fi""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $INET_HNRL_LIB -n src:examples:examples/hybridpon/arptest -u Cmdenv -c ARPTest examples/hybridpon/arptest/omnetpp.ini > /dev/null"""
+                r"""opp_run$BUILD_MODE_SUFFIX -l $INET_HNRL_LIB -n src:examples:examples/hybridpon/arptest -u Cmdenv -c ARPTest examples/hybridpon/arptest/omnetpp.ini"""
             ],
             "nix_packages": ["sqlite"],
             "required_projects": {"omnetpp": ["4.2.0"]},
@@ -767,7 +767,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; SIMCAN_BIN=$(echo $SIMCAN_ROOT/out/clang-release/src/simcan); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; SIMCAN_BIN=$(echo $SIMCAN_ROOT/out/clang-debug/src/simcan); fi""",
                 r"""cd simulations/cliServExample""",
-                r"""$SIMCAN_BIN -n ../../src:.:$INET_ROOT/src -u Cmdenv > /dev/null""",
+                r"""$SIMCAN_BIN -n ../../src:.:$INET_ROOT/src -u Cmdenv""",
             ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"]},
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/simcan.tar.gz",
@@ -794,7 +794,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/SolarLEACH.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "release" ]; then cd leachDist && ./leachDist -u Cmdenv -L$OMNETPP_ROOT/src/cmdenv/libcmdenv -c Run1 -r 1 --sim-time-limit=10s > /dev/null; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then cd leachDist && ./leachDist -u Cmdenv -L$OMNETPP_ROOT/src/cmdenv/libcmdenv -c Run1 -r 1 --sim-time-limit=10s; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because this project is only built in release mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["3.3.*"]},
@@ -820,7 +820,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; STOCHASTICBATTERY_BIN=$(echo $STOCHASTICBATTERY_ROOT/out/*-release/stochastic_battery); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; STOCHASTICBATTERY_BIN=$(echo $STOCHASTICBATTERY_ROOT/out/*-debug/stochastic_battery); fi""",
-                r"""$STOCHASTICBATTERY_BIN -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""$STOCHASTICBATTERY_BIN -u Cmdenv --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["5.0.*"]},
             "download_url": "https://github.com/brandte/stochastic_battery/archive/dd999402a0aa7c88a9f78a3ca23f193b8250a925.tar.gz",
@@ -841,7 +841,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""./chaosmanager$BUILD_MODE_SUFFIX $INET_ROOT/examples/aodv/omnetpp.ini -n $INET_ROOT/src:$INET_ROOT/examples -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""./chaosmanager$BUILD_MODE_SUFFIX $INET_ROOT/examples/aodv/omnetpp.ini -n $INET_ROOT/src:$INET_ROOT/examples -u Cmdenv --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["5.6.2"], "inet": ["4.2.5"]},
             "download_url": "https://github.com/Agr-IoT/WSN-Chaos-Manager/archive/07272355eb0e8d5fa6216b9dcfb07fcac0a5115b.tar.gz",
@@ -864,7 +864,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/OPS.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "release" ]; then cd simulations && ../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src -c Messenger-Epidemic-SWIM -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then cd simulations && ../ops-simu omnetpp-ops.ini -n ../src:.:../modules/inet/src -c Messenger-Epidemic-SWIM -u Cmdenv --sim-time-limit=10s; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently the project only builds in release mode.'; fi"""
             ],
             "nix_packages": ["autoconf", "automake", "libtool"],
@@ -903,7 +903,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 # This projects doesn't contain any example simulations, so we test an INET example
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/aodv && ../../src/run_inet$BUILD_MODE_SUFFIX -c Static -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""cd examples/aodv && ../../src/run_inet$BUILD_MODE_SUFFIX -c Static -u Cmdenv --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["5.7.*"]},
             "download_commands": [
@@ -945,7 +945,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd src && ./tsch$BUILD_MODE_SUFFIX ../simulations/wireless/waic/omnetpp.ini -n .:../rpl/src:../rpl/inet/src:../simulations -c HPQ -r 0 -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""cd src && ./tsch$BUILD_MODE_SUFFIX ../simulations/wireless/waic/omnetpp.ini -n .:../rpl/src:../rpl/inet/src:../simulations -c HPQ -r 0 -u Cmdenv --sim-time-limit=10s""",
             ],
             "nix_packages": ["rsync"],
             "required_projects": {"omnetpp": ["5.6.*"]},
@@ -998,7 +998,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; CAN_ALLINONE_LIB=$(echo $CAN_ALLINONE_ROOT/out/*-release/src/*inet*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; CAN_ALLINONE_LIB=$(echo $CAN_ALLINONE_ROOT/out/*-debug/src/*inet*); fi""",
                 r"""cd examples/can/messagerouter1""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $CAN_ALLINONE_LIB omnetpp.ini -n ../..:../../../src -u Cmdenv -c CanMessageRouter > /dev/null""",
+                r"""opp_run$BUILD_MODE_SUFFIX -l $CAN_ALLINONE_LIB omnetpp.ini -n ../..:../../../src -u Cmdenv -c CanMessageRouter""",
             ],
             "required_projects": {"omnetpp": ["4.4.*", "4.6.*"]},    # TODO: 4.6.0 to option --with-recommended-deps?
             "download_commands": [
@@ -1045,7 +1045,7 @@ def get_project_descriptions():
             #     "catalog_url": "",
             # },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "release" ]; then docker run --rm -it -v "$(pwd)/data:/root/data" inetrg/ccnsim_dsme bash -c "cd ccnsim_dsme && cd simulations && ../src/ccnsim_dsme -m -n ../src:.:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../inet-dsme/src:../../inet-dsme/simulations:../../flora/src:../../ccnSim-0.4/:../../lora_omnetpp/src --image-path=../../inet/images -l ../../inet/src/INET -l ../../lora_omnetpp/src/lora_omnetpp  rfd_repos.ini -c INDICATION  --sim-time-limit=10s -r 0 > /dev/null"; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then docker run --rm -it -v "$(pwd)/data:/root/data" inetrg/ccnsim_dsme bash -c "cd ccnsim_dsme && cd simulations && ../src/ccnsim_dsme -m -n ../src:.:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../inet-dsme/src:../../inet-dsme/simulations:../../flora/src:../../ccnSim-0.4/:../../lora_omnetpp/src --image-path=../../inet/images -l ../../inet/src/INET -l ../../lora_omnetpp/src/lora_omnetpp  rfd_repos.ini -c INDICATION  --sim-time-limit=10s -r 0"; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently the project builds in release mode only.'; fi""",
             ],
             "download_commands": [
@@ -1077,7 +1077,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; SEAPP_LIB=$(echo $SEAPP_ROOT/src/out/*-release/*inet*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; SEAPP_LIB=$(echo $SEAPP_ROOT/src/out/*-debug/*inet*); fi""",
                 r"""cd examples/seapp/simpleTopo""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $SEAPP_LIB omnetpp.ini -n ../..:../../../src -u Cmdenv -c Simple_attack > /dev/null""",
+                r"""opp_run$BUILD_MODE_SUFFIX -l $SEAPP_LIB omnetpp.ini -n ../..:../../../src -u Cmdenv -c Simple_attack""",
             ],
             "nix_packages": ["python2", "glibmm", "libxml2", "libsigcxx", "libxmlxx", "glib"],
             "required_projects": {"omnetpp": ["4.6.1", "4.6.0"]},
@@ -1117,7 +1117,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""sdncontroller/src/sdncontroller$BUILD_MODE_SUFFIX $INET_ROOT/examples/aodv/omnetpp.ini -n $INET_ROOT/src:$INET_ROOT/examples -c Static -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""sdncontroller/src/sdncontroller$BUILD_MODE_SUFFIX $INET_ROOT/examples/aodv/omnetpp.ini -n $INET_ROOT/src:$INET_ROOT/examples -c Static -u Cmdenv --sim-time-limit=10s""",
             ],
             "nix_packages": ["libmysqlconnectorcpp", "mysql", "libpcap", "wireshark-qt"],
             "required_projects": {"omnetpp": ["5.4.*"]},
@@ -1162,7 +1162,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd gradys-0.5""",
-                r"""./gradys-simulations$BUILD_MODE_SUFFIX mobilityDrones-omnetpp.ini -n .:$INET_ROOT/src -c Wifi -u Cmdenv --sim-time-limit=1s > /dev/null""",
+                r"""./gradys-simulations$BUILD_MODE_SUFFIX mobilityDrones-omnetpp.ini -n .:$INET_ROOT/src -c Wifi -u Cmdenv --sim-time-limit=1s""",
             ],
             "required_projects": {"omnetpp": ["5.7.*", "5.6.*"], "inet": ["4.2.5"]},
             "patch_commands": [
@@ -1189,7 +1189,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd tdma/src""",
-                r"""./tdma$BUILD_MODE_SUFFIX ../simulations/omnetpp.ini -n .:../simulations:$INET_ROOT/src -r 0 -u Cmdenv > /dev/null""",
+                r"""./tdma$BUILD_MODE_SUFFIX ../simulations/omnetpp.ini -n .:../simulations:$INET_ROOT/src -r 0 -u Cmdenv""",
             ],
             "required_projects": {"omnetpp": ["5.7.*", "5.6.*"], "inet": ["4.2.5"]},
             "download_url": "https://github.com/ComNetsHH/omnet-tdma/archive/refs/tags/v1.0.2.tar.gz",
@@ -1215,7 +1215,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd simulations/x2""",
-                r"""../../src/run_lte$BUILD_MODE_SUFFIX -c X2-MeshTopology -r 0 -u Cmdenv --**.pdcpRrc.ipBased=false --sim-time-limit=10s > /dev/null""",
+                r"""../../src/run_lte$BUILD_MODE_SUFFIX -c X2-MeshTopology -r 0 -u Cmdenv --**.pdcpRrc.ipBased=false --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["5.5.1"], "inet": ["3.6.6"], "veins": ["5.2"]},
             "details": "An open source implementation of the 3GPP standard CV2X (Rel 14) Mode 4. It is based on an extended version of the SimuLTE OMNeT++ simulator which enables LTE network simulations.",
@@ -1256,7 +1256,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l lre_omnet -n .:$INET_ROOT/src -u Cmdenv > /dev/null""",
+                r"""opp_run$BUILD_MODE_SUFFIX -l lre_omnet -n .:$INET_ROOT/src -u Cmdenv""",
             ],
             "nix_packages": ["python311", "python311Packages.boost.dev", "boost", "gcc"],
             "description": "Integration of the Limited Relative Error algorithm into OMNeT++",
@@ -1298,7 +1298,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; WIFIDIRECT_ALLINONE_LIB=$(echo $WIFIDIRECT_ALLINONE_ROOT/out/*-release/src/*INET*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; WIFIDIRECT_ALLINONE_LIB=$(echo $WIFIDIRECT_ALLINONE_ROOT/out/*-debug/src/*INET*); fi""",
                 r"""cd examples/aodv""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $WIFIDIRECT_ALLINONE_LIB -n ../../src:.. omnetpp.ini -c IPv4ModerateFastMobility -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""opp_run$BUILD_MODE_SUFFIX -l $WIFIDIRECT_ALLINONE_LIB -n ../../src:.. omnetpp.ini -c IPv4ModerateFastMobility -u Cmdenv --sim-time-limit=10s""",
             ],
             "download_url": "https://github.com/ashahin1/inet/archive/refs/tags/v3.4.0.tar.gz",
             "setenv_commands": [
@@ -1321,7 +1321,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/libARA.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "release" ]; then cd simulations/eara && ./run.sh EARA0ALT12 --test > /dev/null; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then cd simulations/eara && ./run.sh EARA0ALT12 --test; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently the project only builds in release mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.5.*"]},
@@ -1366,7 +1366,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd inet-dsme/simulations && opp_run$BUILD_MODE_SUFFIX -r 0 --seed-set=0 --repeat=1 --cmdenv-express-mode=false --vector-recording=false -u Cmdenv -c DSME -n .:../src:../../inet/examples:../../inet/src:../../inet/tutorials:.:../src -l ../../inet/src/INET -l ../src/inet-dsme -l ../../inet/src/INET -l ../src/inet-dsme -l ../../inet/src/INET -l ../src/inet-dsme --debug-on-errors=false example.ini --sim-time-limit=10s > /dev/null""",
+                r"""cd inet-dsme/simulations && opp_run$BUILD_MODE_SUFFIX -r 0 --seed-set=0 --repeat=1 --cmdenv-express-mode=false --vector-recording=false -u Cmdenv -c DSME -n .:../src:../../inet/examples:../../inet/src:../../inet/tutorials:.:../src -l ../../inet/src/INET -l ../src/inet-dsme -l ../../inet/src/INET -l ../src/inet-dsme -l ../../inet/src/INET -l ../src/inet-dsme --debug-on-errors=false example.ini --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["5.4.*"]},
             "download_commands": [
@@ -1400,7 +1400,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/openflow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=1s > /dev/null""",
+                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/openflow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=1s""",
             ],
             "required_projects": {"omnetpp": ["5.5.1"], "inet": ["3.6.6"]},
             # there are no releases, so we use a commit from the master branch
@@ -1431,7 +1431,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; NDNOMNET_LIB=$(echo $NDNOMNET_ROOT/inet/out/*-release/src/*INET*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; NDNOMNET_LIB=$(echo $NDNOMNET_ROOT/inet/out/*-debug/src/*INET*); fi""",
                 r"""cd inet/examples/ndn""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l$NDNOMNET_LIB omnetpp.ini -n ../../src:..:. -c NdnDemo -u Cmdenv > /dev/null"""
+                r"""opp_run$BUILD_MODE_SUFFIX -l$NDNOMNET_LIB omnetpp.ini -n ../../src:..:. -c NdnDemo -u Cmdenv"""
             ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.1.*"]},
@@ -1467,7 +1467,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX=""; INET_HNRL_LIB=$(echo $INET_HNRL_ROOT/out/*-release/src/*inet*); OPP_RUN_BIN=$(echo $OMNETPP_ROOT/out/*-release/src/envir/opp_run); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; INET_HNRL_LIB=$(echo $INET_HNRL_ROOT/out/*-debug/src/*inet*); OPP_RUN_BIN=$(echo $OMNETPP_ROOT/out/*-debug/src/envir/opp_run); fi""",
-                r"""$OPP_RUN_BIN -l $INET_HNRL_LIB -n src:examples  -c ARPTest -u Cmdenv examples/ethernet/arptest/omnetpp.ini > /dev/null"""
+                r"""$OPP_RUN_BIN -l $INET_HNRL_LIB -n src:examples  -c ARPTest -u Cmdenv examples/ethernet/arptest/omnetpp.ini"""
             ],
             "nix_packages": ["sqlite"],
             "required_projects": {"omnetpp": ["4.1.0"]}, # with 4.1.1 and 4.1.x: error: non-constant-expression cannot be narrowed from type 'uint32_t' (aka 'unsigned int') to 'int' in initializer list [-Wc++11-narrowing]
@@ -1494,7 +1494,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; ICANCLOUD_LIB=$(echo $ICANCLOUD_ROOT/out/clang-release/src/*iCanCloud*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; ICANCLOUD_LIB=$(echo $ICANCLOUD_ROOT/out/clang-debug/src/*iCanCloud*); fi""",
                 r"""cd simulations/Cloud_A""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $ICANCLOUD_LIB -n../..:../../simulations:$INET_ROOT/src:../../src -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""opp_run$BUILD_MODE_SUFFIX -l $ICANCLOUD_LIB -n../..:../../simulations:$INET_ROOT/src:../../src -u Cmdenv --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.5.0"]},
             "download_url": "http://sourceforge.net/projects/icancloudsim/files/iCanCloud_v1.0_20150216.tgz/download",
@@ -1519,7 +1519,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; OS3_LIB=$(echo $OS3_ROOT/out/*-release/src/*cni-os3*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; OS3_LIB=$(echo $OS3_ROOT/out/*-debug/src/*cni-os3*); fi""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $OS3_LIB -n simulations:src:$INET_ROOT/src:$INET_ROOT/examples $INET_ROOT/examples/ethernet/arptest/omnetpp.ini > /dev/null"""
+                r"""opp_run$BUILD_MODE_SUFFIX -l $OS3_LIB -n simulations:src:$INET_ROOT/src:$INET_ROOT/examples $INET_ROOT/examples/ethernet/arptest/omnetpp.ini"""
             ],
             "nix_packages": ["curl", "tcl"],
             "required_projects": {"omnetpp": ["4.2.*"], "inet": ["2.2.0"]},
@@ -1550,7 +1550,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/gPTP.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "release" ]; then cd IEEE8021AS/simulations && ../src/IEEE8021AS -n $INET_ROOT/src:.:../src -c Network_daisy_chain -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then cd IEEE8021AS/simulations && ../src/IEEE8021AS -n $INET_ROOT/src:.:../src -c Network_daisy_chain -u Cmdenv --sim-time-limit=10s; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because the example simulation does not work in debug due to an error.'; fi""",
             ],
             "required_projects": {"omnetpp": ["5.2.*"], "inet": ["3.6.3"]},
@@ -1581,7 +1581,7 @@ def get_project_descriptions():
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/streetlightsim.tar.gz",
             "smoke_test_commands": [
                 r"""WSNROUTING_BIN=$(echo $STREETLIGHTSIM_ROOT/out/*-$BUILD_MODE/examples/WSNRouting/WSNRouting)""",
-                r"""cd examples/WSNRouting && $WSNROUTING_BIN -u Cmdenv -c flooding -r 0 > /dev/null""",
+                r"""cd examples/WSNRouting && $WSNROUTING_BIN -u Cmdenv -c flooding -r 0""",
             ],
             "build_commands": [r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
@@ -1595,7 +1595,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/INET-Quagga.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "release" ]; then cd examples/simpleTest && ./run -c OSPF1 -u Cmdenv --sim-time-limit=10s > /dev/null; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then cd examples/simpleTest && ./run -c OSPF1 -u Cmdenv --sim-time-limit=10s; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently this project is only built in release mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.1.*"], "inet": ["20100323"]},
@@ -1625,7 +1625,7 @@ def get_project_descriptions():
                 r"""echo '**.tcpAlgorithmClass="TCPFit"' >> $INET_ROOT/examples/inet/tcpwindowscale/test.ini""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then TCP_BIN=$(echo $TCP_FIT_ILLINOIS_ROOT/out/*-debug/tcp_fit_illinois); fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then TCP_BIN=$(echo $TCP_FIT_ILLINOIS_ROOT/out/*-release/tcp_fit_illinois); fi""",
-                r"""$TCP_BIN $INET_ROOT/examples/inet/tcpwindowscale/test.ini -n $INET_ROOT/src:$INET_ROOT/examples -u Cmdenv -c WS_enabled --sim-time-limit=10s > /dev/null""",
+                r"""$TCP_BIN $INET_ROOT/examples/inet/tcpwindowscale/test.ini -n $INET_ROOT/src:$INET_ROOT/examples -u Cmdenv -c WS_enabled --sim-time-limit=10s""",
                 r"""rm $INET_ROOT/examples/inet/tcpwindowscale/test.ini""",
             ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.5.0"]},
@@ -1650,7 +1650,7 @@ def get_project_descriptions():
                 r"""cd src/networks/stateless_network""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then DNS_BIN=$(echo $DNS_ROOT/out/*-debug/src/inet_dns*); fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then DNS_BIN=$(echo $DNS_ROOT/out/*-release/src/inet_dns*); fi""",
-                r"""$DNS_BIN omnetpp.ini -n ../..:$INET_ROOT/src --sim-time-limit=10s -u Cmdenv > /dev/null""",
+                r"""$DNS_BIN omnetpp.ini -n ../..:$INET_ROOT/src --sim-time-limit=10s -u Cmdenv""",
             ],
             "patch_commands": [
                 r"""sed -i 's|INETDefs.h|inet/common/INETDefs.h|g' src/*/*/*.h""",
@@ -1672,7 +1672,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""cd Examples/BurstifierTest""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then OBS_BIN=$(echo $OBS_ROOT/out/*-debug/src/obs); fi""",
-                r"""if [ "$BUILD_MODE" = "debug" ]; then $OBS_BIN -n ../..:$INET_ROOT/src -c config0 -u Cmdenv omnetpp.ini > /dev/null; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then $OBS_BIN -n ../..:$INET_ROOT/src -c config0 -u Cmdenv omnetpp.ini; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode due to segfault in debug mode.'; fi""",
             ],
             "build_commands": [r"""cd src && opp_makemake -f --deep -o obs -O out -KINET_PROJ=$INET_ROOT -DINET_IMPORT -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -I. -I$INET_ROOT/src -I$INET_ROOT/src/applications -I$INET_ROOT/src/applications/dhcp -I$INET_ROOT/src/applications/ethernet -I$INET_ROOT/src/applications/generic -I$INET_ROOT/src/applications/httptools -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/applications/rtpapp -I$INET_ROOT/src/applications/sctpapp -I$INET_ROOT/src/applications/tcpapp -I$INET_ROOT/src/applications/traci -I$INET_ROOT/src/applications/udpapp -I$INET_ROOT/src/applications/voip -I$INET_ROOT/src/base -I$INET_ROOT/src/battery -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer -I$INET_ROOT/src/linklayer/common -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/linklayer/ethernet -I$INET_ROOT/src/linklayer/ethernet/switch -I$INET_ROOT/src/linklayer/ext -I$INET_ROOT/src/linklayer/idealwireless -I$INET_ROOT/src/linklayer/ieee80211 -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/linklayer/ieee80211/mgmt -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/loopback -I$INET_ROOT/src/linklayer/ppp -I$INET_ROOT/src/linklayer/queue -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/mobility -I$INET_ROOT/src/mobility/models -I$INET_ROOT/src/networklayer -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/networklayer/autorouting -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/networklayer/autorouting/ipv6 -I$INET_ROOT/src/networklayer/bgpv4 -I$INET_ROOT/src/networklayer/bgpv4/BGPMessage -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/diffserv -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/networklayer/internetcloud -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/networklayer/ldp -I$INET_ROOT/src/networklayer/manetrouting -I$INET_ROOT/src/networklayer/manetrouting/aodv -I$INET_ROOT/src/networklayer/manetrouting/aodv/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/base -I$INET_ROOT/src/networklayer/manetrouting/batman -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand/orig -I$INET_ROOT/src/networklayer/manetrouting/dsdv -I$INET_ROOT/src/networklayer/manetrouting/dsr -I$INET_ROOT/src/networklayer/manetrouting/dsr/dsr-uu -I$INET_ROOT/src/networklayer/manetrouting/dymo -I$INET_ROOT/src/networklayer/manetrouting/dymo/dymoum -I$INET_ROOT/src/networklayer/manetrouting/dymo_fau -I$INET_ROOT/src/networklayer/manetrouting/olsr -I$INET_ROOT/src/networklayer/mpls -I$INET_ROOT/src/networklayer/ospfv2 -I$INET_ROOT/src/networklayer/ospfv2/interface -I$INET_ROOT/src/networklayer/ospfv2/messagehandler -I$INET_ROOT/src/networklayer/ospfv2/neighbor -I$INET_ROOT/src/networklayer/ospfv2/router -I$INET_ROOT/src/networklayer/rsvp_te -I$INET_ROOT/src/networklayer/ted -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/nodes -I$INET_ROOT/src/nodes/bgp -I$INET_ROOT/src/nodes/ethernet -I$INET_ROOT/src/nodes/httptools -I$INET_ROOT/src/nodes/inet -I$INET_ROOT/src/nodes/internetcloud -I$INET_ROOT/src/nodes/ipv6 -I$INET_ROOT/src/nodes/mpls -I$INET_ROOT/src/nodes/ospfv2 -I$INET_ROOT/src/nodes/rtp -I$INET_ROOT/src/nodes/wireless -I$INET_ROOT/src/nodes/xmipv6 -I$INET_ROOT/src/status -I$INET_ROOT/src/transport -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/transport/rtp -I$INET_ROOT/src/transport/rtp/profiles -I$INET_ROOT/src/transport/rtp/profiles/avprofile -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/transport/tcp -I$INET_ROOT/src/transport/tcp/flavours -I$INET_ROOT/src/transport/tcp/queues -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/transport/udp -I$INET_ROOT/src/util -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/util/headerserializers/headers -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/util/headerserializers/ipv4/headers -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/util/headerserializers/sctp/headers -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/util/headerserializers/tcp/headers -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/util/headerserializers/udp/headers -I$INET_ROOT/src/world -I$INET_ROOT/src/world/annotations -I$INET_ROOT/src/world/httptools -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/world/scenario -I$INET_ROOT/src/world/traci -linet && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
@@ -1689,7 +1689,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""cd src""",
-                r"""opp_run -l rpl ../simulations/omnetpp.ini -n .:../inet/src:../simulations -c MP2P-Static -u Cmdenv --sim-time-limit=10s > /dev/null""",
+                r"""opp_run -l rpl ../simulations/omnetpp.ini -n .:../inet/src:../simulations -c MP2P-Static -u Cmdenv --sim-time-limit=10s""",
             ],
             "nix_packages": ["rsync"],
             "required_projects": {"omnetpp": ["5.6.*"]},
@@ -1735,7 +1735,7 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["4.6.*"]},
             "download_url": "https://github.com/hectordelahoz/ProcessBusIec61850/archive/c3f76083a52fc36ba086d949dcf1ff91acd788db.tar.gz",
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "debug" ]; then cd iec61850InetV2.6/TestInet/simulations && ./run ../src/omnetpp.ini -c IecNetwork -r 0 -u Cmdenv --sim-time-limit=1s > /dev/null; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then cd iec61850InetV2.6/TestInet/simulations && ./run ../src/omnetpp.ini -c IecNetwork -r 0 -u Cmdenv --sim-time-limit=1s; fi""",
             ],
             "patch_commands": [
                 r"""sed -i 's/if (vector_cost<=0)/if (vector_cost == NULL)/' iec61850InetV2.6/inet/src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc""",
@@ -1761,7 +1761,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then CRSIM_BIN=$(echo $CRSIMULATOR_ROOT/out/*-release/src/*crhandover*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then CRSIM_BIN=$(echo $CRSIMULATOR_ROOT/out/*-debug/src/*crhandover*); fi""",
-                r"""$CRSIM_BIN simulations/omnetpp.ini -n simulations:src -c Run0 -u Cmdenv > /dev/null""",
+                r"""$CRSIM_BIN simulations/omnetpp.ini -n simulations:src -c Run0 -u Cmdenv""",
             ],
             "download_url": "https://github.com/s2r2010/crSimulator/archive/ba0e65d6a293969400a214a0b434418e61f1581c.tar.gz",
             "patch_commands": ["chmod +x simulations/run"],
@@ -1786,9 +1786,9 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_MODE_OPTION="-d"; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then DEBUG_MODE_OPTION=""; fi""",
-                r"""$VEINS_ROOT/sumo-launchd.py &> /dev/null & bg_pid=$! &> /dev/null""",
-                r"""cd examples/veins-vlc && ./run $DEBUG_MODE_OPTION -c DriveVlc -u Cmdenv > /dev/null""",
-                r"""kill $bg_pid &> /dev/null""",
+                r"""$VEINS_ROOT/sumo-launchd.py & & bg_pid=$! &""",
+                r"""cd examples/veins-vlc && ./run $DEBUG_MODE_OPTION -c DriveVlc -u Cmdenv""",
+                r"""kill $bg_pid &""",
             ],
             "download_url": "https://github.com/veins/veins_vlc/archive/refs/tags/veins-vlc-1.0.tar.gz",
             "build_commands": [
@@ -1809,7 +1809,7 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["5.6.*"]},
             "nix_packages": ["cmake", "boost", "cryptopp", "geographiclib", "sumo", "git-lfs" ],
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "debug" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's| -n | -c veins -u Cmdenv --sim-time-limit=10s -n |g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example > /dev/null && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's| -n | -c veins -u Cmdenv --sim-time-limit=10s -n |g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently this projects is only built in debug mode.'; fi""",
             ],
             # we use a hash from master because the opp-summit release needs git to build
@@ -1842,7 +1842,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then NETA_BIN=$(echo $NETA_ALLINONE_ROOT/neta/out/*-debug/src/neta); fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then NETA_BIN=$(echo $NETA_ALLINONE_ROOT/neta/out/*-release/src/neta); fi""",
                 r"""cd neta/src/simulations/AttackScenarios/DelayAttackScenario""",
-                r"""$NETA_BIN Delay.ini -n $NETA_ALLINONE_ROOT/neta/src:$INET_ROOT/src -c BajaCarga -r 0 -u Cmdenv --sim-time-limit=1s > /dev/null""",
+                r"""$NETA_BIN Delay.ini -n $NETA_ALLINONE_ROOT/neta/src:$INET_ROOT/src -c BajaCarga -r 0 -u Cmdenv --sim-time-limit=1s""",
             ],
             "download_commands": [
                 r"""mkdir -p neta_allinone-1.0/neta""",
@@ -1900,9 +1900,9 @@ def get_project_descriptions():
             ],
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_POSTFIX="_dbg"; fi""",
-                r"""$VEINS_ROOT/sumo-launchd.py &> /dev/null & bg_pid=$! &> /dev/null""",
-                r"""cd examples/space_veins && opp_run$DEBUG_POSTFIX -l ../../src/space_veins -n ../../src:../../src/space_veins:../../src/space_veins/modules:../../src/space_veins/nodes:../../lib/inet/src:../../lib/veins/subprojects/veins_inet/src/veins_inet:../../lib/veins/src/veins:. -u Cmdenv -c Null-Island-Launchd --sim-time-limit=1s > /dev/null""",
-                r"""kill $bg_pid &> /dev/null""",
+                r"""$VEINS_ROOT/sumo-launchd.py & & bg_pid=$! &""",
+                r"""cd examples/space_veins && opp_run$DEBUG_POSTFIX -l ../../src/space_veins -n ../../src:../../src/space_veins:../../src/space_veins/modules:../../src/space_veins/nodes:../../lib/inet/src:../../lib/veins/subprojects/veins_inet/src/veins_inet:../../lib/veins/src/veins:. -u Cmdenv -c Null-Island-Launchd --sim-time-limit=1s""",
+                r"""kill $bg_pid &""",
             ],
             "setenv_commands": [
                 r"""echo $PYTHON2_BIN""",
@@ -1933,7 +1933,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_ARG=""; fi""",
                 r"""cd examples/platooning""",
-                r"""plexe_run $BUILD_MODE_ARG -u Cmdenv -c PlatooningNoGui -r 0 --sim-time-limit=10s > /dev/null""",
+                r"""plexe_run $BUILD_MODE_ARG -u Cmdenv -c PlatooningNoGui -r 0 --sim-time-limit=10s""",
             ],
             "setenv_commands": [
                                 r"""export SUMO_HOME=${pkgs.sumo}/share/sumo && echo 'sumo home: ' && echo $SUMO_HOME""",
@@ -1956,7 +1956,7 @@ def get_project_descriptions():
                 r"""cp showcases/wireless/pathloss/omnetpp.ini showcases/wireless/pathloss/test.ini""",
                 r"""echo "\n[Config Test]\n*.radioMedium.pathLoss.typename = "RIMFading" " >> showcases/wireless/pathloss/test.ini """,
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""inet$BUILD_MODE_SUFFIX showcases/wireless/pathloss/test.ini -u Cmdenv -r 0 > /dev/null""",
+                r"""inet$BUILD_MODE_SUFFIX showcases/wireless/pathloss/test.ini -u Cmdenv -r 0""",
                 r"""rm showcases/wireless/pathloss/test.ini""",
             ],
             "download_commands": [
@@ -2045,7 +2045,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/mobility/CMM""",
-                r"""inet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=100s > /dev/null""",
+                r"""inet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=100s""",
             ],
             "download_commands": [
                 r"""mkdir cmm_orbit_mobility_allinone-20220815""",

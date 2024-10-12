@@ -265,8 +265,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         ],
         "smoke_test_commands": [
             """if [ "$BUILD_MODE" = "debug" ]; then DEBUG_SUFFIX="_dbg"; fi """ if base_version >= "5.2" else None,
-            "nedtool -h >/dev/null" if base_version.startswith("3.") else
-            "cd samples/dyna; ./dyna$DEBUG_SUFFIX -u Cmdenv >/dev/null"
+            "nedtool -h" if base_version.startswith("3.") else
+            "cd samples/dyna; ./dyna$DEBUG_SUFFIX -u Cmdenv"
         ],
         "test_commands": [
             None if base_version < "6.0" else

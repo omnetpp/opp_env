@@ -1,7 +1,6 @@
 def get_project_descriptions():
     return [
         {
-            # DONE
             "name": "fico4omnet", "version": "20240124",        # last commit of master branch as of time of writing
             "description": "Fieldbus Communication (CAN and FlexRay)",
             "metadata": {
@@ -46,7 +45,6 @@ def get_project_descriptions():
         },
         
         {
-            # DONE - ok
             "name": "fico4omnet", "version": "20210113",
             "description": "Fieldbus Communication (CAN and FlexRay)",
             "metadata": {
@@ -91,7 +89,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "ansa", "version": "3.4.0",
             "description": "Automated Network Simulation and Analysis",
             "metadata": {
@@ -139,7 +136,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "flora", "version": "1.1.0",
             "description": "Framework for LoRa",
             "metadata": {
@@ -165,7 +161,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "core4inet", "version": "20240124",
             "description": "Real-Time Ethernet protocols for INET",
             "metadata": {
@@ -208,7 +203,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "core4inet", "version": "221109",
             "description": "Real-Time Ethernet protocols for INET",
             "metadata": {
@@ -250,7 +244,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "simproctc", "version": "2.0.2",
             "description": "Simulation Processing Tool-Chain",
             "metadata": {
@@ -285,7 +278,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "hnocs", "version": "20221212",     # last commit of master branch as of time of writing
             "description": "Network on Chip Simulation Framework",
             "metadata": {
@@ -305,7 +297,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "nesting", "version": "0.9.1",
             "description": "Network Simulator for Time-Sensitive Networking (TSN)",
             "metadata": {
@@ -333,7 +324,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # Castalia ported to omnetpp 5.4
             "name": "castalia", "version": "3.3pr16",
             "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",
@@ -357,7 +347,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "castalia", "version": "3.3",
             "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",
             "metadata": {
@@ -386,7 +375,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "castalia", "version": "3.2",
             "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",
             "metadata": {
@@ -414,7 +402,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "mixim", "version": "2.3",
             "description": "Framework for modeling and simulation of wireless and mobile networks (deprecated in favor of INET)",
             "metadata": {
@@ -438,7 +425,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             # TODO: catalog
             "name": "inetgpl", "version": "1.0",
             "description": "GPL licensed models for INET",
@@ -457,7 +443,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "rspsim", "version": "6.1.3",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RSPSIM.html",
@@ -492,7 +477,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             "name": "rspsim", "version": "6.1.2",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RSPSIM.html",
@@ -527,7 +511,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok; when testing without '-u Cmdenv' -> segfault (but works in Cmdenv)
+            # NOTE - ok; when testing without '-u Cmdenv' -> segfault (but works in Cmdenv)
             "name": "rinasim", "version": "20200903",       # last commit of master branch as of time of writing
             "description": "Recursive InterNetwork Architecture Simulator",
             "metadata": {
@@ -564,7 +548,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - builds and starts, simulations run, but segfault after some time (tested with inet 2.6, 2.4); only builds release (so only tested in release)
+            # NOTE - builds and starts, simulations run, but segfault after some time (tested with inet 2.6, 2.4); only builds release (so only tested in release)
             "name": "ieee802154standalone", "version": "20180310",      # last commit of master branch as of time of writing
             "description": "IEEE 802.15.4-2006 simulation model for OMNeT++ / INET",
             "metadata": {
@@ -590,7 +574,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "dctrafficgen", "version": "20181016",      # last commit of master branch as of time of writing
             "description": "Data Center Traffic Generator Library",
             "metadata": {
@@ -614,7 +597,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "afdx", "version": "20220904",      # last commit of master branch as of time of writing
             "description": "Avionics Full-Duplex Switched Ethernet model for OMNeT++",
             "metadata": {
@@ -636,7 +618,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "quisp", "version": "20230807",     # last commit of master branch as of time of writing
             "description": "Quantum Internet Simulation Package",
             "metadata": {
@@ -658,7 +639,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "cell", "version": "20140729",      # last commit of master branch as of time of writing
             "description": "Cell Communication Signaling Project (biological)",
             "metadata": {
@@ -679,7 +659,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "inetmanet4", "version": "4.0.0",
             "description": "Fork of INET 4.x, extending it with experimental features and protocols, mainly for mobile ad hoc networks, many of which are written by Alfonso Ariza",
             "metadata": {
@@ -703,7 +682,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "inetmanet3", "version": "3.8.2",
             "description": "Fork of INET 3.x, containing additional adhoc routing protocols and other models written by the community",
             "metadata": {
@@ -726,7 +704,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - TwoSubnets example works, but segfault when running some other simulations; only tested in debug
+            # NOTE - TwoSubnets example works, but segfault when running some other simulations; only tested in debug
             # TODO this only builds debug (twice apparently)
             "name": "oppbsd", "version": "4.0",
             "description": "OppBSD integrates essential parts of the real FreeBSD networking stack into OMNeT++ as a simulation model",
@@ -745,7 +723,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - release only
+            # NOTE - release only
             "name": "rease", "version": "20130819",     # last commit of master branch as of time of writing
             "description": "Realistic Simulation Environments for OMNeT++",
             "metadata": {
@@ -772,7 +750,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # latest master hash; this version has examples, which the latest release version lacks
             "name": "inet_hnrl", "version": "20170217",
             "description": "Fork of INET developed for hybrid networking research, providing new models in both optical and wireless networking areas and their hybrid.",
@@ -805,7 +782,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "simcan", "version": "1.2",
             "description": "A simulation platform for modelling and simulating distributes architectures and applications.",
             "metadata": {
@@ -835,7 +811,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE -> only built and tested in release, because omnetpp 3.3 has no distinct debug/release
+            # NOTE -> only built and tested in release, because omnetpp 3.3 has no distinct debug/release
             "name": "solarleach", "version": "1.01",
             "description": "A simulation of LEACH (Low-Energy Adaptive Clustering Hierarchy) cluster-based protocol for sensor networks with an extension to make it solar-aware.",
             "metadata": {
@@ -859,7 +835,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "stochasticbattery", "version": "20170224",     # last commit of master branch as of time of writing
             "description": "An OMNeT++ simulation for stochastic battery behavior. It implements the Stochastic Battery Model by Chiasserini and Rao.",
             "metadata": {
@@ -881,7 +856,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - should this be a library?
+            # NOTE - should this be a library?
             "name": "chaosmanager", "version": "20221210",      # last commit of master branch as of time of writing
             "description": "An automated hard faul injection tool inspired by Chaos Engineering principles for MANETs. This tool has been tested extensively on LEACH for OMNETPP.",
             "metadata": {
@@ -904,7 +879,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - we only test release currently
+            # NOTE - we only test release currently
             # UPDATE: this only builds inet release, and links the ops debug with that? should not be done with the bootstrap script but manually?
             "name": "ops_allinone", "version": "20230331",      # last commit of master branch as of time of writing
             "description": "Opportunistic Protocol Simulator. This version downloads its own copy of INET, and does not use one installed by opp_env.",
@@ -941,7 +916,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # this does not contain examples for swim
             "name": "swim_allinone", "version": "20180221",     # last commit of master branch as of time of writing
             "description": "Small Worlds in Motion (SWIM) mobility model. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
@@ -985,7 +959,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "tsch_allinone", "version": "6tisch_paper",
             "description": "6TiSCH-CLX ACM TOIT paper exact version. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
             "metadata": {
@@ -1035,7 +1008,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # TODO intended to be used as part of inet - this should be its own project
             "name": "can_allinone", "version": "0.1.0",
             "description": "Controller Area Network. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
@@ -1084,7 +1056,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - release only
+            # NOTE - release only
             # TODO no catalog entry yet
             "name": "lora_icn", "version": "paper",
             "nix_packages": ["docker"],
@@ -1114,7 +1086,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "seapp", "version": "20191230",
             "description": "SEA++ - Simulating Security Attacks",
             "details": "SEA++ is an attack simulator which helps the user to quantitatively evaluate the impact of security attacks. SEA++ is compatible with both traditional and SDN architectures.",
@@ -1156,7 +1127,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - simulations need pcap device for running, so we only test the executable with an inet example
+            # NOTE - simulations need pcap device for running, so we only test the executable with an inet example
             # TODO: enable emulation by default in inet, and use nix inet version?
             "name": "sedencontroller_allinone", "version": "20230305",      # latest commit of master branch as of time of writing
             "description": "sEden Controller",
@@ -1201,7 +1172,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "gradys", "version": "0.5",
             "description": "A simulation framework developed for the GrADyS (Ground-and-Air Dynamic sensors networkS) project.",
             "metadata": {
@@ -1228,7 +1198,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "omnet_tdma", "version": "1.0.2",
             "description": "An abstract TDMA MAC protocol for the INET Framework",
             "metadata": {
@@ -1254,7 +1223,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - some example simulations crash after some time though;
+            # NOTE - some example simulations crash after some time though;
             "name": "opencv2x_veins", "version": "1.4.1",
             "description": "Open Cellular Vehicle To Everything (V2X) Mode 4",
             "metadata": {
@@ -1295,7 +1264,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # TODO: LRE_Test.py doesnt work
             "name": "lre_omnet", "version": "1.0.1",
             "required_projects": {"omnetpp": ["5.4.*"], "inet": ["3.6.8"]},
@@ -1334,7 +1302,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - no example simulation
+            # NOTE - no example simulation
             "name": "wifidirect_allinone", "version": "3.4",
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.0.*"]},
@@ -1362,7 +1330,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - we only build (and test) this in release
+            # NOTE - we only build (and test) this in release
             "name": "libara_allinone", "version": "20150402",       # last commit of master branch as of time of writing
             "description": "Routing algorithms based on the Ant Colony Optimization (ACO) metaheuristic. This version downloads its own copy of INETMANET, and does not use one installed by opp_env.",
             "metadata": {
@@ -1406,7 +1374,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "opendsme_allinone", "version": "20201110",     # last commit of master branch as of time of writing
             "description": "IEEE 802.15.4 Deterministic and Synchronous Multi-channel Extension. This version downloads its own copy of INET, and does not use one installed by opp_env.",
             "metadata": {
@@ -1438,7 +1405,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # core-rg version, compatible with core4inet as well
             "name": "openflow", "version": "20240124",      # last commit of master branch as of time of writing
             "description": "OpenFlow Extension for INET Framework",
@@ -1470,7 +1436,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # core-rg version, compatible with core4inet as well
             # TODO does this need patched inet so allinone?
             "name": "openflow", "version": "20231017",      # last commit of master branch as of time of writing
@@ -1501,7 +1466,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "ndnomnet", "version": "20200914",      # last commit of master branch as of time of writing
             "description": "Named Data Networking framework for OMNeT++",
             "metadata": {
@@ -1538,7 +1502,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "inet_hnrl", "version": "20100723",     # This is the master_20100723 release
             "description": "Fork of INET developed for hybrid networking research, providing new models in both optical and wireless networking areas and their hybrid.",
             "metadata": {
@@ -1564,7 +1527,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "icancloud", "version": "1.0",
             "description": "Cloud Computing Systems",
             "metadata": {
@@ -1590,7 +1552,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - compiles and runs, but needs weather API access to test
+            # NOTE - compiles and runs, but needs weather API access to test
             "name": "os3", "version": "1.0",
             "description": "Open Source Satellite Simulator",
             "metadata": {
@@ -1618,7 +1580,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - ok
             # UPDATE: error in example sim in dbg; only tested in release
             # the error:
             # ASSERT: Condition 'frame->getByteLength() >= MIN_ETHERNET_FRAME_BYTES' does not hold in function 'processFrameFromUpperLayer'
@@ -1650,7 +1611,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "streetlightsim", "version": "1.0",
             "description": "Research project for evaluating Autonomous and Adaptive Street Lighting Schemes based on Road User's presence detection over wireless sensor networks.",
             "metadata": {
@@ -1668,7 +1628,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - release only; this project links with the inet release libs
+            # NOTE - release only; this project links with the inet release libs
             "name": "quagga", "version": "20090803",
             "description": "Port of the Quagga routing daemon into the INET Framework",
             "metadata": {
@@ -1693,7 +1653,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "tcp_fit_illinois", "version": "20150828",      # last commit of master branch as of time of writing
             "description": "TCP-Fit and TCP-Illinois models for OMNeT++ and INET",
             "metadata": {
@@ -1718,7 +1677,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "dns", "version": "20150911",     # last commit of master branch as of time of writing
             "description": "Provides models to simulate DNS and mDNS (multicast DNS) traffic within INET",
             "metadata": {
@@ -1741,7 +1699,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - only tested in debug (segfault in release); built in both
+            # NOTE - only tested in debug (segfault in release); built in both
             "name": "obs", "version": "20130114",       # last commit of master branch as of time of writing
             "description": "Set of modules to simulate Optical Burst Switching networks in the OMNeT++ framework",
             "metadata": {
@@ -1761,7 +1719,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "rpl_allinone", "version": "6tisch_paper",
             "description": "Routing Protocol for Low Power and Lossy Networks, 6TiSCH-CLX ACM TOIT paper exact version. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
             "metadata": {
@@ -1806,7 +1763,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - only tested in debug
+            # NOTE - only tested in debug
             "name": "processbus_allinone", "version": "20180926",       # latest commit of master branch as of the time of writing
             "description": "IEC61850 process bus communication (GOOSE and SV) for INET. This version downloads its own copy of INET, and does not use one installed by opp_env.",
             "metadata": {
@@ -1830,7 +1787,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "crsimulator", "version": "20140204",
             "description": "Model for Cognitive Radio Ad hoc Network Simulations in OMNeT++",
             "metadata": {
@@ -1855,7 +1811,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "veins_vlc", "version": "1.0",
             "description": "Veins VLC - Realistic Simulation of Vehicular Visible Light Communication",
             "metadata": {
@@ -1878,7 +1833,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - debug only; doesn't work with sumo-gui; from-git only;
+            # NOTE - debug only; doesn't work with sumo-gui; from-git only;
             # when running with sumo gui:
             # FXGLVisual::create: requested OpenGL visual unavailable. -> this issue is POSTPONED
             "name": "artery_allinone", "version": "20240807",       # last commit of master branch as of time of writing
@@ -1912,7 +1867,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - debug only; doesn't work with sumo-gui; from-git only;
+            # NOTE - debug only; doesn't work with sumo-gui; from-git only;
             # when running with sumo gui:
             # FXGLVisual::create: requested OpenGL visual unavailable. -> this issue is POSTPONED
             "name": "artery_allinone", "version": "20230820",       # last commit of master branch as of time of writing
@@ -1945,7 +1900,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "neta_allinone", "version": "1.0",
             "description": "NETwork Attacks Framework for OMNeT++. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
             "metadata": {
@@ -1996,7 +1950,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # TODO: add to catalog
             "name": "space_veins", "version": "0.3",
             "required_projects": {"omnetpp": ["5.7.1"]},
@@ -2034,7 +1987,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - doesn't work with sumo-gui
+            # NOTE - doesn't work with sumo-gui
             # FXGLVisual::create: requested OpenGL visual unavailable. -> this comes from sumo
             # when sumo is closed -> Aborted (core dumped) -> eliminated by mesa package sometimes?; now FATAL: exception not rethrown
             # -> openGL issue is POSTPONED
@@ -2062,7 +2015,7 @@ def get_project_descriptions():
         },
 
         {
-            # DONE - this should be its own project; should this be linked to inet?
+            # NOTE - this should be its own project; should this be linked to inet?
             "name": "rimfading_allinone", "version": "20171123",    # latest master as of time of writing
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.4.2"]},
@@ -2102,7 +2055,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # this is allinone by default
             # TODO: debug/release; standalone -> so far builds in release
             "name": "opencv2x_artery", "version": "1.4.1",
@@ -2153,7 +2105,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             "name": "cmm_orbit_mobility_allinone", "version": "20220815",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["5.5.1"]},
             "smoke_test_commands": [
@@ -2190,7 +2141,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # TODO: add from-git option, as core4inet and fico4omnet both has them
             "name": "signals_and_gateways", "version": "20240124",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"]},
@@ -2214,7 +2164,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # TODO: add from-git option, as core4inet and fico4omnet both has them
             "name": "soa4core", "version": "20240124",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"]},
@@ -2239,7 +2188,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # TODO: add from-git option, as core4inet and fico4omnet both has them
             "name": "sdn4core", "version": "20240124",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"], "soa4core": ["20240124"], "openflow": ["20240124"]},
@@ -2266,7 +2214,6 @@ def get_project_descriptions():
         },
 
         {
-            # DONE
             # original project: https://gitraap.i3a.info/jfclemente/ecmp
             "name": "ecmp_allinone", "version": "20230713",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["6.0.1"]},

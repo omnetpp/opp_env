@@ -447,6 +447,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RSPSIM.html",
             },
+            "description": "Simulation model of the IETF Reliable Server Pooling (RSerPool) architecture",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv""",
@@ -1060,6 +1061,7 @@ def get_project_descriptions():
             # TODO no catalog entry yet
             "name": "lora_icn", "version": "paper",
             "nix_packages": ["docker"],
+            "description": "LoRa-ICN, a comprehensive IoT networking system based on a common long-range communication layer (LoRa) combined with Information-Centric Networking (ICN) principles.",
             "details": "This project contains code and documentation to reproduce experimental results of the paper 'Long-Range ICN for the IoT: Exploring a LoRa System Design' published in Proc. of the IFIP Networking Conference 2022.",
             # "metadata": {
             #     "catalog_url": "",
@@ -1309,6 +1311,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Wifi-Direct.html",
             },
+            "description": "INET Framework 3.5, modified to add WiFi Direct functionality.",
             "smoke_test_commands": [
                 # This projects doesn't contain any example simulations, so we test the project lib with an INET example
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; WIFIDIRECT_ALLINONE_LIB=$(echo $WIFIDIRECT_ALLINONE_ROOT/out/*-release/src/*INET*); fi""",
@@ -1954,6 +1957,7 @@ def get_project_descriptions():
             "name": "space_veins", "version": "0.3",
             "required_projects": {"omnetpp": ["5.7.1"]},
             "nix_packages": ["proj", "python2", "sumo"],
+            "description": "space_Veins is a Veins extension that integrates satellites as additional communication partners in vehicular networks.",
             "download_url": "https://github.com/veins/space_veins/archive/refs/tags/space_Veins-0.3.tar.gz",
             "patch_commands": [
                 r"""mv src/makefrag src/makefrag.orig""",
@@ -1995,6 +1999,7 @@ def get_project_descriptions():
             "name": "plexe", "version": "3.1.2",
             "nix_packages": ["python2", "libxml2"],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*", "5.7.*"], "veins": ["5.2"]},
+            "description": "Plexe is a Veins extension for the realistic simulation of platooning (i.e., automated car-following) systems",
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.1.2.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
@@ -2019,6 +2024,7 @@ def get_project_descriptions():
             "name": "rimfading_allinone", "version": "20171123",    # latest master as of time of writing
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.4.2"]},
+            "description": "RIMFading Radio Propagation Model in 2D and 3D for the INET Framework",
             "smoke_test_commands": [
                 r"""cp showcases/wireless/pathloss/omnetpp.ini showcases/wireless/pathloss/test.ini""",
                 r"""echo "\n[Config Test]\n*.radioMedium.pathLoss.typename = "RIMFading" " >> showcases/wireless/pathloss/test.ini """,

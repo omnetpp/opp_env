@@ -7,6 +7,8 @@ import argparse
 import itertools
 import tempfile
 
+#TODO print effective project list for each instance!!!
+#TODO only try to run the valid combinations!!! (currently opp_end fails with "cannot satisfy")
 parser = argparse.ArgumentParser(description="Run tests for a project.")
 parser.add_argument("--workspace", help="Path to the workspace to use for the test. Default is a temporary directory.")
 parser.add_argument("--dry-run", default=False, action='store_true', help="Do not actually run the test program")

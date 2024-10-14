@@ -1564,7 +1564,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; OS3_LIB=$(echo $OS3_ROOT/out/*-release/src/*cni-os3*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; OS3_LIB=$(echo $OS3_ROOT/out/*-debug/src/*cni-os3*); fi""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $OS3_LIB -n simulations:src:$INET_ROOT/src:$INET_ROOT/examples $INET_ROOT/examples/ethernet/arptest/omnetpp.ini"""
+                r"""opp_run$BUILD_MODE_SUFFIX -l $OS3_LIB -u Cmdenv -n simulations:src:$INET_ROOT/src:$INET_ROOT/examples $INET_ROOT/examples/ethernet/arptest/omnetpp.ini"""
             ],
             "nix_packages": ["curl", "tcl"],
             "required_projects": {"omnetpp": ["4.2.*"], "inet": ["2.2.0"]},

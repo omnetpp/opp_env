@@ -2107,6 +2107,7 @@ def get_project_descriptions():
         {
             "name": "cmm_orbit_mobility_allinone", "version": "20220815",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["5.5.1"]},
+            "description": "ORBIT Mobilty Model (SOLAR) and Comunity-based Mobility Model (CMM) for the INET Framework to simulate mobility of nodes in ad-hoc networks.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/mobility/CMM""",

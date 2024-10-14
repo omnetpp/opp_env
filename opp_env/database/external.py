@@ -1225,7 +1225,7 @@ def get_project_descriptions():
         {
             # NOTE - some example simulations crash after some time though;
             "name": "opencv2x_veins", "version": "1.4.1",
-            "description": "Open Cellular Vehicle To Everything (V2X) Mode 4",
+            "description": "An open source implementation of the 3GPP standard CV2X (Rel 14) Mode 4. This variant integrates with Veins only.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OpenCV2X.html",
             },
@@ -2060,7 +2060,7 @@ def get_project_descriptions():
             "name": "opencv2x_artery", "version": "1.4.1",
             "nix_packages": ["boost172", "cmake", "python2", "cryptopp", "geographiclib", "cmakeWithGui", "sumo"],
             "required_projects": {"omnetpp": ["5.6.1"]},
-            "description": "An abstract TDMA MAC protocol for the INET Framework",
+            "description": "Implementation of the 3GPP standard CV2X (Rel 14) Mode 4. It integrates with the Artery framework to provide full ITS-G5 standardisation across the entire communication stack.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's|-c Base|-c veins --sim-time-limit=10s|g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently this projects is only built in debug mode.'; fi""",

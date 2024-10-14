@@ -992,7 +992,8 @@ def get_project_descriptions():
                 r"""echo 'Hint: use the `./tsch ../simulations/wireless/waic/omnetpp.ini -n .:../rpl/src:../rpl/inet/src:../simulations` command in the src folder to run the simulations. (note: in debug mode, use the `tsch_dbg` executable).'""",
             ],
             "patch_commands": [
-                r"""cd rpl && rsync -abuvP --include="*/" --include="*.cc" --include="*.h" --include="*.ned"  --exclude="*"  inet_replacement_files/  inet/src/inet/ \nfind inet/src/inet -name "*.*~" -delete""",
+                # kludge: don't use raw string because the \n didn't get evaluated as raw string
+                """cd rpl && rsync -abuvP --include="*/" --include="*.cc" --include="*.h" --include="*.ned"  --exclude="*"  inet_replacement_files/  inet/src/inet/ \nfind inet/src/inet -name "*.*~" -delete""",
             ],
             "build_commands": [
                 r"""cd rpl/inet""",

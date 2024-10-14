@@ -9,7 +9,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/flexray/dynamic && run_fico4omnet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1s > /dev/null""",
+                r"""cd examples/flexray/dynamic && run_fico4omnet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1s""",
             ],
             "required_projects": {"omnetpp": ["6.0.*"]},
             "patch_commands": [
@@ -1447,7 +1447,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=1s > /dev/null""",
+                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=1s""",
             ],
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"]},
             # there are no releases, so we use a commit from the master branch
@@ -1889,7 +1889,7 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["5.7.1"]},
             "nix_packages": ["cmake", "boost", "cryptopp", "geographiclib", "sumo", "git-lfs" ],
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "debug" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's| -n | -c veins -u Cmdenv --sim-time-limit=10s -n |g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example > /dev/null && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's| -n | -c veins -u Cmdenv --sim-time-limit=10s -n |g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently this projects is only built in debug mode.'; fi""",
             ],
             # we use a hash from master because the opp-summit release needs git to build
@@ -2197,7 +2197,7 @@ def get_project_descriptions():
             "description": "SignalsAndGateways enables a heterogeneous network simulation using CoRE4INET, INET and FiCo4OMNeT, with gateway components for communication between Ethernet and bus technologies.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/majorNetwork && opp_run$BUILD_MODE_SUFFIX -l ../../src/SignalsAndGateways omnetpp.ini -n $INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/examples --sim-time-limit=10s -u Cmdenv > /dev/null"""
+                r"""cd examples/majorNetwork && opp_run$BUILD_MODE_SUFFIX -l ../../src/SignalsAndGateways omnetpp.ini -n $INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/examples --sim-time-limit=10s -u Cmdenv"""
             ],
             "download_url": "https://github.com/CoRE-RG/SignalsAndGateways/archive/refs/tags/nightly/2024-01-24_15-06-21.tar.gz",
             "patch_commands": [
@@ -2221,7 +2221,7 @@ def get_project_descriptions():
             "description": "Service-Oriented Architecture for Communication over Realtime Ethernet (SOA4CoRE)",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/qosnp/small_network && opp_run$BUILD_MODE_SUFFIX -l $SOA4CORE_ROOT/src/SOA4CoRE omnetpp.ini -c SomeIPSD_QoS_STDUDPMCAST -n $SOA4CORE_ROOT/src:$SOA4CORE_ROOT/examples:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src --sim-time-limit=1s -u Cmdenv > /dev/null"""
+                r"""cd examples/qosnp/small_network && opp_run$BUILD_MODE_SUFFIX -l $SOA4CORE_ROOT/src/SOA4CoRE omnetpp.ini -c SomeIPSD_QoS_STDUDPMCAST -n $SOA4CORE_ROOT/src:$SOA4CORE_ROOT/examples:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src --sim-time-limit=1s -u Cmdenv"""
             ],
             "download_url": "https://github.com/CoRE-RG/SOA4CoRE/archive/refs/tags/nightly/2024-01-24_15-06-45.tar.gz",
             "patch_commands": [
@@ -2246,7 +2246,7 @@ def get_project_descriptions():
             "description": "Software-Defined Networking for Communication over Realtime Ethernet (SDN4CoRE)",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/papers/omnetsummit2019/configanalysis && opp_run$BUILD_MODE_SUFFIX -l $SDN4CORE_ROOT/src/SDN4CoRE omnetpp.ini -c CaseStudy_WithCT -n $SDN4CORE_ROOT/src:$SDN4CORE_ROOT/examples:$SOA4CORE_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src:$OPENFLOW_ROOT/src --sim-time-limit=1s -u Cmdenv > /dev/null"""
+                r"""cd examples/papers/omnetsummit2019/configanalysis && opp_run$BUILD_MODE_SUFFIX -l $SDN4CORE_ROOT/src/SDN4CoRE omnetpp.ini -c CaseStudy_WithCT -n $SDN4CORE_ROOT/src:$SDN4CORE_ROOT/examples:$SOA4CORE_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src:$OPENFLOW_ROOT/src --sim-time-limit=1s -u Cmdenv"""
             ],
             "download_url": "https://github.com/CoRE-RG/SDN4CoRE/archive/refs/tags/nightly/2024-01-24_15-06-58.tar.gz",
             "patch_commands": [
@@ -2274,7 +2274,7 @@ def get_project_descriptions():
             "details": "Implemented by Juan Francisco Clemente Camacho. Original project: https://gitraap.i3a.info/jfclemente/ecmp",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/ecmp/FatTreeExample && inet$BUILD_MODE_SUFFIX --sim-time-limit=1s -c ECMP_PACKET -r 0 -u Cmdenv > /dev/null"""
+                r"""cd examples/ecmp/FatTreeExample && inet$BUILD_MODE_SUFFIX --sim-time-limit=1s -c ECMP_PACKET -r 0 -u Cmdenv"""
             ],
             "download_url": "https://github.com/inet-framework/inet-clos-ecmp/archive/4e17afe51cdfc0843b019341af7fb42cf73cf099.tar.gz",
             "patch_commands": [

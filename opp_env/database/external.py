@@ -1746,7 +1746,8 @@ def get_project_descriptions():
                 r"""rm inet-4.2.5-src.tgz""",
             ],
             "patch_commands": [
-                r"""echo 'rsync -abuvP --include="*/" --include="*.cc" --include="*.h" --include="*.ned"  --exclude="*"  inet_replacement_files/  $1/src/inet/ \nfind $1/src/inet -name "*.*~" -delete' > replace_inet_files.sh""",
+                # kludge: don't use raw string because the \n didn't get evaluated as raw string
+                """echo 'rsync -abuvP --include="*/" --include="*.cc" --include="*.h" --include="*.ned"  --exclude="*"  inet_replacement_files/  $1/src/inet/ \nfind $1/src/inet -name "*.*~" -delete' > replace_inet_files.sh""",
                 r"""chmod +x replace_inet_files.sh""",
                 r"""./replace_inet_files.sh inet""",
             ],

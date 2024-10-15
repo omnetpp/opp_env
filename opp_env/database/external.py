@@ -845,7 +845,7 @@ def get_project_descriptions():
                 # NOTE: only around 500 events tested, but this is required for the test the finish in a reasonable amount of time
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; STOCHASTICBATTERY_BIN=$(echo $STOCHASTICBATTERY_ROOT/out/*-release/stochastic_battery); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; STOCHASTICBATTERY_BIN=$(echo $STOCHASTICBATTERY_ROOT/out/*-debug/stochastic_battery); fi""",
-                r"""$STOCHASTICBATTERY_BIN -u Cmdenv --sim-time-limit=10s""",
+                r"""$STOCHASTICBATTERY_BIN -u Cmdenv --sim-time-limit=2000s""",
             ],
             "required_projects": {"omnetpp": ["5.0.*"]},
             "download_url": "https://github.com/brandte/stochastic_battery/archive/dd999402a0aa7c88a9f78a3ca23f193b8250a925.tar.gz",

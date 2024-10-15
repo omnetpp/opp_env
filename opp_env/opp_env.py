@@ -229,6 +229,11 @@ def create_arg_parser():
         the required NIX packages, the patch / setenv / build / clean commands, the available installation options, and more.
         The output is well-formed JSON, so you can use tools like 'jq' to further query it and extract the desired data.
         """)
+    subparser.add_argument("--section", metavar='SECTION', help=
+        """
+        Print only the given section from the project description.
+        The section name is case-sensitive.
+        """)
     subparser.add_argument("--options", action='append', metavar='[PROJECT:]NAME,...', help="Print the project description as if the given project options were selected")
 
     def add_argument(subparser, name):
@@ -1689,7 +1694,7 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
     else:
         raise Exception(f"invalid list mode '{list_mode}'")
 
-def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
+def info_subcommand_main(projects, raw=False, requested_options=None, section=None,**kwargs):
     # resolve project list
     global project_registry
     if not projects:
@@ -1705,7 +1710,10 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
                 raise Exception(project_registry.get_unknown_project_message(project))
 
     if raw:
-        serializable = [vars(p.activate_project_options(requested_options)) for p in project_descriptions]
+        if section:
+            serializable = {p.get_full_name() : vars(p.activate_project_options(requested_options)).get(section) for p in project_descriptions}
+        else:
+            serializable = [vars(p.activate_project_options(requested_options)) for p in project_descriptions]
         print(json.dumps(serializable, indent=4))
         return
 

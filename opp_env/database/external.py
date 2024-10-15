@@ -1557,7 +1557,7 @@ def get_project_descriptions():
         },
 
         {
-            # NOTE - compiles and runs, but needs weather API access to test
+            # NOTE - only inet is tested because OS3 would need weather API access
             "name": "os3", "version": "1.0",
             "description": "Open Source Satellite Simulator",
             "metadata": {

@@ -1689,6 +1689,14 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
         if project_description.warnings:
             for warning in project_description.warnings:
                 print(yellow("\nWARNING: ") + warning)
+        if project_description.download_url:
+            print(f"\nDownload URL: {cyan(project_description.download_url)}")
+        if project_description.git_url:
+            print(f"\nGit URL:  {cyan(project_description.git_url)}")
+            if project_description.git_branch not in ['master', 'main']:
+                print(f"Git Branch: {cyan(project_description.git_branch)}")
+        if project_description.download_commands:
+            print(f"\nDownload: {cyan('custom commands')}")
         if (project_description.required_projects):
             print(f"\nRequires:")
             for name, versions in project_description.required_projects.items():

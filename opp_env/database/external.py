@@ -1960,7 +1960,8 @@ def get_project_descriptions():
             "name": "space_veins_allinone", "version": "0.3",
             "required_projects": {"omnetpp": ["5.7.1"]},
             "nix_packages": ["proj", "python2", "sumo"],
-            "description": "space_Veins is a Veins extension that integrates satellites as additional communication partners in vehicular networks. This version downloads its own copy of INET and VEINS, and does not use ones installed by opp_env.",
+            "description": "space_Veins is a Veins extension that integrates satellites as additional communication partners in vehicular networks.",
+            "details": "Note: this version downloads its own copy of INET and VEINS, and does not use ones installed by opp_env.",
             "download_url": "https://github.com/veins/space_veins/archive/refs/tags/space_Veins-0.3.tar.gz",
             "patch_commands": [
                 r"""mv src/makefrag src/makefrag.orig""",

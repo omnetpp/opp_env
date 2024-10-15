@@ -1975,7 +1975,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_POSTFIX="_dbg"; fi""",
                 r"""$VEINS_ROOT/sumo-launchd.py & bg_pid=$!""",
-                r"""cd examples/space_veins && opp_run$DEBUG_POSTFIX -l ../../src/space_veins -n ../../src:../../src/space_veins:../../src/space_veins/modules:../../src/space_veins/nodes:../../lib/inet/src:../../lib/veins/subprojects/veins_inet/src/veins_inet:../../lib/veins/src/veins:. -u Cmdenv -c Null-Island-Launchd --sim-time-limit=1s""",
+                r"""cd examples/space_veins && opp_run$DEBUG_POSTFIX -l ../../src/space_veins -n ../../src:../../src/space_veins:../../src/space_veins/modules:../../src/space_veins/nodes:../../lib/inet/src:../../lib/veins/subprojects/veins_inet/src/veins_inet:../../lib/veins/src/veins:. -u Cmdenv -c Null-Island-Launchd --sim-time-limit=2.5s""",
                 r"""kill $bg_pid""",
             ],
             "setenv_commands": [

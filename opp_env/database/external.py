@@ -842,6 +842,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/StochasticBattery.html",
             },
             "smoke_test_commands": [
+                # NOTE: only around 500 events tested, but this is required for the test the finish in a reasonable amount of time
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; STOCHASTICBATTERY_BIN=$(echo $STOCHASTICBATTERY_ROOT/out/*-release/stochastic_battery); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; STOCHASTICBATTERY_BIN=$(echo $STOCHASTICBATTERY_ROOT/out/*-debug/stochastic_battery); fi""",
                 r"""$STOCHASTICBATTERY_BIN -u Cmdenv --sim-time-limit=10s""",
@@ -1235,7 +1236,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd simulations/x2""",
-                r"""../../src/run_lte$BUILD_MODE_SUFFIX -c X2-MeshTopology -r 0 -u Cmdenv --**.pdcpRrc.ipBased=false --sim-time-limit=10s""",
+                r"""../../src/run_lte$BUILD_MODE_SUFFIX -c X2-MeshTopology -r 0 -u Cmdenv --**.pdcpRrc.ipBased=false --sim-time-limit=20s""",
             ],
             "required_projects": {"omnetpp": ["5.5.1"], "inet": ["3.6.6"], "veins": ["5.2"]},
             "details": "An open source implementation of the 3GPP standard CV2X (Rel 14) Mode 4. It is based on an extended version of the SimuLTE OMNeT++ simulator which enables LTE network simulations.",
@@ -1540,7 +1541,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; ICANCLOUD_LIB=$(echo $ICANCLOUD_ROOT/out/clang-release/src/*iCanCloud*); fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; ICANCLOUD_LIB=$(echo $ICANCLOUD_ROOT/out/clang-debug/src/*iCanCloud*); fi""",
                 r"""cd simulations/Cloud_A""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $ICANCLOUD_LIB -n../..:../../simulations:$INET_ROOT/src:../../src -u Cmdenv --sim-time-limit=10s""",
+                r"""opp_run$BUILD_MODE_SUFFIX -l $ICANCLOUD_LIB -n../..:../../simulations:$INET_ROOT/src:../../src -u Cmdenv --sim-time-limit=200s""",
             ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.5.0"]},
             "download_url": "http://sourceforge.net/projects/icancloudsim/files/iCanCloud_v1.0_20150216.tgz/download",
@@ -1668,7 +1669,7 @@ def get_project_descriptions():
                 r"""echo '**.tcpAlgorithmClass="TCPFit"' >> $INET_ROOT/examples/inet/tcpwindowscale/test.ini""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then TCP_BIN=$(echo $TCP_FIT_ILLINOIS_ROOT/out/*-debug/tcp_fit_illinois); fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then TCP_BIN=$(echo $TCP_FIT_ILLINOIS_ROOT/out/*-release/tcp_fit_illinois); fi""",
-                r"""$TCP_BIN $INET_ROOT/examples/inet/tcpwindowscale/test.ini -n $INET_ROOT/src:$INET_ROOT/examples -u Cmdenv -c WS_enabled --sim-time-limit=10s""",
+                r"""$TCP_BIN $INET_ROOT/examples/inet/tcpwindowscale/test.ini -n $INET_ROOT/src:$INET_ROOT/examples -u Cmdenv -c WS_enabled --sim-time-limit=5000s""",
                 r"""rm $INET_ROOT/examples/inet/tcpwindowscale/test.ini""",
             ],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.5.0"]},
@@ -1692,7 +1693,7 @@ def get_project_descriptions():
                 r"""cd src/networks/stateless_network""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then DNS_BIN=$(echo $DNS_ROOT/out/*-debug/src/inet_dns*); fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then DNS_BIN=$(echo $DNS_ROOT/out/*-release/src/inet_dns*); fi""",
-                r"""$DNS_BIN omnetpp.ini -n ../..:$INET_ROOT/src --sim-time-limit=10s -u Cmdenv""",
+                r"""$DNS_BIN omnetpp.ini -n ../..:$INET_ROOT/src --sim-time-limit=100s -u Cmdenv""",
             ],
             "patch_commands": [
                 r"""sed -i 's|INETDefs.h|inet/common/INETDefs.h|g' src/*/*/*.h""",
@@ -2119,7 +2120,7 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/mobility/CMM""",
-                r"""inet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=100s""",
+                r"""inet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1000s""",
             ],
             "download_commands": [
                 r"""mkdir cmm_orbit_mobility_allinone-20220815""",
@@ -2230,7 +2231,7 @@ def get_project_descriptions():
             "details": "Implemented by Juan Francisco Clemente Camacho. Original project: https://gitraap.i3a.info/jfclemente/ecmp",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/ecmp/FatTreeExample && inet$BUILD_MODE_SUFFIX --sim-time-limit=1s -c ECMP_PACKET -r 0 -u Cmdenv"""
+                r"""cd examples/ecmp/FatTreeExample && inet$BUILD_MODE_SUFFIX --sim-time-limit=50s -c ECMP_PACKET -r 0 -u Cmdenv"""
             ],
             "download_url": "https://github.com/inet-framework/inet-clos-ecmp/archive/4e17afe51cdfc0843b019341af7fb42cf73cf099.tar.gz",
             "patch_commands": [

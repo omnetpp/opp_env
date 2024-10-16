@@ -713,14 +713,20 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/OppBSD-4.0.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "debug" ]; then cd examples/TwoSubnets && ./out/gcc-release/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then cd examples/TwoSubnets && ./out/gcc-debug/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently this project only builds in debug mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.2.0"]},
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/oppbsd-4.0.tar.gz",
-            "build_commands": [r"""make MODE=$BUILD_MODE"""],
+            "build_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then make MODE=debug; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then echo 'this project is only built in debug mode'; fi""",
+            ],
             "setenv_commands": [r"""echo 'Hint: run example simulations from their folder. For example, in examples/TwoSubnets folder: `./out/gcc-debug/TwoSubnets omnetpp.ini`'"""],
-            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+            "clean_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then make clean MODE=debug; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then echo 'no need for clean because this project is only built in debug mode'; fi""",
+            ],
         },
 
         {

@@ -1957,6 +1957,7 @@ def get_project_descriptions():
 
         {
             # TODO: add to catalog
+            # NOTE: the included inet is modified for space_veins
             "name": "space_veins_allinone", "version": "0.3",
             "required_projects": {"omnetpp": ["5.7.1"]},
             "nix_packages": ["proj", "python2", "sumo"],
@@ -1976,19 +1977,23 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_POSTFIX="_dbg"; fi""",
                 r"""$VEINS_ROOT/sumo-launchd.py & bg_pid=$!""",
-                r"""cd examples/space_veins && opp_run$DEBUG_POSTFIX -l ../../src/space_veins -n ../../src:../../src/space_veins:../../src/space_veins/modules:../../src/space_veins/nodes:../../lib/inet/src:../../lib/veins/subprojects/veins_inet/src/veins_inet:../../lib/veins/src/veins:. -u Cmdenv -c Null-Island-Launchd --sim-time-limit=2.5s""",
+                r"""cd examples/space_veins && opp_run$DEBUG_POSTFIX -l ../../src/space_veins -n ../../src:../../src/space_veins:../../src/space_veins/modules:../../src/space_veins/nodes:../../lib/inet/src:../../lib/veins/subprojects/veins_inet/src/veins_inet:../../lib/veins/src/veins:. -u Cmdenv -c Null-Island-Launchd -r 0 --sim-time-limit=2.5s""",
                 r"""kill $bg_pid""",
             ],
             "setenv_commands": [
                 r"""echo $PYTHON2_BIN""",
                 r"""export PROJ_ROOT=${pkgs.proj}""",
                 r"""export PROJ_DEV_ROOT=${pkgs.proj.dev}""",
-                r"""export INET_ROOT=$SPACE_VEINS_ROOT/lib/inet""",
-                r"""export VEINS_ROOT=$SPACE_VEINS_ROOT/lib/veins""",
+                r"""export INET_ROOT=$SPACE_VEINS_ALLINONE_ROOT/lib/inet""",
+                r"""export VEINS_ROOT=$SPACE_VEINS_ALLINONE_ROOT/lib/veins""",
                 r"""export SUMO_ROOT=${pkgs.sumo}""",
                 r"""export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images:$INET_ROOT/images" """,
             ],
-            "build_commands": [r"""source setenv -f && ./configure && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "build_commands": [
+                # TODO: use environmental variables
+                # NOTE: the project's makefile doesn't take $BUILD_MODE into account, but builds all projects in release and debug
+                r"""cd lib/inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../veins && ./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd subprojects/veins_inet && ./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE && cd ../../../.. && ./configure && cd src && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+            ],
             # this version builds dependencies sequentially:
             # "build_commands": [r"""cd lib/inet && source setenv -f && make makefiles && make -j16 MODE=$BUILD_MODE && cd ../veins && source setenv -f && ./configure && make -j16 MODE=$BUILD_MODE && cd subprojects/veins_inet && source setenv -f && ./configure && make -j16 MODE=$BUILD_MODE && cd ../../../.. && make makefiles && cd src && make -j16 MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""]

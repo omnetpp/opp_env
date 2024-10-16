@@ -1,5 +1,52 @@
 # Changes
 
+## 0.30.0.241016
+
+### opp_env
+
+- more detailed/helpful help text for subcommands, with examples
+- `info` subcommand: Include the download/git URL in the output
+- `info` subcommand: fix: default option was not marked with `*`
+- `run` subcommand: do not chdir by default; added `--chdir` option to change into ws root
+- `shell` subcommand: print an expanded list of commands available on startup
+- `install` subcommand: added `--test` and `--smoke-test`
+- `install` subcommand: did not correctly take and pass on build modes
+- `install` and `run` subcommands: fix: `--no-isolated` flag did not take effect
+- define `OPP_ENV_DIR`, `OPP_ENV_PROJECTS`, `OPP_ENV_PROJECT_DEPS` env vars
+- fix up escaping in shell prompt
+- the `--mode` command line option became `--build-modes`
+- adjusted the order in which the projects are downloaded (dependencies first)
+- `--init` option: do not complain if workspace is already initialized
+- fix: `build_all` etc. did not pass on mode args
+- added the possibility to install any branch directly from a git repository
+  by specifying `@branchname` after the project name (e.g. `inet-git@mybranch`)
+
+### Frameworks and Models
+
+- omnetpp: above version 6.1, IDE now auto-imports projects into its workspace
+- omnetpp: added omnetpp-6.1.0 and added omnetpp-6.1.* compatibility everywhere 6.0.* is listed
+- omnetpp: remove possibility to install patch branches (.x) which are no longer relevant
+- omnetpp: added `bear` nix package as dependency
+- inet: use fingerprint testing for `--test`
+- inet: fix: INET project was modified right after build
+- renamed versions `<projectname>-master` to `<projectname>-git`
+- added ecmp_allinone
+- added signals_and_gateways
+- added sdn4core
+- added soa4core
+- added new version of openflow
+- added new version of fico4omnet which is compatible with omnetpp-6.0.*
+- added new version of artery_allinone
+- veins: added inet 4.4.1, 4.3.8 and 4.3.7 to master version dependencies
+- updated project descriptions
+- fixed patch command for tsch_allinone
+- fixed patch command in rpl_allinone
+- space_veins: renamed to space_veins_allinone
+- space_veins: fixed build command
+- fix "clean" commands: they ignored `$BUILD_MODE`
+- smoke test fixes for all projects
+
+
 ## 0.29.3.240918
 
 ### opp_env

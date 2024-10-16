@@ -143,7 +143,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s""",
+                r"""cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv -r 0 --sim-time-limit=50000s""",
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["4.4.0"]},
             "download_url": "https://github.com/florasim/flora/releases/download/v1.1.0/flora-1.1.0.tgz",
@@ -168,7 +168,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s""",
+                r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=2s""",
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["3.8.3"]},
             "patch_commands": [
@@ -210,7 +210,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1s""",
+                r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=2s""",
             ],
             "required_projects": {"omnetpp": ["5.5.*"], "inet": ["3.6.6"]},
             "patch_commands": [
@@ -251,7 +251,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd example-simulation && ./example-simulation$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=10s""",
+                r"""cd example-simulation && ./example-simulation$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=100s""",
             ],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*"]},
             "setenv_commands": [
@@ -1418,7 +1418,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=1s""",
+                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
             ],
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"]},
             # there are no releases, so we use a commit from the master branch
@@ -1450,7 +1450,7 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/openflow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=1s""",
+                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/openflow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["5.5.1"], "inet": ["3.6.6"]},
             # there are no releases, so we use a commit from the master branch

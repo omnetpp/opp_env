@@ -533,14 +533,14 @@ def process_arguments():
         kwargs["workspace_directory"] = os.path.abspath(kwargs["workspace_directory"])
     if "options" in kwargs:
         # split up and flatten list
-        kwargs["requested_options"] = [name for arg in args.options for name in arg.split(",")]
+        kwargs["requested_options"] = [name.strip() for arg in args.options for name in arg.split(",") if name.strip()]
         del kwargs["options"]
     if "keep" in kwargs:
         # split up and flatten list
-        kwargs["vars_to_keep"] = [name for arg in args.keep for name in arg.split(",")]
+        kwargs["vars_to_keep"] = [name.strip() for arg in args.keep for name in arg.split(",") if name.strip()]
         del kwargs["keep"]
     if "build_modes" in kwargs:
-        kwargs["build_modes"] = args.build_modes.split(",")
+        kwargs["build_modes"] = args.build_modes.split(",") if args.build_modes else []
     return kwargs
 
 

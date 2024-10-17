@@ -1101,6 +1101,7 @@ class Workspace:
             if project_description.patch_commands or project_description.patch_url:
                 if patch:
                     _logger.info(f"Patching project {cyan(project_description.get_full_name())}")
+                    self.record_project_shasums(project_description, "prepatch")
                     if project_description.patch_url:
                         self.download_and_apply_patch(project_description.patch_url, project_dir)
                     if project_description.patch_commands:

@@ -1305,7 +1305,7 @@ class Workspace:
                     echo -e "{SHELL_GREEN}Invoking {function_name}:{SHELL_NOCOLOR}"
                     echo 'Checking whether files have changed since download...'
                     cd {directory_var}
-                    tmp=.opp_env/postdownload.out
+                    tmp=.opp_env/postdownload_changes.txt
                     if shasum --check --quiet .opp_env/postdownload.sha > $tmp 2>/dev/null; then
                         echo OK
                     else

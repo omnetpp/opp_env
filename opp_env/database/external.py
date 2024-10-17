@@ -215,7 +215,7 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["5.5.*"], "inet": ["3.6.6"]},
             "patch_commands": [
                 r"""sed -i -E 's|INET_PROJ=[^ ]+|INET_PROJ=$(INET_ROOT)|' Makefile""",
-                r"""sed -i -E 's|-L.*/src|-L$$\\\\(INET_PROJ\\\\)/src|' Makefile""",
+                r"""sed -i -E 's|-L.*/src|-L$$\\\(INET_PROJ\\\)/src|' Makefile""",
                 r"""sed -i -E 's|-O out |-O out -o CoRE4INET |' Makefile""",
                 r"""sed -i 's|-lINET$(DBG_SUFFIX)|-lINET$$\\\(D\\\)|' Makefile""",
                 r"""sed -i -E 's|INET_PROJ\); opp_featuretool|INET_PROJ\); ./inet_featuretool|' src/dependencies_makefrag""",    # this is needed for the from-git option (but works with the from-release as well)
@@ -635,7 +635,7 @@ def get_project_descriptions():
             ],
             "setenv_commands": [r"""export OMNETPP_IMAGE_PATH=$QUISP_ROOT/quisp/images:$OMNETPP_IMAGE_PATH""",
                                 r"""echo 'Hint: in the quisp folder, use the `./quisp` command to run simulations. For example: `./quisp simulations/two_nodes.ini`'"""],
-            "build_commands": [r"""make IMAGE_PATH=quisp/images/ -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "build_commands": [r"""make eigen && make json && make spdlog && make IMAGE_PATH=quisp/images/ -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
 
@@ -945,7 +945,7 @@ def get_project_descriptions():
             ],
             "patch_commands": [
                 r"""touch tutorials/package.ned""",
-                r"""sed -i 's|info\\[\\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h""",
+                r"""sed -i 's|info\[\]|info[0]|' src/inet/common/serializer/sctp/headers/sctphdr.h""",
                 r"""for f in $(grep -Rls 'defined(linux)'); do sed -i 's|defined(linux)|defined(__linux__)|' $f; done""",
                 r"""for f in $(grep -Rl 'INT64_PRINTF_FORMAT'); do sed -i 's|INT64_PRINTF_FORMAT|\"l\"|' $f; done""",
                 r"""echo 'Patching INET with SWIM....'""",
@@ -2090,7 +2090,7 @@ def get_project_descriptions():
             "description": "Implementation of the 3GPP standard CV2X (Rel 14) Mode 4. It integrates with the Artery framework to provide full ITS-G5 standardisation across the entire communication stack.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's|-c Base|-c veins --sim-time-limit=10s|g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
-                r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently this projects is only built in debug mode.'; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently this projects is only built in release mode.'; fi""",
             ],
             "download_url": "https://github.com/brianmc95/OpenCV2X/releases/download/v1.4.1/opencv2x.tar.gz",
             "patch_commands": [

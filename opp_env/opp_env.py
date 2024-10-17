@@ -594,6 +594,14 @@ def detect_tools():
     if errors:
         raise Exception(f"The following programs were not found: {', '.join(errors)}.")
 
+def is_inside_git_working_tree(dir):
+    try:
+        result = subprocess.run(['git', '-C', dir, 'rev-parse', '--is-inside-work-tree'], capture_output=True, text=True)
+        return result.returncode == 0 and result.stdout.strip() == 'true'
+    except Exception as ex:
+        _logger.debug(f"Could not check whether {dir} is inside a git working tree -- git not installed? Exception: {ex}")
+        return None  # false-ish
+
 class ProjectDescription:
     def __init__(self, name, version, description=None, details=None, warnings=[],
                  nixos=None, stdenv=None, folder_name=None,
@@ -943,6 +951,10 @@ class Workspace:
 
     def __init__(self, root_directory, default_nixos=None, default_stdenv=None):
         assert(os.path.isabs(root_directory))
+        if is_inside_git_working_tree(root_directory):
+            # that would lead to spurious error messages "getting status of '/nix/store/qnvxvf95a8dlfs7l88d420wxg8qcvbg0-source/<repo-relative-path>': No such file or directory"
+            raise Exception(f"Workspace directory '{root_directory}' may not be under a git working tree")
+
         self.root_directory = root_directory
         self.default_nixos = default_nixos or "22.11"
         self.default_stdenv = default_stdenv or "llvmPackages.stdenv"

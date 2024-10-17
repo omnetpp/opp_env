@@ -317,6 +317,14 @@ def create_arg_parser():
             such as their favorite text editor.
             However, due to the interference of various library versions in Nix and the host OS, etc, things can break in unexpected ways.
             """)
+        elif name=="add-extra-nix-packages":  subparser.add_argument("--add-extra-nix-packages", dest='extra_nix_packages', metavar='PACKAGE,...', default="", help=
+            """
+            Adds extra Nix packages to this *and* all future sessions of this workspace. The value is a comma-separated list of package names,
+            e.g. 'graphviz' or 'openssh'. If a package name is bogus (no such Nix package), Nix will report it as "undefined variable",
+            and the current list of extra Nix packages associated with the workspace won't be updated. The file that stores the
+            current extra packages list is kept under the `.opp_env_workspace` subdirectory of the workspace, and can be edited or deleted
+            by the user.
+            """)
         elif name=="build-modes":  subparser.add_argument("--build-modes", metavar='MODE,...', default="release,debug",  help=
             """
             Defines the BUILD_MODES environment variable for the session, which is taken into account by many commands, e.g. `build_all`,
@@ -393,6 +401,7 @@ def create_arg_parser():
         "nixless-workspace",
         "workspace",
         "options",
+        "add-extra-nix-packages",
         "smoke-test",
         "test",
         "no-deps",
@@ -445,6 +454,7 @@ def create_arg_parser():
         "no-pause",
         "no-cleanup",
         "no-patch",
+        "add-extra-nix-packages",
         "install",
         "no-build", # with --install
         "build",
@@ -499,6 +509,7 @@ def create_arg_parser():
         "no-pause",
         "no-cleanup",
         "no-patch",
+        "add-extra-nix-packages",
         "install",
         "no-build", # with --install
         "build",
@@ -545,7 +556,9 @@ def process_arguments():
         kwargs["vars_to_keep"] = [name for arg in args.keep for name in arg.split(",")]
         del kwargs["keep"]
     if "build_modes" in kwargs:
-        kwargs["build_modes"] = args.build_modes.split(",")
+        kwargs["build_modes"] = args.build_modes.split(",") if args.build_modes else []
+    if "extra_nix_packages" in kwargs:
+        kwargs["extra_nix_packages"] = args.extra_nix_packages.split(",") if args.extra_nix_packages else []
     return kwargs
 
 
@@ -969,6 +982,10 @@ class Workspace:
             raise Exception(f"'{root_directory}' is not an opp_env workspace, run 'opp_env init' to turn it into one")
         self.nixless = os.path.exists(os.path.join(self.get_workspace_admin_directory(), ".nixless"))  #TODO do it properly!!!
 
+        extra_nix_packages_file = os.path.join(self.get_workspace_admin_directory(), ".extra_nix_packages")
+        extra_nix_packages_file_content = self._read_file_if_exists(extra_nix_packages_file).strip()
+        self.extra_nix_packages = extra_nix_packages_file_content.split("[, ]+") if extra_nix_packages_file_content else []
+
         if self.nixless:
             detect_tools()
         else:
@@ -1389,7 +1406,7 @@ class Workspace:
         else:
             return self._run_command_nixless(command, suppress_stdout=suppress_stdout, check_exitcode=check_exitcode, tracing=tracing)
 
-    def run_commands_with_projects(self, effective_project_descriptions, working_directory=None, commands=[], vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_modes=None, tracing=False):
+    def run_commands_with_projects(self, effective_project_descriptions, working_directory=None, commands=[], extra_nix_packages=None, vars_to_keep=None, run_setenv=True, interactive=False, isolated=True, check_exitcode=True, suppress_stdout=False, build_modes=None, tracing=False):
 
         nixful = not self.nixless
 
@@ -1405,6 +1422,7 @@ class Workspace:
         ])
         project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
         project_nix_packages = sum([p.nix_packages for p in effective_project_descriptions], [])
+        project_nix_packages = list(set(project_nix_packages + (extra_nix_packages or [])))
         project_vars_to_keep = sum([p.vars_to_keep for p in effective_project_descriptions], [])
         project_setenv_commands = sum([[f"cd '{self.get_project_root_directory(p)}'", *p.setenv_commands] for p in reversed(effective_project_descriptions)], [])
         project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={self.get_project_root_directory(p)}" for p in effective_project_descriptions]
@@ -1432,6 +1450,7 @@ class Workspace:
             *(["pushd . > /dev/null", *project_setenv_commands, "popd > /dev/null"] if run_setenv else []),
             f"cd '{working_directory}'" if working_directory else None,
             *self._define_shell_functions(effective_project_descriptions),
+            f"echo '{' '.join(extra_nix_packages)}' > {self.get_workspace_admin_directory()}/.extra_nix_packages" if extra_nix_packages else None,
             *commands
         ]
 
@@ -1749,7 +1768,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, section=No
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     create_or_init_workspace(workspace_directory, allow_nonempty=force, nixless=nixless_workspace)
 
-def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, init=False, pause_after_warnings=True, isolated=True, build_modes=None, run_test=False, run_smoke_test=False, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, extra_nix_packages=None, init=False, pause_after_warnings=True, isolated=True, build_modes=None, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1781,7 +1800,8 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
         commands.append("smoke_test_all")
 
     if not install_without_build:
-        workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, isolated=isolated, build_modes=build_modes)
+        extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))
+        workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, isolated=isolated, extra_nix_packages=extra_nix_packages, build_modes=build_modes)
 
 def is_subdirectory(child_dir, parent_dir):
     # Check if a directory is a subdirectory of another directory.
@@ -1800,7 +1820,7 @@ def check_multiple_versions(project_descriptions):
             def q(l): return "[" + ", ".join(l) + "]"
             raise Exception(f"Multiple versions specified for project {cyan(name)}: {cyan(q(versions))} -- only one version of a project may be active at a time")
 
-def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, build_modes=None, pause_after_warnings=True, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, build_modes=None, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1854,9 +1874,10 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
         else:
             _logger.debug(f"No need to change directory, wd={cyan(os.getcwd())} is already under the first project's directory {cyan(first_project_dir)}")
 
-    workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, check_exitcode=False, vars_to_keep=vars_to_keep, build_modes=build_modes)
+    extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))
+    workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, extra_nix_packages=extra_nix_packages, check_exitcode=False, vars_to_keep=vars_to_keep, build_modes=build_modes)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, vars_to_keep=None, build_modes=None, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, vars_to_keep=None, build_modes=None, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1902,8 +1923,9 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     working_directory = workspace_directory if chdir else None
+    extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))
     _logger.info(f"Running {'test ' if run_test else 'smoke_test ' if run_smoke_test else ''}command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode")
-    workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, commands=commands, isolated=isolated, vars_to_keep=vars_to_keep, build_modes=build_modes)
+    workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, commands=commands, isolated=isolated, extra_nix_packages=extra_nix_packages, vars_to_keep=vars_to_keep, build_modes=build_modes)
 
 def maint_subcommand_main(catalog_dir, **kwargs):
     update_catalog(catalog_dir)

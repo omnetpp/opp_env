@@ -131,8 +131,11 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i 's|GetCurrentProcess.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
         "sed -i 's|TransformProcessType.*;||' src/qtenv/qtenv.cc" if version.startswith("6.0") and is_macos and is_aarch64 else None,
 
-        # delete most bundled tools on macOS as they are not required when compiling under Nix (except the debugger helper)
-        "find tools/macos.x86_64/bin -mindepth 1 -not -name 'lldbmi2' -delete && (cd tools/macos.x86_64 && rm -rf doc include lib mkspecs plugins share)" if is_macos and is_x86_64 else None,
+        # delete and disable most bundled tools on macOS/x86_64 as they are not required when compiling under Nix (except the debugger helper)
+        """find tools/macos.x86_64/bin -mindepth 1 -not -name 'lldbmi2' -delete && (cd tools/macos.x86_64 && rm -rf doc include lib mkspecs plugins share) ;
+        sed -i -e 's|export QT_PLUGIN_PATH|#export QT_PLUGIN_PATH|' -e 's|export BISON_PKGDATADIR|#export export BISON_PKGDATADIR|' setenv ;
+        sed -i -e 's|export PIP_PREFIX|#export PIP_PREFIX|' -e 's|export PYTHONNOUSERSITE|#export PYTHONNOUSERSITE|' setenv
+        """ if version < "6.1" and is_macos and is_x86_64 else None,
 
         "sed -i 's|exit 1|# exit 1|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits
         "sed -i 's|echo \"Error: not a login shell|# echo \"Error: not a login shell|' setenv" if not is_modernized and version.startswith("4.") else None, # otherwise setenv complains and exits

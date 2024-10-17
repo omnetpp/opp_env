@@ -1196,7 +1196,7 @@ def get_project_descriptions():
             "patch_commands": [
                 r"""sed -i 's|INET_PROJ=../inet|#INET_PROJ=../inet|g' Makefile""",
             ],
-            "download_url": "https://github.com/brunoolivieri/gradys-simulations/archive/refs/tags/v0.5.tar.gz",
+            "download_url": "https://github.com/Project-GrADyS/gradys-simulations/archive/refs/tags/v0.5.tar.gz",
             "setenv_commands": [
                 r"""export INET_PROJ=$INET_ROOT""",
                 r"""echo 'Hint: To run the example simulation, use the `./gradys-simulations mobilityDrones-omnetpp.ini -n .:$INET_ROOT/src` command.'""",

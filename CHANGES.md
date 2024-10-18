@@ -1,5 +1,14 @@
 # Changes
 
+## 0.30.4.241018
+
+### opp_env
+
+### database (frameworks and models)
+
+- omnetpp: removed optional bear package as it was causing build issues on macOS/x86_64
+- omnetpp: fixed a qtenv issue for omnetpp 6.0.3 on macOS/x86_64 - `QT_PLUGIN_PATH` was overwritten by `setenv`
+
 ## 0.30.3.241016
 
 ### opp_env

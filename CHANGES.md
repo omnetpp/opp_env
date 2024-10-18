@@ -1,13 +1,21 @@
 # Changes
 
-## 0.30.4.241018
+## 0.31.0.241018
 
 ### opp_env
 
-### database (frameworks and models)
+- `install`, `shell` and `run`: added `--add-extra-nix-packages`
+- improved parsing for `--options`, `--vars-to-keep`, `--build-modes`
+- make sure workspace is not under a git working tree
+- record a `prepatch.sha` too, so it's possible to find out which files were patched
 
-- omnetpp: removed optional bear package as it was causing build issues on macOS/x86_64
+### Database (Frameworks and Models)
+
+- omnetpp: removed optional `bear` package as it was causing build issues on macOS/x86_64
 - omnetpp: fixed a qtenv issue for omnetpp 6.0.3 on macOS/x86_64 - `QT_PLUGIN_PATH` was overwritten by `setenv`
+- oppbsd: only build in debug (it was built in debug twice) 
+- obs: only build in debug (it was built in both but only tested in debug)
+- updated sim-time-limit for some smoke tests
 
 ## 0.30.3.241016
 
@@ -30,7 +38,7 @@
 - added the possibility to install any branch directly from a git repository
   by specifying `@branchname` after the project name (e.g. `inet-git@mybranch`)
 
-### Frameworks and Models
+### Database (Frameworks and Models)
 
 - omnetpp: above version 6.1, IDE now auto-imports projects into its workspace
 - omnetpp: added omnetpp-6.1.0 and added omnetpp-6.1.* compatibility everywhere 6.0.* is listed
@@ -62,7 +70,7 @@
 
 - fix: use gitFull nix package instead of git (so that we have git gui in opp_env)
 
-### Frameworks and models
+### Database (Frameworks and Models)
 
 - fix: certain programs that were executed from the host environment (like midnight commander)
        failed to load because opp_env was modifying the LD_LIBRARY_PATH.
@@ -78,7 +86,7 @@
 - add nix package and a flake file (use `nix shell` to start an opp_env enabled shell)
 - change into project directory when using 'opp_env shell' command without any project arguments
 
-### Frameworks and models
+### Database (Frameworks and Models)
 
 - obs: build properly in both release and debug (still only tested in debug due to segfault)
 - dns, tcp_fit_illinois: build and test properly in both release and debug
@@ -98,7 +106,7 @@
 
 - removed the `upgrade` subcommand
 
-### Frameworks and models
+### Database (Frameworks and Models)
 
 - oppbsd: fixed incorrect download URL
 - inet-2010323, rease, quagga: build only debug version, because inet-20100323 can only support one build at a time

@@ -137,6 +137,27 @@ assert_not_contains 'make MODE=release invoked'
 assert_not_contains 'make MODE=debug invoked'
 
 #
+# check --add-extra-nix-packages
+#
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --add-extra-nix-packages graphviz
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -c "dot -V"
+assert_contains_line 'dot - graphviz version .*'
+
+echo "dot -V" | run opp_env shell -w $WORKSPACE opp_env_testproject-latest --isolated
+assert_contains_line 'dot - graphviz version .*'
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest --add-extra-nix-packages mc -c "dot -V && mc --version"
+assert_contains_line 'dot - graphviz version .*'
+assert_contains_line 'GNU Midnight Commander .*'
+
+run opp_env run -w $WORKSPACE opp_env_testproject-latest -c "dot -V && mc --version"
+assert_contains_line 'dot - graphviz version .*'
+assert_contains_line 'GNU Midnight Commander .*'
+
+#
 # check build_all and other shell functions
 #
 

@@ -1300,8 +1300,8 @@ class Workspace:
                 function {function_name} ()
                 {{
                     modes="$*"
-                    if [ -z "$modes" ]; then modes="$BUILD_MODES"; fi
-                    if [ -z "$modes" ]; then modes="release debug"; fi
+                    modes=''${{modes:-$BUILD_MODES}}
+                    modes=''${{modes:-release debug}}
 
                     (
                         for mode in $modes; do

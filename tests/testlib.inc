@@ -9,6 +9,13 @@ run() {
     cat testcase.out >> test.out
 }
 
+run_expect_error() {
+    echo "$@"
+    echo "------------------- $@ ----------------------" >> test.out
+    "$@" >testcase.out 2>&1 && { echo "ERROR: unexpected zero exit code (unreported error) -- check testcase.out"; exit 1; }
+    cat testcase.out >> test.out
+}
+
 assert_contains() {
     grep -q "$*" testcase.out || { echo "ERROR: missing: \"$*\" -- check testcase.out"; exit 1; }
 }

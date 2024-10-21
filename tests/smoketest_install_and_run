@@ -11,6 +11,10 @@ WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
 
 run opp_env init -w $WORKSPACE
 
+#
+# basic install command
+#
+
 run opp_env install -w $WORKSPACE opp_env_testproject-latest
 assert_contains_line 'hello from patch command'
 assert_contains_line 'hello from setenv command'
@@ -206,6 +210,39 @@ run opp_env install -w $WORKSPACE opp_env_testproject-latest --options=opp_env_t
 assert_contains 'Cloning into' # from git
 assert_contains_line 'make MODE=debug invoked'
 assert_contains_line 'make MODE=release invoked'
+
+#
+# error reporting in "run"
+#
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+TEST_PRE_PATCH_COMMAND=ghghghg run_expect_error opp_env install -w $WORKSPACE opp_env_testproject-latest -k TEST_PRE_PATCH_COMMAND
+assert_contains_line '.* ghghghg: command not found'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest
+
+run_expect_error opp_env run -w $WORKSPACE opp_env_testproject-latest -c "echo before-error; ghghgh; echo after-error"
+assert_contains_line 'before-error'
+assert_contains_line '.* ghghgh: command not found'
+assert_not_contains 'after-error'
+
+TEST_PRE_SETENV_COMMAND=ghghghg run_expect_error opp_env run -w $WORKSPACE opp_env_testproject-latest -c "echo hello-from-cmd" -k TEST_PRE_SETENV_COMMAND
+assert_contains_line '.* ghghghg: command not found'
+assert_not_contains 'hello-from-cmd'
+
+TEST_PRE_BUILD_COMMAND=ghghghg run_expect_error opp_env run -w $WORKSPACE opp_env_testproject-latest --build -c "echo hello-from-cmd" -k TEST_PRE_BUILD_COMMAND
+assert_contains_line '.* ghghghg: command not found'
+assert_not_contains 'hello-from-cmd'
+
+TEST_PRE_SMOKETEST_COMMAND=ghghghg run_expect_error opp_env run -w $WORKSPACE opp_env_testproject-latest --smoke-test -c "echo hello-from-cmd" -k TEST_PRE_SMOKETEST_COMMAND
+assert_contains_line '.* ghghghg: command not found'
+assert_not_contains 'hello-from-cmd'
+
+TEST_PRE_TEST_COMMAND=ghghghg run_expect_error opp_env run -w $WORKSPACE opp_env_testproject-latest --test -c "echo hello-from-cmd" -k TEST_PRE_TEST_COMMAND
+assert_contains_line '.* ghghghg: command not found'
+assert_not_contains 'hello-from-cmd'
+
 
 # cleanup
 rm -rf $WORKSPACE

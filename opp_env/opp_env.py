@@ -1915,7 +1915,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
     working_directory = workspace_directory if chdir else None
     extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))
     extra_nix_packages_str = f" with extra packages: {cyan(' '.join(extra_nix_packages))}" if extra_nix_packages else ""
-    _logger.info(f"Running {'test ' if run_test else 'smoke_test ' if run_smoke_test else ''}command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode{extra_nix_packages_str}")
+    _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode{extra_nix_packages_str}")
     workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, commands=commands, isolated=isolated, extra_nix_packages=extra_nix_packages, vars_to_keep=vars_to_keep, build_modes=build_modes)
 
 def maint_subcommand_main(catalog_dir, **kwargs):

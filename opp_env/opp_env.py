@@ -1908,10 +1908,10 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
     commands = []
     if build or (install and not install_without_build):
         commands = ["build_all"]
-        if run_test:
-            commands.append("test_all")
-        if run_smoke_test:
-            commands.append("smoke_test_all")
+    if run_test:
+        commands.append("test_all")
+    if run_smoke_test:
+        commands.append("smoke_test_all")
     if command:
         commands.append(command)
 

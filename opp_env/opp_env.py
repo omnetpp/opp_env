@@ -91,7 +91,10 @@ def join_lines(lines):
 
 def join_commands(commands):
     assert type(commands) is list
-    return "\n".join([cmd for cmd in commands if cmd])  # using ";" as separator also works, " && " should too (script runs on 'set -e' anyway) but doesn't
+    # note: we resort to decorating each line with  "|| exit $?"
+    # because "set -e" cannot be made to work reliably -- we tried!
+    # see https://mywiki.wooledge.org/BashFAQ/105 for background
+    return "\n".join([f"{{ {cmd}; }} || exit $?" for cmd in commands if cmd])
 
 def topological_sort(nodes, is_edge):
     visited = set()
@@ -1301,8 +1304,6 @@ class Workspace:
                     if [ -z "$modes" ]; then modes="release debug"; fi
 
                     (
-                        # note: "set -e" and "if" dont mix! see https://mywiki.wooledge.org/BashFAQ/105
-                        set -eo pipefail;
                         for mode in $modes; do
                             echo -e "{SHELL_GREEN}Invoking {function_name} $mode:{SHELL_NOCOLOR}"
                             cd {directory_var}

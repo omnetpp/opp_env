@@ -1296,33 +1296,28 @@ class Workspace:
             return f"""
                 function {function_name} ()
                 {{
-                    # Collect build modes from args and $BUILD_MODES; if there is one, build it;
-                    # if there are several, recursively call this this function for each.
-                    local modes="$*"
+                    modes="$*"
                     if [ -z "$modes" ]; then modes="$BUILD_MODES"; fi
                     if [ -z "$modes" ]; then modes="release debug"; fi
-                    local mode_count=$(echo "$modes" | wc -w)
-                    if [ "$mode_count" -gt 1 ]; then
-                        echo -e "{SHELL_GREEN}Invoking {function_name} with modes: $modes{SHELL_NOCOLOR}";
-                        for i in $modes; do
-                            {function_name} $i || return 1
+
+                    (
+                        # note: "set -e" and "if" dont mix! see https://mywiki.wooledge.org/BashFAQ/105
+                        set -eo pipefail;
+                        for mode in $modes; do
+                            echo -e "{SHELL_GREEN}Invoking {function_name} $mode:{SHELL_NOCOLOR}"
+                            cd {directory_var}
+                            BUILD_MODE=$mode
+                            true ============== Project-specific commands: ==============
+                            {build_commands}
+                            true ========================================================
                         done
-                        return 0
-                    fi
-                    local mode=$modes
-                    echo -e "{SHELL_GREEN}Invoking {function_name} $mode:{SHELL_NOCOLOR}"
-                    if (
-                        set -eo pipefail
-                        cd {directory_var}
-                        BUILD_MODE=$mode
-                        true ============== Project-specific commands: ==============
-                        {build_commands}
-                        true ========================================================
-                    ); then
+                    )
+
+                    if [ "$?" == "0" ]; then
                         echo -e "{SHELL_GREEN}Done {function_name} $mode{SHELL_NOCOLOR}"
                     else
                         echo -e "{SHELL_RED}ERROR in {function_name} $mode{SHELL_NOCOLOR}";
-                        return 1;
+                        return 1
                     fi
                 }}
                 export -f {function_name}

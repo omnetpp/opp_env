@@ -1905,16 +1905,12 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
-    commands = []
-    if build or (install and not install_without_build):
-        commands = ["build_all"]
-    if run_test:
-        commands.append("test_all")
-    if run_smoke_test:
-        commands.append("smoke_test_all")
-    if command:
-        commands.append(command)
-
+    commands = [
+        "build_all" if build or (install and not install_without_build) else None,
+        "smoke_test_all" if run_smoke_test else None,
+        "test_all" if run_test else None,
+        command if command else None,
+    ]
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     working_directory = workspace_directory if chdir else None
     extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))

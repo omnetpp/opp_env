@@ -93,7 +93,7 @@ assert_not_contains 'make MODE=debug invoked'
 assert_not_contains 'make MODE=release invoked'
 
 #
-# check install --smoke-test, --test
+# check install --smoke-test, --test, run --smoke-test, --test
 #
 
 rm -rf $WORKSPACE/opp_env_testproject-*
@@ -110,6 +110,13 @@ assert_contains_line 'hello from patch command'
 assert_contains_line 'hello from setenv command'
 assert_contains_line 'make MODE=debug invoked'
 assert_contains_line 'make MODE=release invoked'
+assert_contains_line 'make test invoked'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest
+run opp_env run -w $WORKSPACE --smoke-test
+assert_contains_line 'make smoketest invoked'
+run opp_env run -w $WORKSPACE --test
 assert_contains_line 'make test invoked'
 
 #

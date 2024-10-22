@@ -12,7 +12,6 @@ import tempfile
 import importlib
 import importlib.metadata
 import platform
-import urllib.request
 
 # make sure that this run-time version check is in synch with the metadata for python requirement in the project.toml file.
 if sys.version_info < (3,9):
@@ -1228,7 +1227,7 @@ class Workspace:
         else:
             return list(values)[0]
 
-    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None, **kwargs):
+    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None):
         project_state = self.get_project_status(project_description)
         if project_state == Workspace.ABSENT:
             self.download_project(project_description, effective_project_descriptions, patch, cleanup, local=local, git_branch=git_branch, vars_to_keep=vars_to_keep)
@@ -1757,7 +1756,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     create_or_init_workspace(workspace_directory, allow_nonempty=force, nixless=nixless_workspace)
 
-def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, extra_nix_packages=None, init=False, pause_after_warnings=True, isolated=True, build_modes=None, run_test=False, run_smoke_test=False, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, extra_nix_packages=None, init=False, pause_after_warnings=True, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1778,7 +1777,7 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     for project_description in reversed(effective_project_descriptions):
-        workspace.download_project_if_needed(project_description, effective_project_descriptions, git_branch=git_branches.get(project_description.get_full_name()), **kwargs)
+        workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -1809,7 +1808,7 @@ def check_multiple_versions(project_descriptions):
             def q(l): return "[" + ", ".join(l) + "]"
             raise Exception(f"Multiple versions specified for project {cyan(name)}: {cyan(q(versions))} -- only one version of a project may be active at a time")
 
-def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, build_modes=None, pause_after_warnings=True, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1839,7 +1838,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     if install:
         for project_description in reversed(effective_project_descriptions):
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, git_branch=git_branches.get(project_description.get_full_name()), **kwargs)
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -1867,7 +1866,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, extra_nix_packages=extra_nix_packages, check_exitcode=False, vars_to_keep=vars_to_keep, build_modes=build_modes)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, build=False, nixless_workspace=False,  isolated=True, vars_to_keep=None, build_modes=None, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1894,10 +1893,9 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
     check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings)
 
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
-
     if install:
         for project_description in reversed(effective_project_descriptions):
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, git_branch=git_branches.get(project_description.get_full_name()), **kwargs)
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 

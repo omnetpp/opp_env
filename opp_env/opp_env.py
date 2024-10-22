@@ -1089,7 +1089,7 @@ class Workspace:
         data.update(kwargs)
         self.write_project_state_file(project_description, data)
 
-    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None, **kwargs):
+    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None):
         def get_env(varname, what):
             value = os.environ.get(varname)
             _logger.debug(f"Checking {cyan('$'+varname)} for {what}: {cyan(value)}")
@@ -1228,10 +1228,10 @@ class Workspace:
         else:
             return list(values)[0]
 
-    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, git_branch=None, **kwargs):
+    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None, **kwargs):
         project_state = self.get_project_status(project_description)
         if project_state == Workspace.ABSENT:
-            self.download_project(project_description, effective_project_descriptions, patch, cleanup, git_branch=git_branch, **kwargs)
+            self.download_project(project_description, effective_project_descriptions, patch, cleanup, local=local, git_branch=git_branch, vars_to_keep=vars_to_keep)
         elif project_state == Workspace.INCOMPLETE:
             raise Exception(f"Cannot download '{project_description}': Directory already exists")
         elif project_state == Workspace.DOWNLOADED:

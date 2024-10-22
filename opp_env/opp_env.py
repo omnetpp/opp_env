@@ -1089,7 +1089,7 @@ class Workspace:
         data.update(kwargs)
         self.write_project_state_file(project_description, data)
 
-    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, **kwargs):
+    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None, **kwargs):
         def get_env(varname, what):
             value = os.environ.get(varname)
             _logger.debug(f"Checking {cyan('$'+varname)} for {what}: {cyan(value)}")
@@ -1104,7 +1104,7 @@ class Workspace:
         try:
             if project_description.download_commands:
                 commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.download_commands ]
-                self.run_commands_with_projects(effective_project_descriptions, self.root_directory, commands, run_setenv=False)
+                self.run_commands_with_projects(effective_project_descriptions, self.root_directory, commands, run_setenv=False, vars_to_keep=vars_to_keep)
             elif project_description.download_url:
                 if git_branch:
                     raise Exception(f"Git branch ('@{git_branch}') may only be specified when project is installed from git")
@@ -1139,7 +1139,7 @@ class Workspace:
                         self.download_and_apply_patch(project_description.patch_url, project_dir)
                     if project_description.patch_commands:
                         commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.patch_commands ]
-                        self.run_commands_with_projects(effective_project_descriptions, project_dir, commands, run_setenv=False)
+                        self.run_commands_with_projects(effective_project_descriptions, project_dir, commands, run_setenv=False, vars_to_keep=vars_to_keep)
                 else:
                     _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
 

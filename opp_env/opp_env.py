@@ -1781,11 +1781,11 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
-    commands = [ "build_all" ]
-    if run_test:
-        commands.append("test_all")
-    if run_smoke_test:
-        commands.append("smoke_test_all")
+    commands = [
+        "build_all",
+        "smoke_test_all" if run_smoke_test else None,
+        "test_all" if run_test else None,
+    ]
 
     if not install_without_build:
         extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))
@@ -1846,7 +1846,10 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
     function_list = "; ".join([f"`build_{p}`, `clean_{p}`, `test_{p}`, `smoke_test_{p}`, `check_{p}`" for p in ["all"] + project_names])
     hint_command = f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean, test or check a project or all projects, use the following commands: {function_list}. (Use `declare -f <command>` to check what they do.)'"
 
-    commands = ["build_all", hint_command] if build or (install and not install_without_build) else [hint_command]
+    commands = [
+        "build_all" if build or (install and not install_without_build) else None,
+        hint_command
+    ]
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))

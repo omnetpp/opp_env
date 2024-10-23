@@ -1413,7 +1413,9 @@ class Workspace:
         ])
         project_shell_hook_commands = sum([p.shell_hook_commands for p in effective_project_descriptions if p.shell_hook_commands], [])
         project_nix_packages = sum([p.nix_packages for p in effective_project_descriptions], [])
-        project_nix_packages = list(set(project_nix_packages + (extra_nix_packages or [])))
+        combined_packages = project_nix_packages + (extra_nix_packages or [])
+        project_nix_packages = list({pkg: None for pkg in combined_packages})  # Use a dict to maintain uniqueness
+        print("project_nix_packages", sorted(project_nix_packages))
         project_vars_to_keep = sum([p.vars_to_keep for p in effective_project_descriptions], [])
         project_setenv_commands = sum([[f"cd '{self.get_project_root_directory(p)}'", *p.setenv_commands] for p in reversed(effective_project_descriptions)], [])
         project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={self.get_project_root_directory(p)}" for p in effective_project_descriptions]

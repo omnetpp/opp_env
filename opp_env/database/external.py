@@ -1361,7 +1361,7 @@ def get_project_descriptions():
                 r"""git submodule update""",
             ],
             "patch_commands": [
-                r"""sed -i 's|if \[ $2 == "--debug" \]; then|if [ $2 == "--test" ]; then $RELATIVE_PATH_TO_ROOT/omnetpp/ara-sim -u Cmdenv -c $experimentName -n "$nedPath" omnetpp.ini -r 0 --sim-time-limit=10s; fi\\nif [ $2 == "--debug" ]; then|' simulations/run.sh""",
+                """sed -i 's|if \\[ $2 == "--debug" \\]; then|if [ $2 == "--test" ]; then $RELATIVE_PATH_TO_ROOT/omnetpp/ara-sim -u Cmdenv -c $experimentName -n "$nedPath" omnetpp.ini -r 0 --sim-time-limit=10s; fi\\nif [ $2 == "--debug" ]; then|' simulations/run.sh""",
                 r"""cd inetmanet""",
                 r"""sed -i 's|info\[\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h""",
                 r"""for f in $(grep -Rls 'defined(linux)'); do sed -i 's|defined(linux)|defined(__linux__)|' $f; done""",

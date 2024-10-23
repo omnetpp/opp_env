@@ -260,7 +260,13 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$(pwd)/images" if not is_modernized else None,
 
             "export PATH=$(pwd)/bin:$PATH && export LD_LIBRARY_PATH=$(pwd)/lib:$LD_LIBRARY_PATH && export TCL_LIBRARY=$(echo 'puts [info library]; exit' | wish)" if version == "3.3.1" else
-            "source setenv" + (" -f" if base_version.startswith("5.") else "") # -f allows setenv to be called from scripts
+            "source setenv" + (" -f" if base_version.startswith("5.") else ""), # -f allows setenv to be called from scripts
+
+            # export which opp_run bin to use depending on omnetpp version
+            # before 5.2.0, opp_run was debug, and opp_run_release was release
+            # INET versions before 4.0 need the opp_run bin for running smoke tests; some INET versions work (e.g. 3.6.1) work with both omnetpp 5.2.0 and 5.1.2
+            # which use differently named opp_run bins
+            "export OPP_RUN_DBG_BIN=$OMNETPP_ROOT/bin/opp_run_dbg; export OPP_RUN_RELEASE_BIN=$OMNETPP_ROOT/bin/opp_run_release" if base_version >= "5.2" else "export OPP_RUN_DBG_BIN=$OMNETPP_ROOT/bin/opp_run; export OPP_RUN_RELEASE_BIN=$OMNETPP_ROOT/bin/opp_run_release" if base_version > "4.2" else "",
         ],
         "build_commands": [
             # "./configure && make" on steroids: magic "[" command ensures that ./configure is run whenever config.status is missing or is older than configure.user

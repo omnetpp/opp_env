@@ -266,8 +266,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             # before 5.2.0, opp_run was debug, and opp_run_release was release
             # INET versions before 4.0 need the opp_run bin for running smoke tests; some INET versions work (e.g. 3.6.1) work with both omnetpp 5.2.0 and 5.1.2
             # which use differently named opp_run bins
-            "export OPP_RUN_DBG_BIN=$OMNETPP_ROOT/bin/opp_run_dbg; export OPP_RUN_RELEASE_BIN=$OMNETPP_ROOT/bin/opp_run_release" if base_version >= "5.2" else
-            "export OPP_RUN_DBG_BIN=$OMNETPP_ROOT/bin/opp_run; export OPP_RUN_RELEASE_BIN=$OMNETPP_ROOT/bin/opp_run_release",
+            "export OPP_RUN_DBG_BIN=$OMNETPP_ROOT/bin/opp_run_dbg && export OPP_RUN_RELEASE_BIN=$OMNETPP_ROOT/bin/opp_run_release" if base_version >= "5.2" else
+            "export OPP_RUN_DBG_BIN=$OMNETPP_ROOT/bin/opp_run && export OPP_RUN_RELEASE_BIN=$OMNETPP_ROOT/bin/opp_run_release",
         ],
         "build_commands": [
             # "./configure && make" on steroids: magic "[" command ensures that ./configure is run whenever config.status is missing or is older than configure.user

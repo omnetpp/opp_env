@@ -1188,7 +1188,6 @@ def get_project_descriptions():
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd gradys-0.5""",
                 r"""./gradys-simulations$BUILD_MODE_SUFFIX mobilityDrones-omnetpp.ini -n .:$INET_ROOT/src -c Wifi -u Cmdenv --sim-time-limit=10000s""",
             ],
             "required_projects": {"omnetpp": ["5.7.*", "5.6.*"], "inet": ["4.2.5"]},

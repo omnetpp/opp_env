@@ -114,6 +114,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             """INET_LIB_CASE=$(grep -Eo '(-o inet|-o INET)' $INET_ROOT/Makefile | awk '{print $2}')""",
             """if [ "$mode" = "debug" ]; then OPP_BIN=$OPP_RUN_DBG_BIN; INET_DBG_SUFFIX="_dbg"; INET_LIB=$(echo $INET_ROOT/out/*-debug/src/*$INET_LIB_CASE*); fi""",
             """if [ "$mode" = "release" ]; then OPP_BIN=$OPP_RUN_RELEASE_BIN; INET_DBG_SUFFIX=""; INET_LIB=$(echo $INET_ROOT/out/*-release/src/*$INET_LIB_CASE*); fi""",
+            "$OPP_BIN -l $INET_LIB -n $INET_ROOT/examples:.:$INET_ROOT/src -c ARPTest -u Cmdenv --sim-time-limit=10s" if inet_version < "4.0" else
             "inet$INET_DBG_SUFFIX -c ARPTest -u Cmdenv --sim-time-limit=10s"
         ],
         "test_commands": [

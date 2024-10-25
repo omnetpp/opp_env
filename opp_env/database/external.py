@@ -408,10 +408,10 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/MiXiM.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX='_release'; MIXIM_LIB=$(echo $MIXIM_ROOT/out/*-release/src/*mixim*); fi""",
-                r"""if [ "$BUILD_MODE" = "debug" ]; then MIXIM_LIB=$(echo $MIXIM_ROOT/out/*-debug/src/*mixim*); fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then OPP_RUN_BIN=$OPP_RUN_RELEASE_BIN; BUILD_MODE_SUFFIX='_release'; MIXIM_LIB=$(echo $MIXIM_ROOT/out/*-release/src/*mixim*); fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then OPP_RUN_BIN=$OPP_RUN_DBG_BIN; MIXIM_LIB=$(echo $MIXIM_ROOT/out/*-debug/src/*mixim*); fi""",
                 r"""cd examples/bmac""",
-                r"""opp_run$BUILD_MODE_SUFFIX -l $MIXIM_LIB -u Cmdenv -n ..:../../src/base:../../src/modules:../../src/inet_stub""",
+                r"""$OPP_RUN_BIN -l $MIXIM_LIB -u Cmdenv -n ..:../../src/base:../../src/modules:../../src/inet_stub""",
             ],
             "required_projects": {"omnetpp": ["4.6.*", "4.5.*", "4.4.*", "4.3.*", "4.2.*"], "inet": ["2.1.0"]},
             "download_url": "https://github.com/omnetpp-models/mixim/archive/refs/tags/2.3.tar.gz",

@@ -2121,7 +2121,7 @@ def get_project_descriptions():
             "build_commands": [
                 r"""cd extern/inet && make makefiles && cd ../.. && make inet -j$NIX_BUILD_CORES MODE=release""",
                 # r"""make vanetza -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
-                r"""cd extern/vanetza && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=release -DBUILD_SHARED_LIBS=ON .. && cd ../../..""",
+                r"""cd extern/vanetza && mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=release -DBUILD_SHARED_LIBS=ON .. && cd ../../..""",
                 r"""cd extern/simulte && make makefiles && make -j$NIX_BUILD_CORES MODE=release && cd ../..""",
                 r"""cd extern/veins && ./configure & make -j$NIX_BUILD_CORES MODE=release && cd ../..""",
                 r"""cd $OPENCV2X_ARTERY_ROOT && mkdir -p build && cd build && pwd && cmake .. -DCMAKE_BUILD_TYPE=release && cmake -DWITH_SIMULTE=ON -DCMAKE_BUILD_TYPE=release . && cmake --build . --config release -j$NIX_BUILD_CORES""",

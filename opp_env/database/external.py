@@ -1075,7 +1075,7 @@ def get_project_descriptions():
             #     "catalog_url": "",
             # },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "release" ]; then docker run --rm -it -v "$(pwd)/data:/root/data" inetrg/ccnsim_dsme bash -c "cd ccnsim_dsme && cd simulations && ../src/ccnsim_dsme -m -n ../src:.:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../inet-dsme/src:../../inet-dsme/simulations:../../flora/src:../../ccnSim-0.4/:../../lora_omnetpp/src --image-path=../../inet/images -l ../../inet/src/INET -l ../../lora_omnetpp/src/lora_omnetpp  rfd_repos.ini -c INDICATION  --sim-time-limit=10s -r 0"; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then docker run --rm -v "$(pwd)/data:/root/data" inetrg/ccnsim_dsme bash -c "cd ccnsim_dsme && cd simulations && ../src/ccnsim_dsme -m -n ../src:.:../../inet/src:../../inet/examples:../../inet/tutorials:../../inet/showcases:../../inet-dsme/src:../../inet-dsme/simulations:../../flora/src:../../ccnSim-0.4/:../../lora_omnetpp/src --image-path=../../inet/images -l ../../inet/src/INET -l ../../lora_omnetpp/src/lora_omnetpp  rfd_repos.ini -c INDICATION  --sim-time-limit=10s -r 0"; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently the project builds in release mode only.'; fi""",
             ],
             "download_commands": [

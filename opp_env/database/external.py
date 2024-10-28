@@ -705,26 +705,27 @@ def get_project_descriptions():
         },
 
         {
-            # NOTE - TwoSubnets example works, but segfault when running some other simulations; only built and tested in debug
+            # NOTE - TwoSubnets example works, but segfault when running some other simulations; only built and tested in release
+            # in debug: <!> Model error: ASSERT: condition vect[i]==NULL false in function deleteNetwork, csimulation.cc line 467.
             "name": "oppbsd", "version": "4.0",
             "description": "OppBSD integrates essential parts of the real FreeBSD networking stack into OMNeT++ as a simulation model",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OppBSD-4.0.html",
             },
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "debug" ]; then cd examples/TwoSubnets && ./out/gcc-debug/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini; fi""",
-                r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently this project only builds in debug mode.'; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then cd examples/TwoSubnets && ./out/gcc-release/TwoSubnets -u Cmdenv -c ThreeHosts omnetpp.ini; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently this project only builds in release mode.'; fi""",
             ],
             "required_projects": {"omnetpp": ["4.2.0"]},
             "download_url": "https://github.com/omnetpp-models/archive/releases/download/archive/oppbsd-4.0.tar.gz",
             "build_commands": [
-                r"""if [ "$BUILD_MODE" = "debug" ]; then make MODE=debug; fi""",
-                r"""if [ "$BUILD_MODE" = "release" ]; then echo 'This project is only built in debug mode'; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then make ARCH=amd64 MODE=release; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'This project is only built in release mode'; fi""",
             ],
-            "setenv_commands": [r"""echo 'Hint: run example simulations from their folder. For example, in examples/TwoSubnets folder: `./out/gcc-debug/TwoSubnets omnetpp.ini`'"""],
+            "setenv_commands": [r"""echo 'Hint: run example simulations from their folder. For example, in examples/TwoSubnets folder: `./out/gcc-release/TwoSubnets omnetpp.ini`'"""],
             "clean_commands": [
-                r"""if [ "$BUILD_MODE" = "debug" ]; then make clean MODE=debug; fi""",
-                r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping clean in release mode because this project is only built in debug mode'; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then make clean MODE=release; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping clean in debug mode because this project is only built in release mode'; fi""",
             ],
         },
 

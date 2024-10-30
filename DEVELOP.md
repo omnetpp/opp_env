@@ -1,4 +1,4 @@
-## Developing or changing opp_env
+# Contributing to opp_env
 
 If you want to contribute to the development of `opp_env` or need to modify the
 source code for any reason, you can install the package in editable mode by
@@ -10,13 +10,10 @@ the following command:
 This will install the Python module and the `opp_env` command, but with the
 added ability to make local modifications that will take effect immediately.
 
-If you get the `error: externally-managed-environment` message, see the note
-marked IMPORTANT above.
-
 In case of other errors, try upgrading pip to the latest version first by
 running `python3 -m pip install --upgrade pip`.
 
-### Building the Python Package
+## Building the Python Package
 
 To build the Python package, you first need to install the `build` package by
 running the following command:

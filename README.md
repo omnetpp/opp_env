@@ -1,6 +1,6 @@
 ![smoke tests](https://github.com/omnetpp/opp_env/actions/workflows/smoketest.yml/badge.svg)
 
-# opp_env: Automated Installation of OMNeT++ Simulation Frameworks
+# opp_env: Simplifying OMNeT++ Model Installations
 
 `opp_env` is a powerful tool that allows for the easy and automated installation
 of OMNeT++ simulation frameworks and models, including dependencies like INET
@@ -9,7 +9,7 @@ well as currently selected versions of Veins, SimuLTE, Simu5G and other models.
 We are working towards expanding its database with more models, and we are open
 to suggestions and contributions.
 
-`opp_env` supports Linux and macOS systems. On Windows 10 & 11, `opp_env` can be
+`opp_env` supports Linux and macOS systems. On Windows 11, `opp_env` can be
 run on the Windows Subsystem for Linux (WSL2).
 
 > [!NOTE]
@@ -33,9 +33,13 @@ any researcher or developer working with OMNeT++ simulation frameworks:
 - Customizable configuration options that allow for advanced control over the
   installation process.
 
+## Installation
+
+See the [INSTALL](INSTALL.md) page.
+
 ## Usage
 
-Using `opp_env` is simple. To install a specific version of a simulation framework
+To install a specific version of a simulation framework
 and its dependencies, first create a workspace and initialize it:
 
     mkdir workspace && cd workspace && opp_env init
@@ -62,14 +66,9 @@ To open a shell prompt where you can use the recently installed Simu5G model, ty
 > [!IMPORTANT]
 > You cannot use the packages you installed via `opp_env` outside of `opp_env shell` or `opp_env run`.
 
-> [!TIP]
-> To see the list of available packages, type: `opp_env list`.
-> [Scroll down](#supported-simulation-frameworks) for the output from a recently released version.
+## Available Packages
 
-<a name="supported-simulation-frameworks"></a>
-## Available packages
-
-The output from `opp_env list` from October 1, 2024:
+To see the list of available packages, type: `opp_env list`. The output from `opp_env list` from October 1, 2024:
 
     omnetpp                     6.0.3  6.0.2  6.0.1  6.0.0  5.7.1  5.7.0  5.6.3
                                 5.6.2  5.6.1  5.6.0  5.5.2  5.5.1  5.5.0  5.4.2
@@ -152,3 +151,7 @@ The output from `opp_env list` from October 1, 2024:
     veins                       5.2  5.1  5.0  4.7.1  4.7  4.6  4.4  4.3  3.0  git
     veins_vlc                   1.0
     wifidirect_allinone         3.4
+
+## Modifying opp_env
+
+If you want to modify `opp_env`, see the [DEVELOP](DEVELOP.md) page.

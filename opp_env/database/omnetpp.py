@@ -40,6 +40,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     is_aarch64 = platform.machine().lower() == "arm64" or platform.machine().lower() == "aarch64"
     arch_name = "x86_64" if is_x86_64 else "aarch64" if is_aarch64 else "unsupported"
 
+    # old versions don't support Apple Silicon, although they could be made to work via emulation
+    is_unsupported_apple_silicon = version < "6.0" and is_macos and is_aarch64
+
     # whether we can support the IDE considering the required JRE on the OS and architecture
     # we do not support the IDE below 4.2 because of incompatibilities with JRE 8
     is_ide_supported = (version >= "5.7") or (version >= "4.2" and is_x86_64)
@@ -221,7 +224,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "name": "omnetpp",
         "version": canonical_version,
         "description": "OMNeT++ base system",
-        "warnings": remove_blanks([
+        "warnings": ["This version (versions <6.0) is not supported on Apple Silicon."] if is_unsupported_apple_silicon else remove_blanks([
             join_nonempty_items(" ", [
                 f"This is not a modernized version of OMNeT++. Consider using a later patchlevel for a cleaner compilation and bug fixes." if not is_modernized and version >= "5.0" else None,
                 f"This is not a modernized version of OMNeT++. Consider using a later patchlevel for a cleaner compilation, bug fixes, and compatibility with modern C++ compilers and libraries." if not is_modernized and version < "5.0" else None,
@@ -244,6 +247,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
         "shell_hook_commands": [
+            "echo 'Error: This OMNeT++ version (versions <6.0) is not supported on Apple Silicon.' && exit 1 " if is_unsupported_apple_silicon else None,
             "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if qt_packages else None,
             "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.qt5.qtwayland.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if "qt5.qtwayland" in qt_packages else None,
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,

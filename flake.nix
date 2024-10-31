@@ -21,7 +21,7 @@
           inherit pname version;
           src = pkgs.python3Packages.fetchPypi {
             inherit pname version;
-            hash = "sha256-P1WNcB6yj78N0dQqN1u9o6aYQNyGr1aqwfTNqKbcxDo=";
+            hash = "sha256-VoucL+9Btde42XZn7oVefKMxU4c1fWBJNgejMRlsKDo=";
           };
         };
 

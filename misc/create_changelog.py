@@ -30,7 +30,7 @@ def categorize_commit(message, files_changed):
     if "opp_env/opp_env.py" in files_changed:
         return "opp_env"
     elif any(file.startswith("opp_env/") and file != "opp_env/opp_env.py" for file in files_changed):
-        return "Models"
+        return "Database (Frameworks and Models)"
     return "Uncategorized"
 
 

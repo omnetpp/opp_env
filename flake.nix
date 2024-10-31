@@ -11,7 +11,7 @@
     let
       pkgs = import nixpkgs { inherit system; };
       pname = "opp_env";
-      version = "0.29.1.240516"; # Latest released version. Must be updated regularly.
+      version = "0.31.1.241031"; # Latest released version. Must be updated regularly.
       githash = self.shortRev or "dirty";
       timestamp = nixpkgs.lib.substring 0 8 self.lastModifiedDate;
       gversion = "${githash}.${timestamp}";

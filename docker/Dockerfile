@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # The base image
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 LABEL maintainer="Rudolf Hornig <rudi@omnetpp.org>"
 LABEL org.opencontainers.image.source = "https://github.com/omnetpp/opp_env"
 

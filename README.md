@@ -68,38 +68,39 @@ To open a shell prompt where you can use the recently installed Simu5G model, ty
 
 ## Available Packages
 
-To see the list of available packages, type: `opp_env list`. The output from `opp_env list` from October 1, 2024:
+To see the list of available packages, type: `opp_env list`. The output from `opp_env list` from October 31, 2024:
 
-    omnetpp                     6.0.3  6.0.2  6.0.1  6.0.0  5.7.1  5.7.0  5.6.3
-                                5.6.2  5.6.1  5.6.0  5.5.2  5.5.1  5.5.0  5.4.2
-                                5.4.1  5.4.0  5.3.1  5.3.0  5.2.2  5.2.1  5.2.0
-                                5.1.2  5.1.1  5.1.0  5.0.1  5.0.0  4.6.1  4.6.0
-                                4.5.1  4.5.0  4.4.2  4.4.1  4.4.0  4.3.2  4.3.1
-                                4.3.0  4.2.3  4.2.2  4.2.1  4.2.0  4.1.1  4.1.0
-                                4.0.2  4.0.1  3.3.2  3.3.1  git
-    inet                        4.5.2  4.5.1  4.5.0  4.4.1  4.4.0  4.3.9  4.3.8
-                                4.3.7  4.2.10  4.2.9  4.2.8  4.2.7  4.2.6  4.2.5
-                                4.2.4  4.2.3  4.2.2  4.2.1  4.2.0  4.1.2  4.1.1
-                                4.1.0  4.0.0  3.8.3  3.8.2  3.8.1  3.8.0  3.7.1
-                                3.7.0  3.6.8  3.6.7  3.6.6  3.6.5  3.6.4  3.6.3
-                                3.6.2  3.6.1  3.6.0  3.5.x  3.5.0  3.4.0  3.3.0
-                                3.2.4  3.2.3  3.2.2  3.2.1  3.2.0  3.1.x  3.1.1
-                                3.1.0  3.0.x  3.0.0  2.6.x  2.6.0  2.5.x  2.5.0
-                                2.4.x  2.4.0  2.3.x  2.3.0  2.2.x  2.2.0  2.1.x
-                                2.1.0  2.0.x  2.0.0  20100323  20061020  git
+    omnetpp                     6.1.0  6.0.3  6.0.2  6.0.1  6.0.0  5.7.1  5.7.0 
+                                5.6.3  5.6.2  5.6.1  5.6.0  5.5.2  5.5.1  5.5.0
+                                5.4.2  5.4.1  5.4.0  5.3.1  5.3.0  5.2.2  5.2.1
+                                5.2.0  5.1.2  5.1.1  5.1.0  5.0.1  5.0.0  4.6.1
+                                4.6.0  4.5.1  4.5.0  4.4.2  4.4.1  4.4.0  4.3.2
+                                4.3.1  4.3.0  4.2.3  4.2.2  4.2.1  4.2.0  4.1.1
+                                4.1.0  4.0.2  4.0.1  3.3.2  3.3.1  git
+    inet                        4.5.4  4.5.2  4.5.1  4.5.0  4.4.1  4.4.0  4.3.9
+                                4.3.8  4.3.7  4.2.10  4.2.9  4.2.8  4.2.7  4.2.6
+                                4.2.5  4.2.4  4.2.3  4.2.2  4.2.1  4.2.0  4.1.2
+                                4.1.1  4.1.0  4.0.0  3.8.3  3.8.2  3.8.1  3.8.0
+                                3.7.1  3.7.0  3.6.8  3.6.7  3.6.6  3.6.5  3.6.4
+                                3.6.3  3.6.2  3.6.1  3.6.0  3.5.x  3.5.0  3.4.0
+                                3.3.0  3.2.4  3.2.3  3.2.2  3.2.1  3.2.0  3.1.x
+                                3.1.1  3.1.0  3.0.x  3.0.0  2.6.x  2.6.0  2.5.x
+                                2.5.0  2.4.x  2.4.0  2.3.x  2.3.0  2.2.x  2.2.0
+                                2.1.x  2.1.0  2.0.x  2.0.0  20100323  20061020  git
     afdx                        20220904
     ansa                        3.4.0
-    artery_allinone             20230820
+    artery_allinone             20240807  20230820
     can_allinone                0.1.0
     castalia                    3.3pr16  3.3  3.2
     cell                        20140729
     chaosmanager                20221210
     cmm_orbit_mobility_allinone 20220815
-    core4inet                   240124  221109
+    core4inet                   20240124  221109
     crsimulator                 20140204
     dctrafficgen                20181016
     dns                         20150911
-    fico4omnet                  20210113
+    ecmp_allinone               20230713
+    fico4omnet                  20240124  20210113
     flora                       1.1.0
     gptp                        20200311
     gradys                      0.5
@@ -122,7 +123,8 @@ To see the list of available packages, type: `opp_env list`. The output from `op
     opencv2x_artery             1.4.1
     opencv2x_veins              1.4.1
     opendsme_allinone           20201110
-    openflow                    20231017
+    openflow                    20240124  20231017
+    opp_env_testproject         0.1
     oppbsd                      4.0
     ops_allinone                20230331
     os3                         1.0
@@ -135,14 +137,17 @@ To see the list of available packages, type: `opp_env list`. The output from `op
     rinasim                     20200903
     rpl_allinone                6tisch_paper
     rspsim                      6.1.3  6.1.2
+    sdn4core                    20240124
     seapp                       20191230
     sedencontroller_allinone    20230305
+    signals_and_gateways        20240124
     simcan                      1.2
     simproctc                   2.0.2
     simu5g                      1.2.2  1.2.1  1.1.0  git
     simulte                     1.2.0  1.1.0  0.9.1
+    soa4core                    20240124
     solarleach                  1.01
-    space_veins                 0.3
+    space_veins_allinone        0.3
     stochasticbattery           20170224
     streetlightsim              1.0
     swim_allinone               20180221

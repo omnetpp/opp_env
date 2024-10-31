@@ -26,7 +26,7 @@ jobs:
       - name: list all test sessions
         id: set-matrix
         run: |
-          projects=$(opp_env list --flat | grep -P '^(?!(omnetpp|inet|simulte|simu5g|veins))')
+          projects=$(opp_env list --flat | grep -P '^(?!(omnetpp|inet|simulte|simu5g|veins))|inetgpl')
           if [ -z "$projects" ]; then
             echo "::set-output name=matrix::[]"
           else

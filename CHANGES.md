@@ -1,5 +1,30 @@
 # Changes
 
+## 0.31.1.241031
+
+### opp_env
+
+- fix: `-k` option not being effective in the `install` subcommand
+- fix: errors during build and test were not properly detected and reported by `opp_env`
+- fix: with `run`, the `--smoke-test` and `--test` options were ineffective
+- various refactorings
+
+### Database (Frameworks and Models)
+
+- omnetpp: report error for unsupported platforms (versions earlier than 6.0 on Apple Silicon)
+- inet: added version 4.5.4
+- inet: smoke test works now in both debug and release 
+- inet: adjusted smoke test command
+- inet: use lower case inet lib name before 3.0 in smoke tests
+- veins-5.2: removed omnetpp-6 and corresponding inet versions as it didn't work
+- veins: removed `/dev/null` redirection and added echo statements
+- lora_icn: fixed smoke test command
+- oppbsd: use release build instead of debug
+- opencv2x_artery: fixed build command
+- gradys: fixed smoke test commands
+- libara: fixed patch command
+- mixim: smoke test works now in both debug and release 
+
 ## 0.31.0.241018
 
 ### opp_env

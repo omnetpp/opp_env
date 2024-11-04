@@ -661,7 +661,11 @@ class ProjectDescription:
         # remove null elements from lists inside options, too
         for option_name, option_entries in self.options.items():
             for field_name, field_value in option_entries.items():
+                if not re.match("option_", field_name) and not hasattr(self, field_name):
+                    raise ValueError(f"Project {name}-{version} option '{option_name}' key '{field_name}': Invalid key")
                 if type(field_value) is list:
+                    if (field_value[0] or "") not in ["@prepend", "@append", "@replace"]:
+                        raise ValueError(f"Project {name}-{version} option '{option_name}' key '{field_name}': First value of list must be '@prepend', '@append', or '@replace'")
                     field_value[:] = remove_empty(field_value)
 
         if bool(download_url) + bool(git_url) + bool(download_commands) > 1:
@@ -711,6 +715,19 @@ class ProjectDescription:
 
         new_project_description = copy.deepcopy(self)
 
+        def set_or_extend_attr_from_option(project_description, field_name, field_value):
+            # Modify the attribute in the project description: if it's a list, extend or replace based on the first element of field_value; otherwise overwrite it
+            if hasattr(project_description, field_name) and isinstance(getattr(project_description, field_name), list):
+                assert isinstance(field_value, list) and field_value[0] in ["@prepend", "@append", "@replace"]
+                if field_value[0] == "@prepend":
+                    getattr(project_description, field_name)[:0] = field_value[1:]
+                elif field_value[0] == "@append":
+                    getattr(project_description, field_name).extend(field_value[1:])
+                elif field_value[0] == "@replace":
+                    setattr(project_description, field_name, field_value[1:])
+            else:
+                setattr(project_description, field_name, field_value)
+
         if effective_options:
             if not quiet:
                 _logger.debug(f"Selecting options {cyan(requested_options)} for project {cyan(self)}")
@@ -718,7 +735,7 @@ class ProjectDescription:
                 if option in self.options:
                     for field_name, field_value in self.options[option].items():
                         if not re.match("option_", field_name): # not option metadata
-                            setattr(new_project_description, field_name, field_value)
+                            set_or_extend_attr_from_option(new_project_description, field_name, field_value)
                 else:
                     _logger.warning(f"Project {cyan(self)} does not support option {cyan(option)}")
         return new_project_description

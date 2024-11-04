@@ -258,6 +258,10 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "export AR=    # Older/unpatched omnetpp versions require AR to be defined as 'ar rs' (not just 'ar'), so rather undefine it" if not is_modernized else None,
             # alternative: "AR=\"${AR:-ar} cr\""
         ],
+        "patch_commands": [
+            *source_patch_commands,
+            *configuration_patch_commands
+        ],
         "setenv_commands": [
             # need to set OMNETPP_IMAGE_PATH explicitly, otherwise any model that sets it will silently make stock omnetpp images inaccessible;
             # unfortunately omnetpp setenv scripts don't set OMNETPP_IMAGE_PATH, so do it here
@@ -315,21 +319,19 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-{os_name}-{'x86_64' if is_macos else arch_name}.tgz" if base_version == "6.0.0" or base_version == "6.0.1" else # for 6.0.0 and 6.0.1 there are separate tarballs for each architecture on Linux (x86_64, aarch64), but not on macOS (only x86_64)
                     f"{github_url}/releases/download/omnetpp-{base_version}/omnetpp-{base_version}-{os_name}-{arch_name}.tgz", # for later versions (6.0.2+) there are separate tarballs for each architecture on both Linux and macOS
                 "patch_commands": [
+                    "@prepend",
                     *base_release_to_actual_version_patch_commands,
-                    *source_patch_commands,
-                    *configuration_patch_commands
                 ],
-                "vars_to_keep": [ "OMNETPP_REPO" ],
+                "vars_to_keep": [
+                    "@append",
+                    "OMNETPP_REPO"
+                ],
             },
             "from-source-archive": {
                 "option_description": "Install from source archive on GitHub (IDE will not be available)",
                 "option_category": "download",
                 "option_is_default": version in missing_releases,
                 "download_url": f"https://github.com/omnetpp/omnetpp/archive/refs/{'heads' if is_git_branch else 'tags'}/{git_branch_or_tag_name}.tar.gz",
-                "patch_commands": [
-                    *source_patch_commands,
-                    *configuration_patch_commands
-                ],
             },
             "from-git": {
                 "option_description": "Install from git repo on GitHub (IDE will not be available)",
@@ -337,10 +339,6 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
                 "option_is_default": version == "git",
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
                 "git_branch": git_branch_or_tag_name,
-                "patch_commands": [
-                    *source_patch_commands,
-                    *configuration_patch_commands
-                ],
             },
         }
     }

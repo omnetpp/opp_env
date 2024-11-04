@@ -628,7 +628,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd quisp && ./quisp$BUILD_MODE_SUFFIX simulations/two_nodes.ini -c two_node_MIM -u Cmdenv --sim-time-limit=100s"""
             ],
-            "required_projects": {"omnetpp": ["6.0.0"]},
+            "required_projects": {"omnetpp": ["6.0.*"]},
             "git_url": "https://github.com/sfc-aqua/quisp.git",
             "patch_commands": [
                 r"""git reset --hard eddfe7ee80535a624987941653c59da2ce138929""",    # the releases need git, so we're using a commit of the master branch
@@ -2244,7 +2244,7 @@ def get_project_descriptions():
         {
             # original project: https://gitraap.i3a.info/jfclemente/ecmp
             "name": "ecmp_allinone", "version": "20230713",    # latest master as of time of writing
-            "required_projects": {"omnetpp": ["6.0.1"]},
+            "required_projects": {"omnetpp": ["6.0.*"]},
             "description": "Equal-cost multi-path routing (ECMP) implementation for INET 4.4.1. This version downloads its own copy of INET, and does not use one installed by opp_env.",
             "details": "Implemented by Juan Francisco Clemente Camacho. Original project: https://gitraap.i3a.info/jfclemente/ecmp",
             "smoke_test_commands": [

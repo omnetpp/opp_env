@@ -10,7 +10,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/flexray/dynamic && run_fico4omnet$BUILD_MODE_SUFFIX -u Cmdenv --sim-time-limit=1s""",
             ],
-            "required_projects": {"omnetpp": ["6.0.*"]},
+            "required_projects": {"omnetpp": ["6.*"]},
             "patch_commands": [
                 r"""mkdir bin""",
                 r"""rm src/run_fico4omnet.cmd""",

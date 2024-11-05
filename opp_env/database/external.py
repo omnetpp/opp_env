@@ -170,7 +170,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/IEEE8021Q/small_network && opp_run$BUILD_MODE_SUFFIX -l $CORE4INET_ROOT/src/CoRE4INET -l$INET_ROOT/src/INET -n $CORE4INET_ROOT/examples:$CORE4INET_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=2s""",
             ],
-            "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["3.8.3"]},
+            "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["3.8.5", "3.8.3"]},
             "patch_commands": [
                 r"""sed -i -E 's|INET_PROJ=[^ ]+|INET_PROJ=$(INET_ROOT)|' Makefile""",
                 r"""sed -i -E 's|-L.*/src|-L$$\\\(INET_PROJ\\\)/src|' Makefile""",
@@ -1425,7 +1425,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
             ],
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"]},
+            "required_projects": {"omnetpp": ["6.*"], "inet": ["3.8.5", "3.8.3"]},
             # there are no releases, so we use a commit from the master branch
             "download_url": "https://github.com/CoRE-RG/OpenFlow/archive/refs/tags/nightly/2024-01-24_15-05-30.tar.gz",
             "patch_commands": [
@@ -2171,7 +2171,7 @@ def get_project_descriptions():
         {
             # TODO: add from-git option, as core4inet and fico4omnet both has them
             "name": "signals_and_gateways", "version": "20240124",    # latest master as of time of writing
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"]},
+            "required_projects": {"omnetpp": ["6.*"], "inet": ["3.8.5", "3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"]},
             "description": "SignalsAndGateways enables a heterogeneous network simulation using CoRE4INET, INET and FiCo4OMNeT, with gateway components for communication between Ethernet and bus technologies.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
@@ -2194,7 +2194,7 @@ def get_project_descriptions():
         {
             # TODO: add from-git option, as core4inet and fico4omnet both has them
             "name": "soa4core", "version": "20240124",    # latest master as of time of writing
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"]},
+            "required_projects": {"omnetpp": ["6.*"], "inet": ["3.8.5", "3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"]},
             "description": "Service-Oriented Architecture for Communication over Realtime Ethernet (SOA4CoRE)",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
@@ -2218,7 +2218,7 @@ def get_project_descriptions():
         {
             # TODO: add from-git option, as core4inet and fico4omnet both has them
             "name": "sdn4core", "version": "20240124",    # latest master as of time of writing
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"], "soa4core": ["20240124"], "openflow": ["20240124"]},
+            "required_projects": {"omnetpp": ["6.*"], "inet": ["3.8.5", "3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"], "soa4core": ["20240124"], "openflow": ["20240124"]},
             "description": "Software-Defined Networking for Communication over Realtime Ethernet (SDN4CoRE)",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",

@@ -11,8 +11,9 @@ ENV USER=${USER}
 SHELL ["/bin/bash", "-c"]
 
 # install base dependencies
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 RUN apt-get update && apt-get install --no-install-recommends -y \
-      sudo curl xz-utils ca-certificates \
+      sudo curl gzip git xz-utils ca-certificates python3 python3-pip python3-venv \
       && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # add the default user to the image
@@ -35,17 +36,16 @@ COPY --chown=$USER:root ./profile /home/${USER}/.profile
 RUN set -o pipefail \
     && sh <(curl -L https://nixos.org/nix/install) --no-daemon \
     && mkdir -p .local/bin
-RUN source .profile && nix profile install nixpkgs#python3 nixpkgs#python3Packages.pip \
-       nixpkgs#git nixpkgs#gzip nixpkgs#curl \
-    && nix-collect-garbage \
-    && nix-store --optimise \
-    && nix-store --verify --check-contents
-# trick: check if the github repo changed and force a rebuild of the remaining layers    
-ADD "https://api.github.com/repos/omnetpp/opp_env/commits?per_page=1" latest_commit  
-RUN rm latest_commit && source .profile && pip3 install --break-system-packages --user git+https://github.com/omnetpp/opp_env.git \
+# trick: check if the github repo has a new release and force a rebuild of the remaining layers    
+ADD "https://api.github.com/repos/omnetpp/opp_env/releases?per_page=1" latest_commit  
+RUN rm latest_commit \
+    && python3 -m venv .venv \
+    && . .venv/bin/activate \
+    && pip install opp-env \
+    && . .profile \
     && opp_env init --force
 
 # set up the entrypoint script so all commands have an environment where .profile is sourced
-COPY --chmod=+x ./entrypoint.sh /entrypoint.sh
+COPY --chmod=0555 ./entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/bin/bash"]

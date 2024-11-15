@@ -8,6 +8,20 @@
 # for ssh logins, install and configure the libpam-umask package.
 #umask 022
 
+# Activate local python virtual environment if present in the root directory.
+# You can create a virtual environment with 'python3 -m venv .venv'
+# and then install all required packages with 'python3 -m pip install -r python/requirements.txt'
+#
+# NOTE: the bin/activate script directly sets the PATH variable to a value saved during
+# an earlier run of the script to restore the PATH to that state. This may overwrite any
+# changes made to the PATH since the last run. Because of this it is EXTREMELY important
+# NOT to modify the PATH in the 'setenv' script before activating the virtual env.
+# In short, this activation MUST BE at the very beginning of the 'setenv' script.
+#
+if [ -f "$HOME/.venv/bin/activate" ] ; then
+  source $HOME/.venv/bin/activate
+fi
+
 # if running bash
 if [ -n "$BASH_VERSION" ]; then
     # include .bashrc if it exists
@@ -28,24 +42,42 @@ fi
 
 if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
 
-# daily opp_env version check - execute 'touch ~/.disable_opp_env_upgrade_check' to disable
-echo "Welcome to the 'opp_env' WSL distro!"
-if [ ! -f ~/.opp_env_intro_disable ]; then
+echo "Welcome to the 'opp_env' WSL distro! (v$(opp_env --version))"
+
+notice_file=~/.opp_env_upgrade_notice
+if [ -f $notice_file ]; then
+  echo
+  cat $notice_file
+  echo
+  echo "Run 'touch ~/.opp_env_upgrade_check_disable' to disable this automatic upgrade check."
+fi
+
+if [ ! -f ~/.opp_env_intro_disable -a "$(command -v opp_env)" ]; then
   echo
   opp_env --help-intro
   echo
   echo "Run 'touch ~/.opp_env_intro_disable' to remove this intro."
 fi
 
+# daily opp_env version check - execute 'touch ~/.disable_opp_env_upgrade_check' to disable
 timestamp=~/.opp_env_upgrade_check_timestamp
 if [ ! -f ~/.opp_env_upgrade_check_disable ]; then
   # See if it's expired, and background update
   lastrun=$(stat -c %Y "$timestamp" 2>/dev/null) || lastrun=0
   expiration=$(expr $lastrun + 86400)
   if [ $(date +%s) -ge $expiration ]; then
-    echo
-    opp_env upgrade --check
+    ( 
+      if [ "$(pip install --upgrade --dry-run --disable-pip-version-check opp-env | grep 'Would install')" ]; then
+        echo -e "\033[0;32mA new version of 'opp_env' is available.\nRun 'pip install --upgrade opp_env' to upgrade. \033[0;0m" > $notice_file
+      else 
+        rm -f $notice_file
+      fi 
+    ) &
+    disown
     touch $timestamp
   fi
+else
+  rm -f $notice_file
 fi
+
 echo

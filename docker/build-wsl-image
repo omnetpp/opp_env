@@ -1,3 +1,4 @@
+#!/bin/sh
 
 docker run --user opp_env --name opp_env_wsl ghcr.io/omnetpp/opp_env:latest
 docker export --output="opp_env-wsl.tar.gz" opp_env_wsl

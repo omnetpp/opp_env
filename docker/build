@@ -1,3 +1,7 @@
 #!/bin/sh
 
-DOCKER_BUILDKIT=1 docker build -t ghcr.io/omnetpp/opp_env:latest -t ghcr.io/omnetpp/opp_env:241031 .
+DOCKER_BUILDKIT=1 docker build -t ghcr.io/omnetpp/opp_env:latest -t ghcr.io/omnetpp/opp_env:241121 .
+
+docker run --user opp_env --name opp_env_wsl ghcr.io/omnetpp/opp_env:latest
+docker export opp_env_wsl | gzip --best > opp_env.wsl
+docker rm opp_env_wsl

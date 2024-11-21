@@ -1,5 +1,4 @@
 build
-build-wsl-image
 run
 opp_env_distro.cmd
 opp_env_distro_install.cmd

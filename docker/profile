@@ -40,15 +40,86 @@ if [ -d "$HOME/.local/bin" ] ; then
     PATH="$HOME/.local/bin:$PATH"
 fi
 
-if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+if [ -e ~/.nix-profile/etc/profile.d/nix.sh ]; then . ~/.nix-profile/etc/profile.d/nix.sh; fi # NIX packages are required by the following part
 
-echo "Welcome to the 'opp_env' WSL distro! (v$(opp_env --version))"
+COLOR_GRAY() {
+  echo -e "\033[38;20m" 
+}
+COLOR_RED() {
+  echo -e "\033[1;31m"
+}
+COLOR_YELLOW() {
+  echo -e "\033[1;33m"
+}
+COLOR_CYAN() {
+  echo -e "\033[0;36m"
+}
+COLOR_GREEN() {
+  echo -e "\033[0;32m"
+}
+COLOR_RESET() {
+  echo -e "\033[0;0m"
+}
 
 notice_file=~/.opp_env_upgrade_notice
+# override prompt to display opp_env version if opp_env is accessible
+opp_env_version() {
+  if [ "$(command -v opp_env)" ]; then
+    echo "opp_env@"$(opp_env --version)
+  else
+    echo "opp_env@???"
+  fi
+}
+
+opp_env_upgrade() {
+  if [ -f $notice_file ]; then
+    echo "!"
+  fi
+}
+
+PS1='${debian_chroot:+($debian_chroot)}$(COLOR_GREEN)$(opp_env_version)$(COLOR_RED)$(opp_env_upgrade)$(COLOR_RESET):$(COLOR_CYAN)\w$(COLOR_RESET)\$ '
+
+# if there is already an installation of OMNeT++ already in the workspace
+# invoke an 'opp_env shell' on that to drop the user directly into the development shell
+# which is the inteded action in almost all cases. In that case we drop back to the main shell
+# where opp_env can be used only after the user exits the deveelopment shell
+
+# if the content of the .opp_env_last_workspace file points to a directory, 
+# put the directory name into the OPP_ENV_LAST_WORKSPACE variable
+export OPP_ENV_LAST_WORKSPACE=~/default_workspace
+if [[ -f ~/.opp_env_last_workspace && -d "$(cat ~/.opp_env_last_workspace)" ]]; then
+  OPP_ENV_LAST_WORKSPACE=$(cat ~/.opp_env_last_workspace)
+fi
+
+if [ -d "$OPP_ENV_LAST_WORKSPACE" ]; then
+  cd $OPP_ENV_LAST_WORKSPACE
+  # invoke opp_env shell in the last used workspace if some version of omnetpp is already installed
+  shopt -s nullglob
+  _omnetpp_installs=(omnetpp-*)
+  shopt -u nullglob
+  if [ "$_omnetpp_installs" ]; then
+    clear
+    echo "OMNeT++ Development Environment - $(COLOR_GREEN)opp_env shell$(COLOR_RESET) for $(COLOR_CYAN)'$OPP_ENV_LAST_WORKSPACE'$(COLOR_RESET)."
+    echo
+    echo "You can leave the development shell and drop back to the installation environment by typing 'exit' or CTRL-d."
+    echo
+    opp_env shell --chdir
+  fi
+  unset _omnetpp_installs
+else
+  cd
+fi
+
+# opp_env main shell intro where 'opp_env can be used'
+clear
+echo "OMNeT++ Installation Environment - $(COLOR_GREEN)$(opp_env_version)$(COLOR_RED)$(opp_env_upgrade)$(COLOR_RESET)"
+
 if [ -f $notice_file ]; then
+  COLOR_GREEN
   echo
   cat $notice_file
   echo
+  COLOR_RESET
   echo "Run 'touch ~/.opp_env_upgrade_check_disable' to disable this automatic upgrade check."
 fi
 
@@ -66,12 +137,12 @@ if [ ! -f ~/.opp_env_upgrade_check_disable ]; then
   lastrun=$(stat -c %Y "$timestamp" 2>/dev/null) || lastrun=0
   expiration=$(expr $lastrun + 86400)
   if [ $(date +%s) -ge $expiration ]; then
-    ( 
-      if [ "$(pip install --upgrade --dry-run --disable-pip-version-check opp-env | grep 'Would install')" ]; then
-        echo -e "\033[0;32mA new version of 'opp_env' is available.\nRun 'pip install --upgrade opp_env' to upgrade. \033[0;0m" > $notice_file
-      else 
+    (
+      if [ "$(pip install --upgrade --dry-run --disable-pip-version-check opp-env 2> /dev/null | grep 'Would install')" ]; then
+        echo "A new version of 'opp_env' is available.\nRun 'pip install --upgrade opp_env' to upgrade." > $notice_file
+      else
         rm -f $notice_file
-      fi 
+      fi
     ) &
     disown
     touch $timestamp

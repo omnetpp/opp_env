@@ -1,3 +1,18 @@
 #!/bin/sh
 
-docker run -it --rm ghcr.io/omnetpp/opp_env:latest $*
+if [ ! $(command -v x11docker) ]; then
+  echo "'x11docker' is not available. To use GUI applications, it is recommended to install it from: https://github.com/mviereck/x11docker/releases"
+  echo
+  echo "To run in docker directly, use: 'docker run -it --rm ghcr.io/omnetpp/opp_env:latest'"
+else
+  # example starter to run the image using podman in a wayland session
+  if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+    EXTRA_OPTS="--hostwayland"
+  fi
+  if [ $(command -v podman) ]; then
+    EXTRA_OPTS="$EXTRA_OPTS --backend=podman"
+  fi
+  echo "Starting..."
+  x11docker $EXTRA_OPTS -q --net --user=RETAIN -it -- --rm ghcr.io/omnetpp/opp_env:latest $*
+fi
+

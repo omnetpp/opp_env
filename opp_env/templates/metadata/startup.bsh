@@ -40,6 +40,14 @@ void closeOtherProjects(ArrayList projectNames) {
         }
 }
 
+String[] removeItems(String[] array, String prefix) {
+    List<String> l = new ArrayList<String>();
+    for (String s : array)
+        if (!s.startsWith(prefix))
+            l.add(s);
+    return l.toArray(new String[l.size()]);
+}
+
 void importAndOpenProjectsWithDependencies(String projectDepsEnv) {
     collectedProjectNames = new ArrayList<String>();
 
@@ -58,6 +66,7 @@ void importAndOpenProjectsWithDependencies(String projectDepsEnv) {
             String projectName = parts[0].trim();
             String dependencies = parts.length > 1 ? parts[1].trim() : "";
             String[] referencedProjectNames = dependencies.isEmpty() ? new String[0] : dependencies.split("[ ,]+");
+            referencedProjectNames = removeItems(referencedProjectNames, "omnetpp-");
 
             // Collect the project name
             collectedProjectNames.add(projectName);

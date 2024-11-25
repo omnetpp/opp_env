@@ -1845,11 +1845,11 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     project_names = [p.name for p in effective_project_descriptions]
     function_list = "; ".join([f"`build_{p}`, `clean_{p}`, `test_{p}`, `smoke_test_{p}`, `check_{p}`" for p in ["all"] + project_names])
-    hint_command = f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean, test or check a project or all projects, use the following commands: {function_list}. (Use `declare -f <command>` to check what they do.)'"
 
     commands = [
         "build_all" if build or (install and not install_without_build) else None,
-        hint_command
+        f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} To build, clean, test or check a project or all projects, use the following commands: {function_list}. (Use `declare -f <command>` to check what they do.)'",
+        f"echo -e '{SHELL_GREEN}HINT{SHELL_NOCOLOR} Type {SHELL_CYAN}omnetpp{SHELL_NOCOLOR} to start the IDE.'"
     ]
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"

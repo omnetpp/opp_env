@@ -119,7 +119,10 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "inet$INET_DBG_SUFFIX -c ARPTest -u Cmdenv --sim-time-limit=10s"
         ],
         "test_commands": [
-            "cd tests/fingerprint && ./fingerprinttest",
+            "cd tests/fingerprint && ./fingerprinttest -F tyf" if inet_version >= "4.3.0" else
+            "cd tests/fingerprint && ./fingerprinttest" if inet_version >= "4.0.0" else
+            "cd tests/fingerprint && ./fingerprints" if inet_version >= "2.0.0" else
+            "",
         ],
         "options": {
             "from-release": {

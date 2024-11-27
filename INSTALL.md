@@ -19,11 +19,11 @@ You can now install `opp_env`:
 > On some system, namely recent versions of Ubuntu / Debian, this
 > command stops with an error message: `error: externally-managed-environment`
 >
-> To work around the error, follow the instructions in the printed message, which
-> boils down to either adding the `--break-system-packages` option to the
-> `pip install` commands, or setting up a Python virtual environment
+> To work around the error, set up a Python virtual environment
 > ([venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/))
-> and working from there.
+> and start working from there, or follow the instructions in the printed message, which
+> boils down to adding the `--break-system-packages --user` option to the
+> `pip install` commands.
 
 When you install `opp_env` using pip, it installs the `opp_env` Python module,
 as well as a small script into your system's path (e.g. `~/.local/bin` or the
@@ -62,22 +62,27 @@ the procedure is the same as on Linux.
 >   ```
 
 
-## Windows 11, using WSL2
+## Windows 10/11, using WSL2
 
 `opp_env` cannot be installed on Windows directly because Nix is not available on that platform.
 However, you can use it inside a WSL2 (Windows Subsystem for Linux) container.
 
-For Windows 11, we provide a pre-packaged WSL2 container image based on Ubuntu 22.04
+For Windows, we provide a pre-packaged WSL2 container image based on Ubuntu 24.04
 that includes all necessary dependencies (Python3, pip, Nix, etc.).
 
-To install the `opp_env` WSL2 image, open a command prompt and run the
-following command:
+To install the `opp_env` WSL2 image, open a command prompt and run the following command:
 
-    curl.exe -L https://github.com/omnetpp/opp_env/releases/download/wsl/opp_env-wsl.tar.gz | wsl --import opp_env .\opp_env-wsl -
+    curl.exe -L https://github.com/omnetpp/opp_env/releases/download/wsl/opp_env.wsl | wsl --import opp_env -
 
-After installation, the shell can be started with:
+Alternatively, if you have [WSL 2.4.4](https://github.com/microsoft/WSL/releases) or later (recommended),
+you can just download the `opp_env.wsl` file and open it by either double-clicking it in
+the file explorer or opening it directly in the browser's download folder. 
+
+Once the image is imported, the shell can be started with:
 
     wsl -d opp_env --cd ~
+
+or just start opp_env from the start menu.
 
 Once you are inside the container, you can run the `opp_env` command as
 suggested in the previous section.

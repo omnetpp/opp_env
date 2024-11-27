@@ -1,5 +1,21 @@
 # Changes
 
+## 0.31.2.241127
+
+### opp_env
+
+- `shell` to print "Type omnetpp to start the IDE."
+- fix: do not add omnetpp as referenced project when importing projects into the IDE
+
+### Database (Frameworks and Models)
+
+- omnetpp: on WSL, force IDE and Qtenv to use the X11 backend instead of Wayland
+- inet: enable lwIP feature by default
+- inet: remove redundant osudp example
+- inet: added "full" option to inet_versions
+- inet: make "test_commands" depend on INET version
+- inet: added 3.8.5
+
 ## 0.31.1.241031
 
 ### opp_env

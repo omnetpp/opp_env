@@ -38,6 +38,8 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "$OPP_FEATURETOOL -v enable Z3GateSchedulingConfigurator" if inet_version >= "4.4" else "",
             "$OPP_FEATURETOOL -v enable VoipStream VoipStreamExamples" if inet_version >= "4.3" else
             "$OPP_FEATURETOOL -v enable VoIPStream VoIPStream_examples" if inet_version >= "4.0" else "",
+            "$OPP_FEATURETOOL -v enable TcpLwip" if inet_version >= "4.3.0" else
+            "$OPP_FEATURETOOL -v enable TCP_lwIP" if inet_version >= "4.0.0" else "",
 
             # tutorials is missing a package.ned in some versions
             "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",

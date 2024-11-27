@@ -44,6 +44,9 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             # tutorials is missing a package.ned in some versions
             "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",
 
+            # the osudp example is redundant (already presented as a showcase), and causes NED errors if VoipStream is enabled but Emulation is not
+            "rm -rf examples/voipstream/osudp" if inet_version >= "4.0" else "",
+
             # fix up shebang line in inet_featuretool (python -> python2)
             "sed -i 's| python$| python2|' inet_featuretool" if inet_version >= "3.0" and inet_version < "3.6.7" and not is_modernized else "",
 

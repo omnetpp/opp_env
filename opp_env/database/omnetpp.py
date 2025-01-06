@@ -296,6 +296,11 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "make clean MODE=$BUILD_MODE"  #TODO plain "make clean" in early versions?
         ],
         "options": {  # note: git master doesn't have all these download options
+            "nixos-recent": {
+                "option_description": "Force using the latest (tested) version of NixOS",
+                "option_category": "nixos",
+                "nixos": "24.05",
+            },
             "gcc7": {
                 "option_description": "Use an older version of the gcc compiler toolchain for the build",
                 "option_category": "compiler",

@@ -1,5 +1,16 @@
 # Changes
 
+## 0.31.2.250122
+
+### opp_env
+
+### Database (Frameworks and Models)
+
+- omnetpp: added a `nixos-recent` option so any older version of omnetpp
+  can be forced to use the latest tested nixos version as an environment
+  (corrent latest is 24.05)
+- simu5g: added v1.2.3 (for omnetpp 6.1)
+
 ## 0.31.2.241127
 
 ### opp_env

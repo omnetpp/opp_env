@@ -271,7 +271,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "source setenv" + (" -f" if base_version.startswith("5.") else ""), # -f allows setenv to be called from scripts
 
             # force the use of xwayland on WSL as running with wayland has some issues (missing runtime icons, non working cursor changes, etc.)
-            """if grep -qEi "microsoft" /proc/sys/kernel/osrelease; then export GDK_BACKEND="x11"; export QT_QPA_PLATFORM="xcb";fi """ if is_linux else ""  
+            """if grep -qEi "microsoft" /proc/sys/kernel/osrelease; then export GDK_BACKEND="x11"; export QT_QPA_PLATFORM="xcb";fi """ if is_linux else "",
 
             # export which opp_run bin to use depending on omnetpp version
             # before 5.2.0, opp_run was debug, and opp_run_release was release
@@ -389,7 +389,3 @@ def get_project_descriptions():
     master_description = make_omnetpp_project_description("git", None, True)
 
     return descriptions + [ master_description ]
-
-
-
-

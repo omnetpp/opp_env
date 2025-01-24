@@ -15,6 +15,7 @@ def make_veins_project_description(veins_version, inet_versions, sumo_version, o
         "nix_packages": ["sumo" if veins_version >= "5.0" else None, "python2" if veins_version < "5.2" else None],
         "patch_commands": [
             "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if veins_version<="4.6" else "",
+            """sed -i "s|'--no-deep-includes', ||" configure subprojects/veins_inet/configure""" if veins_version>="5.0" else "",
         ],
         "setenv_commands": [
             'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images:$INET_ROOT/images"',

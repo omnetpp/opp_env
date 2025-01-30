@@ -167,7 +167,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
                 "setenv_commands": [
                     "@append",
                     "export MININET_ROOT=${pkgs.python311Packages.mininet-python}",
-                    "echo '\nNote on the Emulation feature: after installation, make sure to add the necessary capabilities to omnetpp executables by running the following commands:\n\nsudo setcap cap_sys_admin+ep /$OMNETPP_ROOT/bin/opp_run_release\nsudo setcap cap_sys_admin+ep /$OMNETPP_ROOT/bin/opp_run_dbg\n'",
+                    "echo '\nNote on the Emulation feature: after installation, make sure to add the necessary capabilities to omnetpp executables by running the following commands:\n\nsudo setcap cap_sys_admin+ep $OMNETPP_ROOT/bin/opp_run_release\nsudo setcap cap_sys_admin+ep $OMNETPP_ROOT/bin/opp_run_dbg\n'",
                     "if [ \"$(uname -s)\" != 'Linux' ]; then echo 'WARNING: Network-emulation-related functionality only works on Linux.'; fi",
                 ],
                 "patch_commands": [

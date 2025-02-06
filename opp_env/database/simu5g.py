@@ -32,7 +32,9 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
                 "option_description": "Install from release tarball on GitHub",
                 "option_category": "download",
                 "option_is_default": not is_git_branch,
-                "download_url": f"https://github.com/Unipisa/Simu5G/archive/refs/tags/v{simu5g_version}.tar.gz" if not is_git_branch else None,
+                "download_url": None if is_git_branch else
+                    f"https://github.com/Unipisa/Simu5G/archive/refs/tags/v{simu5g_version}.tar.gz" if simu5g_version < "1.3.0" else
+                    f"https://github.com/Unipisa/Simu5G/releases/download/v{simu5g_version}/simu5g-{simu5g_version}-src.tgz",
             },
             "from-git": {
                 "option_description": "Install from git repo on GitHub",
@@ -46,6 +48,7 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
 
 def get_project_descriptions():
     return [ get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versions) for simu5g_version, inet_versions, omnetpp_versions in [
+        ["1.3.0", ["4.5.*"], ["6.1.*"]],
         ["1.2.3", ["4.5.*"], ["6.1.*"]],
         ["1.2.2", ["4.5.*"], ["6.0.*"]],
         ["1.2.1", ["4.4.*"], ["6.0.*"]],

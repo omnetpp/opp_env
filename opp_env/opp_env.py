@@ -210,8 +210,9 @@ def create_arg_parser():
     group.add_argument("--names", dest="list_mode", action="store_const", const="names", help="List project names only (without version numbers)")
     group.add_argument("--descriptions", dest="list_mode", action="store_const", const="descriptions", help="List project names with descriptions only, one per line")
     group.add_argument("--aliases", dest="list_mode", action="store_const", const="aliases", help="List version aliases for projects")
-    group.add_argument("--expand", dest="list_mode", action="store_const", const="expand", help="Expand dependency list of each matching project in the default version combination")
-    group.add_argument("--expand-all", dest="list_mode", action="store_const", const="expand-all", help="Expand dependency list of each matching project in all supported version combinations")
+    group.add_argument("--matching", dest="list_mode", action="store_const", const="matching", help="List the version combinations in which the specified projects can be used together")
+    group.add_argument("--expand", dest="list_mode", action="store_const", const="expand", help="List the default version combinations in which the specified projects can be used together, including dependencies. If no project is specified, it expands the dependency list of all projects")
+    group.add_argument("--expand-all", dest="list_mode", action="store_const", const="expand-all", help="List all version combinations in which the specified projects can be used together, including dependencies. If no project is specified, it expands the dependency list of all projects.")
 
     subparser = subparsers.add_parser("info", help="Describes the specified project", description=
         """
@@ -873,7 +874,8 @@ class ProjectRegistry:
     def compute_effective_project_descriptions(self, specified_project_descriptions, requested_options=None):
         selected_project_descriptions = self.expand_dependencies(specified_project_descriptions)
         if not selected_project_descriptions:
-            raise Exception("The specified set of project versions cannot be satisfied")
+            project_names = [ p.name for p in specified_project_descriptions ]
+            raise Exception(f"The specified project versions cannot be installed together due to incompatible dependencies. Use the `opp_env list --matching {' '.join(project_names)}` command to see the compatible version combinations.")
         return activate_project_options(selected_project_descriptions, requested_options)
 
     def expand_dependencies(self, specified_project_descriptions, return_all=False):
@@ -1705,8 +1707,8 @@ def update_saved_project_dependencies(effective_project_descriptions, workspace)
 
 
 def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwargs):
-    def expand_pattern(project_name_pattern, project_descriptions):
-        return [p for p in project_descriptions if re.match(project_name_pattern, p.get_full_name())] # note: prefix match!
+    def expand_pattern(project_name_pattern, projects):
+        return [p for p in projects if project_name_pattern == p.name or re.match(project_name_pattern+r'\b', p.get_full_name())] # note: prefix match!
 
     global project_registry
     specified_projects = project_registry.get_all_project_descriptions()
@@ -1715,11 +1717,10 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
         for project_name_pattern in project_name_patterns:
             matching_projects = expand_pattern(project_name_pattern, specified_projects)
             if not matching_projects:
-
                 raise Exception(f"Name/pattern '{project_name_pattern}' does not match any project")
             tmp += matching_projects
-        specified_projects = tmp # NOTE: No sorting! Order of project versions is STRICTLY determined by the order they are in ProjectRegistry.
 
+        specified_projects = uniq(tmp) # NOTE: No sorting! Order of project versions is STRICTLY determined by the order they are in ProjectRegistry.
     names = uniq([p.name for p in specified_projects])
 
     def move_to_front(list, name):
@@ -1754,15 +1755,40 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
             descriptions = uniq([p.description for p in specified_projects if p.name == name if p.description])
             description = descriptions[0] if descriptions else "(no description)"
             print(f"{name.ljust(name_width)} {cyan(description)}")
+    elif list_mode == "matching":
+        if not project_name_patterns:
+            raise Exception("No project name patterns specified")
+        combinations_list = [expand_pattern(project_name_pattern, specified_projects) for project_name_pattern in project_name_patterns]
+        for combination in itertools.product(*combinations_list):
+            expanded = sort_by_project_dependencies(project_registry.expand_dependencies(combination))
+            expanded = [p for p in expanded if p in specified_projects]  # drop the dependencies added by 'expand'
+            if expanded:
+                print(' '.join([p.get_full_name() for p in expanded]))
     elif list_mode == "expand":
-        for project in specified_projects:
-            expanded = sort_by_project_dependencies(project_registry.expand_dependencies([project]))
-            print(' '.join([p.get_full_name() for p in expanded]))
+        if project_name_patterns:
+            # consider the projects together, not independently
+            combinations_list = [expand_pattern(project_name_pattern, specified_projects) for project_name_pattern in project_name_patterns]
+            for combination in itertools.product(*combinations_list):
+                expanded = sort_by_project_dependencies(project_registry.expand_dependencies(combination))
+                if expanded:
+                    print(' '.join([p.get_full_name() for p in expanded]))
+        else:
+            for project in specified_projects:
+                expanded = sort_by_project_dependencies(project_registry.expand_dependencies([project]))
+                print(' '.join([p.get_full_name() for p in expanded]))
     elif list_mode == "expand-all":
-        for project in specified_projects:
-            combinations_list = project_registry.expand_dependencies([project], return_all=True)
-            for combination in combinations_list:
-                print(' '.join([p.get_full_name() for p in sort_by_project_dependencies(combination)]))
+        if project_name_patterns:
+            # consider the projects together, not independently
+            combinations_list = [expand_pattern(project_name_pattern, specified_projects) for project_name_pattern in project_name_patterns]
+            for combination in itertools.product(*combinations_list):
+                expanded_combinations = project_registry.expand_dependencies(combination, return_all=True)
+                for expanded_combination in expanded_combinations:
+                    print(' '.join([p.get_full_name() for p in sort_by_project_dependencies(expanded_combination)]))
+        else:
+            for project in specified_projects:
+                combinations_list = project_registry.expand_dependencies([project], return_all=True)
+                for combination in combinations_list:
+                    print(' '.join([p.get_full_name() for p in sort_by_project_dependencies(combination)]))
     else:
         raise Exception(f"invalid list mode '{list_mode}'")
 

@@ -1416,14 +1416,14 @@ def get_project_descriptions():
 
         {
             # core-rg version, compatible with core4inet as well
-            "name": "openflow", "version": "20240124",      # last commit of master branch as of time of writing
+            "name": "openflow_core", "version": "20240124",      # last commit of master branch as of time of writing
             "description": "OpenFlow Extension for INET Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
+                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_CORE_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_CORE_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
             ],
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"]},
             # there are no releases, so we use a commit from the master branch
@@ -1432,13 +1432,13 @@ def get_project_descriptions():
                 r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o OpenFlow|' Makefile""",
                 r"""sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_openflow""",
                 r"""sed -i 's|opp_run_dbg|opp_run|' src/run_openflow""",
-                r"""sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_ROOT/images|' src/run_openflow""",
+                r"""sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_CORE_ROOT/images|' src/run_openflow""",
                 r"""sed -i 's|DIR/openflow -n|DIR/OpenFlow -n|' src/run_openflow""",    # this is changed so that it matches SDN4CORE
             ],
             "setenv_commands": [
                 r"""export INET_PROJ=$INET_ROOT""",
-                r"""export PATH=$PATH:$OPENFLOW_ROOT/src""",
-                r"""export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$OPENFLOW_ROOT/images""",
+                r"""export PATH=$PATH:$OPENFLOW_CORE_ROOT/src""",
+                r"""export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$OPENFLOW_CORE_ROOT/images""",
                 r"""echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"""
             ],
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
@@ -1448,14 +1448,14 @@ def get_project_descriptions():
         {
             # core-rg version, compatible with core4inet as well
             # TODO does this need patched inet so allinone?
-            "name": "openflow", "version": "20231017",      # last commit of master branch as of time of writing
+            "name": "openflow_core", "version": "20231017",      # last commit of master branch as of time of writing
             "description": "OpenFlow Extension for INET Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/openflow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=10s""",
+                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_CORE_ROOT/src/openflow -n $INET_ROOT/src:$OPENFLOW_CORE_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=10s""",
             ],
             "required_projects": {"omnetpp": ["5.5.1"], "inet": ["3.6.6"]},
             # there are no releases, so we use a commit from the master branch
@@ -1464,11 +1464,11 @@ def get_project_descriptions():
                 r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o openflow|' Makefile""",
                 r"""sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_openflow""",
                 r"""sed -i 's|opp_run_dbg|opp_run|' src/run_openflow""",
-                r"""sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_ROOT/images|' src/run_openflow""",
+                r"""sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_CORE_ROOT/images|' src/run_openflow""",
             ],
             "setenv_commands": [
                 r"""export INET_PROJ=$INET_ROOT""",
-                r"""export PATH=$PATH:$OPENFLOW_ROOT/src""",
+                r"""export PATH=$PATH:$OPENFLOW_CORE_ROOT/src""",
                 r"""echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"""
             ],
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
@@ -2218,11 +2218,11 @@ def get_project_descriptions():
         {
             # TODO: add from-git option, as core4inet and fico4omnet both has them
             "name": "sdn4core", "version": "20240124",    # latest master as of time of writing
-            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"], "soa4core": ["20240124"], "openflow": ["20240124"]},
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"], "soa4core": ["20240124"], "openflow_core": ["20240124"]},
             "description": "Software-Defined Networking for Communication over Realtime Ethernet (SDN4CoRE)",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd examples/papers/omnetsummit2019/configanalysis && opp_run$BUILD_MODE_SUFFIX -l $SDN4CORE_ROOT/src/SDN4CoRE omnetpp.ini -c CaseStudy_WithCT -n $SDN4CORE_ROOT/src:$SDN4CORE_ROOT/examples:$SOA4CORE_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src:$OPENFLOW_ROOT/src --sim-time-limit=1s -u Cmdenv"""
+                r"""cd examples/papers/omnetsummit2019/configanalysis && opp_run$BUILD_MODE_SUFFIX -l $SDN4CORE_ROOT/src/SDN4CoRE omnetpp.ini -c CaseStudy_WithCT -n $SDN4CORE_ROOT/src:$SDN4CORE_ROOT/examples:$SOA4CORE_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src:$OPENFLOW_CORE_ROOT/src --sim-time-limit=1s -u Cmdenv"""
             ],
             "download_url": "https://github.com/CoRE-RG/SDN4CoRE/archive/refs/tags/nightly/2024-01-24_15-06-58.tar.gz",
             "patch_commands": [
@@ -2235,7 +2235,7 @@ def get_project_descriptions():
                 r"""export FICO4OMNET_PROJ=$FICO4OMNET_ROOT""",
                 r"""export SIGNALSANDGATEWAYS_PROJ=$SIGNALS_AND_GATEWAYS_ROOT""",
                 r"""export SOA4CORE_PROJ=$SOA4CORE_ROOT""",
-                r"""export OPENFLOW_PROJ=$OPENFLOW_ROOT""",
+                r"""export OPENFLOW_PROJ=$OPENFLOW_CORE_ROOT""",
             ],
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],

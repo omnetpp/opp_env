@@ -1698,13 +1698,13 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
             print(f"{name.ljust(name_width)} {cyan(description)}")
     elif list_mode == "expand":
         for project in projects:
-            expanded = project_registry.expand_dependencies([project])
+            expanded = sort_by_project_dependencies(project_registry.expand_dependencies([project]))
             print(' '.join([p.get_full_name() for p in expanded]))
     elif list_mode == "expand-all":
         for project in projects:
             combinations_list = project_registry.expand_dependencies([project], return_all=True)
             for combination in combinations_list:
-                print(' '.join([p.get_full_name() for p in combination]))
+                print(' '.join([p.get_full_name() for p in sort_by_project_dependencies(combination)]))
     else:
         raise Exception(f"invalid list mode '{list_mode}'")
 

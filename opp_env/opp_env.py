@@ -800,6 +800,9 @@ class ProjectRegistry:
         return uniq([p.name for p in project_descriptions or self.get_all_project_descriptions()])
 
     def get_project_versions(self, project_name, project_descriptions=None):
+        return [p for p in project_descriptions or self.get_all_project_descriptions() if p.name == project_name]
+
+    def get_project_version_names(self, project_name, project_descriptions=None):
         # Note: this does not include "pseudo" versions like "latest", or "omnetpp-4" that means "omnetpp-4.6.1"
         return [p.version for p in project_descriptions or self.get_all_project_descriptions() if p.name == project_name]
 
@@ -852,7 +855,7 @@ class ProjectRegistry:
         def expand(project_name, version, all_project_descriptions):
             if not '*' in version:
                 return [ version ]
-            candidates = self.get_project_versions(project_name, all_project_descriptions)
+            candidates = self.get_project_version_names(project_name, all_project_descriptions)
             return [ candidate for candidate in candidates if version_matches(version, candidate) ]
 
         def expand_all(project_name, versions, all_project_descriptions):
@@ -891,7 +894,7 @@ class ProjectRegistry:
         # _logger.debug(f"{required_project_names=}")
 
         # 2. collect all available project versions for all required projects separately
-        available_project_versions = { name: self.get_project_versions(name) for name in required_project_names }
+        available_project_versions = { name: self.get_project_version_names(name) for name in required_project_names }
         # _logger.debug(f"{available_project_versions=}")
 
         # 3. iterate over all combinations of the available project versions for the different required projects
@@ -1716,7 +1719,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
             if '-' in project:
                 project_descriptions += [project_registry.get_project_description(ProjectReference.parse(project))]
             elif project in project_registry.get_project_names():
-                project_descriptions += [project_registry.get_project_description(ProjectReference(project, version)) for version in project_registry.get_project_versions(project)]
+                project_descriptions += project_registry.get_project_versions(project)
             else:
                 raise Exception(project_registry.get_unknown_project_message(project))
 

@@ -12,6 +12,7 @@ import tempfile
 import importlib
 import importlib.metadata
 import platform
+from collections import OrderedDict
 
 # make sure that this run-time version check is in synch with the metadata for python requirement in the project.toml file.
 if sys.version_info < (3,9):
@@ -876,6 +877,58 @@ class ProjectRegistry:
         return activate_project_options(selected_project_descriptions, requested_options)
 
     def expand_dependencies(self, specified_project_descriptions, return_all=False):
+        # note: ordering is important for ensuring that the 1st match contains the highest version numbers of the specified projects
+        requested_projects_versions = OrderedDict((p.name, [p.version]) for p in specified_project_descriptions)
+        combinations = self._get_valid_combinations(requested_projects_versions)
+        return combinations if return_all else combinations[0] if combinations else []
+
+    def _get_valid_combinations(self, requested_projects_versions):
+        # Find all valid version combinations for the requested projects and their allowed versions, including dependencies.
+        # requested_projects_versions: map { project_name : possible_versions_list }
+        project_names = list(requested_projects_versions.keys())
+
+        # collect the names of all involved projects (specified + dependencies)
+        expanded_project_names = self._expand_with_dependencies(project_names, requested_projects_versions)
+
+        # collect possible versions of all involved projects
+        possible_versions = { p: requested_projects_versions.get(p, self.get_project_version_names(p)) for p in expanded_project_names }
+
+        # produce all possible combinations and filter them
+        valid_combinations = []
+        for version_combo in itertools.product(*possible_versions.values()):
+            combination = [self.get_project_description(ProjectReference(proj, version)) for proj, version in zip(expanded_project_names, version_combo)]
+            if self._is_valid_combination(combination):
+                valid_combinations.append(combination)
+
+        return valid_combinations
+
+    def _expand_with_dependencies(self, project_names, requested_projects_versions):
+        queue = list(requested_projects_versions.keys())
+        result = list(project_names)
+        while queue:
+            project = queue.pop()
+            for proj_desc in self.get_project_versions(project):
+                for dep_name in proj_desc.required_projects.keys():
+                    if dep_name not in result:
+                        result.append(dep_name)
+                        queue.append(dep_name)
+        return result
+
+    def _is_valid_combination(self, combination):
+        version_map = {proj_desc.name: proj_desc for proj_desc in combination if proj_desc}
+
+        for project_desc in combination:
+            if not project_desc:
+                return False
+            for dep_name, compatible_versions in project_desc.required_projects.items():
+                if dep_name in version_map:
+                    if version_map[dep_name].version not in compatible_versions:
+                        return False
+                else:
+                    return False  # Dependency not included in resolved set
+        return True
+
+    def expand_dependencies_old(self, specified_project_descriptions, return_all=False):
         _logger.debug(f"Computing list of effective projects for {specified_project_descriptions}")
         # 1. collect all required projects ignoring the project versions
         required_project_names = []

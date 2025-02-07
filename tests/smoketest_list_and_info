@@ -148,7 +148,7 @@ assert_contains_line 'simu5g-1.2.1 inet-4.4.1 omnetpp-6.0.0'
 assert_contains_line 'simu5g-1.2.1 inet-4.4.0 omnetpp-6.0.0'
 
 run opp_env info simu5g
-assert_num_lines 52 80
+assert_num_lines 88 120
 
 run opp_env info simu5g-1.1
 assert_num_lines 14 16

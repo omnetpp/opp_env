@@ -1703,19 +1703,24 @@ def update_saved_project_dependencies(effective_project_descriptions, workspace)
         starting_with = [ p.get_full_name() for p in Workspace._get_dependencies(project_description, effective_project_descriptions) ]
         workspace.update_project_state(project_description, last_started_with=starting_with)
 
+
 def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwargs):
+    def expand_pattern(project_name_pattern, project_descriptions):
+        return [p for p in project_descriptions if re.match(project_name_pattern, p.get_full_name())] # note: prefix match!
+
     global project_registry
-    projects = project_registry.get_all_project_descriptions()
+    specified_projects = project_registry.get_all_project_descriptions()
     if project_name_patterns:
         tmp = []
         for project_name_pattern in project_name_patterns:
-            matching_projects = [p for p in projects if re.match(project_name_pattern, p.get_full_name())] # note: prefix match!
+            matching_projects = expand_pattern(project_name_pattern, specified_projects)
             if not matching_projects:
+
                 raise Exception(f"Name/pattern '{project_name_pattern}' does not match any project")
             tmp += matching_projects
-        projects = tmp # NOTE: No sorting! Order of project versions is STRICTLY determined by the order they are in ProjectRegistry.
+        specified_projects = tmp # NOTE: No sorting! Order of project versions is STRICTLY determined by the order they are in ProjectRegistry.
 
-    names = uniq([p.name for p in projects])
+    names = uniq([p.name for p in specified_projects])
 
     def move_to_front(list, name):
         try:
@@ -1730,31 +1735,31 @@ def list_subcommand_main(project_name_patterns=None, list_mode="grouped", **kwar
 
     name_width = len(max(names, key=len))
     if list_mode == "flat":
-        for p in projects:
+        for p in specified_projects:
             print(p.get_full_name())
     elif list_mode == "grouped":
         for name in names:
-            versions = [p.version for p in projects if p.name == name]
+            versions = [p.version for p in specified_projects if p.name == name]
             print(f"{name.ljust(name_width)} {cyan('  '.join(versions))}")
     elif list_mode == "names":
         for name in names:
             print(name)
     elif list_mode == "aliases":
-        for project in projects:
+        for project in specified_projects:
             alias_versions = project_registry.get_project_version_aliases(ProjectReference(project.name, project.version))
             for alias_version in natural_sorted(alias_versions):
                 print(f"{project.name}-{alias_version} -> {project.get_full_name()}")
     elif list_mode == "descriptions":
         for name in names:
-            descriptions = uniq([p.description for p in projects if p.name == name if p.description])
+            descriptions = uniq([p.description for p in specified_projects if p.name == name if p.description])
             description = descriptions[0] if descriptions else "(no description)"
             print(f"{name.ljust(name_width)} {cyan(description)}")
     elif list_mode == "expand":
-        for project in projects:
+        for project in specified_projects:
             expanded = sort_by_project_dependencies(project_registry.expand_dependencies([project]))
             print(' '.join([p.get_full_name() for p in expanded]))
     elif list_mode == "expand-all":
-        for project in projects:
+        for project in specified_projects:
             combinations_list = project_registry.expand_dependencies([project], return_all=True)
             for combination in combinations_list:
                 print(' '.join([p.get_full_name() for p in sort_by_project_dependencies(combination)]))

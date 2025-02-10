@@ -1416,7 +1416,7 @@ def get_project_descriptions():
 
         {
             # semi-official version
-            "name": "openflow", "version": "20241024",      # last commit of master branch as of time of writing
+            "name": "openflow", "version": "20250207",      # last commit of master branch as of time of writing
             "description": "OpenFlow Extension for INET Framework",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
@@ -1425,9 +1425,42 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
             ],
-            "required_projects": {"omnetpp": ["6.0.3"], "inet": ["4.3.7"]},
+            "required_projects": {"omnetpp": ["6.1.*"], "inet": ["git"]},
             # there are no releases, so we use a commit from the master branch
-            "download_url": "https://github.com/inet-framework/openflow/archive/270cfda9d5de7eea94765b356c836e7eccb05216.tar.gz",
+            # "download_url": "https://github.com/inet-framework/openflow/archive/1c3b0263faed8f0b0bbdff02f9d24e4e3e9be7f3.tar.gz",
+           "download_url": "https://github.com/inet-framework/openflow/archive/9bf52aee2dd2a87d9440ed519fbea69517ff0bd3.tar.gz",
+            "patch_commands": [
+                r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o OpenFlow|' Makefile""",
+                r"""sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_openflow""",
+                r"""sed -i 's|opp_run_dbg|opp_run|' src/run_openflow""",
+                r"""sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_ROOT/images|' src/run_openflow""",
+                r"""sed -i 's|DIR/openflow -n|DIR/OpenFlow -n|' src/run_openflow""",    # this is changed so that it matches SDN4CORE
+            ],
+            "setenv_commands": [
+                r"""export INET_PROJ=$INET_ROOT""",
+                r"""export PATH=$PATH:$OPENFLOW_ROOT/src""",
+                r"""export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$OPENFLOW_ROOT/images""",
+                r"""echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"""
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
+        },
+
+        {
+            # semi-official version
+            "name": "openflow", "version": "20171215",      # last commit of master branch as of time of writing
+            "description": "OpenFlow Extension for INET Framework",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
+            },
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
+            ],
+            "required_projects": {"omnetpp": ["4.6.0"], "inet": ["2.5"]},
+            # there are no releases, so we use a commit from the master branch
+            # "download_url": "https://github.com/inet-framework/openflow/archive/1c3b0263faed8f0b0bbdff02f9d24e4e3e9be7f3.tar.gz",
+           "download_url": "https://github.com/inet-framework/openflow/archive/f2a2c19a5b56f928bfebc972cee864a0973c460c.tar.gz",
             "patch_commands": [
                 r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o OpenFlow|' Makefile""",
                 r"""sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_openflow""",
@@ -1448,7 +1481,7 @@ def get_project_descriptions():
         {
             # core-rg version, compatible with core4inet as well
             "name": "openflow_core", "version": "20240124",      # last commit of master branch as of time of writing
-            "description": "OpenFlow Extension for INET Framework",
+            "description": "OpenFlow Extension for INET Framework. This version is extended for use with CoRE models.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
@@ -1480,7 +1513,7 @@ def get_project_descriptions():
             # core-rg version, compatible with core4inet as well
             # TODO does this need patched inet so allinone?
             "name": "openflow_core", "version": "20231017",      # last commit of master branch as of time of writing
-            "description": "OpenFlow Extension for INET Framework",
+            "description": "OpenFlow Extension for INET Framework. This version is extended for use with CoRE models.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },

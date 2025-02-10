@@ -44,7 +44,7 @@ def make_veins_project_description(veins_version, inet_versions, sumo_version, o
         "warnings": [
             f"This version requires an older version of SUMO, which is not available in opp_env. Please install the appropriate SUMO version ({''.join(sumo_version)}) manually." if veins_version < "5.0" else "",
         ],
-        "clean_commands": [ "[ ! -f src/Makefile ] || make clean MODE=$BUILD_MODE" ],
+        "clean_commands": [ "[ ! -f src/Makefile ] || make clean MODE=$BUILD_MODE && cd subprojects/veins_inet && [ ! -f src/Makefile ] || make clean MODE=$BUILD_MODE && cd ../veins_inet3 && [ ! -f src/Makefile ] || make clean MODE=$BUILD_MODE" ],
         "options": {
             "from-source-archive": {
                 "option_description": "Install from source archive on GitHub",

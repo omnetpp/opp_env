@@ -70,7 +70,14 @@ def get_project_descriptions():
         # - many Veins versions may actually compile/work with more omnetpp versions than listed -- this is to be checked
         # - versions before 5.0 need older versions of SUMO, which are currently not available as nix packages
         #
-        ["5.3", ["4.5.4", "4.5.2", "4.5.1", "4.5.0", "4.4.2", "4.4.1", "4.4.0", "4.3.8", "4.3.7", "4.3.5", "4.3.2", "4.3.1", "4.3.0", "4.2.10", "4.2.9", "4.2.8", "4.2.5", "4.2.4", "4.2.3", "4.2.2", "4.2.1", "4.2.0", "3.8.2", "3.8.1", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.21.0"], ["6.1.0", "6.0.3", "5.7.1"]],
+        ["5.3", ["4.5.4", "4.5.2", "4.5.1", "4.5.0", "4.4.2", "4.4.1", "4.4.0", "3.8.3", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.21.0"], ["6.1.0", "6.0.3", "5.7.*", "5.6.*", "5.5.2", "5.5.1", "5.4.*", "5.3.*"]],
+        # note for 5.3:
+        # removed inet-4.2.*/4.3.* due to subproject build errors
+        #   ./veins_inet/VeinsInetTransparentMobility.h:69:32: error: virtual function 'getCurrentPosition' has a different return type ('const inet::Coord &') than the function it overrides (which has return type 'inet::Coord')
+        #   veins_inet/VeinsInetTransparentMobility.cc:82:38: error: member reference type 'veins::TraCIMobility' is not a pointer; did you mean to use '.'?
+        #   auto lastVeinsPosition = mobility->getPositionAt(simTime());
+        # removed inet-3.8.2/3.8.1: veinsinet3 error; needs 'All: Changed initial values of simtime_t fields to -1 instead of NaN.' commit to fix, which is in 3.8.3
+        # removed omnetpp-5.5.0: segfault in smoke test
         ["5.2", ["4.2.8", "4.2.5", "4.2.4", "4.2.3", "4.2.2", "4.2.1", "4.2.0", "3.8.1", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.9.2"], ["5.7.*", "5.6.*", "5.5.*", "5.4.*", "5.3.*"]],
         ["5.1", ["4.2.1", "4.2.0", "3.6.5", "3.6.6", "3.6.7", "3.6.8"], ["1.9.2"], ["5.5.*", "5.4.*", "5.3.*"]],
         ["5.0", ["4.1.1", "4.1.0", "3.6.5"], ["1.9.2"], ["5.5.*", "5.4.*", "5.3.*"]],      # this is the first one that works with sumo 1.9.2

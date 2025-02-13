@@ -29,11 +29,11 @@ def make_veins_project_description(veins_version, inet_versions, sumo_version, o
             """if [ "$BUILD_MODE" = "release" ]; then DEBUG_POSTFIX=""; fi""",
             "echo 'Starting sumo-launchd.py'",
             "./sumo-launchd.py & bg_pid=$!",
+            """trap "echo 'Stopping sumo-launchd.py' && kill $bg_pid" EXIT SIGINT SIGTERM""",
             "cd examples/veins && ./run $DEBUG_POSTFIX -c Default -u Cmdenv",
             "export VEINS_INET_INI_CONFIG='-c plain'" if veins_version >= "5.1" else "",
             """if [[ ! ($OMNETPP_VERSION < '6.0.0') ]]; then export FIX_FOR_VEINS_5_3=' --allow-object-stealing-on-deletion=true'; fi""" if veins_version == "5.3" else "",
             "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd ../../subprojects/veins_inet/examples/veins_inet && ./run $DEBUG_POSTFIX $VEINS_INET_INI_CONFIG -u Cmdenv; else cd ../../subprojects/veins_inet3/examples/veins_inet && ./run $DEBUG_POSTFIX $FIX_FOR_VEINS_5_3 -u Cmdenv; fi",
-            "echo 'Stopping sumo-launchd.py' && kill $bg_pid",
         ] if veins_version >= "5.0" else ["echo 'Skipping test because required sumo version is not available as a nix package.'"],
         "build_commands": [
             "./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" if veins_version >= "4.5" else "./configure --with-inet=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",

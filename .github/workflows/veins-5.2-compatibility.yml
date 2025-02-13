@@ -1,0 +1,96 @@
+name: Veins 5.2 compatibility test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-combinations:
+      name: Create project combinations
+      runs-on: ubuntu-latest
+
+      steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install locally
+        run: python3 -m pip install -e .
+
+      - uses: cachix/install-nix-action@v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: list all test sessions
+        id: set-matrix
+        run: |
+          projects=$(opp_env list veins-5.2 --expand-all)
+          if [ -z "$projects" ]; then
+            echo "::set-output name=matrix::[]"
+          else
+            # Create a JSON array directly
+            json_array=$(echo "$projects" | awk '{printf "\"%s\",", $0}' | sed 's/,$//')
+            json_array="[$json_array]"
+            echo "::set-output name=matrix::$json_array"
+          fi
+      - name: Debug output
+        run: echo "${{ steps.set-matrix.outputs.matrix }}"
+      outputs:
+        matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+  smoketests:
+    needs: create-combinations
+    strategy:
+      fail-fast: false
+      matrix:
+        projects: ${{ fromJson(needs.create-combinations.outputs.matrix) }}
+    name: ${{ matrix.projects }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Install locally
+      run: python3 -m pip install -e .
+
+    - uses: cachix/install-nix-action@v30
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+
+    - name: Xvfb
+      run: |
+        # Install Xvfb
+        sudo apt-get update
+        sudo apt-get install -y xvfb
+        # kludge: remove libc++ so that projects don't link with it
+        sudo apt remove --purge libc++1*
+        # Start Xvfb
+        Xvfb :99 -screen 0 1024x768x24 &
+        # Set DISPLAY variable
+        echo "DISPLAY=:99" >> $GITHUB_ENV
+
+    - name: Run test
+      working-directory: tests
+      run: ./project_tester install --build-modes=debug ${{ matrix.projects }}
+
+    - name: Show output
+      if: always()
+      run: |
+        echo "::group::Output"
+        export PROJECT="${{ matrix.projects }}"
+        PROJECT="${PROJECT// /+}"  # Replace spaces with '+'
+        cat tests/logs/$PROJECT.out || echo '(no output)'
+        echo "::endgroup::"
+
+        echo "::group::Error"
+        export PROJECT="${{ matrix.projects }}"
+        PROJECT="${PROJECT// /+}"  # Replace spaces with '+'
+        cat tests/logs/$PROJECT.err || echo '(no output)'
+        echo "::endgroup::"

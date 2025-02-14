@@ -84,9 +84,13 @@ jobs:
       if: always()
       run: |
         echo "::group::Output"
-        cat tests/logs/${{ matrix.projects }}.out || echo '(no output)'
+        export PROJECT="${{ matrix.projects }}"
+        PROJECT="${PROJECT// /+}"  # Replace spaces with '+'
+        cat tests/logs/$PROJECT.out || echo '(no output)'
         echo "::endgroup::"
 
         echo "::group::Error"
-        cat tests/logs/${{ matrix.projects }}.err || echo '(no output)'
+        export PROJECT="${{ matrix.projects }}"
+        PROJECT="${PROJECT// /+}"  # Replace spaces with '+'
+        cat tests/logs/$PROJECT.err || echo '(no output)'
         echo "::endgroup::"

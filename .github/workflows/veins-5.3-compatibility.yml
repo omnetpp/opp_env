@@ -1,4 +1,4 @@
-name: Veins 5.3 compatibility build and smoke test
+name: Veins 5.3 compatibility test
 
 on:
   workflow_dispatch:

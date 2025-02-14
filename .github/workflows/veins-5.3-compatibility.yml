@@ -84,11 +84,13 @@ jobs:
       if: always()
       run: |
         echo "::group::Output"
-        export PROJECT=${{ matrix.projects }} | sed 's/ /+/g'
+        export PROJECT="${{ matrix.projects }}"
+        PROJECT="${PROJECT// /+}"  # Replace spaces with '+'
         cat tests/logs/$PROJECT.out || echo '(no output)'
         echo "::endgroup::"
 
         echo "::group::Error"
-        export PROJECT=${{ matrix.projects }} | sed 's/ /+/g'
+        export PROJECT="${{ matrix.projects }}"
+        PROJECT="${PROJECT// /+}"  # Replace spaces with '+'
         cat tests/logs/$PROJECT.err || echo '(no output)'
         echo "::endgroup::"

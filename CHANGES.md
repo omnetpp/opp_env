@@ -1,5 +1,25 @@
 # Changes
 
+## 0.32.0.250217
+
+### opp_env
+
+- added "list --matching" option, expanded "--expand" and  "--expand-all"
+
+### Database (Frameworks and Models)
+
+- veins: added 5.3 version
+- veins: added inet 4.5.4 and updated sumo version for veins-git
+- veins: updated omnetpp-6.* dependencies
+- veins: removed omnetpp-5.5.0 from all veins versions due to segfault in smoke test
+- veins: fixed smoke test command for veins-5.3 and omnetpp-6.0.*
+- veins: removed non-working dependencies from veins-5.3
+- veins: updated clean command to also clean subprojects
+- veins: added patch command to remove --no-deep-includes from configure because it's deprecated
+- openflow: renamed to openflow4core
+- simu5g: added simu5g v1.3.0
+- inet: fixed smoke test command
+
 ## 0.31.2.250122
 
 ### opp_env

@@ -578,6 +578,51 @@ To run a simulation model directly with the latest version of OMNeT++, run:
 def get_version():
     return importlib.metadata.version("opp_env")
 
+import os
+import platform
+import subprocess
+
+def get_linux_distribution():
+    try:
+        with open("/etc/os-release") as f:
+            lines = f.readlines()
+        info = {}
+        for line in lines:
+            if '=' in line:
+                key, value = line.strip().split('=', 1)
+                info[key] = value.strip('"')
+        return info.get("ID", "").lower(), info.get("PRETTY_NAME", "").lower()
+    except FileNotFoundError:
+        return None, None
+
+def suggest_nix_installation():
+    distro_id, distro_name = get_linux_distribution()
+
+    unknown = False
+    if distro_id in ["debian", "ubuntu"]:
+        print("On Debian/Ubuntu, you can install Nix using the following command:")
+        print("    sudo apt update && sudo apt install nix-setup-systemd")
+    elif distro_id in ["fedora"]:
+        print("On Fedora, Nix is available through a COPR repository. Install it using:")
+        print("    sudo dnf copr enable petersen/nix")
+        print("    sudo dnf install nix")
+        print("    sudo systemctl enable --now nix-daemon")
+        print("More details at: https://copr.fedorainfracloud.org/coprs/petersen/nix/")
+    elif distro_id in ["arch", "manjaro"]:
+        print("On Arch Linux, you can install Nix using pacman:")
+        print("    sudo pacman -S nix")
+        print("    sudo systemctl enable --now nix-daemon")
+        print("More details at: https://wiki.archlinux.org/title/Nix")
+    elif distro_id in ["opensuse", "suse"]:
+        print("On OpenSUSE, you can install Nix using the following command:")
+        print("    sudo zypper install nix")
+    else:
+        unknown = True
+
+    print(("You" if unknown else "\nAlternatively, you") + " can install it using the official installation script from nixos.org:")
+    print("    curl -L https://nixos.org/nix/install | sh")
+
+
 def detect_nix():
     minimum_nix_version = "2.9"
     # check nix is installed
@@ -587,7 +632,14 @@ def detect_nix():
         output = result.stdout.decode('utf-8')
     except Exception as ex:
         _logger.debug(f"Error: {ex}")
-        raise Exception(f"Nix does not seem to be installed (running `nix --version` failed). You can install it from https://nixos.org/download.html or using your system's package manager (important: at least version {minimum_nix_version} is required). See also the --nixless-workspace option in the help.")
+        print("Error: Nix does not seem to be installed (running `nix --version` failed), aborting.")
+        print()
+        suggest_nix_installation()
+        print()
+        print(f"IMPORTANT: Make sure you install Nix version {minimum_nix_version} or a later version.")
+        print("See also the `--nixless-workspace` option in the help.")
+        print()
+        raise Exception(f"Nix not installed -- see installation hints above.")
 
     # check it is recent enough
     nix_version = output.strip().split()[-1]

@@ -1885,7 +1885,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Artery.html",
             },
-            "required_projects": {"omnetpp": ["5.7.1"]},
+            "required_projects": {"omnetpp": ["5.7.*", "5.6.*", "5.5.*"]},
             "nix_packages": ["cmake", "boost", "cryptopp", "geographiclib", "sumo", "git-lfs" ],
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's| -n | -c veins -u Cmdenv --sim-time-limit=50s -n |g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",

@@ -1888,7 +1888,7 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["5.7.*", "5.6.*", "5.5.*"]},
             "nix_packages": ["cmake", "boost", "cryptopp", "geographiclib", "sumo", "git-lfs" ],
             "smoke_test_commands": [
-                r"""if [ "$BUILD_MODE" = "debug" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's| -n | -c veins -u Cmdenv --sim-time-limit=50s -n |g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's| -n | -c veins -u Cmdenv --sim-time-limit=50s -n |g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example -j$NIX_BUILD_CORES && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then echo 'Skipping test in release mode, because currently this projects is only built in debug mode.'; fi""",
             ],
             # we use a hash from master because the opp-summit release needs git to build

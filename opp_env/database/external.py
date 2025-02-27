@@ -1829,6 +1829,32 @@ def get_project_descriptions():
         },
 
         {
+            "name": "veins_vlc", "version": "1.0.20210526",
+            "description": "Veins VLC - Realistic Simulation of Vehicular Visible Light Communication",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Veins-VLC.html",
+            },
+            "nix_packages": ["python2"],
+            "required_projects": {"omnetpp": ["6.*", "5.7.*", "5.6.*", "5.5.*", "5.4.*", "5.3.*"], "inet": ["4.2.8", "4.2.5", "4.2.4", "4.2.3", "4.2.2", "4.2.1", "4.2.0", "4.1.1", "4.1.0", "3.8.1", "3.7.1", "3.7.0", "3.6.5"], "veins": ["5.*"]},
+            "details": "Veins VLC extends Veins vehicular network simulation framework with channel models for Vehicular Visible Light Communication (V-VLC).",
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_MODE_OPTION="-d"; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then DEBUG_MODE_OPTION=""; fi""",
+                r"""$VEINS_ROOT/sumo-launchd.py & bg_pid=$!""",
+                r"""cd examples/veins-vlc && ./run $DEBUG_MODE_OPTION -c DriveVlc -u Cmdenv""",
+                r"""kill $bg_pid""",
+            ],
+            "download_url": "https://github.com/veins/veins_vlc/archive/de8f2fdee84b22901e353d7439c5b5888dcee975.tar.gz",
+            "patch_commands": [
+                """if [[ ! ($OMNETPP_VERSION < "6.0.0") ]]; then sed -i "s|'--no-deep-includes', ||" configure; fi""",
+            ],
+            "build_commands": [
+                r"""./configure --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""
+            ],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
+
+        {
             "name": "veins_vlc", "version": "1.0",
             "description": "Veins VLC - Realistic Simulation of Vehicular Visible Light Communication",
             "metadata": {

@@ -2053,6 +2053,27 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_ARG=""; fi""",
                 r"""cd examples/platooning""",
                 r"""plexe_run $BUILD_MODE_ARG -u Cmdenv -c PlatooningNoGui -r 0 --sim-time-limit=10s""",
+                # test plexe_vlc subproject
+                """if [ -f $PLEXE_ROOT/subprojects/plexe_vlc/src/Makefile ]; then
+                echo 'Starting sumo-launchd.py'
+                $VEINS_ROOT/sumo-launchd.py & bg_pid=$!
+                echo 'sumo PID is ' $bg_pid
+                trap "echo 'Stopping sumo-launchd.py at ' $bg_pid && kill $bg_pid" RETURN SIGINT SIGTERM
+                echo 'Testing plexe_vlc subproject'
+                cd $PLEXE_ROOT/subprojects/plexe_vlc/examples/platooning_vlc && ./run $BUILD_MODE_ARG -c PlatooningNoGui -u Cmdenv -r 0 --sim-time-limit=10s
+                echo 'Stopping sumo-launchd.py at ' $bg_pid && kill $bg_pid
+                fi""",
+                # test plexe_lte subproject
+                # NOTE: error: <!> Transport protocol not found -- in module (IP2lte) Highway.node[0].lteNic.ip2lte (id=296), at t=2.01s, event #33671
+                # """if [ -f $PLEXE_ROOT/subprojects/plexe_lte/src/Makefile ]; then
+                # echo 'Starting sumo-launchd.py'
+                # $VEINS_ROOT/sumo-launchd.py & bg_pid=$!
+                # echo 'sumo PID is ' $bg_pid
+                # trap "echo 'Stopping sumo-launchd.py at ' $bg_pid && kill $bg_pid" RETURN SIGINT SIGTERM
+                # echo 'Testing plexe_vlc subproject'
+                # cd $PLEXE_ROOT/subprojects/plexe_lte/examples/platooning_lte && ./run $BUILD_MODE_ARG -c CV2XMergeNoGui -u Cmdenv -r 0 --sim-time-limit=10s
+                # echo 'Stopping sumo-launchd.py at ' $bg_pid && kill $bg_pid
+                # fi""",
             ],
             "setenv_commands": [
                                 r"""export SUMO_HOME=${pkgs.sumo}/share/sumo && echo 'sumo home: ' && echo $SUMO_HOME""",
@@ -2061,9 +2082,17 @@ def get_project_descriptions():
             ],
             "patch_commands": [
                 r"""sed -i 's|from elementtree|from xml.etree|' */*/*/*.py""",
+                r"""sed -i 's|"3.1"|"3.1", "3.1.1", "3.1.2", "3.1.3"|' subprojects/plexe_vlc/configure subprojects/plexe_lte/configure""",
+                r"""sed -i 's|"4.2.1"|"4.2.5", "4.2.1"|' subprojects/plexe_lte/configure""",
             ],
-            "build_commands": [r"""./configure --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
-            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+            "build_commands": [
+                r"""./configure --with-veins=$VEINS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+                r"""if [[ $OPP_ENV_PROJECTS == *"veins_vlc"* ]]; then echo 'Building plexe_vlc subproject' && cd $PLEXE_ROOT/subprojects/plexe_vlc && . setenv && ./configure --with-veins=$VEINS_ROOT --with-veins-vlc=$VEINS_VLC_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE || (echo "Plexe_vlc subproject build error - please make sure veins_vlc is preceeding plexe in the opp_env command." && exit 1); fi""",
+                # plexe_lte builds but why build it when it doesn't work?
+                # r"""if [[ $OPP_ENV_PROJECTS == *"simulte"* ]]; then echo 'Building plexe_lte subproject' && cd $PLEXE_ROOT/subprojects/plexe_lte && . setenv && ./configure --with-veins=$VEINS_ROOT --with-veins_inet=$VEINS_ROOT/subprojects/veins_inet --with-lte=$SIMULTE_ROOT --with-INET=$INET_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE || (echo "Plexe_lte subproject build error - please make sure SimuLTE is preceeding plexe in the opp_env command." && exit 1); fi""",
+            ],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE && cd subprojects/plexe_vlc && [ ! -f src/Makefile ] || make clean MODE=$BUILD_MODE && cd ../plexe_lte && [ ! -f src/Makefile ] || make clean MODE=$BUILD_MODE"""],
+        },
         },
 
         {

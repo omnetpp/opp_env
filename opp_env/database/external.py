@@ -1865,9 +1865,9 @@ def get_project_descriptions():
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_MODE_OPTION="-d"; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then DEBUG_MODE_OPTION=""; fi""",
-                r"""$VEINS_ROOT/sumo-launchd.py & & bg_pid=$! &""",
+                r"""$VEINS_ROOT/sumo-launchd.py & bg_pid=$!""",
                 r"""cd examples/veins-vlc && ./run $DEBUG_MODE_OPTION -c DriveVlc -u Cmdenv""",
-                r"""kill $bg_pid &""",
+                r"""kill $bg_pid""",
             ],
             "download_url": "https://github.com/veins/veins_vlc/archive/refs/tags/veins-vlc-1.0.tar.gz",
             "build_commands": [

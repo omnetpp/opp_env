@@ -2037,6 +2037,36 @@ def get_project_descriptions():
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""]
         },
 
+
+        # {
+        #     # this is for plexe_lte compatibility; not needed currently
+        #     "name": "simulte", "version": "1.2.0_inet4.2.2",
+        #     "description": "LTE and LTE Advanced (3GPP Release 8 and beyond) user plane simulation model",
+        #     "metadata": {
+        #         "catalog_url": "https://omnetpp.org/download-items/SimuLTE.html",
+        #     },
+        #     "required_projects": {"inet": ["4.2.2"], "omnetpp": ["5.7.*"]},
+        #     "download_url": "https://github.com/inet-framework/simulte/archive/cc702515328a5dd63b7feb6e98ac6bf613e99037.tar.gz",
+        #     "smoke_test_commands": [
+        #         "cd simulations/demo",
+        #         """if [ "$BUILD_MODE" = "debug" ]; then SIMULTE_LIB=$(echo $SIMULTE_ROOT/out/*-debug/src/*lte*); fi""",
+        #         """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+        #         """if [ "$BUILD_MODE" = "release" ]; then SIMULTE_LIB=$(echo $SIMULTE_ROOT/out/*-release/src/*lte*); BUILD_MODE_SUFFIX=""; fi""",
+        #         """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX=""; fi""",
+        #         "opp_run$BUILD_MODE_SUFFIX -l $SIMULTE_LIB -n $SIMULTE_ROOT/simulations:$SIMULTE_ROOT/src:$INET_ROOT/src -c VideoStreaming -r 0 -u Cmdenv --sim-time-limit=10s"
+        #     ],
+        #     "patch_commands": [
+        #         "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
+        #         "sed -i -E 's|^INET_DIR=.*|INET_DIR=$INET_ROOT/src|' src/run_lte",
+        #         "find . -name omnetpp.ini | xargs -n1 sed -i -E 's|^image-path|#image-path|'", # we use OMNETPP_IMAGE_PATH instead
+        #     ],
+        #     "setenv_commands": [
+        #         'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$SIMULTE_ROOT/images"',
+        #         # Note: no setenv script in SimuLTE
+        #     ],
+        #     "build_commands": [ "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE" ],
+        #     "clean_commands": [ "make clean MODE=$BUILD_MODE" ],
+        # },
         {
             # NOTE - doesn't work with sumo-gui
             # FXGLVisual::create: requested OpenGL visual unavailable. -> this comes from sumo

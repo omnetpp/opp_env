@@ -1907,7 +1907,7 @@ def get_project_descriptions():
                 r"""echo 'Hint: use the `cmake --build build --target run_example` command to run the example simulation.'"""
             ],
             "build_commands": [r"""mkdir -p build && cd build && cmake .. && make -j$NIX_BUILD_CORES MODE=debug"""],
-            "clean_commands": [r"""make clean"""],
+            "clean_commands": [r"""cmake --build build --target clean"""],
         },
 
         {

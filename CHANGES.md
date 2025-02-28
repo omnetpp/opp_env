@@ -1,5 +1,17 @@
 # Changes
 
+## 0.32.1.250228
+
+### opp_env
+
+- added distro specific NIX installation hints when nix command is not detected
+
+### Database (Frameworks and Models)
+
+- veins: wider range of dependencies are supported (i.e. more INET versions)
+- veins_vlc: added a more up to date version
+- artery_allinone: fixes to dependencies, build anbd test commands
+
 ## 0.32.0.250219
 
 ### opp_env

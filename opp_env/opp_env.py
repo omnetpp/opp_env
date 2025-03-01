@@ -558,7 +558,7 @@ def process_arguments():
         kwargs["build_modes"] = args.build_modes.split(",") if args.build_modes else []
     if "extra_nix_packages" in kwargs:
         # split up and flatten list
-        kwargs["extra_nix_packages"] = [name.strip() for arg in args.extra_nix_packages for name in arg.split(",") if name.strip()]
+        kwargs["extra_nix_packages"] = uniq([name.strip() for arg in args.extra_nix_packages for name in re.split(r"[\s,]+",arg) if name.strip()])
     return kwargs
 
 

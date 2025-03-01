@@ -1109,7 +1109,7 @@ class Workspace:
 
         extra_nix_packages_file = os.path.join(self.get_workspace_admin_directory(), "extra_nix_packages")
         extra_nix_packages_file_content = self._read_file_if_exists(extra_nix_packages_file).strip()
-        self.extra_nix_packages = extra_nix_packages_file_content.split("[, ]+") if extra_nix_packages_file_content else []
+        self.extra_nix_packages = extra_nix_packages_file_content.split() if extra_nix_packages_file_content else []
 
         if self.nixless:
             detect_tools()

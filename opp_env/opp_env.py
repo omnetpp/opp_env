@@ -1945,7 +1945,7 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
     ]
 
     if not install_without_build:
-        extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))
+        extra_nix_packages = uniq(workspace.extra_nix_packages + (extra_nix_packages or []))
         workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, isolated=isolated, extra_nix_packages=extra_nix_packages, build_modes=build_modes)
 
 def is_subdirectory(child_dir, parent_dir):
@@ -2009,7 +2009,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
     ]
 
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
-    extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))
+    extra_nix_packages = uniq(workspace.extra_nix_packages + (extra_nix_packages or []))
     extra_nix_packages_str = f" with extra packages: {cyan(' '.join(extra_nix_packages))}" if extra_nix_packages else ""
     _logger.info(f"Starting {cyan(kind)} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}{extra_nix_packages_str}")
 
@@ -2067,7 +2067,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
     ]
     kind = "nixless" if workspace.nixless else "isolated" if isolated else "non-isolated"
     working_directory = workspace_directory if chdir else None
-    extra_nix_packages = list(set(workspace.extra_nix_packages + (extra_nix_packages or [])))
+    extra_nix_packages = uniq(workspace.extra_nix_packages + (extra_nix_packages or []))
     extra_nix_packages_str = f" with extra packages: {cyan(' '.join(extra_nix_packages))}" if extra_nix_packages else ""
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode{extra_nix_packages_str}")
     workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, commands=commands, isolated=isolated, extra_nix_packages=extra_nix_packages, vars_to_keep=vars_to_keep, build_modes=build_modes)

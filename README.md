@@ -66,6 +66,10 @@ To open a shell prompt where you can use the recently installed Simu5G model, ty
 > [!IMPORTANT]
 > You cannot use the packages you installed via `opp_env` outside of `opp_env shell` or `opp_env run`.
 
+> [!TIP]
+> If you frequently install new versions of OMNeT++ and/or simulation models, it's recommended to
+> run `nix store gc` periodically to reclaim disk space occupied by older, unused dependencies.
+
 ## Available Packages
 
 To see the list of available packages, type: `opp_env list`. The output from `opp_env list` from October 31, 2024:

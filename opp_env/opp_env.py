@@ -624,7 +624,7 @@ def suggest_nix_installation():
 
 
 def detect_nix():
-    minimum_nix_version = "2.9"
+    minimum_nix_version = "2.8"
     # check nix is installed
     try:
         _logger.debug(f"Running nix --version")

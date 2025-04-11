@@ -2405,4 +2405,17 @@ def get_project_descriptions():
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
+
+        {
+            "name": "inbaversim", "version": "git",
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["4.5.*"]},
+            "description": "inbaverSim",
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd simulations && $INBAVERSIM_ROOT/src/inbaversim$BUILD_MODE_SUFFIX omnetpp-simple-network.ini -n ../src:$INET_ROOT/src:. -u Cmdenv --sim-time-limit=10000s"""
+            ],
+            "download_url": "https://github.com/inet-framework/inbaverSim/archive/refs/heads/master.tar.gz",
+            "build_commands": [r"""cd src && opp_makemake -f --deep -o inbaversim -I$INET_ROOT/src -I$OMNETPP_ROOT/src -L$INET_ROOT/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
     ]

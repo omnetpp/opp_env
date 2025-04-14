@@ -2409,12 +2409,15 @@ def get_project_descriptions():
         {
             "name": "inbaversim", "version": "git",
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["4.5.*"]},
-            "description": "inbaverSim",
+            "description": "OMNeT++ based model framework to simulate CCN based networks. The functionality and the message formats follow the description provided in RFC 8569 and RFC 8609.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
-                r"""cd simulations && $INBAVERSIM_ROOT/src/inbaversim$BUILD_MODE_SUFFIX omnetpp-simple-network.ini -n ../src:$INET_ROOT/src:. -u Cmdenv --sim-time-limit=10000s"""
+                r"""cd simulations && $INBAVERSIM_ROOT/src/inbaversim$BUILD_MODE_SUFFIX omnetpp-simple-network.ini -c Simple-Net -n ../src:$INET_ROOT/src:. -u Cmdenv --sim-time-limit=10000s"""
             ],
-            "download_url": "https://github.com/inet-framework/inbaverSim/archive/refs/heads/master.tar.gz",
+            "git_url": "https://github.com/inet-framework/inbaverSim.git",
+            "setenv_commands": [
+                r"""echo 'Hint: use the `../src/inbaversim` (`../src/inbaversim_dbg` for debug) command in the `simulations` folder to run an example simulation. For example: `../src/inbaversim omnetpp-simple-network.ini -n .:../src:$INET_ROOT/src`'""",
+            ],
             "build_commands": [r"""cd src && opp_makemake -f --deep -o inbaversim -I$INET_ROOT/src -I$OMNETPP_ROOT/src -L$INET_ROOT/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },

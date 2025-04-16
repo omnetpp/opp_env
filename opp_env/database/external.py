@@ -2421,4 +2421,56 @@ def get_project_descriptions():
             "build_commands": [r"""cd src && opp_makemake -f --deep -o inbaversim -I$INET_ROOT/src -I$OMNETPP_ROOT/src -L$INET_ROOT/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
+
+        {
+            "name": "wifi_mlo_omnet", "version": "20250207",
+            "required_projects": {"omnetpp": ["6.0.*"]},
+            "description": "",
+            "nix_packages": [
+                "z3",
+                "ffmpeg-headless",
+                "python3"
+            ],
+            "smoke_test_commands": [
+                # r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                # r"""cd simulations && $INBAVERSIM_ROOT/src/inbaversim$BUILD_MODE_SUFFIX omnetpp-simple-network.ini -c Simple-Net -n ../src:$INET_ROOT/src:. -u Cmdenv --sim-time-limit=10000s"""
+            ],
+            "download_commands": [
+                "mkdir wifi_mlo_omnet-20250207",
+                "cd wifi_mlo_omnet-20250207",
+                "curl -L -o inet.src.tgz https://github.com/inet-framework/inet/releases/download/v4.5.2/inet-4.5.2-src.tgz --progress-bar",
+                "tar -xzf inet.src.tgz",
+                "rm inet.src.tgz",
+                "curl -L -o src.tar.gz https://github.com/tkn-tub/wifi-mlo-omnet/archive/44a8d0c96700c3bd9b6dc0f0a98605ebbf9c191f.tar.gz --progress-bar",
+                "mkdir -p wifi_mlo_omnet",
+                "tar -xzf src.tar.gz --strip=1 -C wifi_mlo_omnet",
+                "rm src.tar.gz",
+            ],
+            "patch_commands": [
+                # patch commands for inet
+                "cd inet4.5",
+                "OPP_FEATURETOOL=\"$OMNETPP_ROOT/src/utils/opp_featuretool\"",
+                "$OPP_FEATURETOOL -v enable Z3GateSchedulingConfigurator",
+                "$OPP_FEATURETOOL -v enable VoipStream VoipStreamExamples",
+                "$OPP_FEATURETOOL -v enable TcpLwip",
+                "rm -rf examples/voipstream/osudp",
+                "for f in $(grep -Rls 'defined(linux)'); do sed -i 's|defined(linux)|defined(__linux__)|' $f; done",
+                "cd ..",
+                r"""sed -i 's|static const Protocol ieee80211DsssPhy;|static const Protocol ieee80211be;\n    static const Protocol ieee80211DsssPhy;|g' inet4.5/src/inet/common/Protocol.h""",
+                r"""sed -i 's|const Protocol Protocol::ieee80211DsssPhy("ieee80211dsssphy", "IEEE 802.11 DSSS PHY", Protocol::PhysicalLayer);|const Protocol Protocol::ieee80211be("ieee80211be", "Wi-Fi 7", Protocol::LinkLayer);\nconst Protocol Protocol::ieee80211DsssPhy("ieee80211dsssphy", "IEEE 802.11 DSSS PHY", Protocol::PhysicalLayer);|g' inet4.5/src/inet/common/Protocol.cc""",
+                # r"""sed -i 's|static const ProtocolGroup::Protocols ethertypeProtocols {|static const ProtocolGroup::Protocols ethertypeProtocols {\n    { Protocol::ieee80211be.getId(), &Protocol::ieee80211be }|g' inet4.5/src/inet/common/ProtocolGroup.cc""",
+                # r"""sed -i 's|{ ETHERTYPE_IEEE8021_R_TAG, &Protocol::ieee8021rTag },|{ ETHERTYPE_IEEE8021_R_TAG, &Protocol::ieee8021rTag },\n    { Protocol::ieee80211be.getId(), &Protocol::ieee80211be }|' inet4.5/src/inet/common/ProtocolGroup.cc""",
+                r"""sed -i '/{ ETHERTYPE_IEEE8021_R_TAG, &Protocol::ieee8021rTag },/a\    { Protocol::ieee80211be.getId(), &Protocol::ieee80211be },' inet4.5/src/inet/common/ProtocolGroup.cc""",
+            ],
+            "setenv_commands": [
+                "cd inet4.5",
+                "export OMNETPP_IMAGE_PATH=\"$OMNETPP_IMAGE_PATH:$INET_ROOT/images\"",
+                "[ -f setenv ] && INET_ROOT= source setenv -f",
+                r"""echo 'Hint: use the `../src/inbaversim` (`../src/inbaversim_dbg` for debug) command in the `simulations` folder to run an example simulation. For example: `../src/inbaversim omnetpp-simple-network.ini -n .:../src:$INET_ROOT/src`'""",
+            ],
+            "build_commands": [
+                r"""cd inet4.5 && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+            ],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
     ]

@@ -2405,4 +2405,44 @@ def get_project_descriptions():
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
+
+        {
+            # TODO make the browser visualization work
+            # only in debug; this version needs patched INET
+            "name": "eclipse_mosaic_allinone", "version": "25.0",
+            "required_projects": {"omnetpp": ["5.5.1"]},
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/EclipseMosaic.html",
+            },
+            "description": "Eclipse Mosaic co-simulation framework. This version downloads its own copy of INET, and does not use one installed by opp_env.",
+            "nix_packages": ["protobuf", "temurin-bin", "sumo", "unzip", "util-linux", "wget"],
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then ./mosaic.sh -s Tiergarten; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then echo 'This project is currently only built and tested in debug mode.'; fi""",
+            ],
+            "download_commands": [
+                r"""mkdir eclipse_mosaic_allinone-25.0""",
+                r"""cd eclipse_mosaic_allinone-25.0""",
+                r"""curl -L -o src.tar.gz https://www.dcaiti.tu-berlin.de/research/simulation/download/get/eclipse-mosaic-25.0.tar.gz --progress-bar""",
+                r"""tar -xzf src.tar.gz""",
+                r"""rm src.tar.gz""",
+            ],
+            "patch_commands": [
+                r"""sed -i 's|gcc-debug|clang-debug|g' bin/fed/omnetpp/omnet_installer.sh""",
+                r"""sed -i 's|"omnetpp": false|"omnetpp": true|g' scenarios/Tiergarten/scenario_config.json""",
+                r"""sed -i 's|ln -s|ln -s -f|g' bin/fed/omnetpp/omnet_installer.sh""",
+            ],
+            "setenv_commands": [
+                r"""export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OMNETPP_ROOT/lib""",
+                r"""echo 'Hint: use the `./mosaic.sh` command to run a scenario. For example: `./mosaic.sh -s Tiergarten`. Note: the browser visualization (`-v` argument of `mosaic.sh`) might not work in opp_env. To use it, open `tools/web/visualization.html` in a browser.'""",
+            ],
+            "build_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then cd bin/fed/omnetpp; ./omnet_installer.sh -so --installation-type DEVELOPER -j$NIX_BUILD_CORES --quiet; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then echo 'This projects is currently only built in debug mode.'; fi""",
+            ],
+            "clean_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then cd bin/fed/omnetpp; rm -rf inet inet_src omnetpp-federate omnetpp_federate_src *.zip *.gz *.tgz; fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then echo 'This projects is currently only built in debug mode.'; fi""",
+            ],
+        },
     ]

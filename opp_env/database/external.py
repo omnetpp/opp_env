@@ -2423,7 +2423,7 @@ def get_project_descriptions():
         },
 
         {
-            "name": "wifi_mlo_omnet", "version": "20250207",
+            "name": "wifi_mlo_omnet_allinone", "version": "20250207",
             "required_projects": {"omnetpp": ["6.0.*"]},
             "description": "",
             "nix_packages": [
@@ -2472,5 +2472,29 @@ def get_project_descriptions():
                 r"""cd inet4.5 && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
             ],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
+
+        {
+            "name": "wifi_mlo_omnet", "version": "20250416",
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["4.5.2"]},
+            "description": "",
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd simulations && ../wifi_mlo_omnet$BUILD_MODE_SUFFIX -n .:../src:$INET_ROOT/src -u Cmdenv""",
+            ],
+            "download_url": "https://github.com/inet-framework/wifi-mlo-omnet/archive/refs/heads/fixes.tar.gz",
+            "patch_commands": [
+                r"""sed -i 's|INET4_5_PROJ=../inet4.5|INET4_5_PROJ=$$\\\(INET_ROOT\\\)|g' makemakefiles""",
+                r"""sed -i 's|-O out|-O out -o wifi_mlo_omnet|g' makemakefiles""",
+            ],
+            "setenv_commands": [
+                r"""echo 'Hint: use the `out/clang-release/wifi_mlo_omnet` (`out/clang-debug/wifi_mlo_omnet` for debug) command in the `simulations` folder to run the example simulation. For example: `../out/clang-release/wifi_mlo_omnet_dbg -n .:../src:$INET_ROOT/src`'""",
+            ],
+            "build_commands": [
+                r"""make -f makemakefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+            ],
+            "clean_commands": [
+                r"""make clean MODE=$BUILD_MODE"""
+            ],
         },
     ]

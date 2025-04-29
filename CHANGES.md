@@ -1,5 +1,17 @@
 # Changes
 
+## 0.33.0.250429
+
+### opp_env
+
+- reduced NIX version requirement from 2.9 to 2.8 which is available in debian bookworm or later
+- fix #28 "... --add-extra-nix-packages --gcc,gcc should not add duplicates"
+
+### Database (Frameworks and Models)
+
+- eclipse_mosaic: added as a new model
+- veins: added 5.3.1
+
 ## 0.32.1.250228
 
 ### opp_env

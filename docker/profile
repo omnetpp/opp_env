@@ -139,7 +139,7 @@ if [ ! -f ~/.opp_env_upgrade_check_disable ]; then
   if [ $(date +%s) -ge $expiration ]; then
     (
       if [ "$(pip install --upgrade --dry-run --disable-pip-version-check opp-env 2> /dev/null | grep 'Would install')" ]; then
-        echo "A new version of 'opp_env' is available.\nRun 'pip install --upgrade opp_env' to upgrade." > $notice_file
+        echo -e "A new version of 'opp_env' is available.\nRun 'pip install --upgrade opp_env' to upgrade." > $notice_file
       else
         rm -f $notice_file
       fi

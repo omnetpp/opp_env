@@ -42,10 +42,11 @@ RUN set -o pipefail \
     && mkdir -p $OPP_ENV_LAST_WORKSPACE
 
 COPY --chown=$USER:root nix.conf /home/${USER}/.config/nix/nix.conf
+COPY --chown=$USER:root keyfile.glib-2.0 /home/${USER}/.config/glib-2.0/keyfile
 COPY --chown=$USER:root profile /home/${USER}/.profile
 
 # trick: check if the github repo has a new release and force a rebuild of the remaining layers    
-ADD "https://api.github.com/repos/omnetpp/opp_env/releases?per_page=1" latest_commit  
+ADD "https://api.github.com/repos/omnetpp/opp_env/releases?per_page=1" latest_commit
 RUN rm latest_commit \
     && python3 -m venv .venv \
     && . .venv/bin/activate \

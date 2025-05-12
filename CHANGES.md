@@ -1,5 +1,11 @@
 # Changes
 
+## 0.33.1.250429
+
+### opp_env
+
+- opp_ide is no longer forced to run with X11 backend on WSL
+
 ## 0.33.0.250429
 
 ### opp_env

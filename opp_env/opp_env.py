@@ -722,9 +722,6 @@ class ProjectDescription:
                         raise ValueError(f"Project {name}-{version} option '{option_name}' key '{field_name}': First value of list must be '@prepend', '@append', or '@replace'")
                     field_value[:] = remove_empty(field_value)
 
-        if bool(download_url) + bool(git_url) + bool(download_commands) > 1:
-            raise Exception(f"project {name}-{version}: download_url, git_url, and download_commands are mutually exclusive")
-
         if self.description and "\n" in self.description:
             raise Exception(f"project {name}-{version}: description may not contain newlines -- use the details field to store additional information")
         if self.description and len(self.description) > 180:
@@ -1228,10 +1225,13 @@ class Workspace:
         if os.path.exists(project_dir):
             raise Exception(f"{project_dir} already exists")
         try:
-            if project_description.download_commands:
-                commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.download_commands ]
-                self.run_commands_with_projects(effective_project_descriptions, self.root_directory, commands, run_setenv=False, vars_to_keep=vars_to_keep)
-            elif project_description.download_url:
+            if not project_description.download_url and not project_description.git_url and not project_description.download_commands:
+                raise Exception(f"project {project_description.get_full_name()}: at least one of download_url, git_url, and download_commands must be specified")
+
+            if project_description.download_url and project_description.git_url:
+                raise Exception(f"project {project_description.get_full_name()}: download_url and git_url are mutually exclusive (but either may be combined with download_commands)")
+
+            if project_description.download_url:
                 if git_branch:
                     raise Exception(f"Git branch ('@{git_branch}') may only be specified when project is installed from git")
                 if not local:
@@ -1252,8 +1252,11 @@ class Workspace:
                 print(git_branch)
                 branch_option = "-b " + git_branch if git_branch else ""
                 self.run_command(f"git clone --config advice.detachedHead=false {branch_option} {git_url} {project_dir}") #TODO maybe optionally use --single-branch
-            else:
-                raise Exception(f"{project_description}: No download_url or download_commands in project description -- check project options for alternative download means (enter 'opp_env info {project_description}')")
+
+            if project_description.download_commands:
+                commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.download_commands ]
+                self.run_commands_with_projects(effective_project_descriptions, self.root_directory, commands, run_setenv=False, vars_to_keep=vars_to_keep)
+
             if not os.path.exists(project_dir):
                 raise Exception(f"{project_description}: Download process did not create {project_dir}")
 

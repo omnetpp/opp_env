@@ -2445,4 +2445,155 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "release" ]; then echo 'This projects is currently only built in debug mode.'; fi""",
             ],
         },
+
+        {
+            "name": "libptp", "version": "20210722",    # latest master as of time of writing
+            "nix_packages": ["boost", "fftw"],
+            "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"], "omnet_utils": ["1.0"], "libpln": ["1.0"]},
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/libPTP.html",
+            },
+            "description": "An OMNeT++ libary to support simulation of the Precision Time Protocol (PTP) as it is specified in IEEE 1588-2008. Note: libPLN and PTP_Simulations projects added.",
+            "download_url": "https://github.com/ptp-sim/libPTP/archive/7e98b4338bc92016f9cf7468185cf1303f6e43c0.tar.gz",
+            "download_commands": [
+                r"""cd $LIBPTP_ROOT""",
+                r"""mkdir ptp_simulations_src && cd ptp_simulations_src""",
+                r"""curl -L -o pcp_simulations.tgz https://github.com/ptp-sim/PTP_Simulations/archive/9c230a49ebcf09e360fb7c927c6e31f6114e9857.tar.gz --progress-bar""",
+                r"""tar -xzf pcp_simulations.tgz --strip=1""",
+                r"""rm pcp_simulations.tgz""",
+                r"""mv simulations/PTP $LIBPTP_ROOT/simulations""",
+                r"""mv simulations/Testbenches $LIBPTP_ROOT/simulations""",
+                r"""cd .. && rm -r ptp_simulations_src""",
+            ],
+            "setenv_commands": [
+                r"""echo 'Hint: Use the `src/ptp_simulation` to run an example simulation. For example, `src/ptp_simulation simulations/PTP/E2E_TC_Network/omnetpp.ini -n simulations:$LIBPTP_ROOT/src:$INET_ROOT/src:$OMNET_UTILS_ROOT/src`.'""",
+                r"""export BOOST_INCLUDE=${pkgs.boost.dev}/include""",
+                r"""export FFTW_INCLUDE=${pkgs.fftw.dev}/include""",
+                r"""export FFTW_LIB=${pkgs.fftw}/lib""",
+                r"""echo $BOOST_INCLUDE $FFTW_INCLUDE $FFTW_LIB""",
+                r"""export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$LIBPTP_ROOT/images""",
+            ],
+            "patch_commands": [
+                r"""sed -i 's|TIMEOUT = BasicServiceEvent|TIMEOUT = (int)BasicServiceEvent|g' src/Software/PTP_Stack/AppServices/PortService.h""",
+                r"""sed -i 's|#include "MovingAvgSimTimeFilter.h"|#include "MovingAvgSimTimeFilter.h"\n\n#include <numeric>|g' src/Software/SimTimeFilter/MovingAvg/MovingAvgSimTimeFilter.cc""",
+                r"""sed -i 's|package simulations|package libptp.simulations|g' simulations/*.ned simulations/*/*/*.ned simulations/*/*/*/*.ned""",
+                r"""sed -i 's|                                            pTdGen  = new cPerfectTdGen();|                                            throw cRuntimeError("Error: TdGen was configured to use libPLN, but it is not available.");|g' src/Hardware/HwClock/HwClock/HwClock.cc""",
+                r"""sed -i 's|EV.*endl;||g' src/Hardware/HwClock/HwClock/HwClock.cc""",
+
+            ],
+            "smoke_test_commands": [
+                r"""cd src""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then export LIBPTP_BIN=$(echo $LIBPTP_ROOT/out/*-release/src/ptp_simulation); fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then export LIBPTP_BIN=$(echo $LIBPTP_ROOT/out/*-debug/src/ptp_simulation); fi""",
+                r"""$LIBPTP_BIN ../simulations/PTP/Daisy_Chain_Network/omnetpp.ini -c SyncInterval -r 0 -n ../simulations:$LIBPTP_ROOT/src:$INET_ROOT/src:$OMNET_UTILS_ROOT/src -u Cmdenv --sim-time-limit=0.5s""",
+            ],
+            "build_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then export OMNET_UTILS_LIB_DIR=$(echo $OMNET_UTILS_ROOT/out/*-debug/src); INET_LIB_DIR=$(echo $INET_ROOT/out/*-debug/src); fi""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then export OMNET_UTILS_LIB_DIR=$(echo $OMNET_UTILS_ROOT/out/*-release/src); INET_LIB_DIR=$(echo $INET_ROOT/out/*-release/src); fi""",
+                r"""echo $OMNET_UTILS_LIB_DIR && cd src && opp_makemake -f --deep -o ptp_simulation -I$INET_ROOT/src -I$OMNET_UTILS_ROOT/src \
+                    -I$OMNET_UTILS_ROOT/src/Callable -I$OMNET_UTILS_ROOT/src/Channels -I$OMNET_UTILS_ROOT/src/Channels/VolatileDelayChannel \
+                    -I$OMNET_UTILS_ROOT/src/DynamicSignals -I$OMNET_UTILS_ROOT/src/InitBase -I$OMNET_UTILS_ROOT/src/ParameterParser \
+                    -KINET_PROJ=$INET_ROOT -DINET_IMPORT -I$INET_ROOT/src/ -I$INET_ROOT/src/applications -I$INET_ROOT/src/applications/common \
+                    -I$INET_ROOT/src/applications/dhcp -I$INET_ROOT/src/applications/ethernet -I$INET_ROOT/src/applications/generic \
+                    -I$INET_ROOT/src/applications/httptools -I$INET_ROOT/src/applications/netperfmeter -I$INET_ROOT/src/applications/pingapp \
+                    -I$INET_ROOT/src/applications/rtpapp -I$INET_ROOT/src/applications/sctpapp -I$INET_ROOT/src/applications/tcpapp \
+                    -I$INET_ROOT/src/applications/traci -I$INET_ROOT/src/applications/udpapp -I$INET_ROOT/src/applications/voip -I$INET_ROOT/src/base \
+                    -I$INET_ROOT/src/battery -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/linklayer -I$INET_ROOT/src/linklayer/common \
+                    -I$INET_ROOT/src/linklayer/configurator -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/linklayer/ethernet \
+                    -I$INET_ROOT/src/linklayer/ethernet/switch -I$INET_ROOT/src/linklayer/ext -I$INET_ROOT/src/linklayer/idealwireless \
+                    -I$INET_ROOT/src/linklayer/ieee80211 -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/linklayer/ieee80211/mgmt \
+                    -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -I$INET_ROOT/src/linklayer/ieee8021d \
+                    -I$INET_ROOT/src/linklayer/ieee8021d/common -I$INET_ROOT/src/linklayer/ieee8021d/relay -I$INET_ROOT/src/linklayer/ieee8021d/rstp \
+                    -I$INET_ROOT/src/linklayer/ieee8021d/stp -I$INET_ROOT/src/linklayer/ieee8021d/tester -I$INET_ROOT/src/linklayer/loopback \
+                    -I$INET_ROOT/src/linklayer/ppp -I$INET_ROOT/src/linklayer/queue -I$INET_ROOT/src/linklayer/radio \
+                    -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src/mobility -I$INET_ROOT/src/mobility/common \
+                    -I$INET_ROOT/src/mobility/contract -I$INET_ROOT/src/mobility/group -I$INET_ROOT/src/mobility/single \
+                    -I$INET_ROOT/src/mobility/static -I$INET_ROOT/src/networklayer -I$INET_ROOT/src/networklayer/arp \
+                    -I$INET_ROOT/src/networklayer/autorouting -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/networklayer/autorouting/ipv6 \
+                    -I$INET_ROOT/src/networklayer/bgpv4 -I$INET_ROOT/src/networklayer/bgpv4/BGPMessage -I$INET_ROOT/src/networklayer/common \
+                    -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/networklayer/diffserv -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/networklayer/internetcloud \
+                    -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/networklayer/ldp \
+                    -I$INET_ROOT/src/networklayer/manetrouting -I$INET_ROOT/src/networklayer/manetrouting/aodv-uu -I$INET_ROOT/src/networklayer/manetrouting/aodv-uu/aodv-uu \
+                    -I$INET_ROOT/src/networklayer/manetrouting/base -I$INET_ROOT/src/networklayer/manetrouting/batman -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand \
+                    -I$INET_ROOT/src/networklayer/manetrouting/batman/batmand/orig -I$INET_ROOT/src/networklayer/manetrouting/dsdv -I$INET_ROOT/src/networklayer/manetrouting/dsr \
+                    -I$INET_ROOT/src/networklayer/manetrouting/dsr/dsr-uu -I$INET_ROOT/src/networklayer/manetrouting/dymo -I$INET_ROOT/src/networklayer/manetrouting/dymo/dymoum \
+                    -I$INET_ROOT/src/networklayer/manetrouting/dymo_fau -I$INET_ROOT/src/networklayer/manetrouting/olsr -I$INET_ROOT/src/networklayer/mpls -I$INET_ROOT/src/networklayer/ospfv2 \
+                    -I$INET_ROOT/src/networklayer/ospfv2/interface -I$INET_ROOT/src/networklayer/ospfv2/messagehandler -I$INET_ROOT/src/networklayer/ospfv2/neighbor \
+                    -I$INET_ROOT/src/networklayer/ospfv2/router -I$INET_ROOT/src/networklayer/routing -I$INET_ROOT/src/networklayer/routing/aodv -I$INET_ROOT/src/networklayer/routing/dymo \
+                    -I$INET_ROOT/src/networklayer/routing/gpsr -I$INET_ROOT/src/networklayer/routing/rip -I$INET_ROOT/src/networklayer/rsvp_te -I$INET_ROOT/src/networklayer/ted \
+                    -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/nodes -I$INET_ROOT/src/nodes/aodv -I$INET_ROOT/src/nodes/bgp -I$INET_ROOT/src/nodes/dymo -I$INET_ROOT/src/nodes/ethernet \
+                    -I$INET_ROOT/src/nodes/gpsr -I$INET_ROOT/src/nodes/httptools -I$INET_ROOT/src/nodes/inet -I$INET_ROOT/src/nodes/internetcloud -I$INET_ROOT/src/nodes/ipv6 \
+                    -I$INET_ROOT/src/nodes/mpls -I$INET_ROOT/src/nodes/ospfv2 -I$INET_ROOT/src/nodes/rip -I$INET_ROOT/src/nodes/rtp -I$INET_ROOT/src/nodes/wireless \
+                    -I$INET_ROOT/src/nodes/xmipv6 -I$INET_ROOT/src/status -I$INET_ROOT/src/transport -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/transport/rtp \
+                    -I$INET_ROOT/src/transport/rtp/profiles -I$INET_ROOT/src/transport/rtp/profiles/avprofile -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/transport/tcp \
+                    -I$INET_ROOT/src/transport/tcp/flavours -I$INET_ROOT/src/transport/tcp/queues -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/transport/udp -I$INET_ROOT/src/util \
+                    -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/util/headerserializers/headers -I$INET_ROOT/src/util/headerserializers/ipv4 \
+                    -I$INET_ROOT/src/util/headerserializers/ipv4/headers -I$INET_ROOT/src/util/headerserializers/ipv6 -I$INET_ROOT/src/util/headerserializers/ipv6/headers \
+                    -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/util/headerserializers/sctp/headers -I$INET_ROOT/src/util/headerserializers/tcp \
+                    -I$INET_ROOT/src/util/headerserializers/tcp/headers -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/util/headerserializers/udp/headers \
+                    -I$INET_ROOT/src/util/messageprinters -I$INET_ROOT/src/world -I$INET_ROOT/src/world/annotations -I$INET_ROOT/src/world/httptools \
+                    -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/world/scenario -I$INET_ROOT/src/world/traci \
+                    -I$BOOST_INCLUDE \
+                    -I$FFTW_INCLUDE \
+                    -I$LIBPLN_ROOT \
+                    -I$LIBPLN_ROOT/src \
+                    -I$LIBPLN_ROOT/src/DebugTools \
+                    -I$LIBPLN_ROOT/src/Filter \
+                    -I$LIBPLN_ROOT/src/TdEst \
+                    -I$LIBPLN_ROOT/src/TdEst/TdVectorStorage \
+                    -I$LIBPLN_ROOT/src/TdVecGen \
+                    -I$LIBPLN_ROOT/src/TdVecGen/WhiteNoiseGenerator \
+                    -I$LIBPLN_ROOT/src/TdVector \
+                    -I$LIBPLN_ROOT/src/Utils \
+                    -L$FFTW_LIB \
+                    -L$LIBPLN_ROOT/lib/static \
+                    -L$INET_LIB_DIR \
+                    -L$OMNET_UTILS_LIB_DIR \
+                    -linet \
+                    -lfftw3 \
+                    -lPLN \
+                    -lPLN_Examples \
+                    -lomnet_utils \
+                    -DHAS_LIBPLN \
+                && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+            ],
+            "clean_commands": [
+                r"""make clean MODE=$BUILD_MODE""",
+            ],
+        },
+
+        {
+            # needed by libptp
+            "name": "omnet_utils", "version": "1.0",
+            "nix_packages": ["boost"],
+            "required_projects": {"omnetpp": ["4.6.*"]},
+            "description": "Provides useful utilities to be used with the OMNeT++",
+            "download_url": "https://github.com/ptp-sim/OMNeT_Utils/archive/refs/tags/v1.0.tar.gz",
+            "build_commands": [
+                r"""cd src && opp_makemake -f --deep -o omnet_utils --make-so && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+            ],
+            "clean_commands": [
+                r"""cd src && make clean MODE=$BUILD_MODE"""
+            ],
+        },
+
+        {
+            # needed by libptp; only built in release
+            "name": "libpln", "version": "1.0",
+            "nix_packages": ["boost", "cmake", "gcc", "fftw"],
+            "description": "A Library for Efficient Powerlaw Noise Generation",
+            "download_url": "https://github.com/ptp-sim/libPLN/archive/refs/tags/v1.0.tar.gz",
+            "build_commands": [
+                r"""if [ "$BUILD_MODE" = "release" ]; then cmake CMakeLists.txt && make all install SimpleDemo TestBench PLN_Generator -j$NIX_BUILD_CORES MODE=$BUILD_MODE; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'This project is only built in release mode.'; fi""",
+            ],
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "release" ]; then cd Demos/PLN_Generator && ./PLN_Generator; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'This project is only built and tested in release mode.'; fi""",
+            ],
+            "clean_commands": [
+                r"""if [ "$BUILD_MODE" = "release" ]; then make clean; rm lib/static/*; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'No clean needed in debug mode because this project is only built in release mode.'; fi""",
+            ],
+        },
     ]

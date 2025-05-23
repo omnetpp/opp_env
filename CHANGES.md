@@ -1,5 +1,15 @@
 # Changes
 
+## 0.34.0.250523
+
+### opp_env
+
+- allow download_commands to coexist with git_url/download_url in project descriptions
+
+### Database (Frameworks and Models)
+
+- added libptp and its required projects libpln and omnet_utils
+
 ## 0.33.1.250429
 
 ### opp_env

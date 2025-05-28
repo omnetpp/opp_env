@@ -674,7 +674,7 @@ def is_inside_git_working_tree(dir):
 
 class ProjectDescription:
     def __init__(self, name, version, description=None, details=None, warnings=[],
-                 nixos=None, stdenv=None, folder_name=None,
+                 nixos=None, stdenv=None, folder_name=None, varname=None,
                  required_projects={}, nix_packages=[], vars_to_keep=[],
                  download_url=None, git_url=None, git_branch=None, download_commands=[],
                  patch_commands=[], patch_url=None,
@@ -692,6 +692,7 @@ class ProjectDescription:
         self.nixos = nixos
         self.stdenv = stdenv
         self.folder_name = folder_name or name
+        self.varname = varname or ("_" if not name[0].isalpha() else "") + name.upper() + "_ROOT"
         self.required_projects = required_projects
         self.nix_packages = remove_empty(nix_packages)
         self.vars_to_keep = remove_empty(vars_to_keep)
@@ -1481,27 +1482,27 @@ class Workspace:
             export -f {function_name}"""
 
         project_build_function_commands = [
-            make_build_function("build_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.build_commands))
+            make_build_function("build_" + p.name, f"${p.varname}", join_commands(p.build_commands))
             for p in effective_project_descriptions
         ]
 
         project_clean_function_commands = [
-            make_build_function("clean_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.clean_commands))
+            make_build_function("clean_" + p.name, f"${p.varname}", join_commands(p.clean_commands))
             for p in effective_project_descriptions
         ]
 
         project_smoke_test_function_commands = [
-            make_build_function("smoke_test_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.smoke_test_commands if p.smoke_test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No smoke test commands were specified'"]))
+            make_build_function("smoke_test_" + p.name, f"${p.varname}", join_commands(p.smoke_test_commands if p.smoke_test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No smoke test commands were specified'"]))
             for p in effective_project_descriptions
         ]
 
         project_test_function_commands = [
-            make_build_function("test_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.test_commands if p.test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No test commands were specified'"]))
+            make_build_function("test_" + p.name, f"${p.varname}", join_commands(p.test_commands if p.test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No test commands were specified'"]))
             for p in effective_project_descriptions
         ]
 
         project_check_function_commands = [
-            make_check_function("check_" + p.name, p.get_full_name(), f"${p.name.upper()}_ROOT")
+            make_check_function("check_" + p.name, p.get_full_name(), f"${p.varname}")
             for p in effective_project_descriptions
         ]
 
@@ -1547,8 +1548,8 @@ class Workspace:
         project_nix_packages = list({pkg: None for pkg in combined_packages})  # Use a dict to maintain uniqueness
         project_vars_to_keep = sum([p.vars_to_keep for p in effective_project_descriptions], [])
         project_setenv_commands = sum([[f"cd '{self.get_project_root_directory(p)}'", *p.setenv_commands] for p in reversed(effective_project_descriptions)], [])
-        project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={self.get_project_root_directory(p)}" for p in effective_project_descriptions]
-        project_version_environment_variable_assignments = [f"export {p.name.upper()}_VERSION=\"{p.version}\"" for p in effective_project_descriptions]
+        project_root_environment_variable_assignments = [f"export {p.varname}={self.get_project_root_directory(p)}" for p in effective_project_descriptions]
+        project_version_environment_variable_assignments = [f"export {p.varname.replace('_ROOT', '_VERSION')}=\"{p.version}\"" for p in effective_project_descriptions]
 
         # a custom prompt spec to help users distinguish an opp_env shell from a normal terminal session
         prompt = f"\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\\[\\e[01;34m\\]\\w\\[\\e[00m\\]\\$ "

@@ -2596,4 +2596,40 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'No clean needed in debug mode because this project is only built in release mode.'; fi""",
             ],
         },
+
+        {
+            "name": "simu5g_5gtq", "version": "git",
+            "description": "QoS Aware 5G-TSN Simulation Framework",
+            "metadata": {
+                #TODO "catalog_url": "https://omnetpp.org/download-items/5GTQ.html",
+            },
+            "required_projects": {"omnetpp": ["6.0.*"]},
+            "git_url": "https://github.com/tum-esi/5GTQ.git",
+            "git_branch": "main",
+            "patch_commands": [
+                r"""chmod +x inet/bin/inet*""",
+                r"""chmod +x Simu5G/bin/*""",
+                r"""chmod +x tsnfivegcomm/bin/*""",
+            ],
+            "setenv_commands": [
+                r"""cd inet && source setenv && cd -""",
+                r"""cd Simu5G && source setenv -f && cd -""",
+                r"""cd tsnfivegcomm && source setenv -f && cd -""",
+                r"""echo 'HINT: To run 5GTQ simulations, change into the appropriate subfolder of "tsnfivegcomm/simulations/", and run "tsn5g <inifile>".'""",
+            ],
+            "build_commands": [
+                r"""( cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+                r"""( cd Simu5G && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+                r"""( cd tsnfivegcomm && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+            ],
+            "clean_commands": [
+                r"""( cd inet && make makefiles && make clean MODE=$BUILD_MODE )""",
+                r"""( cd Simu5G && make makefiles && make clean MODE=$BUILD_MODE )""",
+                r"""( cd tsnfivegcomm && make makefiles && make clean MODE=$BUILD_MODE )""",
+            ],
+            "smoke_test_commands": [
+                r"""echo No smoke test for 5GTQ""",
+            ],
+        },
+
     ]

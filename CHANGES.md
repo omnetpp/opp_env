@@ -1,5 +1,11 @@
 # Changes
 
+## 0.34.0.250529
+
+### Database (Frameworks and Models)
+
+- added 5GTQ from https://github.com/tum-esi/5GTQ as simu5g_5gtq
+
 ## 0.34.0.250523
 
 ### opp_env

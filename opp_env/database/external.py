@@ -1425,7 +1425,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
             ],
-            "required_projects": {"omnetpp": ["6.1.*"], "inet": ["4.5.4"]},
+            "required_projects": {"omnetpp": ["6.1.*", "6.0.*"], "inet": ["4.5.4", "4.4.2"]},
             "download_url": "https://github.com/inet-framework/openflow/archive/refs/tags/v20250605.tar.gz",
             "patch_commands": [
                 r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o OpenFlow|' Makefile""",

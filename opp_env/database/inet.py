@@ -265,7 +265,7 @@ def get_project_descriptions():
     return [
         *get_all_inet_released_versions(),
         inet_20100323, inet_20061020, # hand-picked time-stamped versions
-        make_inet_project_description("git", ["6.1.*"]),
+        make_inet_project_description("git", ["6.2.*"]),
     ]
 
 inet_20100323 = {

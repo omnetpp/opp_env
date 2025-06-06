@@ -59,7 +59,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "gtk2" if version < "5.2" else "gtk3", # SWT (eclipse 4.7 and up is using gtk3)
         "glib", "glib-networking", "libsecret",
         "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender",
-        "gsettings-desktop-schemas", "webkitgtk", "zlib",
+        "gsettings-desktop-schemas", "zlib",
+        "webkitgtk" if version < "6.2" else "webkitgtk_4_1",
         "stdenv.cc", # required for the CDT discovery mechanism (as it is hardcoded to use gcc/g++)
         "stdenv.cc.cc.lib" if version < "5.2" else None  # for libstdc++.so used by our nativelibs; in 5.2 and up, it's statically linked
     ] if is_ide_supported else []
@@ -92,6 +93,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
     python3package_packages += ["python3Packages.setuptools"] if version >= "6.1" else []
 
+    python3package_packages += ["python3Packages.ipython"] if version >= "6.2" else []
+
     # Unreleased patch versions are produced by downloading the preceding release, then applying the diff downloaded from github.
     base_release_to_actual_version_patch_commands = [] if version == base_version else [
         f"echo 'Patching vanilla omnetpp-{base_version} to {git_branch_or_tag_name} from git...'",
@@ -115,8 +118,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         # patch the simulator executables/IDE/build system if we are in an opp_env shell so later it does not allow running outside of an opp_env shell
         """[ -n "$OPP_ENV_VERSION" ] && sed -i 's/cStaticFlag dummy;/cStaticFlag dummy;\\n    if (!getenv("OPP_ENV_VERSION") || !getenv("OMNETPP_ROOT")) { std::cerr << "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." << std::endl; return 1; }/' """ + ("src/envir/evmain.cc" if version >= "4.2" else "src/envir/main.cc"),
         # set the LD_LIBRARY_PATH in opp_ide (or omnetpp/omnest) so the IDE will be able properly access the required dependencies
-        f"""[ -n "$OPP_ENV_VERSION" ] && sed -i 's|#!/bin/sh|#!/bin/sh\\nexport LD_LIBRARY_PATH="$LD_LIBRARY_PATH{":${pkgs.zlib}/lib" if "zlib" in ide_packages else ""}{":${pkgs.cairo}/lib" if "cairo" in (tcltk_packages + ide_packages) else ""}{":${pkgs.gtk2}/lib" if "gtk2" in ide_packages else ""}{":${pkgs.gtk3}/lib" if "gtk3" in ide_packages else ""}{":${pkgs.glib.out}/lib" if "glib" in ide_packages else ""}{":${pkgs.libsecret}/lib" if "libsecret" in ide_packages else ""}{":${pkgs.webkitgtk}/lib" if "webkitgtk" in ide_packages else ""}{":${pkgs.xorg.libXtst}/lib" if "xorg.libXtst" in ide_packages else ""}{":${pkgs.stdenv.cc.cc.lib}/lib" if "stdenv.cc.cc.lib" in ide_packages else ""}" |' """ + (" src/utils/opp_ide" if version >= "6.0" else " src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
-        """[ -n "$OPP_ENV_VERSION" ] && sed -i 's|#!/bin/sh|#!/bin/sh\\n[ -z $OPP_ENV_VERSION ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
+        f"""[ -n "$OPP_ENV_VERSION" ] && sed -i -E 's|#!/bin/(.*)|#!/bin/\\1\\nexport LD_LIBRARY_PATH="$LD_LIBRARY_PATH{":${pkgs.zlib}/lib" if "zlib" in ide_packages else ""}{":${pkgs.cairo}/lib" if "cairo" in (tcltk_packages + ide_packages) else ""}{":${pkgs.gtk2}/lib" if "gtk2" in ide_packages else ""}{":${pkgs.gtk3}/lib" if "gtk3" in ide_packages else ""}{":${pkgs.glib.out}/lib" if "glib" in ide_packages else ""}{":${pkgs.libsecret}/lib" if "libsecret" in ide_packages else ""}{":${pkgs.webkitgtk}/lib" if "webkitgtk" in ide_packages else ""}{":${pkgs.xorg.libXtst}/lib" if "xorg.libXtst" in ide_packages else ""}{":${pkgs.stdenv.cc.cc.lib}/lib" if "stdenv.cc.cc.lib" in ide_packages else ""}" |' """ + (" src/utils/opp_ide" if version >= "6.0" else " src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
+        """[ -n "$OPP_ENV_VERSION" ] && sed -i -E 's|#!/bin/(.*)|#!/bin/\\1\\n[ -z $OPP_ENV_VERSION ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
         """[ -n "$OPP_ENV_VERSION" ] && sed -i 's/OMNETPP_PRODUCT = @OMNETPP_PRODUCT@/ifndef OPP_ENV_VERSION\\n  $(error This OMNeT++ installation cannot be used outside an opp_env shell.)\\nendif\\nOMNETPP_PRODUCT = @OMNETPP_PRODUCT@/' Makefile.inc.in""" if version >= "4.0" else None,
 
         # disable the IDE launcher scripts on unsupported os/arch
@@ -354,6 +357,7 @@ def get_project_descriptions():
     # and other tools and libraries, and also to have similar setenv scripts.
     released_versions = [
         "6.1.0*",
+        "6.2.0pre1*",
         "6.0.3*", "6.0.2*", "6.0.1", "6.0",
         "5.7.1*", "5.7",
         "5.6.3*", "5.6.2", "5.6.1", "5.6",

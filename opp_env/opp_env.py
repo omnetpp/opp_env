@@ -1531,6 +1531,8 @@ class Workspace:
 
         nixful = not self.nixless
 
+        nixos = self.default_nixos
+        stdenv = self.default_stdenv
         if nixful:
             nixos = Workspace._get_unique_project_attribute(effective_project_descriptions, "nixos", self.default_nixos)
             stdenv = Workspace._get_unique_project_attribute(effective_project_descriptions, "stdenv", self.default_stdenv)
@@ -1652,6 +1654,7 @@ class Workspace:
 
         env = dict(os.environ)
 
+        temp_home = None
         if isolated:
             # some programs prefer the home directory to exist and be writable
             temp_home = tempfile.mkdtemp()
@@ -1674,7 +1677,7 @@ class Workspace:
         result = self._run_command_nixless(nix_develop_command, env=env, suppress_stdout=not interactive and suppress_stdout, check_exitcode=check_exitcode)
 
         # cleanup: remove temporary home dir, as we don't want it to interfere with subsequent sessions
-        if isolated:
+        if isolated and temp_home:
             shutil.rmtree(temp_home)
         return result
 

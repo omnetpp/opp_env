@@ -15,9 +15,9 @@ import platform
 from collections import OrderedDict
 
 # make sure that this run-time version check is in synch with the metadata for python requirement in the project.toml file.
-if sys.version_info < (3,9):
+if sys.version_info < (3,8):
     v = sys.version_info
-    print(f"Python version 3.9 or above is required, the current one is {v.major}.{v.minor}.{v.micro} ({sys.executable}).") # e.g. str.removeprefix()
+    print(f"Python version 3.8 or above is required, the current one is {v.major}.{v.minor}.{v.micro} ({sys.executable}).") # e.g. str.removeprefix()
     sys.exit(1)
 
 _logger = logging.getLogger(__file__)
@@ -298,24 +298,38 @@ def create_arg_parser():
             It expects the file system locations to be passed in via environment variables.
             It is primarily useful for testing purposes.
             """)
-        elif name=="isolated":    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help=
-            """
-            Run in a Nix-based isolated environment from the host operating system. The default is to run non-isolated.
-            Isolated mode means that only programs (or in general, software packages) provided by Nix are accessible in the session,
-            but those installed on the host OS are not. In non-isolated mode, both Nix and host OS programs are available.
-            Non-isolated mode is convenient in an interactive shell session because it lets the user access all their installed software,
-            such as their favorite text editor.
-            However, due to the interference of various library versions in Nix and the host OS, etc, things can break in unexpected ways.
-            """)
-        elif name=="no-isolated": subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=True, help=
-            """
-            Run in a Nix-based isolated environment from the host operating system. The default is to run in an isolated environment.
-            Isolated mode means that only programs (or in general, software packages) provided by Nix are accessible in the session,
-            but those installed on the host OS are not. In non-isolated mode, both Nix and host OS programs are available.
-            Non-isolated mode is convenient in an interactive shell session because it lets the user access all their installed software,
-            such as their favorite text editor.
-            However, due to the interference of various library versions in Nix and the host OS, etc, things can break in unexpected ways.
-            """)
+        elif name=="isolated":
+            group = subparser.add_mutually_exclusive_group()
+            group.add_argument("-i", "--isolated", action='store_true', dest='isolated', help=
+                """
+                Run in a Nix-based isolated environment from the host operating system.
+                Isolated mode means that only programs (or in general, software packages) provided by Nix are accessible in the session,
+                but those installed on the host OS are not. In non-isolated mode, both Nix and host OS programs are available.
+                Non-isolated mode is convenient in an interactive shell session because it lets the user access all their installed software,
+                such as their favorite text editor.
+                However, due to the interference of various library versions in Nix and the host OS, etc, things can break in unexpected ways.
+                """)
+            group.add_argument("--no-isolated", action='store_false', dest='isolated', help=
+                """
+                Run in a non-isolated environment where both Nix and host OS programs are available.
+                """)
+            subparser.set_defaults(isolated=False)
+        elif name=="no-isolated":
+            group = subparser.add_mutually_exclusive_group()
+            group.add_argument("-i", "--isolated", action='store_true', dest='isolated', help=
+                """
+                Run in a Nix-based isolated environment from the host operating system.
+                Isolated mode means that only programs (or in general, software packages) provided by Nix are accessible in the session,
+                but those installed on the host OS are not. In non-isolated mode, both Nix and host OS programs are available.
+                Non-isolated mode is convenient in an interactive shell session because it lets the user access all their installed software,
+                such as their favorite text editor.
+                However, due to the interference of various library versions in Nix and the host OS, etc, things can break in unexpected ways.
+                """)
+            group.add_argument("--no-isolated", action='store_false', dest='isolated', help=
+                """
+                Run in a non-isolated environment where both Nix and host OS programs are available.
+                """)
+            subparser.set_defaults(isolated=True)
         elif name=="add-extra-nix-packages":  subparser.add_argument("--add-extra-nix-packages", dest='extra_nix_packages', action='append', metavar='PACKAGE,...', help=
             """
             Adds extra Nix packages to this *and* all future sessions of this workspace. The value is a comma-separated list of package names,
@@ -335,13 +349,17 @@ def create_arg_parser():
         elif name=="no-build":   subparser.add_argument("--no-build", dest='install_without_build', default=False, action='store_true', help="Do not build the projects after download")
         elif name=="smoke-test": subparser.add_argument("--smoke-test", dest='run_smoke_test', default=False, action='store_true', help="Run a short test to ensure that the project executables are working")
         elif name=="test":       subparser.add_argument("--test", dest='run_test', default=False, action='store_true', help="Run the project's test suite to ensure it is working correctly")
-        elif name=="chdir":      subparser.add_argument("--chdir", action=argparse.BooleanOptionalAction, default="convenience", help=
-            """
-            Whether to change into the workspace directory (--chdir), or stay in the current working directory (--no-chdir).
-            If neither is given, the default action to try doing what is likely the most convenient for the user,
-            which is to change into the root of the (first) project if the current working directory is outside that project's directory tree,
-            and stay in the current directory (inside the project) otherwise.
-            """)
+        elif name=="chdir":
+            group = subparser.add_mutually_exclusive_group()
+            group.add_argument("--chdir", action='store_true', dest='chdir', help=
+                """
+                Change into the workspace directory.
+                """)
+            group.add_argument("--no-chdir", action='store_false', dest='chdir', help=
+                """
+                Stay in the current working directory.
+                """)
+            subparser.set_defaults(chdir="convenience")
         elif name=="chdir@run":  subparser.add_argument("--chdir", default=False, action='store_true', help=
             """
             Change into the workspace directory before running the command.

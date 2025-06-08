@@ -1,5 +1,13 @@
 # Changes
 
+## 0.34.0.250608
+
+### Database (Frameworks and Models)
+
+- omnetpp: added omnetpp 6.2.0pre1 (omnetpp-latest is still omnetpp-6.1.0)
+- inet: added 4.4.2
+- added versions of semi-official openflow; refined project descriptions for openflow4core
+
 ## 0.34.0.250529
 
 ### Database (Frameworks and Models)

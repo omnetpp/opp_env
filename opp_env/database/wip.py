@@ -71,6 +71,107 @@ def get_project_descriptions():
             "clean_commands": [r"""make clean"""],
         },
 
+        {
+            # WIP
+            # builds; segfault when running simulations; attemping to load oppsim shared lib more than once in dbg
+            "name": "openflow", "version": "20201016",
+            "description": "OpenFlow Extension for INET Framework",
+            "details": "This version is identical to openflow4core-20240124",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
+            },
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
+            ],
+            "required_projects": {"omnetpp": ["5.5.1"], "inet": ["3.6.6"]},
+            "download_url": "https://github.com/inet-framework/openflow/archive/64d653a38a1fbe2606ba4a679de8a61dd1d6a547.tar.gz",
+            "patch_commands": [
+                r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o OpenFlow|' Makefile""",
+                r"""sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_openflow""",
+                r"""sed -i 's|opp_run_dbg|opp_run|' src/run_openflow""",
+                r"""sed -i 's|DIR/openflow -n|DIR/OpenFlow -n|' src/run_openflow""",    # this is changed so that it matches SDN4CORE
+            ],
+            "setenv_commands": [
+                r"""export INET_PROJ=$INET_ROOT""",
+                r"""export PATH=$PATH:$OPENFLOW_ROOT/src""",
+                r"""export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$OPENFLOW_ROOT/images""",
+                r"""echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"""
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean"""]
+        },
+
+        {
+            # WIP
+            # original version
+            "name": "openflow_allinone", "version": "20130625",
+            "description": "OpenFlow Extension for INET Framework",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
+            },
+            "smoke_test_commands": [
+                "cd $OPENFLOW_ALLINONE_ROOT/inet-2.0.0",
+                "cd examples/ethernet/arptest",
+                "INET_LIB_CASE='inet'",
+                "if [ \"$mode\" = \"debug\" ]; then OPP_BIN=$OPP_RUN_DBG_BIN; INET_DBG_SUFFIX=\"_dbg\"; INET_LIB=$(echo $INET_ROOT/out/*-debug/src/*$INET_LIB_CASE*); fi",
+                "if [ \"$mode\" = \"release\" ]; then OPP_BIN=$OPP_RUN_RELEASE_BIN; INET_DBG_SUFFIX=\"\"; INET_LIB=$(echo $INET_ROOT/out/*-release/src/*$INET_LIB_CASE*); fi",
+                "$OPP_BIN -l $INET_LIB -n $INET_ROOT/examples:.:$INET_ROOT/src -c ARPTest -u Cmdenv --sim-time-limit=10s",
+                # r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                # r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
+            ],
+            "required_projects": {"omnetpp": ["4.2.*"]},
+            "download_url": "https://github.com/lsinfo3/ofomnet/archive/1dc6a22e870f8c73c52a3653ae8eb8ee792395ca.tar.gz",
+            "download_commands": [
+                "mkdir $OPENFLOW_ALLINONE_ROOT/inet-2.0.0",
+                "cd $OPENFLOW_ALLINONE_ROOT/inet-2.0.0",
+                r"""curl -L -o inet.tar.gz https://github.com/inet-framework/inet/releases/download/v2.0.0/inet-2.0.0-src.tgz --progress-bar""",
+                r"""tar -xzf inet.tar.gz --strip=1""",
+                r"""rm inet.tar.gz""",
+            ],
+            "patch_commands": [
+                "ls",
+                "echo $INET_ROOT",
+                "cd $OPENFLOW_ALLINONE_ROOT/inet-2.0.0",
+                "ls",
+                "OPP_FEATURETOOL=\"$OMNETPP_ROOT/src/utils/opp_featuretool\"",
+                "sed -i 's|info\\[\\]|info[0]|' src/util/headerserializers/sctp/headers/sctp.h",
+                "for f in $(grep -Rls 'defined(linux)'); do sed -i 's|defined(linux)|defined(__linux__)|' $f; done",
+                "sed -i 's/SensitivityList::iterator it = sensitivityList.find(0.0);/SensitivityList::iterator sit = sensitivityList.find(0.0);/' src/linklayer/radio/Radio.cc",
+                "sed -i 's/if (it == sensitivityList.end())/if (sit == sensitivityList.end())/' src/linklayer/radio/Radio.cc",
+                "sed -i 's/\"LL\"/\" LL \"/' src/networklayer/ipv4/RoutingTableRecorder.cc",
+                "sed -i 's/if (vector_cost<=0)/if (vector_cost == NULL)/' src/networklayer/manetrouting/dsr/dsr-uu/path-cache.cc",
+                "sed -i 's/OMNETPP_VERSION < 0x0403/OMNETPP_VERSION < 0x0500/' src/networklayer/manetrouting/aodv/aodv_msg_struct_descriptor.cc",
+                "sed -i 's/OMNETPP_VERSION < 0x0403/OMNETPP_VERSION < 0x0500/' src/util/MessageChecker.cc",
+                "sed -i 's/std::make_pair<Uint128,ProtocolsRoutes>(getAddress(),vect)/std::make_pair((Uint128)getAddress(),vect)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc",
+                "sed -i 's/std::make_pair<Uint128,Uint128>(dst, gtwy)/std::make_pair((Uint128)dst, (Uint128)gtwy)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc",
+                "sed -i 's/std::make_pair<Uint128,Uint128>(destination, nextHop)/std::make_pair((Uint128)destination, (Uint128)nextHop)/' src/networklayer/manetrouting/base/ManetRoutingBase.cc",
+                "sed -i 's/  int groups\\[8\\] = /  unsigned int groups[8] = /' src/networklayer/contract/IPv6Address.cc",
+                "sed -i 's/findGap(int \\*groups/findGap(unsigned int *groups/' src/networklayer/contract/IPv6Address.cc",
+                # r"""cp -v ../neta/resources/patch/INET_21/ManetRoutingBase.cc src/networklayer/manetrouting/base""",
+                # r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o OpenFlow|' Makefile""",
+                r"""sed -i 's/if (ift)/if (ift \&\& par("doRegisterAtIft").boolValue())/' src/linklayer/ethernet/EtherMACBase.cc""",
+                r"""sed -i 's|parameters:|parameters:\n        bool doRegisterAtIft = default(true);|1' src/linklayer/ethernet/EtherMAC.ned src/linklayer/ethernet/EtherMACFullDuplex.ned""",
+                # r"""sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_ROOT/images|' src/run_openflow""",
+                # r"""sed -i 's|DIR/openflow -n|DIR/OpenFlow -n|' src/run_openflow""",    # this is changed so that it matches SDN4CORE
+                "cd $OPENFLOW_ALLINONE_ROOT/openflow",
+                # r"""sed -i 's|||' Makefile""",
+            ],
+            "setenv_commands": [
+                r"""export INET_ROOT=$OPENFLOW_ALLINONE_ROOT/inet-2.0.0""",
+                # r"""export PATH=$PATH:$OPENFLOW_ROOT/src""",
+                # r"""export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$OPENFLOW_ROOT/images""",
+                # r"""echo 'Hint: use the `run_openflow` command to run the examples in the scenarios folder.'"""
+            ],
+            "build_commands": [
+                "cd $INET_ROOT && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
+                r"""cd $OPENFLOW_ALLINONE_ROOT/openflow""",
+                "opp_makemake -f --deep -O out -I$INET_ROOT/src/networklayer/manetrouting/base -I$INET_ROOT/src/transport/tcp_common -I$INET_ROOT/src/networklayer/xmipv6 -I$INET_ROOT/src/util -I$INET_ROOT/src/networklayer/autorouting/ipv4 -I$INET_ROOT/src/networklayer/ipv6 -I$INET_ROOT/src/battery/models -I$INET_ROOT/src/util/headerserializers/udp -I$INET_ROOT/src/linklayer/ethernet -I$INET_ROOT/src/transport/tcp -I$INET_ROOT/src/world/radio -I$INET_ROOT/src/util/headerserializers/ipv4 -I$INET_ROOT/src/linklayer/radio -I$INET_ROOT/src/networklayer/ipv4 -I$INET_ROOT/src/world/powercontrol -I$INET_ROOT/src/networklayer/icmpv6 -I$INET_ROOT/src/linklayer/ieee80211/mgmt -I$INET_ROOT/src/linklayer/contract -I$INET_ROOT/src/util/headerserializers/tcp -I$INET_ROOT/src/transport/contract -I$INET_ROOT/src/networklayer/ipv6tunneling -I$INET_ROOT/src/transport/udp -I$INET_ROOT/src/linklayer/ieee80211/mac -I$INET_ROOT/src/linklayer/radio/propagation -I$INET_ROOT/src -I$INET_ROOT/src/transport/tcp/queues -I$INET_ROOT/src/world/obstacles -I$INET_ROOT/src/networklayer/contract -I$INET_ROOT/src/transport/sctp -I$INET_ROOT/src/util/headerserializers -I$INET_ROOT/src/networklayer/common -I$INET_ROOT/src/mobility -I$INET_ROOT/src/applications/tcpapp -I$INET_ROOT/src/linklayer/ieee80211/radio -I$INET_ROOT/src/networklayer/arp -I$INET_ROOT/src/applications/pingapp -I$INET_ROOT/src/base -I$INET_ROOT/src/util/headerserializers/sctp -I$INET_ROOT/src/linklayer/ieee80211/radio/errormodel -L$(echo $INET_ROOT/out/*-$BUILD_MODE/src) -linet -DINET_IMPORT -KINET_PROJ=$INET_ROOT",
+                "make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+            ],
+            "clean_commands": [r"""make clean"""]
+        },
+
 
                 {
             # WIP - ok

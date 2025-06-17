@@ -245,7 +245,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
         # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS.
         # IT MUST BE A TAG (i.e 22.11) AND NOT A BRANCH (nixos-22.11)
-        "nixos": "22.11" if version < "6.0.0" else "23.05" if version < "6.1.0" else "24.05",
+        "nixos": "22.11" if version < "6.0.0" else "23.05" if version < "6.1.0" else "24.11" if version < "6.2.0" else "25.05",
         "stdenv": None, # defined as default option
         "nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),

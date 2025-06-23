@@ -2722,4 +2722,113 @@ def get_project_descriptions():
             ],
         },
 
+        {
+            "name": "helics_omnetpp", "version": "20230317",
+            "description": "",
+            "metadata": {
+                #TODO "catalog_url": "https://omnetpp.org/download-items/5GTQ.html",
+            },
+            "required_projects": {"omnetpp": ["6.0.*"], "helics": ["3.6.1"]},
+            "download_url": "https://github.com/GMLC-TDC/helics-omnetpp/archive/d7bb14be75351fdb4d3feaf33b08041a6865d8c3.tar.gz",
+            "download_commands": [
+                # "curl -L -o helics.src.tgz https://github.com/GMLC-TDC/HELICS/releases/download/v3.1.2/Helics-shared-3.1.2-Linux-x86_64.tar.gz --progress-bar",
+                # "tar -xzf helics.src.tgz"
+            ],
+            "patch_commands": [
+                r"""sed -i 's|ValueFederate.h|ValueFederate.hpp|g' example2/helics-hypercube/*.cc""",
+                "rm -r example3*",
+                # r"""chmod +x inet/bin/inet*""",
+                # r"""chmod +x Simu5G/bin/*""",
+                # r"""chmod +x tsnfivegcomm/bin/*""",
+            ],
+            "setenv_commands": [
+                # r"""cd inet && source setenv && cd -""",
+                # r"""cd Simu5G && source setenv -f && cd -""",
+                # r"""cd tsnfivegcomm && source setenv -f && cd -""",
+                # r"""echo 'HINT: To run 5GTQ simulations, change into the appropriate subfolder of "tsnfivegcomm/simulations/", and run "tsn5g <inifile>".'""",
+            ],
+            "build_commands": [
+                "opp_makemake -f --deep -I$HELICS_ROOT/include -I$HELICS_ROOT/include/helics -I$HELICS_ROOT/include/helics/cpp98 -L/home/user/opp_env_workspace_standalone_2/helics-3.6.1/lib64 -lhelics -I$HELICS_OMNETPP_ROOT/example2 -I$HELICS_OMNETPP_ROOT/example1",
+                "make",
+                # r"""( cd Simu5G && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+                # r"""( cd tsnfivegcomm && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+            ],
+            "clean_commands": [
+                # r"""( cd inet && make makefiles && make clean MODE=$BUILD_MODE )""",
+                # r"""( cd Simu5G && make makefiles && make clean MODE=$BUILD_MODE )""",
+                # r"""( cd tsnfivegcomm && make makefiles && make clean MODE=$BUILD_MODE )""",
+            ],
+            "smoke_test_commands": [
+                r"""echo No smoke test for 5GTQ""",
+            ],
+        },
+
+        {
+            "name": "helics", "version": "3.6.1",
+            "description": "",
+            "metadata": {
+                #TODO "catalog_url": "https://omnetpp.org/download-items/5GTQ.html",
+            },
+            "required_projects": {},
+            "nix_packages": ["boost", "zeromq"],
+            "download_url": "https://github.com/GMLC-TDC/HELICS/releases/download/v3.6.1/Helics-shared-3.6.1-Linux-x86_64.tar.gz",
+            "patch_commands": [
+                # r"""chmod +x inet/bin/inet*""",
+                # r"""chmod +x Simu5G/bin/*""",
+                # r"""chmod +x tsnfivegcomm/bin/*""",
+            ],
+            "setenv_commands": [
+                # r"""cd inet && source setenv && cd -""",
+                # r"""cd Simu5G && source setenv -f && cd -""",
+                # r"""cd tsnfivegcomm && source setenv -f && cd -""",
+                # r"""echo 'HINT: To run 5GTQ simulations, change into the appropriate subfolder of "tsnfivegcomm/simulations/", and run "tsn5g <inifile>".'""",
+            ],
+            "build_commands": [
+                # r"""( cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+                # r"""( cd Simu5G && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+                # r"""( cd tsnfivegcomm && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+            ],
+            "clean_commands": [
+                # r"""( cd inet && make makefiles && make clean MODE=$BUILD_MODE )""",
+                # r"""( cd Simu5G && make makefiles && make clean MODE=$BUILD_MODE )""",
+                # r"""( cd tsnfivegcomm && make makefiles && make clean MODE=$BUILD_MODE )""",
+            ],
+            "smoke_test_commands": [
+                r"""echo No smoke test for 5GTQ""",
+            ],
+        },
+
+        {
+            "name": "helics", "version": "3.1.2",
+            "description": "",
+            "metadata": {
+                #TODO "catalog_url": "https://omnetpp.org/download-items/5GTQ.html",
+            },
+            "required_projects": {},
+            "download_url": "https://github.com/GMLC-TDC/HELICS/releases/download/v3.1.2/Helics-shared-3.1.2-Linux-x86_64.tar.gz",
+            "patch_commands": [
+                # r"""chmod +x inet/bin/inet*""",
+                # r"""chmod +x Simu5G/bin/*""",
+                # r"""chmod +x tsnfivegcomm/bin/*""",
+            ],
+            "setenv_commands": [
+                # r"""cd inet && source setenv && cd -""",
+                # r"""cd Simu5G && source setenv -f && cd -""",
+                # r"""cd tsnfivegcomm && source setenv -f && cd -""",
+                # r"""echo 'HINT: To run 5GTQ simulations, change into the appropriate subfolder of "tsnfivegcomm/simulations/", and run "tsn5g <inifile>".'""",
+            ],
+            "build_commands": [
+                # r"""( cd inet && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+                # r"""( cd Simu5G && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+                # r"""( cd tsnfivegcomm && make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE )""",
+            ],
+            "clean_commands": [
+                # r"""( cd inet && make makefiles && make clean MODE=$BUILD_MODE )""",
+                # r"""( cd Simu5G && make makefiles && make clean MODE=$BUILD_MODE )""",
+                # r"""( cd tsnfivegcomm && make makefiles && make clean MODE=$BUILD_MODE )""",
+            ],
+            "smoke_test_commands": [
+                r"""echo No smoke test for 5GTQ""",
+            ],
+        },
     ]

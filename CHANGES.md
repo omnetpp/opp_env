@@ -1,11 +1,17 @@
 # Changes
 
+## 0.34.0.250623
+
+### Database (Frameworks and Models)
+
+- added inbaverSim, from https://github.com/ComNets-Bremen/inbaverSim
+
 ## 0.34.0.250617
 
 ### Database (Frameworks and Models)
 
-- omnetpp: installation of omnet 6.1.0 on macOS was failing because of a broken
-  numpy package in nixos 24.05. Moved OMNeT++ 6.1.0 to use nixos 24.11 insetad of 24.04
+- omnetpp: installation of omnetpp-6.1.0 on macOS was failing because of a broken
+  numpy package in nixos 24.05. Moved omnetpp-6.1.0 to use nixos 24.11 instead
 - omnetpp: the 6.2.1pre1 version is now using nixos 25.05
 
 ## 0.34.0.250608

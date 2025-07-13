@@ -69,7 +69,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
-    qt_packages = ["qt5.qtbase", "qt5.qtsvg", "qt5.qtwayland" if is_linux else None] if version >= "5.0" else []
+    qt_packages = ["qt6.qtbase", "qt6.qtsvg", "qt6.qtwayland" if is_linux else None] if version >= "6.2" else ["qt5.qtbase", "qt5.qtsvg", "qt5.qtwayland" if is_linux else None] if version >= "5.0" else []
 
     # The default Tcl/Tk version in Nix is 8.6, and that's OK with most of our releases.
     # However, early 4.x versions don't compile with Tcl 8.6 because no longer supports "interp->result" in the C API, so they need version 8.5.
@@ -91,9 +91,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # note: "python3Packages.pyqt5" are needed by matplotlib in opp_charttool
     python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc", "python3Packages.pyqt5"] if version >= "6.0" else []
 
-    python3package_packages += ["python3Packages.setuptools"] if version >= "6.1" else []
-
-    python3package_packages += ["python3Packages.ipython"] if version >= "6.2" else []
+    python3package_packages += [] if version < "6.0" else ["python3Packages.setuptools"] if version < "6.2" else ["python3Packages.packaging", "python3Packages.ipython"]
 
     # Unreleased patch versions are produced by downloading the preceding release, then applying the diff downloaded from github.
     base_release_to_actual_version_patch_commands = [] if version == base_version else [
@@ -212,6 +210,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i 's|^WITH_TKENV=yes|WITH_TKENV=no|' configure.user" if version >= "5.0" and version < "6.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkenv is not supported
         f"sed -i '/^PERL =/i CFLAGS += {extra_cflags}' Makefile.inc.in" if extra_cflags and version >= "4.0" else  # no Makefile.inc.in in 3.x yet
         f"sed -i 's/^CFLAGS=.*/CFLAGS=\\\"-O2 -DNDEBUG=1 {extra_cflags}\\\"/' configure.user" if extra_cflags and version < "4.0" else None,  # no Makefile.inc.in in 3.x yet
+        f"sed -i 's/^packaging >=25.0.0/packaging >=24.2/' python/requirements.txt" if version.startswith("6.2") else None, # nixos 25.05 only contains packaging 24.2, but that's also woring fine
 
         # use the opp_env workspace as the default IDE workspace (on 6.1 or later, where auto importing of projects are supported)
         # and copy IDE startup script into it (auto-imports projects)
@@ -356,8 +355,8 @@ def get_project_descriptions():
     # Modernized versions build/work with modern a C++ compiler, bison/flex
     # and other tools and libraries, and also to have similar setenv scripts.
     released_versions = [
+        "6.2.0*",
         "6.1.0*",
-        "6.2.0pre1*",
         "6.0.3*", "6.0.2*", "6.0.1", "6.0",
         "5.7.1*", "5.7",
         "5.6.3*", "5.6.2", "5.6.1", "5.6",

@@ -48,11 +48,11 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
 
 def get_project_descriptions():
     return [ get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versions) for simu5g_version, inet_versions, omnetpp_versions in [
-        ["1.3.0", ["4.5.*"], ["6.1.*"]],
-        ["1.2.3", ["4.5.*"], ["6.1.*"]],
+        ["1.3.0", ["4.5.*"], ["6.2.*", "6.1.*"]],
+        ["1.2.3", ["4.5.*"], ["6.2.*", "6.1.*"]],
         ["1.2.2", ["4.5.*"], ["6.0.*"]],
         ["1.2.1", ["4.4.*"], ["6.0.*"]],
         # ["1.2.0", ["4.3.2"], ["6.0pre10"]], -- unavailable because OMNeT++ prereleases are not kept
         ["1.1.0", ["4.2.*"], ["5.6.*", "5.7.*"]],
-        ["git", ["4.5.*"], ["6.0.*"]],
+        ["git", ["4.5.*"], ["6.2.*", "6.1.*", "6.0.*"]],
     ]]

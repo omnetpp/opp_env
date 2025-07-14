@@ -210,7 +210,6 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i 's|^WITH_TKENV=yes|WITH_TKENV=no|' configure.user" if version >= "5.0" and version < "6.0" and is_macos and is_aarch64 else None, # on macos aarch64, tkenv is not supported
         f"sed -i '/^PERL =/i CFLAGS += {extra_cflags}' Makefile.inc.in" if extra_cflags and version >= "4.0" else  # no Makefile.inc.in in 3.x yet
         f"sed -i 's/^CFLAGS=.*/CFLAGS=\\\"-O2 -DNDEBUG=1 {extra_cflags}\\\"/' configure.user" if extra_cflags and version < "4.0" else None,  # no Makefile.inc.in in 3.x yet
-        f"sed -i 's/^packaging >=25.0.0/packaging >=24.2/' python/requirements.txt" if version.startswith("6.2") else None, # nixos 25.05 only contains packaging 24.2, but that's also woring fine
 
         # use the opp_env workspace as the default IDE workspace (on 6.1 or later, where auto importing of projects are supported)
         # and copy IDE startup script into it (auto-imports projects)

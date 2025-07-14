@@ -1,5 +1,11 @@
 # Changes
 
+## 0.34.0.250714
+
+### Database (Frameworks and Models)
+
+- omnetpp: added omnetpp-6.2.0 (also updated all models to use it if it was supported)
+
 ## 0.34.0.250623
 
 ### Database (Frameworks and Models)

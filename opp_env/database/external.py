@@ -2723,6 +2723,31 @@ def get_project_descriptions():
         },
 
         {
+            "name": "inbaversim", "version": "0.2.0",
+            "description": "OMNeT++ based model framework to simulate CCN based networks. The functionality and the message formats follow the description provided in RFC 8569 and RFC 8609.",
+            "details": "This release integrates an extended forwarder implementation that supports Reflexive Forwarding, enabling efficient CCN-based communication in IoT environments. Also includes multiple application modules designed to utilize these forwarding enhancements.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/inbaverSim.html",
+            },
+            "required_projects": {"omnetpp": ["6.0.*", "6.1.*"], "inet": ["4.5.*"]},
+            "download_url": "https://github.com/ComNets-Bremen/inbaverSim/archive/20c2a1de2ea2491b9a0f788d3b64e96404fc8cab.tar.gz",
+            "setenv_commands": [
+                r"""echo 'HINT: In the `simulations` folder, use the `../src/inbaversim` command to run example simulations. For example: `../src/inbaversim omnetpp-advanced-iot-network.ini -n .:$INBAVERSIM_ROOT/src:$INET_ROOT/src`'""",
+            ],
+            "build_commands": [
+                r"""cd src && opp_makemake -f --deep -o inbaversim -I$INET_ROOT/src -I$OMNETPP_ROOT/src -L$INET_ROOT/src -lINET\$D && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+            ],
+            "clean_commands": [
+                r"""make clean MODE=$BUILD_MODE"""
+            ],
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then export DBG_POSTFIX="_dbg"; fi""",
+                r"""cd simulations""",
+                r"""../src/inbaversim$DBG_POSTFIX omnetpp-advanced-iot-network.ini -n .:$INBAVERSIM_ROOT/src:$INET_ROOT/src -u Cmdenv --sim-time-limit=1000s"""
+             ],
+        },
+
+        {
             "name": "inbaversim", "version": "0.1.0",
             "description": "OMNeT++ based model framework to simulate CCN based networks. The functionality and the message formats follow the description provided in RFC 8569 and RFC 8609.",
             "details": "Initial version of the inbaverSim model framework, designed to simulate Content-Centric Networking (CCN) communications in infrastructure-based network environments. In addition to modeling traditional CCN communication, this version also supports simulations of CCN-based Internet of Things (IoT) scenarios and basic statistical functionality to assist in the preliminary analysis of network performance metrics.",

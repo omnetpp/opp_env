@@ -59,7 +59,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "gtk2" if version < "5.2" else "gtk3", # SWT (eclipse 4.7 and up is using gtk3)
         "glib", "glib-networking", "libsecret",
         "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender",
-        "gsettings-desktop-schemas", "zlib",
+        "adw-gtk3", "gsettings-desktop-schemas", "zlib",
         "webkitgtk" if version < "6.2" else "webkitgtk_4_1",
         "stdenv.cc", # required for the CDT discovery mechanism (as it is hardcoded to use gcc/g++)
         "stdenv.cc.cc.lib" if version < "5.2" else None  # for libstdc++.so used by our nativelibs; in 5.2 and up, it's statically linked
@@ -69,7 +69,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
-    qt_packages = ["qt6.qtbase", "qt6.qtsvg", "qt6.qtwayland" if is_linux else None] if version >= "6.2" else ["qt5.qtbase", "qt5.qtsvg", "qt5.qtwayland" if is_linux else None] if version >= "5.0" else []
+    qt_packages = [] if version < "5.0" else  ["qt5.qtbase", "qt5.qtsvg", "qt5.qtwayland" if is_linux else None] if version < "6.2" \
+                  else ["qt6ct", "adwaita-qt6", "kdePackages.breeze", "qt6.qtbase", "qt6.qtsvg", "qt6.qtwayland" if is_linux else None]
 
     # The default Tcl/Tk version in Nix is 8.6, and that's OK with most of our releases.
     # However, early 4.x versions don't compile with Tcl 8.6 because no longer supports "interp->result" in the C API, so they need version 8.5.
@@ -258,7 +259,14 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.qt5.qtwayland.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if "qt5.qtwayland" in qt_packages else None,
             "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.qt6.qtwayland}/${pkgs.qt6.qtbase.qtPluginPrefix}" if "qt6.qtwayland" in qt_packages else None,
 
+            "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.kdePackages.breeze}/lib/qt-6/plugins" if "kdePackages.breeze" in qt_packages else None,
+            "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.adwaita-qt6}/lib/qt-6/plugins" if "adwaita-qt6" in qt_packages else None,
+            "export QT_QPA_PLATFORMTHEME=qt6ct" if "qt6ct" in qt_packages else None,
+
+            "export GTK_THEME=Adwaita" if "adw-gtk3" in linux_ide_packages else None,
+
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,
+
             "export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"" if "libxml2" in other_packages else None,
             "export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH" if not is_macos else None,
             "export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules" if "gtk3" in ide_packages else None,

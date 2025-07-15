@@ -88,8 +88,10 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     other_packages = ["llvmPackages.bintools", "bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "pkg-config", "ccache", "gnumake42", ("gdb" if not is_macos else None), "vim", ("python3" if version > "5.0" else None)]
 
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
-    # note: "python3Packages.pyqt5" are needed by matplotlib in opp_charttool
-    python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc", "python3Packages.pyqt5"] if version >= "6.0" else []
+    # note: "python3Packages.pyqt*" are needed by matplotlib in opp_charttool
+    python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version >= "6.0" else []
+
+    python3package_packages += [] if version < "6.0" else ["python3Packages.pyqt5"] if version < "6.2" else ["python3Packages.pyqt6"]
 
     python3package_packages += [] if version < "6.0" else ["python3Packages.setuptools"] if version < "6.2" else ["python3Packages.packaging", "python3Packages.ipython"]
 

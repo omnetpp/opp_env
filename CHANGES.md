@@ -7,6 +7,7 @@
 - omnetpp: fixed missing SVG icons in Qtenv (in 6.2.0)
 - omnetpp: added the `qt6ct` tool to the shell (in 6.2.0 only) so it is possible
   to set and configure the themeing of Qtenv.
+- added inbaversim 0.2.0
 
 ## 0.34.0.250714
 

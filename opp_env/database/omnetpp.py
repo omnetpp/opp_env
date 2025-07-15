@@ -203,7 +203,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "sed -i 's|^WITH_LIBXML=no|WITH_LIBXML=yes|' configure.user",  # we can use LIBXML even on later version of OMNeT++ where it is optional
         "sed -i 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
         "sed -i 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
-        "sed -i 's|^WITH_PARSIM=yes|WITH_PARSIM=no|' configure.user",
+        "sed -i 's|^WITH_PARSIM=no|WITH_PARSIM=yes|' configure.user" if version >= "6.0" else None, # NOTE: we need WITH_PARSIM (but not MPI) for the "d" fingerprint ingredient to work
         """sed -i 's|#MPI_LIBS="-lmpi++ -lmpi"   #SGI|#MPI_LIBS="-lmpi++ -lmpi"   #SGI\\nMPI_LIBS="-ldisabled"|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
         """sed -i 's|#include "parsim/cmemcommbuffer.h"|#ifdef WITH_PARSIM\\n#include "parsim/cmemcommbuffer.h"\\n#endif|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,
         """sed -i 's|cMemCommBuffer buffer;|#ifdef WITH_PARSIM\\ncMemCommBuffer buffer;|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,

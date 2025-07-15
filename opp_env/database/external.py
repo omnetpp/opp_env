@@ -2729,7 +2729,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/inbaverSim.html",
             },
-            "required_projects": {"omnetpp": ["6.0.*", "6.1.*"], "inet": ["4.5.*"]},
+            "required_projects": {"omnetpp": ["6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},
             "download_url": "https://github.com/ComNets-Bremen/inbaverSim/archive/20c2a1de2ea2491b9a0f788d3b64e96404fc8cab.tar.gz",
             "setenv_commands": [
                 r"""echo 'HINT: In the `simulations` folder, use the `../src/inbaversim` command to run example simulations. For example: `../src/inbaversim omnetpp-advanced-iot-network.ini -n .:$INBAVERSIM_ROOT/src:$INET_ROOT/src`'""",

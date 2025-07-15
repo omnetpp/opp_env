@@ -249,8 +249,13 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
         "shell_hook_commands": [
             "echo 'Error: This OMNeT++ version (versions <6.0) is not supported on Apple Silicon.' && exit 1 " if is_unsupported_apple_silicon else None,
-            "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if qt_packages else None,
+
+            "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if "qt5.qtbase" in qt_packages else None,
+            "export QT_PLUGIN_PATH=${pkgs.qt6.qtbase}/${pkgs.qt6.qtbase.qtPluginPrefix}:${pkgs.qt6.qtsvg}/${pkgs.qt6.qtbase.qtPluginPrefix}" if "qt6.qtbase" in qt_packages else None,
+
             "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.qt5.qtwayland.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if "qt5.qtwayland" in qt_packages else None,
+            "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.qt6.qtwayland}/${pkgs.qt6.qtbase.qtPluginPrefix}" if "qt6.qtwayland" in qt_packages else None,
+
             "export QT_XCB_GL_INTEGRATION=''${QT_XCB_GL_INTEGRATION:-none}  # disable GL support as NIX does not play nicely with OpenGL (except on nixOS)" if qt_packages else None,
             "export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"" if "libxml2" in other_packages else None,
             "export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH" if not is_macos else None,

@@ -8,6 +8,7 @@
 - omnetpp: added the `qt6ct` tool to the shell (in 6.2.0 only) so it is possible
   to set and configure the themeing of Qtenv.
 - omnetpp: projects not installed by opp_env are no longer closed when the IDE is started.
+- omnetpp: on 6.0 and later, the PARSIM support is enabled 
 - added inbaversim 0.2.0
 
 ## 0.34.0.250714

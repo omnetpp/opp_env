@@ -57,7 +57,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     linux_ide_packages = [
         "graphviz", "doxygen", # required for NED doc builder
         "gtk2" if version < "5.2" else "gtk3", # SWT (eclipse 4.7 and up is using gtk3)
-        "glib", "glib-networking", "libsecret",
+        "glib", "gdk-pixbuf", "adwaita-icon-theme", "shared-mime-info",
+        "glib-networking", "libsecret",
         "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender",
         "gsettings-desktop-schemas", "zlib",
         "webkitgtk" if version < "6.2" else "webkitgtk_4_1",
@@ -254,6 +255,11 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
             "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if "qt5.qtbase" in qt_packages else None,
             "export QT_PLUGIN_PATH=${pkgs.qt6.qtbase}/${pkgs.qt6.qtbase.qtPluginPrefix}:${pkgs.qt6.qtsvg}/${pkgs.qt6.qtbase.qtPluginPrefix}" if "qt6.qtbase" in qt_packages else None,
+
+            """
+            export GDK_PIXBUF_MODULE_FILE="${pkgs.gdk-pixbuf}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+            export XDG_DATA_DIRS="${pkgs.adwaita-icon-theme}/share:${pkgs.shared-mime-info}/share:$XDG_DATA_DIRS"
+            """,
 
             "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.qt5.qtwayland.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if "qt5.qtwayland" in qt_packages else None,
             "export QT_PLUGIN_PATH=$QT_PLUGIN_PATH:${pkgs.qt6.qtwayland}/${pkgs.qt6.qtbase.qtPluginPrefix}" if "qt6.qtwayland" in qt_packages else None,

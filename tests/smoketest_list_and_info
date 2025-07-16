@@ -74,7 +74,7 @@ assert_contains_line 'afdx  * Avionics Full-Duplex Switched Ethernet model for O
 assert_contains_line 'ansa  * Automated Network Simulation and Analysis'
 
 run opp_env list --aliases
-assert_num_lines 165 181
+assert_num_lines 185 250
 assert_contains_line 'omnetpp-5 -> omnetpp-5.7.1'
 assert_contains_line 'omnetpp-5.7 -> omnetpp-5.7.1'
 assert_contains_line 'omnetpp-5.6 -> omnetpp-5.6.3'
@@ -123,18 +123,18 @@ assert_num_lines 6
 assert_contains_line 'simu5g-1.2.2 inet-4.5.4 omnetpp-6.0.3'
 assert_contains_line 'simu5g-1.2.1 inet-4.4.2 omnetpp-6.0.3'
 assert_contains_line 'simu5g-1.1.0 inet-4.2.10 omnetpp-5.7.1'
-assert_contains_line 'simu5g-git inet-4.5.4 omnetpp-6.0.3'
+assert_contains_line 'simu5g-git inet-4.5.4 omnetpp-6.2.0'
 assert_not_contains ' omnetpp-6.0.2'  # because it only offers the latest patchlevel of 6.0, 6.0.3
 
 run opp_env list --expand simu5g veins
 assert_num_lines 12 18
-assert_contains_line 'veins-git simu5g-1.3.0 inet-4.5.4 omnetpp-6.1.0'
-assert_contains_line 'veins-git simu5g-1.2.3 inet-4.5.4 omnetpp-6.1.0'
+assert_contains_line 'veins-git simu5g-1.3.0 inet-4.5.4 omnetpp-6.2.0'
+assert_contains_line 'veins-git simu5g-1.2.3 inet-4.5.4 omnetpp-6.2.0'
 assert_contains_line 'veins-git simu5g-1.2.2 inet-4.5.4 omnetpp-6.0.3'
 assert_contains_line 'veins-git simu5g-1.2.1 inet-4.4.1 omnetpp-6.0.3'
 assert_contains_line 'veins-5.2 simu5g-1.1.0 inet-4.2.8 omnetpp-5.7.1'
 assert_contains_line 'veins-git simu5g-1.1.0 inet-4.2.8 omnetpp-5.7.1'
-assert_contains_line 'veins-git simu5g-git inet-4.5.4 omnetpp-6.0.3'
+assert_contains_line 'veins-git simu5g-git inet-4.5.4 omnetpp-6.2.0'
 
 run opp_env list --expand simu5g veins-5
 assert_contains_line 'veins-5.2 simu5g-1.1.0 inet-4.2.8 omnetpp-5.7.1'
@@ -152,7 +152,7 @@ assert_contains_line 'inet-4.5.1 omnetpp-6.0.0'
 assert_contains_line 'inet-4.5.0 omnetpp-6.0.3'
 
 run opp_env list --expand-all simu5g
-assert_num_lines 78 92
+assert_num_lines 96 120
 assert_contains_line 'simu5g-1.2.3 inet-4.5.4 omnetpp-6.1.0'
 assert_contains_line 'simu5g-1.2.2 inet-4.5.4 omnetpp-6.0.3'
 assert_contains_line 'simu5g-1.2.2 inet-4.5.1 omnetpp-6.0.3'
@@ -176,7 +176,7 @@ assert_contains_line 'simu5g-1.2.1 inet-4.4.1 omnetpp-6.0.0'
 assert_contains_line 'simu5g-1.2.1 inet-4.4.0 omnetpp-6.0.0'
 
 run opp_env list --expand-all simu5g veins-5
-assert_num_lines 100 168
+assert_num_lines 176 200
 assert_contains_line 'veins-5.2 simu5g-1.1.0 inet-4.2.8 omnetpp-5.7.1'
 assert_contains_line 'veins-5.2 simu5g-1.1.0 inet-4.2.5 omnetpp-5.7.1'
 assert_contains_line 'veins-5.2 simu5g-1.1.0 inet-4.2.4 omnetpp-5.7.1'

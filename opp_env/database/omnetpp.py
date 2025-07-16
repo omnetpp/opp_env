@@ -70,7 +70,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
     qt_packages = [] if version < "5.0" else  ["qt5.qtbase", "qt5.qtsvg", "qt5.qtwayland" if is_linux else None] if version < "6.2" \
-                  else ["qt6ct", "adwaita-qt6", "kdePackages.breeze", "qt6.qtbase", "qt6.qtsvg", "qt6.qtwayland" if is_linux else None]
+                  else ["qt6.qtbase", "qt6.qtsvg"] + (["qt6.qtwayland", "qt6ct", "adwaita-qt6", "kdePackages.breeze"] if is_linux else [])
 
     # The default Tcl/Tk version in Nix is 8.6, and that's OK with most of our releases.
     # However, early 4.x versions don't compile with Tcl 8.6 because no longer supports "interp->result" in the C API, so they need version 8.5.

@@ -6,7 +6,7 @@ echo "Welcome to the OMNeT++ WSL distribution (opp_env)."
 echo
 echo "1) Install the latest version of OMNeT++ (opp_env install omnetpp-latest)"
 echo "2) Install the latest version of INET Framework and OMNeT++ (opp_env install inet-latest)"
-echo "3) Do not install anything for now."
+echo "3) Install models and/or OMNeT++ manually."
 echo
 read -p "Please choose an option (1-3): " choice
 
@@ -18,6 +18,6 @@ case $choice in
         sudo --user opp_env -- /bin/bash -c 'cd ; source .profile ; opp_env install inet-latest' || exit 1
         ;;
     *)
-        echo "Models can be installed later using the 'opp_env install model-version' command."
+        echo "Models can be installed using the 'opp_env install <name>-<version>' command (e.g. omnetpp-6.0.3 or inet-4.4)."
         ;;
 esac

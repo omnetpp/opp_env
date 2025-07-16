@@ -11,7 +11,7 @@
     let
       pkgs = import nixpkgs { inherit system; };
       pname = "opp_env";
-      version = "0.31.2.241127"; # Latest released version. Must be updated regularly.
+      version = "0.35.0.250716"; # Latest released version. Must be updated regularly.
       githash = self.shortRev or "dirty";
       timestamp = nixpkgs.lib.substring 0 8 self.lastModifiedDate;
       gversion = "${githash}.${timestamp}";
@@ -21,7 +21,7 @@
           inherit pname version;
           src = pkgs.python3Packages.fetchPypi {
             inherit pname version;
-            hash = "sha256-IzXZN0jA0xgKQWj/e3IJxpByHSbsJ5riXu+w0QcujAg=";
+            hash = "sha256-9JCXtZ4uv6hy2sYnL5c6hMGtYtdQ2MUbb1dXJzix0vo=";
           };
         };
 

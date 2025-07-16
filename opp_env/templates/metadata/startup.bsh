@@ -33,11 +33,19 @@ void importAndOpenProject(String projectName, String[] referencedProjectNames) {
 void closeOtherProjects(ArrayList projectNames) {
     workspace = org.eclipse.core.resources.ResourcesPlugin.getWorkspace();
     workspaceProjects = workspace.getRoot().getProjects();
-    for (int j = 0; j < workspaceProjects.length; j++)
+    for (int j = 0; j < workspaceProjects.length; j++) {
         if (!projectNames.contains(workspaceProjects[j].getName()) && workspaceProjects[j].isOpen()) {
-            //System.out.println("startup.bsh: Closing " + workspaceProjects[j].getName());
-            workspaceProjects[j].close(null);
+            // Check if the project has a .opp_env folder in its root
+            org.eclipse.core.resources.IProject project = workspaceProjects[j];
+            java.io.File projectRoot = project.getLocation().toFile();
+            java.io.File oppEnvFolder = new java.io.File(projectRoot, ".opp_env");
+            
+            if (oppEnvFolder.exists() && oppEnvFolder.isDirectory()) {
+                //System.out.println("startup.bsh: Closing " + project.getName() + " (has .opp_env folder)");
+                project.close(null);
+            }
         }
+    }
 }
 
 String[] removeItems(String[] array, String prefix) {

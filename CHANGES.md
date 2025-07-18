@@ -1,5 +1,16 @@
 # Changes
 
+
+## 0.35.0.250718
+
+### Database (Frameworks and Models)
+
+- omnetpp: fixed a build error on macOS when brew and nix packages of qt got mixed up
+- omnetpp: fixed build error on macOS with Qt6 frameworks
+- omnetpp: fixed missing package error on macOS
+- omnetpp: fixed MPI detection patch
+- added openflow-20250717
+
 ## 0.35.0.250716
 
 ### Database (Frameworks and Models)

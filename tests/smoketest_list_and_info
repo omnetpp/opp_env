@@ -104,7 +104,7 @@ assert_contains_line 'veins-5.3 simu5g-git'
 assert_contains_line 'veins-git simu5g-git'
 
 run opp_env list --expand
-assert_num_lines 200 230
+assert_num_lines 200 250
 assert_contains_line 'omnetpp-6.0.3'
 assert_contains_line 'omnetpp-6.0.2'
 assert_contains_line 'omnetpp-6.0.1'

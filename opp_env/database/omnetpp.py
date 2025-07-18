@@ -144,6 +144,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         sed -i -e 's|export PIP_PREFIX|#export PIP_PREFIX|' -e 's|export PYTHONNOUSERSITE|#export PYTHONNOUSERSITE|' setenv
         """ if version < "6.1" and is_macos and is_x86_64 else None,
 
+        # turn off brew detection as it interferes with the Nix environment
+        "sed -i -e 's|command -v brew|command -v brew_off|' setenv" if version.startswith("6.1") else None,
+
         # the 6.2.0 version missed this line preventing the build on macOS with Qt6
         r"""sed -i -e 's|-F $QT_INSTALL_LIBS"|-F $QT_INSTALL_LIBS"\n            QT_CFLAGS="-F $QT_INSTALL_LIBS -mmacosx-version-min=12.0"|' configure configure.in""" if version == "6.2.0" else None, # this specific version missed this line preventing the build on macOS with Qt6
 

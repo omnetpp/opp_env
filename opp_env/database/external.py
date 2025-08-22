@@ -2819,4 +2819,34 @@ def get_project_descriptions():
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
 
+        {
+            "name": "gptp_howhangliu2024_paper", "version": "20250219",
+            "required_projects": {"omnetpp": ["6.0.1"]},
+            "description": "Simulation model used in How-Hang Liu's 2024 paper on validating the gPTP model in INET 4.4.",
+            "details": """H. -H. Liu et al., "Improving TSN Simulation Accuracy in OMNeT++: A Hardware-Aligned Approach," in IEEE Access, vol. 12, pp. 79937-79956, 2024, doi: 10.1109/ACCESS.2024.3410109. https://ieeexplore.ieee.org/abstract/document/10549887""",
+            "patch_commands": [
+                r"""git reset --hard 1c7e2be8f8a268602a7c0dd9b9f8470e96b1f1a4"""     # master on 20250219
+            ],
+            "smoke_test_commands": [
+                r"""cd workspace/network_validation/src""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then export INET_GPTP_VALIDATION_PAPER_BIN=$(echo $INET_GPTP_VALIDATION_PAPER_ROOT/workspace/network_validation/out/*-release/src/validation_paper); fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then export INET_GPTP_VALIDATION_PAPER_BIN=$(echo $INET_GPTP_VALIDATION_PAPER_ROOT/workspace/network_validation/out/*-debug/src/validation_paper_dbg); fi""",
+                r"""$INET_GPTP_VALIDATION_PAPER_BIN ../simulations/omnetpp.ini -n ../simulations:../../../inet4.4/src -c Single_switch -u Cmdenv --sim-time-limit=0.5s""",
+            ],
+            "git_url": "https://github.com/5GCampus/omnet-ci",
+            "build_commands": [
+                r"""git submodule update --init --recursive""",
+                r"""mv -n inet_access inet4.4""",
+                r"""cd inet4.4""",
+                r"""source setenv""",
+                r"""make makefiles""",
+                r"""make MODE=$BUILD_MODE -j$NIX_BUILD_CORES""",
+                r"""cd ../workspace/network_validation""",
+                r"""cp Makefile_sim Makefile""",
+                r"""make makefiles""",
+                R"""make MODE=$BUILD_MODE""",
+            ],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
+
     ]

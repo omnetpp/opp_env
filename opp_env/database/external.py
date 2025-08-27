@@ -2754,14 +2754,14 @@ def get_project_descriptions():
         },
 
         {
-            "name": "inbaversim", "version": "0.2.0",
+            "name": "inbaversim", "version": "0.3.0",
             "description": "OMNeT++ based model framework to simulate CCN based networks. The functionality and the message formats follow the description provided in RFC 8569 and RFC 8609.",
             "details": "This release integrates an extended forwarder implementation that supports Reflexive Forwarding, enabling efficient CCN-based communication in IoT environments. Also includes multiple application modules designed to utilize these forwarding enhancements.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/inbaverSim.html",
             },
             "required_projects": {"omnetpp": ["6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},
-            "download_url": "https://github.com/ComNets-Bremen/inbaverSim/archive/20c2a1de2ea2491b9a0f788d3b64e96404fc8cab.tar.gz",
+            "download_url": "https://github.com/ComNets-Bremen/inbaverSim/archive/refs/tags/v0.3.0.tar.gz",
             "setenv_commands": [
                 r"""echo 'HINT: In the `simulations` folder, use the `../src/inbaversim` command to run example simulations. For example: `../src/inbaversim omnetpp-advanced-iot-network.ini -n .:$INBAVERSIM_ROOT/src:$INET_ROOT/src`'""",
             ],

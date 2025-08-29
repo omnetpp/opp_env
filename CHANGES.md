@@ -5,6 +5,7 @@
 
 ### Database (Frameworks and Models)
 
+- omnetpp: added missing lldb package for omnetpp 6.2+
 - simu5g: added 1.3.1 and 1.4.0
 - added inbaversim-0.3.0; removed inbaversim-0.2.0 as it was not a release tag
 - added gptp_howhangliu2024_paper

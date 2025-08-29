@@ -1,5 +1,12 @@
 # Changes
 
+## 0.35.0.250829
+
+### Database (Frameworks and Models)
+
+- omnetpp: added missing lldb package for omnetpp 6.2+
+- added inbaversim-0.3.0
+- added inet_gptp_validation_paper
 
 ## 0.35.0.250718
 

@@ -86,7 +86,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # Later versions (especially >= 4.4) have introduced backward-incompatible changes with pattern rules that are incompatible
     # with older OMNeT++ releases. These issues can even cause mysterious compiler crashes on subsequent builds because of
     # concurrency issues between the message compiler and the compiler.
-    other_packages = ["llvmPackages.bintools", "bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "pkg-config", "ccache", "gnumake42", ("gdb" if not is_macos else None), "vim", ("python3" if version > "5.0" else None)]
+    other_packages = ["llvmPackages.bintools", "bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "pkg-config", "ccache", "gnumake42", "vim"]
+    other_packages += ["python3"] if version > "5.0" else []
+    other_packages += ["lldb"] if version >= "6.2" else ["gdb"] if not is_macos else []
 
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
     # note: "python3Packages.pyqt*" are needed by matplotlib in opp_charttool

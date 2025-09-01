@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>opp_env - Simplifying OMNeT++ Model Installations</title>
+    <meta name="description" content="opp_env is a powerful tool that allows for the easy and automated installation of OMNeT++ simulation frameworks and models, including dependencies like INET Framework and OMNeT++ itself.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>opp_env</h2>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#features" class="nav-link">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#installation" class="nav-link">Installation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#usage" class="nav-link">Usage</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#models" class="nav-link">Models</a>
+                </li>
+                <li class="nav-item">
+                    <a href="https://github.com/omnetpp/opp_env" class="nav-link nav-cta" target="_blank">GitHub</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">Simplifying OMNeT++ Model Installations</h1>
+                <p class="hero-subtitle">opp_env is a powerful tool that allows for the easy and automated installation of OMNeT++ simulation frameworks and models, including dependencies like INET Framework and OMNeT++ itself.</p>
+                <div class="hero-buttons">
+                    <a href="#installation" class="btn btn-primary">Get Started</a>
+                    <a href="https://github.com/omnetpp/opp_env" class="btn btn-secondary" target="_blank">View on GitHub</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="terminal-window">
+                    <div class="terminal-header">
+                        <div class="terminal-buttons">
+                            <span class="terminal-button red"></span>
+                            <span class="terminal-button yellow"></span>
+                            <span class="terminal-button green"></span>
+                        </div>
+                        <div class="terminal-title">Terminal</div>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-command">opp_env install simu5g-latest</span>
+                        </div>
+                        <div class="terminal-line terminal-output">
+                            <span>✓ Installing OMNeT++ 6.0.3...</span>
+                        </div>
+                        <div class="terminal-line terminal-output">
+                            <span>✓ Installing INET 4.5.2...</span>
+                        </div>
+                        <div class="terminal-line terminal-output">
+                            <span>✓ Installing Simu5G 1.2.2...</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-command">opp_env shell</span>
+                        </div>
+                        <div class="terminal-line terminal-output">
+                            <span>Ready to simulate! 🚀</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>The Problem: Manual Installation Hassles</h2>
+                <p>Installing many OMNeT++ models and model frameworks can be tedious and error-prone.</p>
+            </div>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">⚙️</div>
+                    <h3>Version Dependencies</h3>
+                    <p>Models often require specific OMNeT++ versions and dependencies like INET, Veins, or Simu5G in correct versions.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">🔧</div>
+                    <h3>Configuration Complexity</h3>
+                    <p>Adjusting variables in config files, sourcing environment scripts, and importing projects into the IDE.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">🐛</div>
+                    <h3>Compatibility Issues</h3>
+                    <p>Compiling older models can be challenging due to bitrot from compiler and library changes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution-section">
+        <div class="container">
+            <div class="solution-content">
+                <div class="solution-text">
+                    <h2>Enter opp_env</h2>
+                    <p class="solution-intro">We developed <strong>opp_env</strong> to solve these problems automatically.</p>
+                    <ul class="solution-features">
+                        <li>
+                            <span class="feature-icon">📦</span>
+                            <strong>Download and install simulation models</strong>, including the appropriate OMNeT++ version
+                        </li>
+                        <li>
+                            <span class="feature-icon">🖥️</span>
+                            Provide a <strong>ready-to-use shell environment</strong> for running simulations
+                        </li>
+                        <li>
+                            <span class="feature-icon">🔄</span>
+                            Set up a development environment from a remote Git repository
+                        </li>
+                        <li>
+                            <span class="feature-icon">🗃️</span>
+                            Internal database of <strong>over 70 models</strong> for streamlined installations
+                        </li>
+                    </ul>
+                </div>
+                <div class="solution-visual">
+                    <div class="workflow-diagram">
+                        <div class="workflow-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>List Models</h4>
+                                <code>opp_env list</code>
+                            </div>
+                        </div>
+                        <div class="workflow-arrow">→</div>
+                        <div class="workflow-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Install Model</h4>
+                                <code>opp_env install simu5g-latest</code>
+                            </div>
+                        </div>
+                        <div class="workflow-arrow">→</div>
+                        <div class="workflow-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Start Shell</h4>
+                                <code>opp_env shell</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Powerful Features</h2>
+                <p>opp_env provides everything you need for efficient OMNeT++ simulation development</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>Automated Installation</h3>
+                    <p>Automatically installs OMNeT++ simulation frameworks and models with all dependencies resolved.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Reproducible Builds</h3>
+                    <p>Powered by Nix package manager for consistent, isolated, and reproducible installations across machines.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🖥️</div>
+                    <h3>Ready-to-Use Environment</h3>
+                    <p>Easy shell command that sets up a complete environment for working with simulation frameworks.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>Customizable Configuration</h3>
+                    <p>Advanced configuration options for fine-tuned control over the installation process.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Cross-Platform Support</h3>
+                    <p>Supports Linux and macOS systems. Windows 11 support via WSL2.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3>Extensive Model Library</h3>
+                    <p>Access to over 70 simulation models including INET, Veins, SimuLTE, Simu5G, and more.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation Section -->
+    <section id="installation" class="installation-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Installation</h2>
+                <p>Get started with opp_env in just a few simple steps</p>
+            </div>
+            <div class="installation-content">
+                <div class="installation-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Install Nix Package Manager</h3>
+                            <p>opp_env relies on Nix for reproducible builds and dependency management.</p>
+                            <div class="code-block">
+                                <code>curl -L https://nixos.org/nix/install | sh</code>
+                                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Install opp_env</h3>
+                            <p>Install opp_env using pip from PyPI.</p>
+                            <div class="code-block">
+                                <code>pip install opp-env</code>
+                                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Verify Installation</h3>
+                            <p>Check that opp_env is properly installed and working.</p>
+                            <div class="code-block">
+                                <code>opp_env --help</code>
+                                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="installation-note">
+                    <div class="note-icon">💡</div>
+                    <div class="note-content">
+                        <h4>Need detailed instructions?</h4>
+                        <p>Visit the <a href="https://github.com/omnetpp/opp_env/blob/main/INSTALL.md" target="_blank">installation guide</a> for platform-specific instructions and troubleshooting.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Usage Section -->
+    <section id="usage" class="usage-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Usage</h2>
+                <p>Learn how to use opp_env with practical examples</p>
+            </div>
+            <div class="usage-content">
+                <div class="usage-example">
+                    <h3>Quick Start Example</h3>
+                    <p>Here's how to get started with Simu5G in just a few commands:</p>
+                    <div class="terminal-example">
+                        <div class="terminal-header">
+                            <div class="terminal-buttons">
+                                <span class="terminal-button red"></span>
+                                <span class="terminal-button yellow"></span>
+                                <span class="terminal-button green"></span>
+                            </div>
+                        </div>
+                        <div class="terminal-content">
+                            <div class="terminal-line">
+                                <span class="prompt">$</span>
+                                <span class="command">mkdir my_workspace && cd my_workspace</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="prompt">$</span>
+                                <span class="command">opp_env init</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="prompt">$</span>
+                                <span class="command">opp_env install simu5g-latest</span>
+                            </div>
+                            <div class="terminal-line output">
+                                <span>✓ Installing OMNeT++ 6.0.3...</span>
+                            </div>
+                            <div class="terminal-line output">
+                                <span>✓ Installing INET 4.5.2...</span>
+                            </div>
+                            <div class="terminal-line output">
+                                <span>✓ Installing Simu5G 1.2.2...</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="prompt">$</span>
+                                <span class="command">opp_env shell</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="prompt">(opp_env)$</span>
+                                <span class="command">cd simu5g-1.2.2/simulations/NR/standalone</span>
+                            </div>
+                            <div class="terminal-line">
+                                <span class="prompt">(opp_env)$</span>
+                                <span class="command">./run</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="usage-commands">
+                    <h3>Common Commands</h3>
+                    <div class="commands-grid">
+                        <div class="command-card">
+                            <h4>List Available Models</h4>
+                            <div class="code-block">
+                                <code>opp_env list</code>
+                                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            </div>
+                            <p>Shows all available simulation models and their versions.</p>
+                        </div>
+                        <div class="command-card">
+                            <h4>Get Model Information</h4>
+                            <div class="code-block">
+                                <code>opp_env info simu5g-latest</code>
+                                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            </div>
+                            <p>Displays detailed information about a specific model including dependencies.</p>
+                        </div>
+                        <div class="command-card">
+                            <h4>One-Command Setup</h4>
+                            <div class="code-block">
+                                <code>opp_env shell -w my_workspace --init --install simu5g-latest</code>
+                                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            </div>
+                            <p>Creates workspace, installs model, and opens shell in one command.</p>
+                        </div>
+                        <div class="command-card">
+                            <h4>Run Specific Command</h4>
+                            <div class="code-block">
+                                <code>opp_env run simu5g-latest -- ./run</code>
+                                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            </div>
+                            <p>Runs a command in the model environment without opening an interactive shell.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Models Section -->
+    <section id="models" class="models-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Available Models</h2>
+                <p>Access to over 70 simulation models and frameworks</p>
+            </div>
+            <div class="models-content">
+                <div class="models-categories">
+                    <div class="category-card">
+                        <h3>Core Frameworks</h3>
+                        <ul>
+                            <li><strong>OMNeT++</strong> - Discrete event simulation framework</li>
+                            <li><strong>INET</strong> - Internet protocol suite simulation</li>
+                        </ul>
+                    </div>
+                    <div class="category-card">
+                        <h3>Wireless & Mobile</h3>
+                        <ul>
+                            <li><strong>Simu5G</strong> - 5G NR and LTE simulation</li>
+                            <li><strong>Veins</strong> - Vehicular network simulation</li>
+                            <li><strong>SimuLTE</strong> - LTE network simulation</li>
+                            <li><strong>Castalia</strong> - Wireless sensor networks</li>
+                        </ul>
+                    </div>
+                    <div class="category-card">
+                        <h3>Specialized Models</h3>
+                        <ul>
+                            <li><strong>CORE4INET</strong> - Real-time Ethernet</li>
+                            <li><strong>Artery</strong> - V2X communication</li>
+                            <li><strong>Nesting</strong> - TSN simulation</li>
+                            <li><strong>QUISP</strong> - Quantum networks</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="models-note">
+                    <p>Use <code>opp_env list</code> to see the complete list of available models with version numbers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Choose opp_env?</h2>
+            </div>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-number">01</div>
+                    <h3>Save Time</h3>
+                    <p>No more manual dependency hunting or configuration headaches. Get up and running in minutes, not hours.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-number">02</div>
+                    <h3>Avoid Errors</h3>
+                    <p>Eliminate version conflicts and compatibility issues with automated dependency resolution.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-number">03</div>
+                    <h3>Reproducible Results</h3>
+                    <p>Ensure consistent simulation environments across different machines and team members.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-number">04</div>
+                    <h3>Focus on Research</h3>
+                    <p>Spend your time on simulation design and analysis, not on installation and setup.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Simplify Your OMNeT++ Workflow?</h2>
+                <p>Join researchers and developers worldwide who are using opp_env to streamline their simulation projects.</p>
+                <div class="cta-buttons">
+                    <a href="#installation" class="btn btn-primary btn-large">Get Started Now</a>
+                    <a href="https://github.com/omnetpp/opp_env" class="btn btn-secondary btn-large" target="_blank">View Documentation</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>opp_env</h3>
+                    <p>Simplifying OMNeT++ Model Installations</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/omnetpp/opp_env" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/blob/main/INSTALL.md" target="_blank">Installation Guide</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/blob/main/DEVELOP.md" target="_blank">Development Guide</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://omnetpp.org" target="_blank">OMNeT++ Website</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/issues" target="_blank">Report Issues</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/discussions" target="_blank">Discussions</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>License</h4>
+                    <p>Licensed under <a href="https://github.com/omnetpp/opp_env/blob/main/LICENSE" target="_blank">LGPL-3.0</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 OMNeT++ Community. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

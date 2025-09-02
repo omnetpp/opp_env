@@ -307,23 +307,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Accessibility improvements
 document.addEventListener('DOMContentLoaded', function() {
-    // Add skip link for keyboard navigation
-    const skipLink = document.createElement('a');
-    skipLink.href = '#main-content';
-    skipLink.textContent = 'Skip to main content';
-    skipLink.className = 'skip-link';
-    skipLink.style.cssText = `
-        position: absolute;
-        top: -40px;
-        left: 6px;
-        background: #667eea;
-        color: white;
-        padding: 8px;
-        text-decoration: none;
-        border-radius: 4px;
-        z-index: 1001;
-        transition: top 0.3s;
-    `;
     
     skipLink.addEventListener('focus', function() {
         this.style.top = '6px';

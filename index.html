@@ -15,7 +15,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <h2>opp_env</h2>
+                <img height="50pt" src="images/opp_env_logo.svg" alt="opp_env">
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
@@ -220,7 +220,7 @@
     <section id="installation" class="installation-section">
         <div class="container">
             <div class="section-header">
-                <h2>Installation</h2>
+                <h2>Installation on Linux and macOS</h2>
                 <p>Get started with opp_env in just a few simple steps</p>
             </div>
             <div class="installation-content">
@@ -264,6 +264,48 @@
                     <div class="note-content">
                         <h4>Need detailed instructions?</h4>
                         <p>Visit the <a href="https://github.com/omnetpp/opp_env/blob/main/INSTALL.md" target="_blank">installation guide</a> for platform-specific instructions and troubleshooting.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="installation_win" class="installation-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Installation on Windows</h2>
+                <p>Get started with opp_env on with a single command</p>
+            </div>
+            <div class="installation-content">
+                <div class="installation-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Install opp_env using a Windows Subsystem for Linux (WSL) image</h3>
+                            <p>opp_env can be used by <a href="https://github.com/omnetpp/opp_env/releases/download/wsl/opp_env.wsl" target="_blank">downloading</a> and installing a WSL image.</p>
+                            <div class="code-block">
+                                <code>curl.exe -L https://github.com/omnetpp/opp_env/releases/download/wsl/opp_env.wsl | wsl --import opp_env -</code>
+                                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Start the WSL image</h3>
+                            <p>Start the opp_env WSL image.</p>
+                            <div class="code-block">
+                                <code>wsl -d opp_env</code>
+                                <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="installation-note">
+                    <div class="note-icon">💡</div>
+                    <div class="note-content">
+                        <h4>Need detailed instructions?</h4>
+                        <p>Visit the <a href="https://github.com/omnetpp/opp_env/blob/main/INSTALL.md#windows-1011-using-wsl2" target="_blank">installation guide</a> for platform-specific instructions and troubleshooting.</p>
                     </div>
                 </div>
             </div>
@@ -476,7 +518,7 @@
                     <ul>
                         <li><a href="https://omnetpp.org" target="_blank">OMNeT++ Website</a></li>
                         <li><a href="https://github.com/omnetpp/opp_env/issues" target="_blank">Report Issues</a></li>
-                        <li><a href="https://github.com/omnetpp/opp_env/discussions" target="_blank">Discussions</a></li>
+                        <li><a href="https://github.com/omnetpp/omnetpp/discussions/1317" target="_blank">Discussions</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -485,7 +527,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 OMNeT++ Community. All rights reserved.</p>
+                <p>&copy; 2025 OpenSim Ltd. All rights reserved.</p>
             </div>
         </div>
     </footer>

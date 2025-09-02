@@ -551,12 +551,12 @@ section {
     margin-bottom: 0.5rem;
 }
 
-.note-content a {
+a {
     color: #667eea;
     text-decoration: none;
 }
 
-.note-content a:hover {
+a:hover {
     text-decoration: underline;
 }
 

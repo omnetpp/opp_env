@@ -2849,4 +2849,31 @@ def get_project_descriptions():
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
 
+        {
+            "name": "opencams_allinone", "version": "git",
+            "required_projects": {"inet": ["4.2.8"], "omnetpp": ["5.7.1"]},
+            "description": "An open-source connected and automated mobility co-simulation platform.",
+            "details": "OpenCAMS enables synchronized co-simulation by integrating SUMO for traffic flow, CARLA for high-fidelity sensor simulation, and OMNeT++ for network communication. This version downloads its own copy of Veins, and does not use one installed by opp_env.",
+            "patch_commands": [
+                """sed -i "s|'--no-deep-includes', ||" configure subprojects/veins_inet/configure subprojects/veins_inet3/configure""",
+            ],
+            "nix_packages": ["sumo"],
+            "setenv_commands": [
+                'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images:$INET_ROOT/images"',
+                "export SUMO_ROOT=${pkgs.sumo}",
+                "export VEINS_ROOT=$OPENCAMS_ROOT",
+                "source setenv",
+                "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd subprojects/veins_inet && source setenv; else cd subprojects/veins_inet3 && source setenv; fi",
+            ],
+            "smoke_test_commands": [
+            ],
+            "download_url": "https://github.com/minhaj6/carla-sumo-omnetpp-cosim/archive/refs/heads/main.tar.gz",
+            "build_commands": [
+                "./configure && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
+                # this is a hack so that the veins_inet subproject's configure can query the inet version
+                # "cd $INET_ROOT && mkdir -p _scripts && echo '#!/usr/bin/env sh\n\necho $INET_VERSION' > _scripts/get_version && chmod +x _scripts/get_version && cd -",
+                # "if [[ ! ($INET_VERSION < '4.0.0') ]]; then cd subprojects/veins_inet && ./configure --with-inet=$INET_ROOT --with-veins=$OPENCAMS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE; else cd subprojects/veins_inet3 && ./configure --with-inet=$INET_ROOT --with-veins=$OPENCAMS_ROOT && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE; fi",
+             ],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
     ]

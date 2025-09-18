@@ -10,7 +10,7 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
         },
         "required_projects": {"inet": inet_versions, "omnetpp": omnetpp_versions},
         "smoke_test_commands": [
-            "cd simulations/LTE/demo" if simu5g_version >= "1.2.1" else "cd simulations/demo",
+            "cd simulations/demo" if simu5g_version < "1.2.1" else "cd simulations/LTE/demo" if simu5g_version < "1.4.0" else "cd simulations/lte/demo",
             "SIMU5G_EMULATION_ROOT=$SIMU5G_ROOT/emulation" if simu5g_version >= "1.2.1" else "",
             """if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
             """if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX=""; fi""",
@@ -18,7 +18,7 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
         ],
         "patch_commands": [
             "sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile",
-            "sed -i -E 's|^INET_SRC=.*|INET_SRC=$INET_ROOT/src|' bin/simu5g",
+            "sed -i -E 's|^INET_SRC=.*|INET_SRC=$INET_ROOT/src|' bin/simu5g" if simu5g_version < "1.3.1" else "",
             "find . -name omnetpp.ini | xargs -n1 sed -i -E 's|^image-path|#image-path|'", # we use OMNETPP_IMAGE_PATH instead
         ],
         "setenv_commands": [
@@ -48,6 +48,8 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
 
 def get_project_descriptions():
     return [ get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versions) for simu5g_version, inet_versions, omnetpp_versions in [
+        ["1.4.0", ["4.5.*"], ["6.2.*"]],
+        ["1.3.1", ["4.5.*"], ["6.2.*", "6.1.*"]],
         ["1.3.0", ["4.5.*"], ["6.2.*", "6.1.*"]],
         ["1.2.3", ["4.5.*"], ["6.2.*", "6.1.*"]],
         ["1.2.2", ["4.5.*"], ["6.0.*"]],

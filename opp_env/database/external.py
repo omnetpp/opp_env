@@ -619,6 +619,27 @@ def get_project_descriptions():
         },
 
         {
+            "name": "quisp", "version": "20250502",     # last commit of master branch as of time of writing
+            "description": "Quantum Internet Simulation Package",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/QuISP.html",
+            },
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd quisp && ./quisp$BUILD_MODE_SUFFIX simulations/two_nodes.ini -c two_node_MIM -u Cmdenv --sim-time-limit=100s"""
+            ],
+            "required_projects": {"omnetpp": ["6.0.*"]},
+            "git_url": "https://github.com/sfc-aqua/quisp.git",
+            "patch_commands": [
+                r"""git reset --hard 63ff8292f90acde46d69f21172e09b4dadefc432""",    # the releases need git, so we're using a commit of the master branch
+            ],
+            "setenv_commands": [r"""export OMNETPP_IMAGE_PATH=$QUISP_ROOT/quisp/images:$OMNETPP_IMAGE_PATH""",
+                                r"""echo 'Hint: in the quisp folder, use the `./quisp` command to run simulations. For example: `./quisp simulations/two_nodes.ini`'"""],
+            "build_commands": [r"""make eigen && make json && make spdlog && make IMAGE_PATH=quisp/images/ -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
+
+        {
             "name": "quisp", "version": "20230807",     # last commit of master branch as of time of writing
             "description": "Quantum Internet Simulation Package",
             "metadata": {

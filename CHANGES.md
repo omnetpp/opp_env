@@ -1,6 +1,14 @@
 # Changes
 
 
+## 0.35.0.250919
+
+### Database (Frameworks and Models)
+
+- simu5g: added 1.3.1 and 1.4.0
+- added inbaversim-0.3.0; removed inbaversim-0.2.0 as it was not a release tag
+- added gptp_howhangliu2024_paper
+
 ## 0.35.0.250718
 
 ### Database (Frameworks and Models)

@@ -12,11 +12,11 @@ ENV OPP_ENV_LAST_WORKSPACE=/home/${USER}/default_workspace
 SHELL ["/bin/bash", "-c"]
 
 # install dependencies, add the default user to the image, specify the default user for WSL and enable 'sudo'
-RUN apt-get update && apt-get install --no-install-recommends -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recommends -y \
     sudo fontconfig curl gzip git xz-utils ca-certificates python3 python3-pip python3-venv \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* && mkdir -p /usr/lib/wsl; \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* && mkdir -p /usr/lib/wsl && \
     userdel -f --remove ubuntu; \
-    useradd -m -s /bin/bash --uid 1000 -g root ${USER}; echo "${USER}:${USER}" | chpasswd; \
+    useradd -m -s /bin/bash --uid 1000 -g root ${USER}; echo "${USER}:${USER}" | chpasswd && \
     echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers;
 
 # add wsl settings to change mount point and default user in WSL container

@@ -3,7 +3,7 @@ def get_project_descriptions():
         {
             "name": "fico4omnet", "version": "20240124",        # last commit of master branch as of time of writing
             "description": "Fieldbus Communication (CAN and FlexRay)",
-            "details": "Based on nightly build nightly/2024-01-24_15-04-06 from 2024-01-24, representing the master branch state as of that date.",
+            "details": "Based on nightly build nightly/2024-01-24_15-04-06 from 2024-01-24, representing the master branch state as of that date (https://github.com/CoRE-RG/FiCo4OMNeT/releases/tag/nightly/2024-01-24_15-04-06).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/FiCo4OMNeT.html",
             },
@@ -48,7 +48,7 @@ def get_project_descriptions():
         {
             "name": "fico4omnet", "version": "20210113",
             "description": "Fieldbus Communication (CAN and FlexRay)",
-            "details": "Based on nightly build nightly/2021-01-13_00-00-25 from 2021-01-13, representing the master branch state as of that date.",
+            "details": "Based on nightly build nightly/2021-01-13_00-00-25 from 2021-01-13, representing the master branch state as of that date (https://github.com/CoRE-RG/FiCo4OMNeT/releases/tag/nightly/2021-01-13_00-00-25).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/FiCo4OMNeT.html",
             },
@@ -93,6 +93,7 @@ def get_project_descriptions():
         {
             "name": "ansa", "version": "3.4.0",
             "description": "Automated Network Simulation and Analysis",
+            "details": "Based on commit 58982068c3c1efc181631c4edf1e4be4c717a136 from ansainet-3.4.0 branch (https://github.com/kvetak/ANSA/commit/58982068c3c1efc181631c4edf1e4be4c717a136).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ANSA.html",
             },
@@ -140,6 +141,7 @@ def get_project_descriptions():
         {
             "name": "flora", "version": "1.1.0",
             "description": "Framework for LoRa",
+            "details": "Based on Flora v1.1.0 release (https://github.com/florasim/flora/releases/tag/v1.1.0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/FLoRA.html",
             },
@@ -165,7 +167,7 @@ def get_project_descriptions():
         {
             "name": "core4inet", "version": "20240124",
             "description": "Real-Time Ethernet protocols for INET",
-            "details": "Based on nightly build nightly/2024-01-24_15-05-19 from 2024-01-24, representing the master branch state as of that date.",
+            "details": "Based on nightly build nightly/2024-01-24_15-05-19 from 2024-01-24, representing the master branch state as of that date (https://github.com/CoRE-RG/CoRE4INET/releases/tag/nightly/2024-01-24_15-05-19).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Core4INET.html",
             },
@@ -208,6 +210,7 @@ def get_project_descriptions():
         {
             "name": "core4inet", "version": "221109",
             "description": "Real-Time Ethernet protocols for INET",
+            "details": "Based on nightly build nightly/2022-11-09_00-01-11 from 2022-11-09 (https://github.com/CoRE-RG/CoRE4INET/releases/tag/nightly/2022-11-09_00-01-11).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Core4INET.html",
             },
@@ -249,6 +252,7 @@ def get_project_descriptions():
         {
             "name": "simproctc", "version": "2.0.2",
             "description": "Simulation Processing Tool-Chain",
+            "details": "Based on SimProcTC v2.0.2 tag (https://github.com/dreibh/simproctc/releases/tag/simproctc-2.0.2).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SimProcTC.html",
             },
@@ -283,7 +287,7 @@ def get_project_descriptions():
         {
             "name": "hnocs", "version": "20221212",     # last commit of master branch as of time of writing
             "description": "Network on Chip Simulation Framework",
-            "details": "Based on commit 465754c28977a397e8ea4aef9296ca9987eb4f51 from master branch as of 2022-12-12.",
+            "details": "Based on commit 465754c28977a397e8ea4aef9296ca9987eb4f51 from master branch as of 2022-12-12 (https://github.com/yanivbi/HNOCS/commit/465754c28977a397e8ea4aef9296ca9987eb4f51).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/HNOCS.html",
             },
@@ -303,6 +307,7 @@ def get_project_descriptions():
         {
             "name": "nesting", "version": "0.9.1",
             "description": "Network Simulator for Time-Sensitive Networking (TSN)",
+            "details": "Based on NeSTiNg v0.9.1 tag (https://gitlab.com/ipvs/nesting/-/tags/v0.9.1).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/NeSTiNg.html",
             },
@@ -331,6 +336,7 @@ def get_project_descriptions():
             # Castalia ported to omnetpp 5.4
             "name": "castalia", "version": "3.3pr16",
             "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",
+            "details": "Castalia ported to OMNeT++ 5.x, by pull request #16 (https://github.com/boulis/Castalia/pull/16). Based on commit 332902b2cb0eefaf8fd8499839991c0393bef6f7 of the omnetpp54-compatibility branch (https://github.com/rhornig/Castalia/tree/332902b2cb0eefaf8fd8499839991c0393bef6f7).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Castalia.html",
             },
@@ -341,7 +347,7 @@ def get_project_descriptions():
             ],
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.3.*", "5.4.*", "5.6.*", "5.7.*"]},   # with omnetpp-6.0.*, 5.2.*: opp_msgtool: option is no longer supported: --msg4
-            "download_url": "https://github.com/rhornig/Castalia/archive/refs/heads/topic/omnetpp54-compatibility.tar.gz",
+            "download_url": "https://github.com/rhornig/Castalia/archive/332902b2cb0eefaf8fd8499839991c0393bef6f7.tar.gz",
             "setenv_commands": [
                 r"""export PATH=$PATH:$CASTALIA_ROOT/Castalia/bin""",
                 r"""echo 'Hint: Use the `Castalia` command to run the examples in the Simulations folder.'"""
@@ -353,6 +359,7 @@ def get_project_descriptions():
         {
             "name": "castalia", "version": "3.3",
             "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",
+            "details": "Based on Castalia 3.3 tag (https://github.com/boulis/Castalia/releases/tag/3.3).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Castalia.html",
             },
@@ -381,6 +388,7 @@ def get_project_descriptions():
         {
             "name": "castalia", "version": "3.2",
             "description": "Simulator for Wireless Sensor Networks (WSN), Body Area Networks (BAN) and generally networks of low-power embedded devices",
+            "details": "Based on Castalia 3.2 tag (https://github.com/boulis/Castalia/releases/tag/3.2).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Castalia.html",
             },
@@ -408,6 +416,7 @@ def get_project_descriptions():
         {
             "name": "mixim", "version": "2.3",
             "description": "Framework for modeling and simulation of wireless and mobile networks (deprecated in favor of INET)",
+            "details": "Based on MiXiM 2.3 tag (https://github.com/omnetpp-models/mixim/releases/tag/2.3).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/MiXiM.html",
             },
@@ -432,7 +441,6 @@ def get_project_descriptions():
             # TODO: catalog
             "name": "inetgpl", "version": "1.0",
             "description": "GPL licensed models for INET",
-            "details": "Development version from main branch of https://github.com/inet-framework/inet-gpl.git. No specific commit specified - uses latest available code.",
             "metadata": {
             },
             "smoke_test_commands": [
@@ -449,10 +457,11 @@ def get_project_descriptions():
 
         {
             "name": "rspsim", "version": "6.1.3",
+            "description": "Simulation model of the IETF Reliable Server Pooling (RSerPool) architecture",
+            "details": "Based on rspsim-6.1.3 tag (https://github.com/dreibh/rspsim/releases/tag/rspsim-6.1.3).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RSPSIM.html",
             },
-            "description": "Simulation model of the IETF Reliable Server Pooling (RSerPool) architecture",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd model && ./model$BUILD_MODE_SUFFIX test1.ini -u Cmdenv""",
@@ -484,6 +493,8 @@ def get_project_descriptions():
 
         {
             "name": "rspsim", "version": "6.1.2",
+            "description": "Simulation model of the IETF Reliable Server Pooling (RSerPool) architecture",
+            "details": "Based on rspsim-6.1.2 tag (https://github.com/dreibh/rspsim/releases/tag/rspsim-6.1.2).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RSPSIM.html",
             },
@@ -521,7 +532,7 @@ def get_project_descriptions():
             # NOTE - ok; when testing without '-u Cmdenv' -> segfault (but works in Cmdenv)
             "name": "rinasim", "version": "20200903",       # last commit of master branch as of time of writing
             "description": "Recursive InterNetwork Architecture Simulator",
-            "details": "Based on commit eb6baaf1034319245fa9e4b846a61094445c8d8a from master branch as of 2020-09-03.",
+            "details": "Based on commit eb6baaf1034319245fa9e4b846a61094445c8d8a from master branch as of 2020-09-03 (https://github.com/kvetak/RINA/commit/eb6baaf1034319245fa9e4b846a61094445c8d8a).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RINASim.html",
             },
@@ -559,6 +570,7 @@ def get_project_descriptions():
             # NOTE - builds and starts, simulations run, but segfault after some time (tested with inet 2.6, 2.4); only builds release (so only tested in release)
             "name": "ieee802154standalone", "version": "20180310",      # last commit of master branch as of time of writing
             "description": "IEEE 802.15.4-2006 simulation model for OMNeT++ / INET",
+            "details": "Based on commit 28add1dd6a208f9f410f7c5c34631550edd2f371 from master branch as of 2018-03-10 (https://github.com/michaelkirsche/IEEE802154INET-Standalone/commit/28add1dd6a208f9f410f7c5c34631550edd2f371).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/IEEE802154INET-Standalone.html",
             },
@@ -584,6 +596,7 @@ def get_project_descriptions():
         {
             "name": "dctrafficgen", "version": "20181016",      # last commit of master branch as of time of writing
             "description": "Data Center Traffic Generator Library",
+            "details": "Based on commit dcfa2b9df46b1681634a340731d2242e97c10abd from master branch as of 2018-10-16 (https://github.com/Mellanox/DCTrafficGen/commit/dcfa2b9df46b1681634a340731d2242e97c10abd).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/DCTrafficGen.html",
             },
@@ -607,6 +620,7 @@ def get_project_descriptions():
         {
             "name": "afdx", "version": "20220904",      # last commit of master branch as of time of writing
             "description": "Avionics Full-Duplex Switched Ethernet model for OMNeT++",
+            "details": "Based on commit f6ddd70438e1c9ee885a4adef8d2503a5108ade4 from master branch as of 2022-09-04 (https://github.com/badapplexx/AFDX/commit/f6ddd70438e1c9ee885a4adef8d2503a5108ade4).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Afdx.html",
             },
@@ -628,6 +642,7 @@ def get_project_descriptions():
         {
             "name": "quisp", "version": "20250502",     # last commit of master branch as of time of writing
             "description": "Quantum Internet Simulation Package",
+            "details": "Based on commit 63ff8292f90acde46d69f21172e09b4dadefc432 from master branch as of 2025-05-02 (https://github.com/sfc-aqua/quisp/commit/63ff8292f90acde46d69f21172e09b4dadefc432).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/QuISP.html",
             },
@@ -649,6 +664,7 @@ def get_project_descriptions():
         {
             "name": "quisp", "version": "20230807",     # last commit of master branch as of time of writing
             "description": "Quantum Internet Simulation Package",
+            "details": "Based on commit eddfe7ee80535a624987941653c59da2ce138929 from master branch as of 2023-08-07 (https://github.com/sfc-aqua/quisp/commit/eddfe7ee80535a624987941653c59da2ce138929).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/QuISP.html",
             },
@@ -670,6 +686,7 @@ def get_project_descriptions():
         {
             "name": "quisp", "version": "0.3.0",
             "description": "Quantum Internet Simulation Package",
+            "details": "Based on quisp v0.3.0 tag (https://github.com/sfc-aqua/quisp/releases/tag/v0.3.0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/QuISP.html",
             },
@@ -691,6 +708,7 @@ def get_project_descriptions():
         {
             "name": "cell", "version": "20140729",      # last commit of master branch as of time of writing
             "description": "Cell Communication Signaling Project (biological)",
+            "details": "Based on commit 3434cc00f7ab7bfc33b4ff94e3a355df8e6947bb from master branch as of 2014-07-29 (https://github.com/dhuertas/cell-signaling/commit/3434cc00f7ab7bfc33b4ff94e3a355df8e6947bb).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/CellSignaling.html",
             },
@@ -711,6 +729,7 @@ def get_project_descriptions():
         {
             "name": "inetmanet4", "version": "4.0.0",
             "description": "Fork of INET 4.x, extending it with experimental features and protocols, mainly for mobile ad hoc networks, many of which are written by Alfonso Ariza",
+            "details": "Based on INETMANET v4.0.0 release (https://github.com/aarizaq/inetmanet-4.x/releases/tag/v4.0.0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INETMANET-4.x.html",
             },
@@ -734,6 +753,7 @@ def get_project_descriptions():
         {
             "name": "inetmanet3", "version": "3.8.2",
             "description": "Fork of INET 3.x, containing additional adhoc routing protocols and other models written by the community",
+            "details": "Based on commit a206218213f96382217a8653ede21f15974c4e70 from inetmanet-3.8.2 branch (https://github.com/aarizaq/inetmanet-3.x/commit/a206218213f96382217a8653ede21f15974c4e70).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INETMANET-3.x.html",
             },
@@ -758,6 +778,7 @@ def get_project_descriptions():
             # in debug: <!> Model error: ASSERT: condition vect[i]==NULL false in function deleteNetwork, csimulation.cc line 467.
             "name": "oppbsd", "version": "4.0",
             "description": "OppBSD integrates essential parts of the real FreeBSD networking stack into OMNeT++ as a simulation model",
+            "details": "Based on OppBSD 4.0 release (https://github.com/omnetpp-models/archive/releases/tag/archive).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OppBSD-4.0.html",
             },
@@ -782,6 +803,7 @@ def get_project_descriptions():
             # NOTE - release only
             "name": "rease", "version": "20130819",     # last commit of master branch as of time of writing
             "description": "Realistic Simulation Environments for OMNeT++",
+            "details": "Based on commit 3f5cd1fd4373da44592a2a0ef160c22331f41967 from master branch as of 2013-08-19 (https://github.com/ToGaKIT/ReaSE/commit/3f5cd1fd4373da44592a2a0ef160c22331f41967).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ReaSE.html",
             },
@@ -809,6 +831,7 @@ def get_project_descriptions():
             # latest master hash; this version has examples, which the latest release version lacks
             "name": "inet_hnrl", "version": "20170217",
             "description": "Fork of INET developed for hybrid networking research, providing new models in both optical and wireless networking areas and their hybrid.",
+            "details": "Based on commit 857ae37cd233914fd7271584afc4be10bcf75a61 from master branch as of 2017-02-17 (https://github.com/kyeongsoo/inet-hnrl/commit/857ae37cd233914fd7271584afc4be10bcf75a61).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INET-HNRL.html",
             },
@@ -840,6 +863,7 @@ def get_project_descriptions():
         {
             "name": "simcan", "version": "1.2",
             "description": "A simulation platform for modelling and simulating distributes architectures and applications.",
+            "details": "Based on SIMCAN 1.2 archive release (https://github.com/omnetpp-models/archive/releases/tag/archive).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SIMCAN.html",
             },
@@ -870,6 +894,7 @@ def get_project_descriptions():
             # NOTE -> only built and tested in release, because omnetpp 3.3 has no distinct debug/release
             "name": "solarleach", "version": "1.01",
             "description": "A simulation of LEACH (Low-Energy Adaptive Clustering Hierarchy) cluster-based protocol for sensor networks with an extension to make it solar-aware.",
+            "details": "Based on SolarLEACH 1.01 archive release (https://github.com/omnetpp-models/archive/releases/tag/archive).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SolarLEACH.html",
             },
@@ -893,6 +918,7 @@ def get_project_descriptions():
         {
             "name": "stochasticbattery", "version": "20170224",     # last commit of master branch as of time of writing
             "description": "An OMNeT++ simulation for stochastic battery behavior. It implements the Stochastic Battery Model by Chiasserini and Rao.",
+            "details": "Based on commit dd999402a0aa7c88a9f78a3ca23f193b8250a925 from master branch as of 2017-02-24 (https://github.com/brandte/stochastic_battery/commit/dd999402a0aa7c88a9f78a3ca23f193b8250a925).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/StochasticBattery.html",
             },
@@ -916,6 +942,7 @@ def get_project_descriptions():
             # NOTE - should this be a library?
             "name": "chaosmanager", "version": "20221210",      # last commit of master branch as of time of writing
             "description": "An automated hard faul injection tool inspired by Chaos Engineering principles for MANETs. This tool has been tested extensively on LEACH for OMNETPP.",
+            "details": "Based on commit 07272355eb0e8d5fa6216b9dcfb07fcac0a5115b from master branch as of 2022-12-10 (https://github.com/Agr-IoT/WSN-Chaos-Manager/commit/07272355eb0e8d5fa6216b9dcfb07fcac0a5115b).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/WSN-Chaos-Manager.html",
             },
@@ -940,6 +967,7 @@ def get_project_descriptions():
             # UPDATE: this only builds inet release, and links the ops debug with that? should not be done with the bootstrap script but manually?
             "name": "ops_allinone", "version": "20230331",      # last commit of master branch as of time of writing
             "description": "Opportunistic Protocol Simulator. This version downloads its own copy of INET, and does not use one installed by opp_env.",
+            "details": "Based on commit 57ecc379631eec4bb640b022391f2cf808ff09f4 from master branch as of 2023-03-31 (https://github.com/ComNets-Bremen/OPS/commit/57ecc379631eec4bb640b022391f2cf808ff09f4).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OPS.html",
             },
@@ -976,7 +1004,6 @@ def get_project_descriptions():
             # this does not contain examples for swim
             "name": "swim_allinone", "version": "20180221",     # last commit of master branch as of time of writing
             "description": "Small Worlds in Motion (SWIM) mobility model. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
-            "details": "Downloads INET 3.8.3 release and patches it with SWIM mobility model from master branch (moving target - no specific commit specified for SWIM component).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SWIMMobility.html",
             },
@@ -1069,6 +1096,7 @@ def get_project_descriptions():
             # TODO intended to be used as part of inet - this should be its own project
             "name": "can_allinone", "version": "0.1.0",
             "description": "Controller Area Network. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
+            "details": "Based on CAN v0.1.0 release (https://github.com/YutakaMatsubara/can-for-omnet/releases/tag/v0.1.0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/CAN.html",
             },
@@ -1119,7 +1147,7 @@ def get_project_descriptions():
             "name": "lora_icn", "version": "paper",
             "nix_packages": ["docker"],
             "description": "LoRa-ICN, a comprehensive IoT networking system based on a common long-range communication layer (LoRa) combined with Information-Centric Networking (ICN) principles.",
-            "details": "This project contains code and documentation to reproduce experimental results of the paper 'Long-Range ICN for the IoT: Exploring a LoRa System Design' published in Proc. of the IFIP Networking Conference 2022.",
+            "details": "This project contains code and documentation to reproduce experimental results of the paper 'Long-Range ICN for the IoT: Exploring a LoRa System Design' published in Proc. of the IFIP Networking Conference 2022. Based on commit c45a69b23f0fce467242b4c0b71b125bc450a0f0 (https://github.com/inetrg/IFIP-Networking-LoRa-ICN-2022/commit/c45a69b23f0fce467242b4c0b71b125bc450a0f0).",
             # "metadata": {
             #     "catalog_url": "",
             # },
@@ -1147,7 +1175,7 @@ def get_project_descriptions():
         {
             "name": "seapp", "version": "20191230",
             "description": "SEA++ - Simulating Security Attacks",
-            "details": "SEA++ is an attack simulator which helps the user to quantitatively evaluate the impact of security attacks. SEA++ is compatible with both traditional and SDN architectures.",
+            "details": "SEA++ is an attack simulator which helps the user to quantitatively evaluate the impact of security attacks. SEA++ is compatible with both traditional and SDN architectures. Based on commit 75bde5636917610b04e0dcaec21fbd3438063b79 from master branch as of 2019-12-30 (https://github.com/seapp/seapp_stable/commit/75bde5636917610b04e0dcaec21fbd3438063b79).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SEA++.html",
             },
@@ -1190,6 +1218,7 @@ def get_project_descriptions():
             # TODO: enable emulation by default in inet, and use nix inet version?
             "name": "sedencontroller_allinone", "version": "20230305",      # latest commit of master branch as of time of writing
             "description": "sEden Controller",
+            "details": "Based on commit 50d4e9894de018b5c20579b99f423e88677c3c59 from master branch as of 2023-03-05 (https://github.com/swiru95/sEden_Controller/commit/50d4e9894de018b5c20579b99f423e88677c3c59).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SDNController.html",
             },
@@ -1233,6 +1262,7 @@ def get_project_descriptions():
         {
             "name": "gradys", "version": "0.5",
             "description": "A simulation framework developed for the GrADyS (Ground-and-Air Dynamic sensors networkS) project.",
+            "details": "Based on GrADyS v0.5 release (https://github.com/Project-GrADyS/gradys-simulations/releases/tag/v0.5).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/GrADyS.html",
             },
@@ -1258,6 +1288,7 @@ def get_project_descriptions():
         {
             "name": "omnet_tdma", "version": "1.0.2",
             "description": "An abstract TDMA MAC protocol for the INET Framework",
+            "details": "Based on omnet-tdma v1.0.2 release (https://github.com/ComNetsHH/omnet-tdma/releases/tag/v1.0.2).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ComNetsHH-TDMA.html",
             },
@@ -1284,6 +1315,7 @@ def get_project_descriptions():
             # NOTE - some example simulations crash after some time though;
             "name": "opencv2x_veins", "version": "1.4.1",
             "description": "An open source implementation of the 3GPP standard CV2X (Rel 14) Mode 4. This variant integrates with Veins only.",
+            "details": "Based on opencv2x_veins v1.4.1 tag (https://github.com/brianmc95/simulte/releases/tag/v1.4.1).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OpenCV2X.html",
             },
@@ -1324,6 +1356,8 @@ def get_project_descriptions():
         {
             # TODO: LRE_Test.py doesnt work
             "name": "lre_omnet", "version": "1.0.1",
+            "description": "Integration of the Limited Relative Error algorithm into OMNeT++",
+            "details": "Based on commit 683441ac7d72f7c9426120ac0f91bc0c575e4204 from master branch as of 2017-02-17 (https://github.com/ComNetsHH/LRE-OMNeT/commit/683441ac7d72f7c9426120ac0f91bc0c575e4204).",
             "required_projects": {"omnetpp": ["5.4.*"], "inet": ["3.6.8"]},
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/LRE-OMNeT.html",
@@ -1363,6 +1397,7 @@ def get_project_descriptions():
                 "catalog_url": "https://omnetpp.org/download-items/Wifi-Direct.html",
             },
             "description": "INET Framework 3.5, modified to add WiFi Direct functionality.",
+            "details": "Based on WiFi Direct v3.4.0 tag (https://github.com/ashahin1/inet/releases/tag/v3.4.0).",
             "smoke_test_commands": [
                 # This projects doesn't contain any example simulations, so we test the project lib with an INET example
                 r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; WIFIDIRECT_ALLINONE_LIB=$(echo $WIFIDIRECT_ALLINONE_ROOT/out/*-release/src/*INET*); fi""",
@@ -1387,6 +1422,7 @@ def get_project_descriptions():
             # NOTE - we only build (and test) this in release
             "name": "libara_allinone", "version": "20150402",       # last commit of master branch as of time of writing
             "description": "Routing algorithms based on the Ant Colony Optimization (ACO) metaheuristic. This version downloads its own copy of INETMANET, and does not use one installed by opp_env.",
+            "details": "Based on commit 5b40a41839167c6709d86400d41be51f1ce51781 from master branch as of 2015-04-02 (https://github.com/des-testbed/libara/commit/5b40a41839167c6709d86400d41be51f1ce51781).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/libARA.html",
             },
@@ -1430,6 +1466,7 @@ def get_project_descriptions():
         {
             "name": "opendsme_allinone", "version": "20201110",     # last commit of master branch as of time of writing
             "description": "IEEE 802.15.4 Deterministic and Synchronous Multi-channel Extension. This version downloads its own copy of INET, and does not use one installed by opp_env.",
+            "details": "Based on openDSME commit eb8e76ca6f88f0b8a75db00e5b6c4cdebb1c6bc9 (https://github.com/openDSME/inet-dsme/commit/eb8e76ca6f88f0b8a75db00e5b6c4cdebb1c6bc9) and INET commit 550e4e4592481f005cd135f038d458cf17d857b3 from openDSME's INET fork (https://github.com/openDSME/inet/commit/550e4e4592481f005cd135f038d458cf17d857b3) from master branches as of 2020-11-10.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OpenDSME.html",
             },
@@ -1461,7 +1498,7 @@ def get_project_descriptions():
         {
             "name": "openflow", "version": "20250717",
             "description": "OpenFlow Extension for INET Framework",
-            "details": "Ported to INET-4.x",
+            "details": "Ported to INET-4.x. Based on the `OpenFlow 20250717` release (https://github.com/inet-framework/openflow/releases/tag/v20250717).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
@@ -1492,7 +1529,7 @@ def get_project_descriptions():
         {
             "name": "openflow", "version": "20250605",
             "description": "OpenFlow Extension for INET Framework",
-            "details": "Ported to INET-4.x",
+            "details": "Ported to INET-4.x. Based on the `OpenFlow 20250605` release (https://github.com/inet-framework/openflow/releases/tag/v20250605).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
@@ -1523,7 +1560,7 @@ def get_project_descriptions():
         {
             "name": "openflow", "version": "20250602",
             "description": "OpenFlow Extension for INET Framework",
-            "details": "Bugfix version of openflow-20240124",
+            "details": "Bugfix version of openflow-20240124. Based on the `OpenFlow 20250602` release (https://github.com/inet-framework/openflow/releases/tag/v20250602).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
@@ -1554,7 +1591,7 @@ def get_project_descriptions():
         {
             "name": "openflow", "version": "20240124",
             "description": "OpenFlow Extension for INET Framework",
-            "details": "This version is identical to openflow4core-20240124",
+            "details": "This version is identical to openflow4core-20240124. Based on tag v20240124 (https://github.com/inet-framework/openflow/releases/tag/v20240124).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
@@ -1584,6 +1621,7 @@ def get_project_descriptions():
         {
             "name": "openflow4core", "version": "20240124",      # last commit of master branch as of time of writing
             "description": "The CoRe-RG fork of the OpenFlow Extension for INET Framework",
+            "details": "Based on nightly build nightly/2024-01-24_15-05-30 from 2024-01-24, representing the master branch state as of that date (https://github.com/CoRE-RG/OpenFlow/releases/tag/nightly/2024-01-24_15-05-30).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
@@ -1615,6 +1653,7 @@ def get_project_descriptions():
             # TODO does this need patched inet so allinone?
             "name": "openflow4core", "version": "20231017",      # last commit of master branch as of time of writing
             "description": "The CoRe-RG fork of the OpenFlow Extension for INET Framework",
+            "details": "Based on commit 72fc3c2bcfb720087225728e130c06fac1c7f0f2 from master branch as of 2023-10-17 (https://github.com/CoRE-RG/OpenFlow/commit/72fc3c2bcfb720087225728e130c06fac1c7f0f2).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Openflow.html",
             },
@@ -1643,6 +1682,7 @@ def get_project_descriptions():
         {
             "name": "ndnomnet", "version": "20200914",      # last commit of master branch as of time of writing
             "description": "Named Data Networking framework for OMNeT++",
+            "details": "Based on commit d98f80a8b837858e00224e7a37aba35947058002 from master branch as of 2020-09-14 (https://github.com/amar-ox/NDNOMNeT/commit/d98f80a8b837858e00224e7a37aba35947058002).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/NDNOMNeT.html",
             },
@@ -1679,6 +1719,7 @@ def get_project_descriptions():
         {
             "name": "inet_hnrl", "version": "20100723",     # This is the master_20100723 release
             "description": "Fork of INET developed for hybrid networking research, providing new models in both optical and wireless networking areas and their hybrid.",
+            "details": "Based on inet-hnrl master_20100723 tag (https://github.com/kyeongsoo/inet-hnrl/releases/tag/master_20100723).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INET-HNRL.html",
             },
@@ -1704,6 +1745,7 @@ def get_project_descriptions():
         {
             "name": "icancloud", "version": "1.0",
             "description": "Cloud Computing Systems",
+            "details": "Based on iCanCloud v1.0 release from 2015-02-16 (http://sourceforge.net/projects/icancloudsim/files/iCanCloud_v1.0_20150216.tgz/download).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/iCanCloud.html",
             },
@@ -1730,6 +1772,7 @@ def get_project_descriptions():
             # NOTE - only inet is tested because OS3 would need weather API access
             "name": "os3", "version": "1.0",
             "description": "Open Source Satellite Simulator",
+            "details": "Based on OS3 v1.0 tag (https://github.com/inet-framework/os3/releases/tag/v1.0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OS3.html",
             },
@@ -1762,6 +1805,7 @@ def get_project_descriptions():
             # (id=178), at t=0.135s, event #20
             "name": "gptp", "version": "20200311",      # last commit of master branch as of time of writing
             "description": "IEEE 802.1AS gPTP for Clock Synchronization",
+            "details": "Based on commit c498af56431d45b71ab5732cb352d03774344b6c from master branch as of 2020-03-11 (https://gitlab.amd.e-technik.uni-rostock.de/peter.danielis/gptp-implementation/-/commit/c498af56431d45b71ab5732cb352d03774344b6c).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/gPTP.html",
             },
@@ -1788,6 +1832,7 @@ def get_project_descriptions():
         {
             "name": "streetlightsim", "version": "1.0",
             "description": "Research project for evaluating Autonomous and Adaptive Street Lighting Schemes based on Road User's presence detection over wireless sensor networks.",
+            "details": "Based on StreetlightSim 1.0 archive release (https://github.com/omnetpp-models/archive/releases/tag/archive).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/StreetlightSim.html",
             },
@@ -1806,6 +1851,7 @@ def get_project_descriptions():
             # NOTE - release only; this project links with the inet release libs
             "name": "quagga", "version": "20090803",
             "description": "Port of the Quagga routing daemon into the INET Framework",
+            "details": "Based on inet-quagga quagga-20090803 tag (https://github.com/inet-framework/inet-quagga/releases/tag/quagga-20090803).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INET-Quagga.html",
             },
@@ -1830,6 +1876,7 @@ def get_project_descriptions():
         {
             "name": "tcp_fit_illinois", "version": "20150828",      # last commit of master branch as of time of writing
             "description": "TCP-Fit and TCP-Illinois models for OMNeT++ and INET",
+            "details": "Based on commit ba5e56f0bd13d6b40b40892ac61d82d4f9a7ac92 from master branch as of 2015-08-28 (https://github.com/SpyrosMArtel/TCP-Fit-Illinois/commit/ba5e56f0bd13d6b40b40892ac61d82d4f9a7ac92).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/TCP-Fit-Illinois.html",
             },
@@ -1854,6 +1901,7 @@ def get_project_descriptions():
         {
             "name": "dns", "version": "20150911",     # last commit of master branch as of time of writing
             "description": "Provides models to simulate DNS and mDNS (multicast DNS) traffic within INET",
+            "details": "Based on commit 1fa452792f954297f2dc7ede3b699e73ca17c0c1 from master branch as of 2015-09-11 (https://github.com/saenridanra/inet-dns-extension/commit/1fa452792f954297f2dc7ede3b699e73ca17c0c1).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/INET-DNS.html",
             },
@@ -1877,6 +1925,7 @@ def get_project_descriptions():
             # NOTE - only tested in debug (segfault in release); built in both
             "name": "obs", "version": "20130114",       # last commit of master branch as of time of writing
             "description": "Set of modules to simulate Optical Burst Switching networks in the OMNeT++ framework",
+            "details": "Based on commit 704b685085a6cd8931521c0e052cd54c79327be7 from master branch as of 2013-01-14 (https://github.com/mikelizal/OBSmodules/commit/704b685085a6cd8931521c0e052cd54c79327be7).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/OBS.html",
             },
@@ -1950,6 +1999,7 @@ def get_project_descriptions():
             # NOTE - only tested in debug
             "name": "processbus_allinone", "version": "20180926",       # latest commit of master branch as of the time of writing
             "description": "IEC61850 process bus communication (GOOSE and SV) for INET. This version downloads its own copy of INET, and does not use one installed by opp_env.",
+            "details": "Based on commit c3f76083a52fc36ba086d949dcf1ff91acd788db from master branch as of 2018-09-26 (https://github.com/hectordelahoz/ProcessBusIec61850/commit/c3f76083a52fc36ba086d949dcf1ff91acd788db).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ProcessBusIec61850.html",
             },
@@ -1973,6 +2023,7 @@ def get_project_descriptions():
         {
             "name": "crsimulator", "version": "20140204",
             "description": "Model for Cognitive Radio Ad hoc Network Simulations in OMNeT++",
+            "details": "Based on commit ba0e65d6a293969400a214a0b434418e61f1581c from master branch as of 2014-02-04 (https://github.com/s2r2010/crSimulator/commit/ba0e65d6a293969400a214a0b434418e61f1581c).",
             "metadata": {
                 "catalog_url": "",
             },
@@ -1997,12 +2048,12 @@ def get_project_descriptions():
         {
             "name": "veins_vlc", "version": "1.0.20210526",
             "description": "Veins VLC - Realistic Simulation of Vehicular Visible Light Communication",
+            "details": "Veins VLC extends Veins vehicular network simulation framework with channel models for Vehicular Visible Light Communication (V-VLC). Based on commit de8f2fdee84b22901e353d7439c5b5888dcee975 from master branch as of 2021-05-26 (https://github.com/veins/veins_vlc/commit/de8f2fdee84b22901e353d7439c5b5888dcee975).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Veins-VLC.html",
             },
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["6.*", "5.7.*", "5.6.*", "5.5.*", "5.4.*", "5.3.*"], "inet": ["4.2.8", "4.2.5", "4.2.4", "4.2.3", "4.2.2", "4.2.1", "4.2.0", "4.1.1", "4.1.0", "3.8.1", "3.7.1", "3.7.0", "3.6.5"], "veins": ["5.*"]},
-            "details": "Veins VLC extends Veins vehicular network simulation framework with channel models for Vehicular Visible Light Communication (V-VLC).",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_MODE_OPTION="-d"; fi""",
                 r"""if [ "$BUILD_MODE" = "release" ]; then DEBUG_MODE_OPTION=""; fi""",
@@ -2023,6 +2074,7 @@ def get_project_descriptions():
         {
             "name": "veins_vlc", "version": "1.0",
             "description": "Veins VLC - Realistic Simulation of Vehicular Visible Light Communication",
+            "details": "Based on veins-vlc-1.0 tag (https://github.com/veins/veins_vlc/releases/tag/veins-vlc-1.0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Veins-VLC.html",
             },
@@ -2048,6 +2100,7 @@ def get_project_descriptions():
             # FXGLVisual::create: requested OpenGL visual unavailable. -> this issue is POSTPONED
             "name": "artery_allinone", "version": "20240807",       # last commit of master branch as of time of writing
             "description": "V2X simulation framework for ETSI ITS-G5. This version downloads its own copy of Veins, INET, SimuLTE, and Vanetza, and does not use ones installed by opp_env.",
+            "details": "Based on commit b3927adbdcb62faaf6b3fe5cd089100e6db66014 from master branch as of 2024-08-07 (https://github.com/riebl/artery/commit/b3927adbdcb62faaf6b3fe5cd089100e6db66014).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Artery.html",
             },
@@ -2082,6 +2135,7 @@ def get_project_descriptions():
             # FXGLVisual::create: requested OpenGL visual unavailable. -> this issue is POSTPONED
             "name": "artery_allinone", "version": "20230820",       # last commit of master branch as of time of writing
             "description": "V2X simulation framework for ETSI ITS-G5. This version downloads its own copy of Veins, INET, SimuLTE, and Vanetza, and does not use ones installed by opp_env.",
+            "details": "Based on commit ad201f699fb7b22319497b31fe0ea437bb2ef2e3 from master branch as of 2023-08-20 (https://github.com/riebl/artery/commit/ad201f699fb7b22319497b31fe0ea437bb2ef2e3).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Artery.html",
             },
@@ -2112,6 +2166,7 @@ def get_project_descriptions():
         {
             "name": "neta_allinone", "version": "1.0",
             "description": "NETwork Attacks Framework for OMNeT++. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
+            "details": "Based on NETA v1.0 release and INET 2.1.0 (https://github.com/robertomagan/neta_v1/releases/tag/v1.0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/NETA.html",
             },
@@ -2166,7 +2221,7 @@ def get_project_descriptions():
             "required_projects": {"omnetpp": ["5.7.1"]},
             "nix_packages": ["proj", "python2", "sumo"],
             "description": "space_Veins is a Veins extension that integrates satellites as additional communication partners in vehicular networks.",
-            "details": "Note: this version downloads its own copy of INET and VEINS, and does not use ones installed by opp_env.",
+            "details": "Note: this version downloads its own copy of INET and VEINS, and does not use ones installed by opp_env. Based on space_Veins-0.3 release (https://github.com/veins/space_veins/releases/tag/space_Veins-0.3).",
             "download_url": "https://github.com/veins/space_veins/archive/refs/tags/space_Veins-0.3.tar.gz",
             "patch_commands": [
                 r"""mv src/makefrag src/makefrag.orig""",
@@ -2213,6 +2268,7 @@ def get_project_descriptions():
             "nix_packages": ["python2", "libxml2"],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*", "5.7.*"], "veins": ["5.2"]},
             "description": "Plexe is a Veins extension for the realistic simulation of platooning (i.e., automated car-following) systems",
+            "details": "Based on plexe-3.1.2 tag (https://github.com/michele-segata/plexe/releases/tag/plexe-3.1.2).",
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.1.2.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
@@ -2270,6 +2326,7 @@ def get_project_descriptions():
             "nix_packages": ["python2", "libxml2"],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*", "5.7.*", "5.6.*"], "veins": ["5.2"]},   # doesn't work with veins-5.1: Function veins_omnetpp_buildnum() not found (Define_NED_Function() or Define_NED_Math_Function() missing from C++ code?) -- in module (veins::BaseWorldUtility) Highway.world (id=4), during network setup
             "description": "Plexe is a Veins extension for the realistic simulation of platooning (i.e., automated car-following) systems",
+            "details": "Based on plexe-3.1 tag (https://github.com/michele-segata/plexe/releases/tag/plexe-3.1).",
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.1.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
@@ -2326,6 +2383,7 @@ def get_project_descriptions():
             "nix_packages": ["python2", "libxml2"],
             "required_projects": {"omnetpp": ["5.7.*", "5.6.*", "5.5.*", "5.4.*", "5.3.*"], "veins": ["5.2", "5.1"]},
             "description": "Plexe is a Veins extension for the realistic simulation of platooning (i.e., automated car-following) systems",
+            "details": "Based on plexe-3.0 tag (https://github.com/michele-segata/plexe/releases/tag/plexe-3.0).",
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.0.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
@@ -2353,6 +2411,7 @@ def get_project_descriptions():
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.4.2"]},
             "description": "RIMFading Radio Propagation Model in 2D and 3D for the INET Framework",
+            "details": "Based on commit 609c3cb5121f50a8481754042ad4122d320008be as of 2017-11-23 (https://github.com/ComNets-Bremen/RIMFading/commit/609c3cb5121f50a8481754042ad4122d320008be), and INET 4.0.0. This version downloads its own copy of INET, and does not use one installed by opp_env.",
             "smoke_test_commands": [
                 r"""cp showcases/wireless/pathloss/omnetpp.ini showcases/wireless/pathloss/test.ini""",
                 """echo "\n[Config Test]\n*.radioMedium.pathLoss.typename = "RIMFading" " >> showcases/wireless/pathloss/test.ini """,
@@ -2395,6 +2454,7 @@ def get_project_descriptions():
             "nix_packages": ["boost172", "cmake", "python2", "cryptopp", "geographiclib", "cmakeWithGui", "sumo"],
             "required_projects": {"omnetpp": ["5.6.1"]},
             "description": "Implementation of the 3GPP standard CV2X (Rel 14) Mode 4. It integrates with the Artery framework to provide full ITS-G5 standardisation across the entire communication stack.",
+            "details": "Based on opencv2x v1.4.1 release (https://github.com/brianmc95/OpenCV2X/releases/tag/v1.4.1).",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "release" ]; then cp build/scenarios/artery/CMakeFiles/run_example.dir/build.make build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig && sed -i 's|-c Base|-c veins --sim-time-limit=10s|g' build/scenarios/artery/CMakeFiles/run_example.dir/build.make && cmake --build build --target run_example && mv -f build/scenarios/artery/CMakeFiles/run_example.dir/build.make.orig build/scenarios/artery/CMakeFiles/run_example.dir/build.make; fi""",
                 r"""if [ "$BUILD_MODE" = "debug" ]; then echo 'Skipping test in debug mode, because currently this projects is only built in release mode.'; fi""",
@@ -2442,6 +2502,7 @@ def get_project_descriptions():
             "name": "cmm_orbit_mobility_allinone", "version": "20220815",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["5.5.1"]},
             "description": "ORBIT Mobilty Model (SOLAR) and Comunity-based Mobility Model (CMM) for the INET Framework to simulate mobility of nodes in ad-hoc networks.",
+            "details": "Based on commit 0efc14a38085719ed91d47e7613764936a5ce15b from master branch as of 2022-08-15 (https://github.com/ComNets-Bremen/Mobility-Models/commit/0efc14a38085719ed91d47e7613764936a5ce15b).",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/mobility/CMM""",
@@ -2480,6 +2541,7 @@ def get_project_descriptions():
             "name": "signals_and_gateways", "version": "20240124",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"]},
             "description": "SignalsAndGateways enables a heterogeneous network simulation using CoRE4INET, INET and FiCo4OMNeT, with gateway components for communication between Ethernet and bus technologies.",
+            "details": "Based on nightly build nightly/2024-01-24_15-06-21 from 2024-01-24, representing the master branch state as of that date (https://github.com/CoRE-RG/SignalsAndGateways/releases/tag/nightly/2024-01-24_15-06-21).",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/majorNetwork && opp_run$BUILD_MODE_SUFFIX -l ../../src/SignalsAndGateways omnetpp.ini -n $INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/examples --sim-time-limit=10s -u Cmdenv"""
@@ -2503,6 +2565,7 @@ def get_project_descriptions():
             "name": "soa4core", "version": "20240124",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"]},
             "description": "Service-Oriented Architecture for Communication over Realtime Ethernet (SOA4CoRE)",
+            "details": "Based on nightly build nightly/2024-01-24_15-06-45 from 2024-01-24, representing the master branch state as of that date (https://github.com/CoRE-RG/SOA4CoRE/releases/tag/nightly/2024-01-24_15-06-45).",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/qosnp/small_network && opp_run$BUILD_MODE_SUFFIX -l $SOA4CORE_ROOT/src/SOA4CoRE omnetpp.ini -c SomeIPSD_QoS_STDUDPMCAST -n $SOA4CORE_ROOT/src:$SOA4CORE_ROOT/examples:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src --sim-time-limit=1s -u Cmdenv"""
@@ -2527,6 +2590,7 @@ def get_project_descriptions():
             "name": "sdn4core", "version": "20240124",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["6.0.*"], "inet": ["3.8.3"], "fico4omnet": ["20240124"], "core4inet": ["20240124"], "signals_and_gateways": ["20240124"], "soa4core": ["20240124"], "openflow4core": ["20240124"]},
             "description": "Software-Defined Networking for Communication over Realtime Ethernet (SDN4CoRE)",
+            "details": "Based on nightly build nightly/2024-01-24_15-06-58 from 2024-01-24, representing the master branch state as of that date (https://github.com/CoRE-RG/SDN4CoRE/releases/tag/nightly/2024-01-24_15-06-58).",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/papers/omnetsummit2019/configanalysis && opp_run$BUILD_MODE_SUFFIX -l $SDN4CORE_ROOT/src/SDN4CoRE omnetpp.ini -c CaseStudy_WithCT -n $SDN4CORE_ROOT/src:$SDN4CORE_ROOT/examples:$SOA4CORE_ROOT/src:$SIGNALS_AND_GATEWAYS_ROOT/src:$CORE4INET_ROOT/src:$FICO4OMNET_ROOT/src:$INET_ROOT/src:$OPENFLOW4CORE_ROOT/src --sim-time-limit=1s -u Cmdenv"""
@@ -2553,7 +2617,7 @@ def get_project_descriptions():
             "name": "ecmp_allinone", "version": "20230713",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["6.0.*"]},
             "description": "Equal-cost multi-path routing (ECMP) implementation for INET 4.4.1. This version downloads its own copy of INET, and does not use one installed by opp_env.",
-            "details": "Implemented by Juan Francisco Clemente Camacho. Original project: https://gitraap.i3a.info/jfclemente/ecmp",
+            "details": "Implemented by Juan Francisco Clemente Camacho. Original project: https://gitraap.i3a.info/jfclemente/ecmp. Based on commit 4e17afe51cdfc0843b019341af7fb42cf73cf099 (https://github.com/inet-framework/inet-clos-ecmp/commit/4e17afe51cdfc0843b019341af7fb42cf73cf099).",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/ecmp/FatTreeExample && inet$BUILD_MODE_SUFFIX --sim-time-limit=50s -c ECMP_PACKET -r 0 -u Cmdenv"""
@@ -2577,6 +2641,7 @@ def get_project_descriptions():
             # only in debug; this version needs patched INET
             "name": "eclipse_mosaic_allinone", "version": "25.0",
             "required_projects": {"omnetpp": ["5.5.1"]},
+            "details": "Based on Eclipse MOSAIC 25.0 release (https://www.dcaiti.tu-berlin.de/research/simulation/download/).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/EclipseMosaic.html",
             },
@@ -2616,6 +2681,7 @@ def get_project_descriptions():
             "name": "libptp", "version": "20210722",    # latest master as of time of writing
             "nix_packages": ["boost", "fftw"],
             "required_projects": {"omnetpp": ["4.6.*"], "inet": ["2.6.0"], "omnet_utils": ["1.0"], "libpln": ["1.0"]},
+            "details": "Based on commit 7e98b4338bc92016f9cf7468185cf1303f6e43c0 from master branch as of 2021-07-22 (https://github.com/ptp-sim/libPTP/commit/7e98b4338bc92016f9cf7468185cf1303f6e43c0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/libPTP.html",
             },
@@ -2733,6 +2799,7 @@ def get_project_descriptions():
             "name": "omnet_utils", "version": "1.0",
             "nix_packages": ["boost"],
             "required_projects": {"omnetpp": ["4.6.*"]},
+            "details": "Based on OMNeT_Utils v1.0 tag (https://github.com/ptp-sim/OMNeT_Utils/releases/tag/v1.0).",
             "description": "Provides useful utilities to be used with the OMNeT++",
             "download_url": "https://github.com/ptp-sim/OMNeT_Utils/archive/refs/tags/v1.0.tar.gz",
             "build_commands": [
@@ -2747,6 +2814,7 @@ def get_project_descriptions():
             # needed by libptp; only built in release
             "name": "libpln", "version": "1.0",
             "nix_packages": ["boost", "cmake", "gcc", "fftw"],
+            "details": "Based on libPLN v1.0 tag (https://github.com/ptp-sim/libPLN/releases/tag/v1.0).",
             "description": "A Library for Efficient Powerlaw Noise Generation",
             "download_url": "https://github.com/ptp-sim/libPLN/archive/refs/tags/v1.0.tar.gz",
             "build_commands": [
@@ -2802,7 +2870,7 @@ def get_project_descriptions():
         {
             "name": "inbaversim", "version": "0.3.0",
             "description": "OMNeT++ based model framework to simulate CCN based networks. The functionality and the message formats follow the description provided in RFC 8569 and RFC 8609.",
-            "details": "This release integrates an extended forwarder implementation that supports Reflexive Forwarding, enabling efficient CCN-based communication in IoT environments. Also includes multiple application modules designed to utilize these forwarding enhancements.",
+            "details": "This release integrates an extended forwarder implementation that supports Reflexive Forwarding, enabling efficient CCN-based communication in IoT environments. Also includes multiple application modules designed to utilize these forwarding enhancements. Based on v0.3.0 release (https://github.com/ComNets-Bremen/inbaverSim/releases/tag/v0.3.0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/inbaverSim.html",
             },
@@ -2827,7 +2895,7 @@ def get_project_descriptions():
         {
             "name": "inbaversim", "version": "0.1.0",
             "description": "OMNeT++ based model framework to simulate CCN based networks. The functionality and the message formats follow the description provided in RFC 8569 and RFC 8609.",
-            "details": "Initial version of the inbaverSim model framework, designed to simulate Content-Centric Networking (CCN) communications in infrastructure-based network environments. In addition to modeling traditional CCN communication, this version also supports simulations of CCN-based Internet of Things (IoT) scenarios and basic statistical functionality to assist in the preliminary analysis of network performance metrics.",
+            "details": "Initial version of the inbaverSim model framework, designed to simulate Content-Centric Networking (CCN) communications in infrastructure-based network environments. In addition to modeling traditional CCN communication, this version also supports simulations of CCN-based Internet of Things (IoT) scenarios and basic statistical functionality to assist in the preliminary analysis of network performance metrics. Based on v0.1.0 release (https://github.com/ComNets-Bremen/inbaverSim/releases/tag/v0.1.0).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/inbaverSim.html",
             },
@@ -2870,7 +2938,7 @@ def get_project_descriptions():
             "name": "gptp_howhangliu2024_paper", "version": "20250219",
             "required_projects": {"omnetpp": ["6.0.1"]},
             "description": "Simulation model used in How-Hang Liu's 2024 paper on validating the gPTP model in INET 4.4.",
-            "details": """H. -H. Liu et al., "Improving TSN Simulation Accuracy in OMNeT++: A Hardware-Aligned Approach," in IEEE Access, vol. 12, pp. 79937-79956, 2024, doi: 10.1109/ACCESS.2024.3410109. https://ieeexplore.ieee.org/abstract/document/10549887""",
+            "details": """H. -H. Liu et al., "Improving TSN Simulation Accuracy in OMNeT++: A Hardware-Aligned Approach," in IEEE Access, vol. 12, pp. 79937-79956, 2024, doi: 10.1109/ACCESS.2024.3410109. https://ieeexplore.ieee.org/abstract/document/10549887. Based on commit 1c7e2be8f8a268602a7c0dd9b9f8470e96b1f1a4 from master branch as of 2025-02-19 (https://github.com/5GCampus/omnet-ci/commit/1c7e2be8f8a268602a7c0dd9b9f8470e96b1f1a4).""",
             "patch_commands": [
                 r"""git reset --hard 1c7e2be8f8a268602a7c0dd9b9f8470e96b1f1a4"""     # master on 20250219
             ],
@@ -2900,7 +2968,7 @@ def get_project_descriptions():
             "name": "sixgdetcom_allinone", "version": "20250910",   # last commit of master branch as of time of writing
             "required_projects": {"omnetpp": ["6.2.*"]},
             "description": "6GDetCom Simulator Framework",
-            "details": """A simulator framework for validating the concepts for a wireless-friendly design for end-to-end deterministic communication. Part of the deliverables D4.1 "DetCom Simulator Framework (Release 1)" and D4.1 "DetCom Simulator Framework (Release 1)" of the DETERMINISTIC6G project. Also contains measurement data from the DETERMINISTIC6G project (https://github.com/DETERMINISTIC6G/deterministic6g_data). Furthermore, this version uses DETERMINISTIC6G's modified version of INET, and not one installed by opp_env.""",
+            "details": """A simulator framework for validating the concepts for a wireless-friendly design for end-to-end deterministic communication. Part of the deliverables D4.1 "DetCom Simulator Framework (Release 1)" and D4.1 "DetCom Simulator Framework (Release 1)" of the DETERMINISTIC6G project. Based on commit 7d3a08ba2eeab687e135f60f27f1bc79dacff153 of the master branch, as of 2025-09-10. Also contains measurement data from the DETERMINISTIC6G project (https://github.com/DETERMINISTIC6G/deterministic6g_data). Furthermore, this version uses DETERMINISTIC6G's modified version of INET (commit 389db4ae319b0b066c501e91c236e96bcad87e53 of the develop_gptp branch), and not one installed by opp_env.""",
             "nix_packages": [
                 "z3",
                 "ffmpeg-headless",

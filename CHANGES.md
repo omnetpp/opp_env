@@ -1,6 +1,14 @@
 # Changes
 
 
+## 0.35.0.251007
+
+### Database (Frameworks and Models)
+
+- added simu5g-1.4.1 and 1.4.1-sdap
+- added sixgdetcom_allinone-20250910 (https://github.com/DETERMINISTIC6G/6GDetCom_Simulator/commit/7d3a08ba2eeab687e135f60f27f1bc79dacff153)
+- added quisp-0.3.0
+
 ## 0.35.0.250919
 
 ### Database (Frameworks and Models)

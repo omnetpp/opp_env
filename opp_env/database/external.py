@@ -3,6 +3,7 @@ def get_project_descriptions():
         {
             "name": "fico4omnet", "version": "20240124",        # last commit of master branch as of time of writing
             "description": "Fieldbus Communication (CAN and FlexRay)",
+            "details": "Based on nightly build nightly/2024-01-24_15-04-06 from 2024-01-24, representing the master branch state as of that date.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/FiCo4OMNeT.html",
             },
@@ -47,6 +48,7 @@ def get_project_descriptions():
         {
             "name": "fico4omnet", "version": "20210113",
             "description": "Fieldbus Communication (CAN and FlexRay)",
+            "details": "Based on nightly build nightly/2021-01-13_00-00-25 from 2021-01-13, representing the master branch state as of that date.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/FiCo4OMNeT.html",
             },
@@ -163,6 +165,7 @@ def get_project_descriptions():
         {
             "name": "core4inet", "version": "20240124",
             "description": "Real-Time Ethernet protocols for INET",
+            "details": "Based on nightly build nightly/2024-01-24_15-05-19 from 2024-01-24, representing the master branch state as of that date.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/Core4INET.html",
             },
@@ -280,6 +283,7 @@ def get_project_descriptions():
         {
             "name": "hnocs", "version": "20221212",     # last commit of master branch as of time of writing
             "description": "Network on Chip Simulation Framework",
+            "details": "Based on commit 465754c28977a397e8ea4aef9296ca9987eb4f51 from master branch as of 2022-12-12.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/HNOCS.html",
             },
@@ -428,6 +432,7 @@ def get_project_descriptions():
             # TODO: catalog
             "name": "inetgpl", "version": "1.0",
             "description": "GPL licensed models for INET",
+            "details": "Development version from main branch of https://github.com/inet-framework/inet-gpl.git. No specific commit specified - uses latest available code.",
             "metadata": {
             },
             "smoke_test_commands": [
@@ -511,10 +516,12 @@ def get_project_descriptions():
             },
         },
 
+
         {
             # NOTE - ok; when testing without '-u Cmdenv' -> segfault (but works in Cmdenv)
             "name": "rinasim", "version": "20200903",       # last commit of master branch as of time of writing
             "description": "Recursive InterNetwork Architecture Simulator",
+            "details": "Based on commit eb6baaf1034319245fa9e4b846a61094445c8d8a from master branch as of 2020-09-03.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/RINASim.html",
             },
@@ -969,6 +976,7 @@ def get_project_descriptions():
             # this does not contain examples for swim
             "name": "swim_allinone", "version": "20180221",     # last commit of master branch as of time of writing
             "description": "Small Worlds in Motion (SWIM) mobility model. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
+            "details": "Downloads INET 3.8.3 release and patches it with SWIM mobility model from master branch (moving target - no specific commit specified for SWIM component).",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/SWIMMobility.html",
             },
@@ -1009,6 +1017,7 @@ def get_project_descriptions():
         {
             "name": "tsch_allinone", "version": "6tisch_paper",
             "description": "6TiSCH-CLX ACM TOIT paper exact version. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
+            "details": "6TiSCH-CLX ACM TOIT paper reproduction version. Uses RPL commit 792e6473145d482894f396fea146df9c27a0c758, INET 4.2.5, and TSCH release acm-toit-6tisch-clx.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ComNetsHH-TSCH.html",
             },
@@ -1894,6 +1903,7 @@ def get_project_descriptions():
             # TODO update catalog
             "name": "rpl_allinone", "version": "6tisch_paper",
             "description": "Routing Protocol for Low Power and Lossy Networks, 6TiSCH-CLX ACM TOIT paper exact version. This version downloads its own copy of INET, and does not use ones installed by opp_env.",
+            "details": "6TiSCH-CLX ACM TOIT paper reproduction version. Based on commit 792e6473145d482894f396fea146df9c27a0c758.",
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/ComNetsHH-RPL.html",
             },
@@ -2756,6 +2766,7 @@ def get_project_descriptions():
         {
             "name": "simu5g_5gtq", "version": "git",
             "description": "QoS Aware 5G-TSN Simulation Framework",
+            "details": "Current state of main branch of https://github.com/tum-esi/5GTQ.git.",
             "metadata": {
                 #TODO "catalog_url": "https://omnetpp.org/download-items/5GTQ.html",
             },
@@ -2842,6 +2853,7 @@ def get_project_descriptions():
             "name": "inbaversim", "version": "git",
             "required_projects": {"omnetpp": ["6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},
             "description": "OMNeT++ based model framework to simulate CCN based networks. The functionality and the message formats follow the description provided in RFC 8569 and RFC 8609.",
+            "details": "Current state of main branch of https://github.com/inet-framework/inbaverSim.git.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd simulations && $INBAVERSIM_ROOT/src/inbaversim$BUILD_MODE_SUFFIX omnetpp-simple-network.ini -c Simple-Net -n ../src:$INET_ROOT/src:. -u Cmdenv --sim-time-limit=10000s"""

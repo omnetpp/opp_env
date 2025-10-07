@@ -2,9 +2,11 @@
 def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versions):
     is_git_branch = simu5g_version == "git"
     git_branch_or_tag_name = f"v{simu5g_version}" if simu5g_version[0].isdigit() else "master" if simu5g_version == "git" else simu5g_version
+    simu5g_version_official = simu5g_version.replace("_", "-") # for the "1.4.1-sdap" release
     return {
         "name": "simu5g", "version": simu5g_version,
         "description": "5G NR and LTE/LTE-A user-plane simulation model",
+        "details": "This specialized branch release introduces SDAP protocol support, multiple DRBs and advanced QoS capabilities to Simu5G for enhanced 5G network simulations." if simu5g_version == "1.4.1_sdap" else "",
         "metadata": {
             "catalog_url": "https://omnetpp.org/download-items/Simu5G.html",
         },
@@ -33,8 +35,8 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
                 "option_category": "download",
                 "option_is_default": not is_git_branch,
                 "download_url": None if is_git_branch else
-                    f"https://github.com/Unipisa/Simu5G/archive/refs/tags/v{simu5g_version}.tar.gz" if simu5g_version < "1.3.0" else
-                    f"https://github.com/Unipisa/Simu5G/releases/download/v{simu5g_version}/simu5g-{simu5g_version}-src.tgz",
+                    f"https://github.com/Unipisa/Simu5G/archive/refs/tags/v{simu5g_version_official}.tar.gz" if simu5g_version < "1.3.0" else
+                    f"https://github.com/Unipisa/Simu5G/releases/download/v{simu5g_version_official}/simu5g-{simu5g_version_official}-src.tgz",
             },
             "from-git": {
                 "option_description": "Install from git repo on GitHub",
@@ -48,6 +50,8 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
 
 def get_project_descriptions():
     return [ get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versions) for simu5g_version, inet_versions, omnetpp_versions in [
+        ["1.4.1_sdap", ["4.5.*"], ["6.2.*"]],
+        ["1.4.1", ["4.5.*"], ["6.2.*"]],
         ["1.4.0", ["4.5.*"], ["6.2.*"]],
         ["1.3.1", ["4.5.*"], ["6.2.*", "6.1.*"]],
         ["1.3.0", ["4.5.*"], ["6.2.*", "6.1.*"]],

@@ -1330,18 +1330,13 @@ def get_project_descriptions():
             ],
             "nix_packages": ["python311", "python311Packages.boost.dev", "boost", "gcc"],
             "description": "Integration of the Limited Relative Error algorithm into OMNeT++",
-            "details": "This project provides an integration of the Limited Relative Error (LRE) \
-                algorithm into the OMNeT++ simulator. The LRE algorithm itself comes as a stand-alone implementation. \
-                (The LRE algorithm is an alternative statistical method for data evaluation. \
-                LRE continuously requests more samples until it deems the evaluation confident enough.) \
-                This version of the network model contains the configuration that produces data as \
-                contained in the paper for the OMNeT++ Summit 2018.",
+            "details": "This project provides an integration of the Limited Relative Error (LRE) algorithm into the OMNeT++ simulator. The LRE algorithm itself comes as a stand-alone implementation. (The LRE algorithm is an alternative statistical method for data evaluation. LRE continuously requests more samples until it deems the evaluation confident enough.) This version of the network model contains the configuration that produces data as contained in the paper for the OMNeT++ Summit 2018.",
             "git_url": "https://github.com/ComNetsHH/LRE-OMNeT.git",
+            "git_branch": "e5fbbf430e80408588f4333f4fcaced2b0a124ce",
             "setenv_commands": [
                 r"""echo 'Hint: To run the example simulation, use the `opp_run -l lre_omnet -n .:$INET_ROOT/src` command.'""",
             ],
             "build_commands": [
-                r"""git reset --hard 683441ac7d72f7c9426120ac0f91bc0c575e4204""",    # latest commit of master branch as of time of writing
                 r"""git submodule init""",
                 r"""git submodule update""",
                 r"""sed -i 's|-I/usr/include/python3.6m|-I${pkgs.python311}/include/python3.11 -L${pkgs.python311}/lib -L${pkgs.python311Packages.boost.out}/lib|g' lre-src/Makefile""",

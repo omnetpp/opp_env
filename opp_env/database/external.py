@@ -1027,7 +1027,7 @@ def get_project_descriptions():
                 r"""mkdir tsch_allinone-6tisch_paper""",
                 r"""cd tsch_allinone-6tisch_paper""",
                 r"""mkdir rpl && cd rpl""",
-                r"""curl -L -o rpl.tar.gz https://github.com/ComNetsHH/omnetpp-rpl/archive/792e6473145d482894f396fea146df9c27a0c758.tar.gz --progress-bar""",
+                r"""curl -L -o rpl.tar.gz https://github.com/ComNetsHH/omnetpp-rpl/archive/refs/tags/acm-toit-6tisch-clx.tar.gz --progress-bar""",
                 r"""tar -xzf rpl.tar.gz --strip=1""",
                 r"""rm rpl.tar.gz""",
                 r"""mv inet inet_replacement_files""",
@@ -1916,7 +1916,7 @@ def get_project_descriptions():
             "download_commands": [
                 r"""mkdir rpl_allinone-6tisch_paper""",
                 r"""cd rpl_allinone-6tisch_paper""",
-                r"""curl -L -o rpl.tar.gz https://github.com/ComNetsHH/omnetpp-rpl/archive/792e6473145d482894f396fea146df9c27a0c758.tar.gz --progress-bar""",
+                r"""curl -L -o rpl.tar.gz https://github.com/ComNetsHH/omnetpp-rpl/archive/refs/tags/acm-toit-6tisch-clx.tar.gz --progress-bar""",
                 r"""tar -xzf rpl.tar.gz --strip=1""",
                 r"""rm rpl.tar.gz""",
                 r"""mv -f inet inet_replacement_files""",

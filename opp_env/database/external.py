@@ -435,12 +435,7 @@ def get_project_descriptions():
                 r"""cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s""",
             ],
             "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.2.*", "6.1.*", "6.0.*"]},
-            "download_commands": [
-                r"""git clone https://github.com/inet-framework/inet-gpl.git inetgpl-1.0""",
-                r"""cd inetgpl-1.0""",
-                r"""git reset --hard 9a75686fa77dcffbd519421cc7502ed9b7531d0b""",
-                r"""cd ..""",
-            ],
+            "download_url": "https://github.com/inet-framework/inet-gpl/archive/refs/tags/v1.0.tar.gz",
             "setenv_commands": [r"""source setenv""",
                                 r"""echo 'Hint: Use `inetgpl` command in any of the example simulation folders.'"""],
             "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],

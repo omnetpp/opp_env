@@ -377,6 +377,7 @@ def get_project_descriptions():
     # Modernized versions build/work with modern a C++ compiler, bison/flex
     # and other tools and libraries, and also to have similar setenv scripts.
     released_versions = [
+        "6.3.0*",
         "6.2.0*",
         "6.1.0*",
         "6.0.3*", "6.0.2*", "6.0.1", "6.0",

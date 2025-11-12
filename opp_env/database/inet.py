@@ -180,7 +180,7 @@ def make_inet_project_description(inet_version, omnetpp_versions):
 
 def get_all_inet_released_versions():
     return [ make_inet_project_description(inet_version, omnetpp_versions) for inet_version, omnetpp_versions in [
-        ["4.5.4", ["6.2.*", "6.1.*", "6.0.*"]],
+        ["4.5.4", ["6.3.*", "6.2.*", "6.1.*", "6.0.*"]],
         ["4.5.2", ["6.0.*"]],
         ["4.5.1", ["6.0.*"]],
         ["4.5.0", ["6.0.*"]],

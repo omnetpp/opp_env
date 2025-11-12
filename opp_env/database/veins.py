@@ -73,8 +73,8 @@ def get_project_descriptions():
         # - many Veins versions may actually compile/work with more omnetpp versions than listed -- this is to be checked
         # - versions before 5.0 need older versions of SUMO, which are currently not available as nix packages
         # - removed omnetpp-5.5.0 from all versions due to segfault in smoke test
-        ["5.3.1", ["4.5.4", "4.5.2", "4.5.1", "4.5.0", "4.4.2", "4.4.1", "4.4.0", "3.8.3", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.21.0"], ["6.2.*", "6.1.*", "6.0.*", "5.7.*", "5.6.*", "5.5.2", "5.5.1", "5.4.*", "5.3.*"]],
-        ["5.3", ["4.5.4", "4.5.2", "4.5.1", "4.5.0", "4.4.2", "4.4.1", "4.4.0", "3.8.3", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.21.0"], ["6.2.*", "6.1.*", "6.0.*", "5.7.*", "5.6.*", "5.5.2", "5.5.1", "5.4.*", "5.3.*"]],
+        ["5.3.1", ["4.5.4", "4.5.2", "4.5.1", "4.5.0", "4.4.2", "4.4.1", "4.4.0", "3.8.3", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.21.0"], ["6.3.*", "6.2.*", "6.1.*", "6.0.*", "5.7.*", "5.6.*", "5.5.2", "5.5.1", "5.4.*", "5.3.*"]],
+        ["5.3", ["4.5.4", "4.5.2", "4.5.1", "4.5.0", "4.4.2", "4.4.1", "4.4.0", "3.8.3", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.21.0"], ["6.3.*", "6.2.*", "6.1.*", "6.0.*", "5.7.*", "5.6.*", "5.5.2", "5.5.1", "5.4.*", "5.3.*"]],
         # note for 5.3:
         # removed inet-4.2.*/4.3.* due to subproject build errors
         #   ./veins_inet/VeinsInetTransparentMobility.h:69:32: error: virtual function 'getCurrentPosition' has a different return type ('const inet::Coord &') than the function it overrides (which has return type 'inet::Coord')

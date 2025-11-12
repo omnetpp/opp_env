@@ -87,6 +87,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # with older OMNeT++ releases. These issues can even cause mysterious compiler crashes on subsequent builds because of
     # concurrency issues between the message compiler and the compiler.
     other_packages = ["llvmPackages.bintools", "bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "pkg-config", "ccache", "gnumake42", "vim"]
+    other_packages += ["libdwarf", "elfutils"] if version >= "6.0" and is_linux else []
     other_packages += ["python3"] if version > "5.0" else []
     other_packages += ["lldb"] if version >= "6.2" else ["gdb"] if not is_macos else []
 

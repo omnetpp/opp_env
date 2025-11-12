@@ -1250,8 +1250,8 @@ class Workspace:
                     git_url = get_env(project_description.name.upper() + "_REPO", f"the location of the '{project_description.name}' git repository on the local disk")
                 git_branch = git_branch or project_description.git_branch
                 print(git_branch)
-                branch_option = "-b " + git_branch if git_branch else ""
-                self.run_command(f"git clone --config advice.detachedHead=false {branch_option} {git_url} {project_dir}") #TODO maybe optionally use --single-branch
+                checkout_cmd = f"&& cd {project_dir} && git checkout {git_branch}" if git_branch else ""
+                self.run_command(f"git clone --config advice.detachedHead=false {git_url} {project_dir} {checkout_cmd}") #TODO maybe optionally use --single-branch
 
             if project_description.download_commands:
                 commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.download_commands ]

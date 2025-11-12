@@ -62,7 +62,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "adw-gtk3", "gsettings-desktop-schemas", "zlib",
         "webkitgtk" if version < "6.2" else "webkitgtk_4_1",
         "stdenv.cc", # required for the CDT discovery mechanism (as it is hardcoded to use gcc/g++)
-        "stdenv.cc.cc.lib" if version < "5.2" else None  # for libstdc++.so used by our nativelibs; in 5.2 and up, it's statically linked
+        "stdenv.cc.cc.lib" if version < "5.2" or version >= "6.3" else None  # for libstdc++.so used by our nativelibs; in >5.2 and <6.3, it's statically linked
     ] if is_ide_supported else []
 
     ide_packages = [jre_package] + (linux_ide_packages if is_linux else [])

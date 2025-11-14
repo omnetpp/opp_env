@@ -1,5 +1,17 @@
 # Changes
 
+## 0.35.0.251114
+
+### Database (Frameworks and Models)
+
+- omnetpp: fix debugger not working on macOS
+- omnetpp: add libdwarf and elfutils for better crash stack trace on linux
+- omnetpp: added omnetpp 6.3.0
+- inetgpl: use 1.0 release instead of commit hash
+- lre_omnet: use 1.0.1 tag; use git_branch instead of git reset in download commands
+- rpl_allinone and tsch_allinone 6tisch_paper versions: use release instead of commit hash
+- fix inet-gpl and swim_allinone: use fix git commits instead of branches that may change over time
+- swim_allinone: fix: move download from patch phase to download phase
 
 ## 0.35.0.251007
 

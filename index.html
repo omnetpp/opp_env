@@ -278,7 +278,8 @@
                         <div class="step-number">1</div>
                         <div class="step-content">
                             <h3>Install opp_env using a Windows Subsystem for Linux (WSL) image</h3>
-                            <p>opp_env can be used by <a href="https://github.com/omnetpp/opp_env/releases/download/wsl/opp_env.wsl" target="_blank">downloading</a> and installing a WSL image.</p>
+                            <p>opp_env can be used by <a href="https://github.com/omnetpp/opp_env/releases/download/wsl/opp_env.wsl" target="_blank">downloading</a>
+                               and starting a WSL image (click on the downloaded file), or from the console:</p>
                             <div class="code-block">
                                 <code>curl.exe -L https://github.com/omnetpp/opp_env/releases/download/wsl/opp_env.wsl | wsl --import opp_env -</code>
                                 <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>
@@ -289,7 +290,7 @@
                         <div class="step-number">2</div>
                         <div class="step-content">
                             <h3>Start the WSL image</h3>
-                            <p>Start the opp_env WSL image.</p>
+                            <p>Start the opp_env WSL image either by clicking on the installed icon or typing:</p>
                             <div class="code-block">
                                 <code>wsl -d opp_env</code>
                                 <button class="copy-btn" onclick="copyToClipboard(this)">Copy</button>

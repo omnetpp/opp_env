@@ -288,6 +288,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             *configuration_patch_commands
         ],
         "setenv_commands": [
+            "name=omnetpp-nix-env",
             # need to set OMNETPP_IMAGE_PATH explicitly, otherwise any model that sets it will silently make stock omnetpp images inaccessible;
             # unfortunately omnetpp setenv scripts don't set OMNETPP_IMAGE_PATH, so do it here
             "export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$(pwd)/images" if not is_modernized else None,

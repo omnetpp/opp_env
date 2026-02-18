@@ -2795,7 +2795,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/inbaverSim.html",
             },
-            "required_projects": {"omnetpp": ["6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},
+            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.*", "4.5.*"]},
             "download_url": "https://github.com/ComNets-Bremen/inbaverSim/archive/refs/tags/v0.3.0.tar.gz",
             "setenv_commands": [
                 r"""echo 'HINT: In the `simulations` folder, use the `../src/inbaversim` command to run example simulations. For example: `../src/inbaversim omnetpp-advanced-iot-network.ini -n .:$INBAVERSIM_ROOT/src:$INET_ROOT/src`'""",
@@ -2820,7 +2820,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/inbaverSim.html",
             },
-            "required_projects": {"omnetpp": ["6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},
+            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.*", "4.5.*"]},
             "download_url": "https://github.com/ComNets-Bremen/inbaverSim/archive/refs/tags/v0.1.0.tar.gz",
             "setenv_commands": [
                 r"""echo 'HINT: In the `simulations` folder, use the `../src/inbaversim` command to run example simulations. For example: `../src/inbaversim omnetpp-simple-iot-network.ini -n .:$INBAVERSIM_ROOT/src:$INET_ROOT/src`'""",
@@ -2840,7 +2840,7 @@ def get_project_descriptions():
 
 	{
             "name": "inbaversim", "version": "git",
-            "required_projects": {"omnetpp": ["6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},
+            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.*", "4.5.*"]},
             "description": "OMNeT++ based model framework to simulate CCN based networks. The functionality and the message formats follow the description provided in RFC 8569 and RFC 8609.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",

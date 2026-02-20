@@ -1,5 +1,13 @@
 # Changes
 
+## 0.35.0.260220
+
+### Database (Frameworks and Models)
+
+- inet: added 4.6.0 version
+- simu5g: added patch commands for 1.4.x versions to work with inet 4.6.0
+- inbaversim: added inet-4.6 and omnetpp-6.3 compatibility
+
 ## 0.35.0.260218
 
 ### Database (Frameworks and Models)

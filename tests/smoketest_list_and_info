@@ -123,7 +123,7 @@ assert_num_lines 8 12
 assert_contains_line 'simu5g-1.2.2 inet-4.5.4 omnetpp-6.0.3'
 assert_contains_line 'simu5g-1.2.1 inet-4.4.2 omnetpp-6.0.3'
 assert_contains_line 'simu5g-1.1.0 inet-4.2.10 omnetpp-5.7.1'
-assert_contains_line 'simu5g-git inet-4.5.4 omnetpp-6.2.0'
+assert_contains_line 'simu5g-git inet-4.6.0 omnetpp-6.3.0'
 assert_not_contains ' omnetpp-6.0.2'  # because it only offers the latest patchlevel of 6.0, 6.0.3
 
 run opp_env list --expand simu5g veins
@@ -152,7 +152,7 @@ assert_contains_line 'inet-4.5.1 omnetpp-6.0.0'
 assert_contains_line 'inet-4.5.0 omnetpp-6.0.3'
 
 run opp_env list --expand-all simu5g
-assert_num_lines 96 120
+assert_num_lines 96 125
 assert_contains_line 'simu5g-1.2.3 inet-4.5.4 omnetpp-6.1.0'
 assert_contains_line 'simu5g-1.2.2 inet-4.5.4 omnetpp-6.0.3'
 assert_contains_line 'simu5g-1.2.2 inet-4.5.1 omnetpp-6.0.3'

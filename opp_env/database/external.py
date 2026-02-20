@@ -1460,7 +1460,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
             ],
-            "required_projects": {"omnetpp": ["6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.4", "4.4.2"]},
+            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.0", "4.5.4", "4.4.2"]},
             "download_url": "https://github.com/inet-framework/openflow/archive/refs/tags/v20250717.tar.gz",
             "patch_commands": [
                 r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o OpenFlow|' Makefile""",
@@ -1469,6 +1469,8 @@ def get_project_descriptions():
                 r"""sed -i 's|opp_run_dbg|opp_run|' src/run_openflow""",
                 r"""sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_ROOT/images|' src/run_openflow""",
                 r"""sed -i 's|DIR/openflow -n|DIR/OpenFlow -n|' src/run_openflow""",    # this is changed so that it matches SDN4CORE
+                # patch for INET 4.6.0 compatibility
+                r"""sed -i -E 's|import inet.linklayer.ethernet.contract.IEthernetLayer;|import inet.linklayer.ethernet.contract.IEthernetLayer;\nimport inet.linklayer.contract.IEthernetLayer;|' src/openflow/openflow/controller/Open_Flow_Controller.ned src/openflow/openflow/switch/Open_Flow_Switch.ned src/openflow/hyperflow/Hyper_Flow_Synchronizer.ned""",
             ],
             "setenv_commands": [
                 r"""export INET_PROJ=$INET_ROOT""",
@@ -1500,6 +1502,8 @@ def get_project_descriptions():
                 r"""sed -i 's|opp_run_dbg|opp_run|' src/run_openflow""",
                 r"""sed -i 's|scenarios:$DIR|scenarios:$DIR -i $OPENFLOW_ROOT/images|' src/run_openflow""",
                 r"""sed -i 's|DIR/openflow -n|DIR/OpenFlow -n|' src/run_openflow""",    # this is changed so that it matches SDN4CORE
+                # patch for INET 4.6.0 compatibility
+                r"""sed -i -E 's|import inet.linklayer.ethernet.contract.IEthernetLayer;|import inet.linklayer.ethernet.contract.IEthernetLayer;\nimport inet.linklayer.contract.IEthernetLayer;|' src/openflow/openflow/controller/Open_Flow_Controller.ned src/openflow/openflow/switch/Open_Flow_Switch.ned src/openflow/hyperflow/Hyper_Flow_Synchronizer.ned""",
             ],
             "setenv_commands": [
                 r"""export INET_PROJ=$INET_ROOT""",

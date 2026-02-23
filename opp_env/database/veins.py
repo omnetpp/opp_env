@@ -16,6 +16,12 @@ def make_veins_project_description(veins_version, inet_versions, sumo_version, o
         "patch_commands": [
             "sed -i 's|^#!/usr/bin/env python$|#!/usr/bin/env python2|' configure" if veins_version<="4.6" else "",
             """sed -i "s|'--no-deep-includes', ||" configure subprojects/veins_inet/configure subprojects/veins_inet3/configure""" if veins_version>="5.0" else "",
+            """sed -i "s|b'4.5.4']|b'4.5.4', b'git']|" configure subprojects/veins_inet/configure subprojects/veins_inet/configure""" if veins_version>="5.0" else "",
+            # INET 4.6 compatibility: UdpControlInfo → UdpCommand rename; we include Udp.h so that it works with both versions of inet (4.5.4 and 4.6.0). (the UdpControlInfo_m.h's location has changed between the versions.)
+            """sed -i 's|inet/transportlayer/contract/udp/UdpControlInfo_m.h|inet/transportlayer/udp/Udp.h|g' subprojects/veins_inet/src/veins_inet/VeinsInetApplicationBase.cc subprojects/veins_inet/src/veins_inet/VeinsInetSampleApplication.cc""" if veins_version>="5.0" else "",
+            """sed -i 's|@labels(UdpControlInfo/|@labels(UdpCommand/|g' subprojects/veins_inet/src/veins_inet/VeinsInetApplicationBase.ned""" if veins_version>="5.0" else "",
+            """sed -i 's/(INET_VERSION == 0x405)/(INET_VERSION == 0x405) || (INET_VERSION == 0x406)/g' subprojects/veins_inet/src/veins_inet/veins_inet.h""" if veins_version>="5.0" else "",
+            """sed -i 's|\\.radio\\.typename = "Ieee80211DimensionalRadio"|.radio.typename = "Ieee80211DimensionalRadio"\\n*.node[*].wlan[0].radio.signalAnalogRepresentation = "dimensional"|g' subprojects/veins_inet/examples/veins_inet/omnetpp.ini""" if veins_version>="5.0" else "",
         ],
         "setenv_commands": [
             'export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$VEINS_ROOT/images:$INET_ROOT/images"',
@@ -73,7 +79,7 @@ def get_project_descriptions():
         # - many Veins versions may actually compile/work with more omnetpp versions than listed -- this is to be checked
         # - versions before 5.0 need older versions of SUMO, which are currently not available as nix packages
         # - removed omnetpp-5.5.0 from all versions due to segfault in smoke test
-        ["5.3.1", ["4.5.4", "4.5.2", "4.5.1", "4.5.0", "4.4.2", "4.4.1", "4.4.0", "3.8.3", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.21.0"], ["6.3.*", "6.2.*", "6.1.*", "6.0.*", "5.7.*", "5.6.*", "5.5.2", "5.5.1", "5.4.*", "5.3.*"]],
+        ["5.3.1", ["4.6.0", "4.5.4", "4.5.2", "4.5.1", "4.5.0", "4.4.2", "4.4.1", "4.4.0", "3.8.3", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.21.0"], ["6.3.*", "6.2.*", "6.1.*", "6.0.*", "5.7.*", "5.6.*", "5.5.2", "5.5.1", "5.4.*", "5.3.*"]],
         ["5.3", ["4.5.4", "4.5.2", "4.5.1", "4.5.0", "4.4.2", "4.4.1", "4.4.0", "3.8.3", "3.7.1", "3.7.0", "3.6.8", "3.6.7", "3.6.6", "3.6.5"], ["1.21.0"], ["6.3.*", "6.2.*", "6.1.*", "6.0.*", "5.7.*", "5.6.*", "5.5.2", "5.5.1", "5.4.*", "5.3.*"]],
         # note for 5.3:
         # removed inet-4.2.*/4.3.* due to subproject build errors

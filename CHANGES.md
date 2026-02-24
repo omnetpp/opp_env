@@ -1,5 +1,12 @@
 # Changes
 
+## 0.35.0.260224
+
+### Database (Frameworks and Models)
+
+- veins: added patch for inet-4.6 compatibility
+- openflow: added inet-4.6 and omnetpp-6.3 compatibility
+
 ## 0.35.0.260220
 
 ### Database (Frameworks and Models)

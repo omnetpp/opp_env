@@ -426,6 +426,24 @@ def get_project_descriptions():
 
         {
             # TODO: catalog
+            "name": "inetgpl", "version": "4.6.0",
+            "description": "GPL licensed models for INET",
+            "metadata": {
+            },
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s""",
+            ],
+            "required_projects": {"inet": ["4.6.*"], "omnetpp": ["6.3.*", "6.2.*"]},
+            "download_url": "https://github.com/inet-framework/inet-gpl/archive/refs/tags/v4.6.0.tar.gz",
+            "setenv_commands": [r"""source setenv""",
+                                r"""echo 'Hint: Use `inetgpl` command in any of the example simulation folders.'"""],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""]
+        },
+
+        {
+            # TODO: catalog
             "name": "inetgpl", "version": "1.0",
             "description": "GPL licensed models for INET",
             "metadata": {
@@ -446,6 +464,7 @@ def get_project_descriptions():
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""]
         },
 
+        {
         {
             "name": "rspsim", "version": "6.1.3",
             "metadata": {

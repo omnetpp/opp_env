@@ -430,11 +430,15 @@ def get_project_descriptions():
             "description": "GPL licensed models for INET",
             "metadata": {
             },
+            "patch_commands":
+            [
+                # r"""sed -i 's|import inet.transportlayer.common.CrcMode;|import inet.transportlayer.common.CrcMode;\nimport inet.common.checksum.ChecksumMode;|' src/inetgpl/applications/httptools/common/HttpMessages.msg""",
+            ],
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s""",
             ],
-            "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.2.*", "6.1.*", "6.0.*"]},
+            "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"]},
             "download_url": "https://github.com/inet-framework/inet-gpl/archive/refs/tags/v1.0.tar.gz",
             "setenv_commands": [r"""source setenv""",
                                 r"""echo 'Hint: Use `inetgpl` command in any of the example simulation folders.'"""],

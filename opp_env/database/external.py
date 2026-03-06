@@ -1744,6 +1744,39 @@ def get_project_descriptions():
         },
 
         {
+            # builds
+            "name": "os3", "version": "20220928",
+            "description": "Open Source Satellite Simulator",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/OS3.html",
+            },
+            "smoke_test_commands": [
+                # r"""if [ "$BUILD_MODE" = "release" ]; then BUILD_MODE_SUFFIX="_release"; OS3_LIB=$(echo $OS3_ROOT/out/*-release/src/*cni-os3*); fi""",
+                # r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX=""; OS3_LIB=$(echo $OS3_ROOT/out/*-debug/src/*cni-os3*); fi""",
+                # r"""opp_run$BUILD_MODE_SUFFIX -l $OS3_LIB -u Cmdenv -n simulations:src:$INET_ROOT/src:$INET_ROOT/examples $INET_ROOT/examples/ethernet/arptest/omnetpp.ini"""
+            ],
+            "nix_packages": ["curl", "tcl"],
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["4.4.0"]},
+            "download_url": "https://github.com/Avian688/os3/archive/3a71e6afb4ae91c9e27241497e3753cb22659d58.tar.gz",
+            "patch_commands": [
+                # r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile""",
+                # r"""sed -i 's|$DIR/../../inet|$INET_ROOT|' src/run_cni-os3""",
+                # r"""sed -i 's|static const double|constexpr static const double|' src/*/*.h""",
+                # r"""sed -i 's|../src/cni_os3|../src/run_cni-os3|' simulations/run""",
+            ],
+            "setenv_commands": [
+                r"""export CURL_INCLUDE=${pkgs.curl.dev}/include/curl""",
+                r"""export INET_PROJ=$INET_ROOT""",
+                                r"""export TCL_LIBRARY=$TCLLIBPATH""",
+                                r"""echo 'Hint: use the `./run` command in the simulations folder. For example: `./run Validation/omnetpp.ini`'"""],
+            "build_commands": [
+                "cd src && opp_makemake --make-so -f --deep -o os3 -KINET4_PROJ=$INET_ROOT -I$CURL_INCLUDE -I$INET_ROOT/src -L$INET_ROOT/src -lINET\$D -lcurl",
+                "make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
+            ],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""]
+        },
+
+        {
             # NOTE - only inet is tested because OS3 would need weather API access
             "name": "os3", "version": "1.0",
             "description": "Open Source Satellite Simulator",

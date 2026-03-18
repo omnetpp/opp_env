@@ -2231,6 +2231,9 @@ def get_project_descriptions():
             "nix_packages": ["python2", "libxml2"],
             "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*"], "veins": ["5.3.1"]},
             "description": "Plexe is a Veins extension for the realistic simulation of platooning (i.e., automated car-following) systems",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Plexe.html",
+            },
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.2.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
@@ -2288,6 +2291,9 @@ def get_project_descriptions():
             "nix_packages": ["python2", "libxml2"],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*", "5.7.*"], "veins": ["5.2"]},
             "description": "Plexe is a Veins extension for the realistic simulation of platooning (i.e., automated car-following) systems",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Plexe.html",
+            },
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.1.2.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
@@ -2345,6 +2351,9 @@ def get_project_descriptions():
             "nix_packages": ["python2", "libxml2"],
             "required_projects": {"omnetpp": ["6.1.*", "6.0.*", "5.7.*", "5.6.*"], "veins": ["5.2"]},   # doesn't work with veins-5.1: Function veins_omnetpp_buildnum() not found (Define_NED_Function() or Define_NED_Math_Function() missing from C++ code?) -- in module (veins::BaseWorldUtility) Highway.world (id=4), during network setup
             "description": "Plexe is a Veins extension for the realistic simulation of platooning (i.e., automated car-following) systems",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Plexe.html",
+            },
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.1.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
@@ -2401,6 +2410,9 @@ def get_project_descriptions():
             "nix_packages": ["python2", "libxml2"],
             "required_projects": {"omnetpp": ["5.7.*", "5.6.*", "5.5.*", "5.4.*", "5.3.*"], "veins": ["5.2", "5.1"]},
             "description": "Plexe is a Veins extension for the realistic simulation of platooning (i.e., automated car-following) systems",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Plexe.html",
+            },
             "download_url": "https://github.com/michele-segata/plexe/archive/refs/tags/plexe-3.0.tar.gz",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_ARG="-d"; fi""",
@@ -2428,6 +2440,9 @@ def get_project_descriptions():
             "nix_packages": ["python2"],
             "required_projects": {"omnetpp": ["5.4.2"]},
             "description": "RIMFading Radio Propagation Model in 2D and 3D for the INET Framework",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/RIMFading.html",
+            },
             "smoke_test_commands": [
                 r"""cp showcases/wireless/pathloss/omnetpp.ini showcases/wireless/pathloss/test.ini""",
                 """echo "\n[Config Test]\n*.radioMedium.pathLoss.typename = "RIMFading" " >> showcases/wireless/pathloss/test.ini """,
@@ -2517,6 +2532,9 @@ def get_project_descriptions():
             "name": "cmm_orbit_mobility_allinone", "version": "20220815",    # latest master as of time of writing
             "required_projects": {"omnetpp": ["5.5.1"]},
             "description": "ORBIT Mobilty Model (SOLAR) and Comunity-based Mobility Model (CMM) for the INET Framework to simulate mobility of nodes in ad-hoc networks.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/Mobility-Models.html",
+            },
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/mobility/CMM""",
@@ -2809,6 +2827,9 @@ def get_project_descriptions():
             "nix_packages": ["boost"],
             "required_projects": {"omnetpp": ["4.6.*"]},
             "description": "Provides useful utilities to be used with the OMNeT++",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/OMNeT_Utils.html",
+            },
             "download_url": "https://github.com/ptp-sim/OMNeT_Utils/archive/refs/tags/v1.0.tar.gz",
             "build_commands": [
                 r"""cd src && opp_makemake -f --deep -o omnet_utils --make-so && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",

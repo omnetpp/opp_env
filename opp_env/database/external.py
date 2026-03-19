@@ -3045,4 +3045,82 @@ def get_project_descriptions():
              ],
             "clean_commands": [r"""cd inet && make clean MODE=$BUILD_MODE && cd .. && make clean MODE=$BUILD_MODE"""],
         },
+
+        {
+            "name": "pileach_allinone", "version": "20250425",   # last commit of master branch as of time of writing
+            "required_projects": {"omnetpp": ["6.0.*"]},
+            "description": "Low-Energy Adaptive Clustering Hierarchy (LEACH) protocol, a classic hierarchical routing protocol for wireless sensor networks.",
+            "details": "This version downloads its own copy of INET 4.5.4, and does not use one installed by opp_env.",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/InetLeach.html",
+            },
+            "nix_packages": [
+                "z3",
+                "ffmpeg-headless",
+                "python3",
+            ],
+            "patch_commands": [
+                "OPP_FEATURETOOL=\"$OMNETPP_ROOT/src/utils/opp_featuretool\"",
+                r"""$OPP_FEATURETOOL -v enable Z3GateSchedulingConfigurator""",
+                r"""$OPP_FEATURETOOL -v enable VoipStream VoipStreamExamples""",
+                r"""$OPP_FEATURETOOL -v enable TcpLwip""",
+                r"""rm -rf examples/voipstream/osudp""",
+                r"""for f in $(grep -Rls 'defined(linux)'); do sed -i 's|defined(linux)|defined(__linux__)|' $f; done""",
+                r"""cp -r pileach_src/inet src""",
+                r"""sed -i 's|^package|// package|' pileach_src/Simulation/LeachProtocolSimulation/*.ned""",
+            ],
+            "setenv_commands": [
+                r"""export INET_ROOT=$PILEACH_ALLINONE_ROOT/""",
+                r"""export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$INET_ROOT/images" """,
+                r""". setenv""",
+                r"""echo 'Hint: In the `pileach_src/Simulation/LeachProtocolSimulation` folder, use the `inet -n .` command to run the example simulation.'""",
+            ],
+            "smoke_test_commands": [
+                r"""cd pileach_src/Simulation/LeachProtocolSimulation""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then DEBUG_SUFFIX=""; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_SUFFIX="_dbg"; fi""",
+                r"""inet$DEBUG_SUFFIX -n . -c LEACHPROTOCOL -u Cmdenv""",
+            ],
+            "download_commands": [
+                r"""mkdir pileach_allinone-20250425 && cd pileach_allinone-20250425""",
+                r"""curl -L -o src.tar.gz https://github.com/inet-framework/inet/releases/download/v4.5.4/inet-4.5.4-src.tgz --progress-bar""",
+                r"""mkdir inet && tar -xzf src.tar.gz --strip=1""",
+                r"""rm src.tar.gz""",
+                r"""curl -L -o src.tar.gz https://github.com/xcodeBn/PiLeachProtocol/archive/7d944a126c3253c38d3feefadeeb48f1e1c62437.tar.gz --progress-bar""",
+                r"""mkdir pileach_src && tar -xzf src.tar.gz --strip=1 -C pileach_src""",
+                r"""rm src.tar.gz""",
+            ],
+            "build_commands": [
+                r"""make makefiles""",
+                r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+            ],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
+
+        {
+            "name": "wifi_mlo_omnet", "version": "20250525",   # last commit of master branch as of time of writing
+            "required_projects": {"omnetpp": ["6.0.*"], "inet": ["4.5.*"]},
+            "description": "Wi-Fi 7 Multi-link Operation (MLO) for the INET Framework",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/WiFi-MLO.html",
+            },
+            "patch_commands": [
+                r"""sed -i 's|../inet4.5|$$\\(INET_ROOT\\)|g' makemakefiles""",
+                r"""sed -i 's|-O out|-O out -o wifi_mlo_omnet|g' makemakefiles""",
+            ],
+            "setenv_commands": [
+                r"""echo 'Hint: use the `./wifi_mlo_omnet simulations/omnetpp.ini -n src:simulations:$INET_ROOT/src` command to run the example simulation.'""",
+            ],
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "release" ]; then DEBUG_SUFFIX=""; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_SUFFIX="_dbg"; fi""",
+                r"""./wifi_mlo_omnet$DEBUG_SUFFIX simulations/omnetpp.ini -n src:simulations:$INET_ROOT/src -u Cmdenv --sim-time-limit=10s""",
+            ],
+            "download_url": "https://github.com/tkn-tub/wifi-mlo-omnet/archive/d7196d6395b86e3727aa5f19c0efa8d52c55d014.tar.gz",
+            "build_commands": [
+                r"""make -f makemakefiles""",
+                r"""make -j$NIX_BUILD_CORES MODE=$BUILD_MODE""",
+            ],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+        },
     ]

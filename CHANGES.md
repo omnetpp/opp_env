@@ -1,5 +1,16 @@
 # Changes
 
+## 0.35.0.260320
+
+### Database (Frameworks and Models)
+
+- added pileach and wifi_mlo_omnet
+- plexe: added 3.2
+- veins: fixed sumo version for 5.3.1
+- veins: added inet-4.6 compatibility to veins-git
+- inetgpl: added 4.6.0
+- inetgpl: added omnetpp-6.3 compatibility to inetgpl 1.0
+
 ## 0.35.0.260224
 
 ### Database (Frameworks and Models)

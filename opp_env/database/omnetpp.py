@@ -70,7 +70,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
     qt_packages = [] if version < "5.0" else  ["qt5.qtbase", "qt5.qtsvg", "qt5.qtwayland" if is_linux else None] if version < "6.2" \
-                  else (["qt6.qtbase", "qt6.qtsvg"] + (["qt6.qtwayland", "qt6ct", "adwaita-qt6", "kdePackages.breeze"] if is_linux else []))
+                  else (["qt6.qtbase", "qt6.qtsvg"] + (["qt6.qtwayland", "qt6Packages.qt6ct", "adwaita-qt6", "kdePackages.breeze"] if is_linux else []))
 
     # The default Tcl/Tk version in Nix is 8.6, and that's OK with most of our releases.
     # However, early 4.x versions don't compile with Tcl 8.6 because no longer supports "interp->result" in the C API, so they need version 8.5.
@@ -86,14 +86,18 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # Later versions (especially >= 4.4) have introduced backward-incompatible changes with pattern rules that are incompatible
     # with older OMNeT++ releases. These issues can even cause mysterious compiler crashes on subsequent builds because of
     # concurrency issues between the message compiler and the compiler.
-    other_packages = ["llvmPackages.bintools", "bison", "flex", "perl", "libxml2", "expat", "which", "xdg-utils", "pkg-config", "ccache", "gnumake42", "vim"]
+    other_packages = ["llvmPackages.bintools", "bison", "flex", "perl", "expat", "which", "xdg-utils", "pkg-config", "ccache", "gnumake42", "vim"]
+    other_packages += ["libxml2"] if version < "6.0" and is_linux else []
     other_packages += ["libdwarf", "elfutils"] if version >= "6.0" and is_linux else []
     other_packages += ["python3"] if version > "5.0" else []
     other_packages += [] if is_macos else ["lldb"] if version >= "6.2" else ["gdb"]
 
+    # ai chat extra dependencies
+    ai_packages = [ "libclang", "libllvm", "scrypt", "openssl", "kdePackages.qtkeychain" ] if version == "aipre" else []
+
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
     # note: "python3Packages.pyqt*" are needed by matplotlib in opp_charttool
-    python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix_ipc"] if version >= "6.0" else []
+    python3package_packages = ["python3Packages.numpy", "python3Packages.scipy", "python3Packages.pandas", "python3Packages.matplotlib", "python3Packages.posix-ipc"] if version >= "6.0" else []
 
     python3package_packages += [] if version < "6.0" else ["python3Packages.pyqt5"] if version < "6.2" else ["python3Packages.pyqt6"]
 
@@ -210,7 +214,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "mkdir -p bin",
         f"echo 'omnetpp-{version}' > Version",
         "[ -f configure.user.dist ] && cp configure.user.dist configure.user", # create default configure.user from configure.user.dist
-        "sed -i 's|^WITH_LIBXML=no|WITH_LIBXML=yes|' configure.user",  # we can use LIBXML even on later version of OMNeT++ where it is optional
+        "sed -i 's|^WITH_LIBXML=no|WITH_LIBXML=yes|' configure.user" if "libxml2" in other_packages else None,  # we can use LIBXML even on later version of OMNeT++ where it is optional
         "sed -i 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
         "sed -i 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
         "sed -i 's|^WITH_PARSIM=no|WITH_PARSIM=yes|' configure.user" if version >= "6.0" else None, # NOTE: we need WITH_PARSIM (but not MPI) for the "d" fingerprint ingredient to work
@@ -255,10 +259,10 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
         # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS.
         # IT MUST BE A TAG (i.e 22.11) AND NOT A BRANCH (nixos-22.11)
-        "nixos": "22.11" if version < "6.0.0" else "23.05" if version < "6.1.0" else "24.11" if version < "6.2.0" else "25.05",
+        "nixos": "22.11" if version < "6.0.0" else "23.05" if version < "6.1.0" else "24.11" if version < "6.2.0" else "25.05" if version < "6.4.0" else "25.11",
         "stdenv": None, # defined as default option
         "nix_packages":
-            remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *other_packages, *python3package_packages]),
+            remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *ai_packages, *other_packages, *python3package_packages]),
         "shell_hook_commands": [
             "echo 'Error: This OMNeT++ version (versions <6.0) is not supported on Apple Silicon.' && exit 1 " if is_unsupported_apple_silicon else None,
 
@@ -322,7 +326,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "nixos-recent": {
                 "option_description": "Force using the latest (tested) version of NixOS",
                 "option_category": "nixos",
-                "nixos": "24.05",
+                "nixos": "25.11",
             },
             "gcc7": {
                 "option_description": "Use an older version of the gcc compiler toolchain for the build",
@@ -379,6 +383,7 @@ def get_project_descriptions():
     # Modernized versions build/work with modern a C++ compiler, bison/flex
     # and other tools and libraries, and also to have similar setenv scripts.
     released_versions = [
+        "aipre*",
         "6.3.0*",
         "6.2.0*",
         "6.1.0*",

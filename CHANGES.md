@@ -1,5 +1,12 @@
 # Changes
 
+## 0.35.0.260420
+
+### Database (Frameworks and Models)
+
+- flora: added flora 1.2.0
+- omnetpp: added the omnetpp AI preview version for easier testing
+
 ## 0.35.0.260320
 
 ### Database (Frameworks and Models)

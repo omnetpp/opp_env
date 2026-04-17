@@ -136,6 +136,31 @@ def get_project_descriptions():
         },
 
         {
+            "name": "flora", "version": "1.2.0",
+            "description": "Framework for LoRa",
+            "metadata": {
+                "catalog_url": "https://omnetpp.org/download-items/FLoRA.html",
+            },
+            "smoke_test_commands": [
+                r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
+                r"""cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv -r 0 --sim-time-limit=50000s""",
+            ],
+            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},
+            "download_url": "https://github.com/florasim/flora/releases/download/v1.2.0/flora-1.2.0.tgz",
+            "patch_commands": [
+                r"""sed -i -E 's|INET_DIR = [^ ]+|INET_DIR = $(INET_ROOT)|' Makefile""",
+                r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_DIR)|' Makefile""",
+                r"""cp src/run_flora src/run_flora_dbg""",
+                r"""sed -i 's|opp_run|opp_run_dbg|' src/run_flora_dbg""",
+            ],
+            "setenv_commands": [
+                r"""echo 'Hint: use the `./run` command to run the example in the simulations folder.'""",
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""]
+        },
+
+        {
             "name": "flora", "version": "1.1.0",
             "description": "Framework for LoRa",
             "metadata": {

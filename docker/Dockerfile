@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # The base image
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 LABEL maintainer="Rudolf Hornig <rudi@omnetpp.org>"
 LABEL org.opencontainers.image.source = "https://github.com/omnetpp/opp_env"
 
@@ -9,11 +9,9 @@ ARG USER=opp_env
 ENV USER=${USER}
 ENV OPP_ENV_LAST_WORKSPACE=/home/${USER}/default_workspace
 
-SHELL ["/bin/bash", "-c"]
-
 # install dependencies, add the default user to the image, specify the default user for WSL and enable 'sudo'
 RUN apt-get update && apt-get upgrade -y && apt-get install --no-install-recommends -y \
-    sudo fontconfig curl gzip git xz-utils ca-certificates python3 python3-pip python3-venv \
+    sudo fontconfig curl gzip git xz-utils ca-certificates python3 \
     && apt-get clean && rm -rf /var/lib/apt/lists/* && mkdir -p /usr/lib/wsl && \
     userdel -f --remove ubuntu; \
     useradd -m -s /bin/bash --uid 1000 -g root ${USER}; echo "${USER}:${USER}" | chpasswd && \
@@ -36,10 +34,10 @@ USER ${USER}
 WORKDIR /home/${USER}
 
 # install nix for the default user in single user mode
-RUN set -o pipefail \
-    && sh <(curl -L https://nixos.org/nix/install) --no-daemon \
+RUN /bin/bash -c '\
+    sh <(curl --proto "=https" --tlsv1.2 -L https://nixos.org/nix/install) --no-daemon \
     && mkdir -p .local/bin \
-    && mkdir -p $OPP_ENV_LAST_WORKSPACE
+    && mkdir -p $OPP_ENV_LAST_WORKSPACE'
 
 COPY --chown=$USER:root nix.conf /home/${USER}/.config/nix/nix.conf
 COPY --chown=$USER:root keyfile.glib-2.0 /home/${USER}/.config/glib-2.0/keyfile
@@ -47,9 +45,13 @@ COPY --chown=$USER:root profile /home/${USER}/.profile
 
 # trick: check if the github repo has a new release and force a rebuild of the remaining layers    
 ADD "https://api.github.com/repos/omnetpp/opp_env/releases?per_page=1" latest_commit
-RUN rm latest_commit \
-    && python3 -m venv .venv \
-    && . .venv/bin/activate \
-    && pip install opp-env \
-    && . .profile \
-    && opp_env init --force
+
+# install uv and then opp_env
+RUN /bin/bash -c '\
+    rm latest_commit \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && source ~/.local/bin/env \
+    && uv venv --clear --seed --no-project --prompt opp_env \
+    && source ~/.venv/bin/activate \
+    && uv pip install --upgrade opp-env \
+    && opp_env init --force'

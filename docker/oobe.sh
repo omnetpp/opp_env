@@ -18,6 +18,6 @@ case $choice in
         sudo --user opp_env -- /bin/bash -c 'cd ; source .profile ; opp_env install inet-latest' || exit 1
         ;;
     *)
-        echo "Models can be installed using the 'opp_env install <name>-<version>' command (e.g. omnetpp-6.0.3 or inet-4.4)."
+        echo "Start the opp_env shell window from your start menu then models can be installed using the 'opp_env install <name>-<version>' command (e.g. omnetpp-6.0.3 or inet-4.4)."
         ;;
 esac

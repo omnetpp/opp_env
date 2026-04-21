@@ -524,6 +524,9 @@ def create_arg_parser():
     subparser = subparsers.add_parser("maint", help="Maintenance functions", description="Maintenance functions for internal use.")
     subparser.add_argument("-u", "--update-catalog", metavar="download-items-dir", dest="catalog_dir", help="Update the opp_env installation commands in the model catalog of omnetpp.org. The argument should point to the `download-items/` subdir of a checked-out copy of the https://github.com/omnetpp/omnetpp.org/ repository.")
 
+    subparser = subparsers.add_parser("upgrade", help="Upgrade opp_env to the latest version", description=
+        "Detects how opp_env was installed and runs the appropriate upgrade command.")
+
     return parser
 
 def process_arguments():
@@ -2075,6 +2078,40 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode{extra_nix_packages_str}")
     workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, commands=commands, isolated=isolated, extra_nix_packages=extra_nix_packages, vars_to_keep=vars_to_keep, build_modes=build_modes)
 
+def upgrade_subcommand_main(**kwargs):
+    import subprocess
+    import sys
+
+    # 1. uv pip
+    result = subprocess.run(["uv", "pip", "show", "opp_env"], capture_output=True)
+    if result.returncode == 0:
+        _logger.info("Detected uv pip installation, upgrading with 'uv pip install --upgrade opp-env'")
+        subprocess.run(["uv", "pip", "install", "--upgrade", "opp_env"], check=True)
+        return
+
+    # 2. uv tool
+    result = subprocess.run(["uv", "tool", "list"], capture_output=True, text=True)
+    if result.returncode == 0 and ("opp_env" in result.stdout or "opp-env" in result.stdout):
+        _logger.info("Detected uv tool installation, upgrading with 'uv tool upgrade opp-env'")
+        subprocess.run(["uv", "tool", "upgrade", "opp_env"], check=True)
+        return
+
+    # 3. pipx
+    result = subprocess.run(["pipx", "list"], capture_output=True, text=True)
+    if result.returncode == 0 and ("opp_env" in result.stdout or "opp-env" in result.stdout):
+        _logger.info("Detected pipx installation, upgrading with 'pipx upgrade opp-env'")
+        subprocess.run(["pipx", "upgrade", "opp_env"], check=True)
+        return
+
+    # 4. pip (via current interpreter)
+    result = subprocess.run([sys.executable, "-m", "pip", "show", "opp-env"], capture_output=True)
+    if result.returncode == 0:
+        _logger.info("Detected pip installation, upgrading with 'python -m pip install --upgrade opp_env'")
+        subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "opp_env"], check=True)
+        return
+
+    raise Exception("Could not detect how opp_env is installed. Please upgrade manually.")
+
 def maint_subcommand_main(catalog_dir, **kwargs):
     update_catalog(catalog_dir)
 
@@ -2137,6 +2174,8 @@ def main():
             run_subcommand_main(**kwargs)
         elif subcommand == "maint":
             maint_subcommand_main(**kwargs)
+        elif subcommand == "upgrade":
+            upgrade_subcommand_main(**kwargs)
         else:
             raise Exception(f"Unknown subcommand '{subcommand}'")
         _logger.debug(f"The {cyan(subcommand)} operation completed successfully")

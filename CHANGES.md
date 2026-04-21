@@ -1,5 +1,16 @@
 # Changes
 
+## 0.36.0.260421
+
+### opp_env
+
+- added `upgrade` subcommand that allows upgrading `opp_env` itself
+
+### Database (Frameworks and Models)
+
+- omnetpp: added missing `bubblewrap` package for running simulations using `opp_sandbox`
+- INET: added the omnetpp-aipre versions as a dependency to INET 4.6.0 (to allow easier testing)
+
 ## 0.35.0.260420
 
 ### Database (Frameworks and Models)

@@ -383,7 +383,6 @@ def get_project_descriptions():
     # Modernized versions build/work with modern a C++ compiler, bison/flex
     # and other tools and libraries, and also to have similar setenv scripts.
     released_versions = [
-        "aipre*",
         "6.3.0*",
         "6.2.0*",
         "6.1.0*",
@@ -404,6 +403,8 @@ def get_project_descriptions():
         "4.1.1*", "4.1",
         "4.0.2*", "4.0p1",
         "3.3.2*", "3.3.1",
+        # temporary low prority versions
+        "aipre*",
         # branches
         #"6.0.x:6.0.3",
         #"5.7.x:5.7.1", "5.6.x:5.6.3", "5.5.x:5.5.2", "5.4.x:5.4.2", "5.3.x:5.3.1", "5.2.x:5.2.2", "5.1.x:5.1.2", "5.0.x:5.0.1",

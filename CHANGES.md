@@ -1,5 +1,11 @@
 # Changes
 
+## 0.36.0.260422
+
+### Database (Frameworks and Models)
+
+- inet: added the omnetpp-aipre version as a dependency for INET 4.6.0
+
 ## 0.36.0.260421
 
 ### opp_env
@@ -9,7 +15,6 @@
 ### Database (Frameworks and Models)
 
 - omnetpp: added missing `bubblewrap` package for running simulations using `opp_sandbox`
-- INET: added the omnetpp-aipre versions as a dependency to INET 4.6.0 (to allow easier testing)
 
 ## 0.35.0.260420
 

@@ -412,33 +412,33 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     }
 
 def get_project_descriptions():
-    # Modernized versions are marked with a "*" suffix.
-    # Modernized versions build/work with modern a C++ compiler, bison/flex
+    # Non-modernized versions are marked with a "*" suffix.
+    # Modernized versions build/work with a modern C++ compiler, bison/flex
     # and other tools and libraries, and also to have similar setenv scripts.
     released_versions = [
-        "6.4.0*",
-        "6.3.0*",
-        "6.2.0*",
-        "6.1.0*",
-        "6.0.3*", "6.0.2*", "6.0.1", "6.0",
-        "5.7.1*", "5.7",
-        "5.6.3*", "5.6.2", "5.6.1", "5.6",
-        "5.5.2*", "5.5.1", "5.5",
-        "5.4.2*", "5.4.1", "5.4",
-        "5.3.1*", "5.3",
-        "5.2.2*", "5.2.1", "5.2",
-        "5.1.2*", "5.1.1", "5.1",
-        "5.0.1*", "5.0",
-        "4.6.1*", "4.6",
-        "4.5.1*", "4.5",
-        "4.4.2*", "4.4.1", "4.4",
-        "4.3.2*", "4.3.1", "4.3",
-        "4.2.3*", "4.2.2", "4.2.1", "4.2",
-        "4.1.1*", "4.1",
-        "4.0.2*", "4.0p1",
-        "3.3.2*", "3.3.1",
+        "6.4.0",
+        "6.3.0",
+        "6.2.0",
+        "6.1.0",
+        "6.0.3", "6.0.2", "6.0.1*", "6.0*",
+        "5.7.1", "5.7*",
+        "5.6.3", "5.6.2*", "5.6.1*", "5.6*",
+        "5.5.2", "5.5.1*", "5.5*",
+        "5.4.2", "5.4.1*", "5.4*",
+        "5.3.1", "5.3*",
+        "5.2.2", "5.2.1*", "5.2*",
+        "5.1.2", "5.1.1*", "5.1*",
+        "5.0.1", "5.0*",
+        "4.6.1", "4.6*",
+        "4.5.1", "4.5*",
+        "4.4.2", "4.4.1*", "4.4*",
+        "4.3.2", "4.3.1*", "4.3*",
+        "4.2.3", "4.2.2*", "4.2.1*", "4.2*",
+        "4.1.1", "4.1*",
+        "4.0.2", "4.0p1*",
+        "3.3.2", "3.3.1*",
         # temporary low prority versions
-        "6.4.0aipre2*",
+        "6.4.0aipre2",
         # branches
         #"6.0.x:6.0.3",
         #"5.7.x:5.7.1", "5.6.x:5.6.3", "5.5.x:5.5.2", "5.4.x:5.4.2", "5.3.x:5.3.1", "5.2.x:5.2.2", "5.1.x:5.1.2", "5.0.x:5.0.1",
@@ -449,7 +449,7 @@ def get_project_descriptions():
     for version in released_versions:
         version_name = version.split(":")[0].replace("*", "")
         base_version = version.split(":")[1] if ":" in version else None
-        is_modernized = base_version is not None or "*" in version
+        is_modernized = base_version is not None or "*" not in version
         descriptions.append(make_omnetpp_project_description(version_name, base_version, is_modernized))
     master_description = make_omnetpp_project_description("git", None, True)
 

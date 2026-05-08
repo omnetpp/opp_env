@@ -145,7 +145,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv -r 0 --sim-time-limit=50000s""",
             ],
-            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},
+            "required_projects": {"omnetpp": ["6.4.*", "6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},  # inet-4.6 not supported: scalar PHY headers moved/removed and UdpControlInfo_m.h removed
             "download_url": "https://github.com/florasim/flora/releases/download/v1.2.0/flora-1.2.0.tgz",
             "patch_commands": [
                 r"""sed -i -E 's|INET_DIR = [^ ]+|INET_DIR = $(INET_ROOT)|' Makefile""",
@@ -459,7 +459,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s""",
             ],
-            "required_projects": {"inet": ["4.6.*"], "omnetpp": ["6.3.*", "6.2.*"]},
+            "required_projects": {"inet": ["4.6.*"], "omnetpp": ["6.4.*", "6.3.*", "6.2.*"]},
             "download_url": "https://github.com/inet-framework/inet-gpl/archive/refs/tags/v4.6.0.tar.gz",
             "setenv_commands": [r"""source setenv""",
                                 r"""echo 'Hint: Use `inetgpl` command in any of the example simulation folders.'"""],
@@ -481,7 +481,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s""",
             ],
-            "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"]},
+            "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.4.*", "6.3.*", "6.2.*", "6.1.*", "6.0.*"]},
             "download_url": "https://github.com/inet-framework/inet-gpl/archive/refs/tags/v1.0.tar.gz",
             "setenv_commands": [r"""source setenv""",
                                 r"""echo 'Hint: Use `inetgpl` command in any of the example simulation folders.'"""],
@@ -1507,7 +1507,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd scenarios/usa && opp_run$BUILD_MODE_SUFFIX -l $OPENFLOW_ROOT/src/OpenFlow -n $INET_ROOT/src:$OPENFLOW_ROOT/scenarios:.:../../src Scenario_USA_ARP_Ping_Drop.ini -u Cmdenv -r 0 --sim-time-limit=100s""",
             ],
-            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.0", "4.5.4", "4.4.2"]},
+            "required_projects": {"omnetpp": ["6.4.*", "6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.0", "4.5.4", "4.4.2"]},
             "download_url": "https://github.com/inet-framework/openflow/archive/refs/tags/v20250717.tar.gz",
             "patch_commands": [
                 r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT) -o OpenFlow|' Makefile""",
@@ -2926,7 +2926,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/inbaverSim.html",
             },
-            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.*", "4.5.*"]},
+            "required_projects": {"omnetpp": ["6.4.*", "6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.*", "4.5.*"]},
             "download_url": "https://github.com/ComNets-Bremen/inbaverSim/archive/refs/tags/v0.3.0.tar.gz",
             "setenv_commands": [
                 r"""echo 'HINT: In the `simulations` folder, use the `../src/inbaversim` command to run example simulations. For example: `../src/inbaversim omnetpp-advanced-iot-network.ini -n .:$INBAVERSIM_ROOT/src:$INET_ROOT/src`'""",
@@ -2951,7 +2951,7 @@ def get_project_descriptions():
             "metadata": {
                 "catalog_url": "https://omnetpp.org/download-items/inbaverSim.html",
             },
-            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.*", "4.5.*"]},
+            "required_projects": {"omnetpp": ["6.4.*", "6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.*", "4.5.*"]},
             "download_url": "https://github.com/ComNets-Bremen/inbaverSim/archive/refs/tags/v0.1.0.tar.gz",
             "setenv_commands": [
                 r"""echo 'HINT: In the `simulations` folder, use the `../src/inbaversim` command to run example simulations. For example: `../src/inbaversim omnetpp-simple-iot-network.ini -n .:$INBAVERSIM_ROOT/src:$INET_ROOT/src`'""",
@@ -2971,7 +2971,7 @@ def get_project_descriptions():
 
 	{
             "name": "inbaversim", "version": "git",
-            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.*", "4.5.*"]},
+            "required_projects": {"omnetpp": ["6.4.*", "6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.6.*", "4.5.*"]},
             "description": "OMNeT++ based model framework to simulate CCN based networks. The functionality and the message formats follow the description provided in RFC 8569 and RFC 8609.",
             "smoke_test_commands": [
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",

@@ -1,5 +1,6 @@
 import re
 import platform
+from opp_env.opp_env import NaturalSortedStr
 
 def join_nonempty_items(sep, list):
     return sep.join([x for x in list if x])
@@ -12,11 +13,12 @@ def trim_lines(text):
     return '\n'.join(trimmed_lines)
 
 def make_omnetpp_project_description(version, base_version=None, is_modernized=False):
+    version = NaturalSortedStr(version)
+    base_version = NaturalSortedStr(base_version or version)
     canonical_version = version.replace("p", ".") if re.match(r"\d+\.\d+p\d+", version) else version+".0" if version.count('.') == 1 else version
 
     # Some patch releases are installed by downloading the preceding release ("base version"),
     # and patching them from the repo.
-    base_version = base_version or version
     github_url = "https://github.com/omnetpp/omnetpp"
 
     # Github automatically makes source archives available under a different URL for tags and branches.

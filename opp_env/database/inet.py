@@ -1,4 +1,5 @@
 import re
+from opp_env.opp_env import NaturalSortedStr
 description = "INET Framework is an open-source OMNeT++ model suite for wired, wireless and mobile networks."
 
 def dotx(version):
@@ -9,6 +10,7 @@ def join_nonempty_items(sep, list):
     return sep.join([x for x in list if x])
 
 def make_inet_project_description(inet_version, omnetpp_versions):
+    inet_version = NaturalSortedStr(inet_version)
     is_git_branch = inet_version == "git" or inet_version.endswith(".x")
     is_modernized = inet_version == "git" or inet_version.endswith(".x") # TODO and the patch-release tags on .x branches
 

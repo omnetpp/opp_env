@@ -120,6 +120,16 @@ def sort_by_project_dependencies(project_descriptions):
     sorted = topological_sort(project_descriptions, depends_on)
     return sorted
 
+class NaturalSortedStr(str):
+    """String with numeric component comparison, useful for comparing versions (avoids lexicographic pitfalls like '4.10' < '4.9').
+    Subclasses str, so all string operations (startswith, f-strings, ==, etc.) work unchanged."""
+    def __lt__(self, other): return natural_sort_key(self) <  natural_sort_key(other)
+    def __le__(self, other): return natural_sort_key(self) <= natural_sort_key(other)
+    def __gt__(self, other): return natural_sort_key(self) >  natural_sort_key(other)
+    def __ge__(self, other): return natural_sort_key(self) >= natural_sort_key(other)
+    def __eq__(self, other): return str.__eq__(self, other)
+    __hash__ = str.__hash__
+
 def is_semver(version):
     # supported formats: "3.2", "3.2.1", "3.2p1" or "3.2.1.231125"
     # note: this only VERY loosely based on https://semver.org/ (see BNF grammar there)

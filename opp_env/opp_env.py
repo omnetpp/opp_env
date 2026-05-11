@@ -1747,7 +1747,7 @@ def create_or_init_workspace(workspace_directory, allow_create=True, allow_exist
 def resolve_workspace(workspace_directory, init, nixless_workspace):
     if init:
         workspace_directory = create_or_init_workspace(workspace_directory, nixless=nixless_workspace, allow_existing=True)
-        workspace = Workspace(workspace_directory, nixless_workspace)
+        workspace = Workspace(workspace_directory)
     else:
         if nixless_workspace:
             raise Exception("--nixless-workspace is only supported with --init")

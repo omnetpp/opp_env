@@ -1,5 +1,19 @@
 # Changes
 
+## 0.36.0.20260511
+
+### Database (Frameworks and Models)
+
+- omnetpp: fix missing python3Packages.posix-ipc nix dependency name for
+  omnetpp-6.* (follow name change posix-ipx -> posix_ipc, and now only
+  omnetpp-6.0.* depends on it)
+- omnetpp.py: added version 6.4.0
+- add omnetpp-6.4 support to the following projects: inet-4.6.0, inet-3.8.5,
+  inet-git, simu5g-1.4.*, simu5g-git, inetgpl-4.6.0, openflow-20250717,
+  inbaversim-0.3.0, inbaversim-0.1.0, inbaversim-git (note: inet-git now
+  requires with omnetpp-6.4)
+- simu5g: added specialized releases 1.4.1_sdap_2, 1.3.1_rlcam, 1.4.0_rlcam
+
 ## 0.36.0.260422
 
 ### Database (Frameworks and Models)

@@ -244,7 +244,21 @@ assert_contains_line '.* ghghghg: command not found'
 assert_not_contains 'hello-from-cmd'
 
 
+#
+# check --nixless-workspace with --init (regression test: nixless_workspace was incorrectly
+# passed as default_nixos to Workspace(), causing TypeError: join() argument must be str... not 'bool')
+#
+
+NIXLESS_WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
+
+run opp_env install --init -w $NIXLESS_WORKSPACE opp_env_testproject-latest --nixless-workspace
+assert_contains_line 'hello from patch command'
+assert_contains_line 'hello from setenv command'
+assert_contains_line 'make MODE=debug invoked'
+assert_contains_line 'make MODE=release invoked'
+
 # cleanup
 rm -rf $WORKSPACE
+rm -rf $NIXLESS_WORKSPACE
 echo PASSED
 

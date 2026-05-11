@@ -589,7 +589,10 @@ To run a simulation model directly with the latest version of OMNeT++, run:
   opp_env run --install omnetpp-latest -c 'cd $OMNETPP_ROOT/samples/aloha;./aloha'""")
 
 def get_version():
-    return importlib.metadata.version("opp_env")
+    try:
+        return importlib.metadata.version("opp_env")
+    except importlib.metadata.PackageNotFoundError:
+        return "unknown"
 
 import os
 import platform

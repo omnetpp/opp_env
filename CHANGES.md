@@ -1,6 +1,6 @@
 # Changes
 
-## 0.36.0.20260511
+## 0.36.1.20260511
 
 ### Database (Frameworks and Models)
 
@@ -13,6 +13,11 @@
   inbaversim-0.3.0, inbaversim-0.1.0, inbaversim-git (note: inet-git now
   requires with omnetpp-6.4)
 - simu5g: added specialized releases 1.4.1_sdap_2, 1.3.1_rlcam, 1.4.0_rlcam
+
+### opp_env:
+
+- fix python error on using `--init` with `--nixless-workspace`
+
 
 ## 0.36.0.260422
 

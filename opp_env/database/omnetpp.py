@@ -236,6 +236,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         # and copy IDE startup script into it (auto-imports projects)
         "sed -i 's|../samples|../..|' src/utils/opp_ide""" if version >= "6.1" else None,
         "mkdir -p ../.metadata && cp \"$OPP_ENV_DIR/templates/metadata/startup.bsh\" ../.metadata" if version >= "6.1" else None,
+
+        # In nixless mode, create a Python virtual environment and install required packages (needed by configure and the IDE)
+        'if [ -z "$NIX_BINTOOLS" ] && [ -f python/requirements.txt ]; then python3 -m venv .venv --upgrade-deps --clear && source .venv/bin/activate && python3 -m pip install -r python/requirements.txt; fi' if version >= "6.1" else None,
     ]
 
     # More recent releases can handle parallel build

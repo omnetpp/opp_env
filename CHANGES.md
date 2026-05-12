@@ -17,6 +17,7 @@
 ### opp_env:
 
 - fix python error on using `--init` with `--nixless-workspace`
+- raise error when `--nixless-workspace` is specified on existing nixful workspace
 
 
 ## 0.36.0.260422

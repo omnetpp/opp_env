@@ -257,6 +257,16 @@ assert_contains_line 'hello from setenv command'
 assert_contains_line 'make MODE=debug invoked'
 assert_contains_line 'make MODE=release invoked'
 
+# check that an existing nixless workspace is treated as nixless even without --nixless-workspace:
+# re-init without the flag should succeed, and the workspace should still behave nixlessly
+run opp_env install --init -w $NIXLESS_WORKSPACE opp_env_testproject-latest
+run opp_env run -w $NIXLESS_WORKSPACE opp_env_testproject-latest -c "env | grep ^PATH="
+assert_not_contains '/nix/store/'
+
+# check that --nixless-workspace on an existing nixful workspace raises an error
+run_expect_error opp_env install --init -w $WORKSPACE opp_env_testproject-latest --nixless-workspace
+assert_contains 'already exists as a nixful workspace'
+
 # cleanup
 rm -rf $WORKSPACE
 rm -rf $NIXLESS_WORKSPACE

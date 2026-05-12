@@ -140,7 +140,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
         # binary patch the IDE so proper glibc and interpreter is used by the eclipse launcher and the JRE executables under the Nix environment
         # Only do it in nix environment. Using glob patterns and enabling nullglob are important because theses file may or may not be present in a distro (depending on the distro version)
-        "[ -n $OPP_ENV_VERSION -a -n $NIX_BINTOOLS ] && (shopt -s nullglob && patchelf --set-interpreter $(cat $NIX_BINTOOLS/nix-support/dynamic-linker) ide/*opp_ide ide/*omnetpp ide/*omnetpp64 ide/linux64/*omnetpp ide/plugins/org.eclipse.justj.*/jre/bin/* ; shopt -u nullglob) || true" if is_linux and is_ide_supported else None,
+        '[ -n "$OPP_ENV_VERSION" -a -n "$NIX_BINTOOLS" ] && (shopt -s nullglob && patchelf --set-interpreter $(cat "$NIX_BINTOOLS/nix-support/dynamic-linker") ide/*opp_ide ide/*omnetpp ide/*omnetpp64 ide/linux64/*omnetpp ide/plugins/org.eclipse.justj.*/jre/bin/* ; shopt -u nullglob) || true' if is_linux and is_ide_supported else None,
 
         # adhoc code signature is required for the IDE native lib on aarch64/macOS systems
         # absolute path required otherwise codesign is not reachable in isolated shells (i.e. durinb install/build)

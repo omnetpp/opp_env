@@ -64,7 +64,8 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "adw-gtk3", "gsettings-desktop-schemas", "zlib",
         "webkitgtk" if version < "6.2" else "webkitgtk_4_1",
         "stdenv.cc", # required for the CDT discovery mechanism (as it is hardcoded to use gcc/g++)
-        "stdenv.cc.cc.lib" if version < "5.2" or version >= "6.3" else None  # for libstdc++.so used by our nativelibs; in >5.2 and <6.3, it's statically linked
+        "stdenv.cc.cc.lib" if version < "5.2" or version >= "6.3" else None,  # for libstdc++.so used by our nativelibs; in >5.2 and <6.3, it's statically linked
+        "mesa",  # provides EGL vendor library (libEGL_mesa.so) needed by WebKitGTK's WebProcess for rendering
     ] if is_ide_supported else []
 
     ide_packages = [jre_package] + (linux_ide_packages if is_linux else [])
@@ -291,6 +292,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "export NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE -isystem ${pkgs.libxml2.dev}/include/libxml2\"" if "libxml2" in other_packages else None,
             "export XDG_DATA_DIRS=$XDG_DATA_DIRS:$GSETTINGS_SCHEMAS_PATH" if not is_macos else None,
             "export GIO_EXTRA_MODULES=${pkgs.glib-networking}/lib/gio/modules" if "gtk3" in ide_packages else None,
+            "export __EGL_VENDOR_LIBRARY_DIRS=${pkgs.mesa}/share/glvnd/egl_vendor.d" if "mesa" in ide_packages else None,
+            "export LIBGL_DRIVERS_PATH=${pkgs.mesa}/lib/dri" if "mesa" in ide_packages else None,
+            "export GBM_BACKENDS_PATH=${pkgs.mesa}/lib/gbm" if "mesa" in ide_packages else None,
             "export TK_LIBRARY=\"${pkgs.tk-8_5}/lib/tk8.5\"" if "tcl-8_5" in tcltk_packages else None,
             "export AR=    # Older/unpatched omnetpp versions require AR to be defined as 'ar rs' (not just 'ar'), so rather undefine it" if not is_modernized else None,
             # alternative: "AR=\"${AR:-ar} cr\""

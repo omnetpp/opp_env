@@ -1748,6 +1748,8 @@ def resolve_workspace(workspace_directory, init, nixless_workspace):
     if init:
         workspace_directory = create_or_init_workspace(workspace_directory, nixless=nixless_workspace, allow_existing=True)
         workspace = Workspace(workspace_directory)
+        if nixless_workspace and not workspace.nixless:
+            raise Exception(f"Workspace '{workspace_directory}' already exists as a nixful workspace; cannot use --nixless-workspace with an existing nixful workspace")
     else:
         if nixless_workspace:
             raise Exception("--nixless-workspace is only supported with --init")

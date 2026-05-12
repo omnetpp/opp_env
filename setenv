@@ -6,8 +6,9 @@ if [ "$BASH_VERSION" != "" ]; then # for BASH
   dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 elif [ "$ZSH_VERSION" != "" ]; then # on zsh the script name is in '$0'
   dir=$(cd $(dirname $0) && pwd)
-else # on any other SH compatible shell we assume that the current working directory is the OMNeT++ root directory
+else # on any other SH compatible shell we assume that the current working directory is the root directory
   dir=$(pwd)
 fi
 
-export PATH=$dir/opp_env:$PATH
+export PATH=$dir/bin:$PATH
+export PYTHONPATH=$dir:$PYTHONPATH

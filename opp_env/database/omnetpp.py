@@ -273,6 +273,13 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *ai_packages, *other_packages, *python3package_packages]),
         "shell_hook_commands": [
+            # on NixOS, nix-ld may be activated which places it's library dir in LD_LIBARARY_PATH.
+            # This may load library versions from the host OS that are incompatible with the version
+            # defined in the 'nixos' attibute above (e.g. loading the newer (OS) version of libwebkitgtk
+            # instead of the version specified above (in the 'nixos' attribute))
+            # We explicitly remove this path from LD_LIBRARY_PATH if it exists.
+            r"export LD_LIBRARY_PATH=''${LD_LIBRARY_PATH//\/run\/current-system\/sw\/share\/nix-ld\/lib/}",
+            
             "echo 'Error: This OMNeT++ version (versions <6.0) is not supported on Apple Silicon.' && exit 1 " if is_unsupported_apple_silicon else None,
 
             "export QT_PLUGIN_PATH=${pkgs.qt5.qtbase.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}:${pkgs.qt5.qtsvg.bin}/${pkgs.qt5.qtbase.qtPluginPrefix}" if "qt5.qtbase" in qt_packages else None,
@@ -305,6 +312,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         ],
         "setenv_commands": [
             "name=omnetpp-nix-env",
+
             # need to set OMNETPP_IMAGE_PATH explicitly, otherwise any model that sets it will silently make stock omnetpp images inaccessible;
             # unfortunately omnetpp setenv scripts don't set OMNETPP_IMAGE_PATH, so do it here
             "export OMNETPP_IMAGE_PATH=$OMNETPP_IMAGE_PATH:$(pwd)/images" if not is_modernized else None,

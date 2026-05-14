@@ -1663,7 +1663,9 @@ class Workspace:
         #_logger.debug(f"Nix flake file {cyan(flake_file_name)}:\n{yellow(nix_develop_flake)}")
         vars_to_keep = (vars_to_keep or []) + ['HOME', 'TERM', 'COLORTERM', 'DISPLAY', 'XAUTHORITY', 'XDG_RUNTIME_DIR', 'XDG_DATA_DIRS', 'XDG_CACHE_HOME', 'QT_AUTO_SCREEN_SCALE_FACTOR']
         isolation_options = ('-i ' + ' '.join(['-k ' + varname for varname in vars_to_keep])) if isolated else ''
-        command = '-c bash --norc' if interactive else '-c true'
+        # note: we MUST remove NIX_LD and NIX_LD_LIBRARY_PATH from the environment, because they interfere with the
+        # enabled nix-ld feature on NixOS causing misatched library versions loaded in non-isolated mode
+        command = '-c env -u NIX_LD -u NIX_LD_LIBRARY_PATH bash --norc' if interactive else '-c true'
         nix_develop_command = f"nix --extra-experimental-features nix-command --extra-experimental-features flakes develop {isolation_options} {flake_dir} {command}"
 
         env = dict(os.environ)

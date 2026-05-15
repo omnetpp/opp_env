@@ -1,13 +1,14 @@
 # Changes
 
-## 0.36.1.20260511
+## 0.36.1.20260515
 
 ### Database (Frameworks and Models)
 
 - omnetpp: fix missing python3Packages.posix-ipc nix dependency name for
   omnetpp-6.* (follow name change posix-ipx -> posix_ipc, and now only
   omnetpp-6.0.* depends on it)
-- omnetpp.py: added version 6.4.0
+- omnetpp: added version 6.4.0
+- omnetpp: fixed non-working internal browser on NixOS
 - add omnetpp-6.4 support to the following projects: inet-4.6.0, inet-3.8.5,
   inet-git, simu5g-1.4.*, simu5g-git, inetgpl-4.6.0, openflow-20250717,
   inbaversim-0.3.0, inbaversim-0.1.0, inbaversim-git (note: inet-git now

@@ -25,4 +25,10 @@ def get_project_descriptions():
                 },
             },
         },
+        {
+            "name": "mm1k", "version": "git",
+            "description": "Dummy project for testing opp_repl and its own build system",
+            "required_projects": {"omnetpp": ["6.*"]},
+            "git_url": "https://github.com/omnetpp/mm1k.git",
+        },
     ]

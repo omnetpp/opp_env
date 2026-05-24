@@ -1,4 +1,11 @@
-# Changes
+## 0.36.1.20260524
+
+### Database (Frameworks and Models)
+
+- inet: added the inet-4.5.4 + omnetpp-6.4.0 combination
+- simu5g: added version 1.4.4
+- flora: added flora-1.3
+
 
 ## 0.36.1.20260515
 

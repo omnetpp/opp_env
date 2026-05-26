@@ -26,6 +26,19 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
     git_branch_or_tag_name = f"omnetpp-{version}" if version[0].isdigit() else "master" if version == "git" else version
 
+    # the latest tested base vesion of nixos 
+    nixos_latest = "26.05"
+    
+    # The NixOS base used by various OMNeT++ versions
+    # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
+    # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS.
+    # IT MUST BE A TAG (i.e 22.11) AND NOT A BRANCH (nixos-22.11)
+    nixos_version = "22.11" if version < "6.0.0" else \
+                    "23.05" if version < "6.1.0" else \
+                    "24.11" if version < "6.2.0" else \
+                    "25.05" if version < "6.4.0" else \
+                    nixos_latest
+
     # Some versions have no release tarballs on github, some don't even have an entry on the Releases page (5.4, 5.5).
     # Source tarballs that github automatically makes are still available at URLs of the form
     # https://github.com/omnetpp/omnetpp/archive/refs/tags/omnetpp-<version>.tar.gz
@@ -56,11 +69,13 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     # It doesn't work in omnetpp-4.0 and 4.1, because it would require an older JRE version that is not present in the Nix repo.
     # A problem component is the embedded Webkit library, used as HTML widget in Eclipse (help, some tooltips, etc.)
     # It doesn't work for version 5.6 and below (due to some incompatible change in Webkit), but newer versions should work.
+    # Note: The xorg.* prefix was removed in nixos 26.05, so we need to use the unprefixed names for newer nixos versions
+    xorg_prefix = "xorg." if nixos_version < "26.05" else ""
     linux_ide_packages = [
         "graphviz", "doxygen", # required for NED doc builder
         "gtk2" if version < "5.2" else "gtk3", # SWT (eclipse 4.7 and up is using gtk3)
         "glib", "glib-networking", "libsecret",
-        "cairo", "freetype", "fontconfig", "xorg.libXtst", "xorg.libX11", "xorg.libXrender",
+        "cairo", "freetype", "fontconfig", f"{xorg_prefix}libXtst", f"{xorg_prefix}libX11", f"{xorg_prefix}libXrender",
         "adw-gtk3", "gsettings-desktop-schemas", "zlib",
         "webkitgtk" if version < "6.2" else "webkitgtk_4_1",
         "stdenv.cc", # required for the CDT discovery mechanism (as it is hardcoded to use gcc/g++)
@@ -72,8 +87,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
     # Qtenv was added in omnetpp-5.0 (and coexisted with Tkenv throughout the 5.x series).
     # Note that omnetpp-5.0 searches for Qt4 by default, but also accepts Qt5.
-    qt_packages = [] if version < "5.0" else  ["qt5.qtbase", "qt5.qtsvg", "qt5.qtwayland" if is_linux else None] if version < "6.2" \
-                  else (["qt6.qtbase", "qt6.qtsvg"] + (["qt6.qtwayland", "qt6Packages.qt6ct", "adwaita-qt6", "kdePackages.breeze"] if is_linux else []))
+    qt_packages = [] if version < "5.0" else \
+                  ["qt5.qtbase", "qt5.qtsvg", "qt5.qtwayland" if is_linux else None] if version < "6.2" else \
+                  (["qt6.qtbase", "qt6.qtsvg"] + (["qt6.qtwayland", "qt6Packages.qt6ct", "adwaita-qt6", "kdePackages.breeze"] if is_linux else []))
 
     # The default Tcl/Tk version in Nix is 8.6, and that's OK with most of our releases.
     # However, early 4.x versions don't compile with Tcl 8.6 because no longer supports "interp->result" in the C API, so they need version 8.5.
@@ -132,7 +148,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         # patch the simulator executables/IDE/build system if we are in an opp_env shell so later it does not allow running outside of an opp_env shell
         """[ -n "$OPP_ENV_VERSION" ] && sed -i 's/cStaticFlag dummy;/cStaticFlag dummy;\\n    if (!getenv("OPP_ENV_VERSION") || !getenv("OMNETPP_ROOT")) { std::cerr << "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." << std::endl; return 1; }/' """ + ("src/envir/evmain.cc" if version >= "4.2" else "src/envir/main.cc"),
         # set the LD_LIBRARY_PATH in opp_ide (or omnetpp/omnest) so the IDE will be able properly access the required dependencies
-        f"""[ -n "$OPP_ENV_VERSION" ] && sed -i -E 's|^(#!.*)$|\\1\\nexport LD_LIBRARY_PATH="$LD_LIBRARY_PATH{":${pkgs.zlib}/lib" if "zlib" in ide_packages else ""}{":${pkgs.cairo}/lib" if "cairo" in (tcltk_packages + ide_packages) else ""}{":${pkgs.gtk2}/lib" if "gtk2" in ide_packages else ""}{":${pkgs.gtk3}/lib" if "gtk3" in ide_packages else ""}{":${pkgs.glib.out}/lib" if "glib" in ide_packages else ""}{":${pkgs.libsecret}/lib" if "libsecret" in ide_packages else ""}{":${pkgs.webkitgtk}/lib" if "webkitgtk" in ide_packages else ""}{":${pkgs.webkitgtk_4_1}/lib" if "webkitgtk_4_1" in ide_packages else ""}{":${pkgs.xorg.libXtst}/lib" if "xorg.libXtst" in ide_packages else ""}{":${pkgs.stdenv.cc.cc.lib}/lib" if "stdenv.cc.cc.lib" in ide_packages else ""}" |' """ + (" src/utils/opp_ide" if version >= "6.0" else " src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
+        f"""[ -n "$OPP_ENV_VERSION" ] && sed -i -E 's|^(#!.*)$|\\1\\nexport LD_LIBRARY_PATH="$LD_LIBRARY_PATH{":${pkgs.zlib}/lib" if "zlib" in ide_packages else ""}{":${pkgs.cairo}/lib" if "cairo" in (tcltk_packages + ide_packages) else ""}{":${pkgs.gtk2}/lib" if "gtk2" in ide_packages else ""}{":${pkgs.gtk3}/lib" if "gtk3" in ide_packages else ""}{":${pkgs.glib.out}/lib" if "glib" in ide_packages else ""}{":${pkgs.libsecret}/lib" if "libsecret" in ide_packages else ""}{":${pkgs.webkitgtk}/lib" if "webkitgtk" in ide_packages else ""}{":${pkgs.webkitgtk_4_1}/lib" if "webkitgtk_4_1" in ide_packages else ""}{":${pkgs." + xorg_prefix + "libXtst}/lib" if (xorg_prefix + "libXtst") in ide_packages else ""}{":${pkgs.stdenv.cc.cc.lib}/lib" if "stdenv.cc.cc.lib" in ide_packages else ""}" |' """ + (" src/utils/opp_ide" if version >= "6.0" else " src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
         """[ -n "$OPP_ENV_VERSION" ] && sed -i -E 's|^(#!.*)$|\\1\\n[ -z $OPP_ENV_VERSION ] \\&\\& echo "<!> Error: This OMNeT++ installation cannot be used outside an opp_env shell." \\&\\& exit 1|' """ + ("src/utils/opp_ide" if version >= "6.0" else "src/utils/omnetpp src/utils/omnest" ) if version >= "4.0" else None,
         """[ -n "$OPP_ENV_VERSION" ] && sed -i 's/OMNETPP_PRODUCT = @OMNETPP_PRODUCT@/ifndef OPP_ENV_VERSION\\n  $(error This OMNeT++ installation cannot be used outside an opp_env shell.)\\nendif\\nOMNETPP_PRODUCT = @OMNETPP_PRODUCT@/' Makefile.inc.in""" if version >= "4.0" else None,
 
@@ -265,10 +281,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "base_version": base_version,
         },
 
-        # Default NIX version used by OMNeT++ 5.7.x and earlier: https://github.com/NixOS/nixpkgs/commits/22.11
-        # TO ENSURE REPRODUCIBILITY, IT MUST NOT BE CHANGED FOR EXISTING VERSIONS.
-        # IT MUST BE A TAG (i.e 22.11) AND NOT A BRANCH (nixos-22.11)
-        "nixos": "22.11" if version < "6.0.0" else "23.05" if version < "6.1.0" else "24.11" if version < "6.2.0" else "25.05" if version < "6.4.0" else "25.11",
+        "nixos": nixos_version,
         "stdenv": None, # defined as default option
         "nix_packages":
             remove_blanks([*ide_packages, *qt_packages, *tcltk_packages, *ai_packages, *other_packages, *python3package_packages]),
@@ -346,7 +359,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "nixos-recent": {
                 "option_description": "Force using the latest (tested) version of NixOS",
                 "option_category": "nixos",
-                "nixos": "25.11",
+                "nixos": nixos_latest,
             },
             "gcc7": {
                 "option_description": "Use an older version of the gcc compiler toolchain for the build",

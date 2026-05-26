@@ -96,7 +96,7 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
     other_packages += [] if is_macos else ["lldb"] if version >= "6.2" else ["gdb"]
 
     # ai chat extra dependencies
-    ai_packages = [ "bubblewrap", "libclang", "libllvm", "scrypt", "openssl", "kdePackages.qtkeychain" ] if version == "aipre" else []
+    ai_packages = [ "bubblewrap", "libclang", "libllvm", "scrypt", "openssl", "kdePackages.qtkeychain" ] if version == "6.4.0aipre2" else []
 
     # Python packages required for the Analysis Tool and the omnetpp.scave package. Version 6.0 and up.
     # note: "python3Packages.pyqt*" are needed by matplotlib in opp_charttool
@@ -425,7 +425,7 @@ def get_project_descriptions():
         "4.0.2*", "4.0p1",
         "3.3.2*", "3.3.1",
         # temporary low prority versions
-        "aipre*",
+        "6.4.0aipre2*",
         # branches
         #"6.0.x:6.0.3",
         #"5.7.x:5.7.1", "5.6.x:5.6.3", "5.5.x:5.5.2", "5.4.x:5.4.2", "5.3.x:5.3.1", "5.2.x:5.2.2", "5.1.x:5.1.2", "5.0.x:5.0.1",

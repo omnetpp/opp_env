@@ -1,3 +1,17 @@
+## 0.36.2.260606
+
+### opp_env
+
+- Fixed incorrect version number used in timestamp. Should be YYMMDD.
+
+### Database (Frameworks and Models)
+
+- omnetpp: added 6.4.0 AI preview version
+- omnetpp: 6.4.0 and 6.4.0 ai preview is now using stable nixos 26.05
+- inet: added omnetpp-6.4.0aipre2 as a supported dependency got INET 4.6
+- mm1k: added a dummy model for `opp_ci` testing
+
+
 ## 0.36.1.20260524
 
 ### Database (Frameworks and Models)

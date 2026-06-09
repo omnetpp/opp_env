@@ -97,6 +97,35 @@ assert_not_contains 'make MODE=debug invoked'
 assert_not_contains 'make MODE=release invoked'
 
 #
+# check --run-install-commands
+#
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest
+assert_not_contains 'hello from install command'  # install_commands NOT run by default
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --run-install-commands
+assert_contains_line 'hello from install command'  # install_commands run with --run-install-commands
+assert_contains_line 'hello from patch command'
+assert_contains_line 'make MODE=debug invoked'
+assert_contains_line 'make MODE=release invoked'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --run-install-commands --no-build
+assert_contains_line 'hello from install command'
+assert_not_contains 'make MODE=debug invoked'
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+run opp_env install -w $WORKSPACE opp_env_testproject-latest --run-install-commands --options=extra-install
+assert_contains_line 'hello from install command'
+assert_contains_line 'hello from extra install command'  # option appended extra command
+
+rm -rf $WORKSPACE/opp_env_testproject-*
+TEST_PRE_INSTALL_COMMAND=ghghghg run_expect_error opp_env install -w $WORKSPACE opp_env_testproject-latest --run-install-commands -k TEST_PRE_INSTALL_COMMAND
+assert_contains_line '.* ghghghg: command not found'
+
+#
 # check install --smoke-test, --test, run --smoke-test, --test
 #
 

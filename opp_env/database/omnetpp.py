@@ -319,7 +319,10 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             "export AR=    # Older/unpatched omnetpp versions require AR to be defined as 'ar rs' (not just 'ar'), so rather undefine it" if not is_modernized else None,
             # alternative: "AR=\"${AR:-ar} cr\""
         ],
-        "patch_commands": [
+        "install_commands": [
+            "[ -f ./install.sh ] && ./install.sh -y --no-build",
+        ],
+        "patch_commands": [            
             *source_patch_commands,
             *configuration_patch_commands
         ],

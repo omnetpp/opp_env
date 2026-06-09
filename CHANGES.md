@@ -1,3 +1,18 @@
+## 0.37.0.260609
+
+### opp_env
+
+- Add `--run-install-commands` option and `install_commands` list to
+  project descriptions to support limited automatic installation of
+  external dependencies in nixless workspaces.
+- inet: added version 4.7.0
+
+### Database (Frameworks and Models)
+
+- omnetpp: added support calling `./install.sh` after downloading and
+  patching, if `--run-install-commands` is specified (for nixless workspaces).
+
+
 ## 0.36.2.260805
 
 ### Database (Frameworks and Models)
@@ -14,13 +29,11 @@
 
 - simu5g: added versions 1.4.5 and 1.5.0
 
-
 ## 0.36.2.260707
 
 ### Database (Frameworks and Models)
 
 - inet: added version 4.7.0
-
 
 ## 0.36.2.260606
 

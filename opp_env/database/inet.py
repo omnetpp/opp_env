@@ -32,16 +32,20 @@ def make_inet_project_description(inet_version, omnetpp_versions):
             "python3" if inet_version >= "3.6.7" or is_modernized else "python2" # up to inet-3.6.6, inet_featuretool uses python2 in original, and python3 in modernized versions
             ],
         "patch_commands": [
+            # if not in nixlesss mode enable features that require external dependencies (z3, ffmpeg)
             # we do have z3 and avcodec (in ffmpeg), so turn on the project features that use them
             # note1: omnetpp is usually not yet built at this point, so use opp_featuretool from its source directory;
             # note2: we cannot move this to build_commands or setenv_commands, because inet would be marked as MODIFIED right after build
             # note3: VoipStream could be turned on for earlier INET versions too, but it's not tested out / added yet
             'OPP_FEATURETOOL="$OMNETPP_ROOT/src/utils/opp_featuretool"',
-            "$OPP_FEATURETOOL -v enable Z3GateSchedulingConfigurator" if inet_version >= "4.4" else "",
-            "$OPP_FEATURETOOL -v enable VoipStream VoipStreamExamples" if inet_version >= "4.3" else
-            "$OPP_FEATURETOOL -v enable VoIPStream VoIPStream_examples" if inet_version >= "4.0" else "",
-            "$OPP_FEATURETOOL -v enable TcpLwip" if inet_version >= "4.3.0" else
-            "$OPP_FEATURETOOL -v enable TCP_lwIP" if inet_version >= "4.0.0" else "",
+            'if [ -n "$IN_NIX_SHELL" ]; then',
+            '  # (keep this comment to prevent empty if-block warning)',
+            "  $OPP_FEATURETOOL -v enable Z3GateSchedulingConfigurator" if inet_version >= "4.4" else "",
+            "  $OPP_FEATURETOOL -v enable VoipStream VoipStreamExamples" if inet_version >= "4.3" else
+            "  $OPP_FEATURETOOL -v enable VoIPStream VoIPStream_examples" if inet_version >= "4.0" else "",
+            "  $OPP_FEATURETOOL -v enable TcpLwip" if inet_version >= "4.3.0" else
+            "  $OPP_FEATURETOOL -v enable TCP_lwIP" if inet_version >= "4.0.0" else "",
+            'fi',
 
             # tutorials is missing a package.ned in some versions
             "touch tutorials/package.ned" if inet_version <= "4.2.1" and inet_version >= "3.6.0" else "",

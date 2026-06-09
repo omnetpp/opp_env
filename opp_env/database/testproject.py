@@ -3,6 +3,7 @@ def get_project_descriptions():
         {
             "name": "opp_env_testproject", "version": "0.1",
             "description": "Dummy project for testing opp_env",
+            "install_commands": ["$TEST_PRE_INSTALL_COMMAND", "echo hello from install command"],
             "patch_commands": ["$TEST_PRE_PATCH_COMMAND", "echo hello from patch command"],
             "setenv_commands": ["$TEST_PRE_SETENV_COMMAND", "echo hello from setenv command", "export SETENV_VAR=hello-from-setenv", "echo BUILD_MODES=$BUILD_MODES"],
             "build_commands": ["$TEST_PRE_BUILD_COMMAND", "make MODE=$BUILD_MODE"],
@@ -22,6 +23,10 @@ def get_project_descriptions():
                     "option_is_default": False,
                     "git_url": "https://github.com/omnetpp/opp_env_testproject.git",
                     "git_branch": "main",
+                },
+                "extra-install": {
+                    "option_description": "Append extra install commands",
+                    "install_commands": ["@append", "echo hello from extra install command"],
                 },
             },
         },

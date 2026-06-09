@@ -1,3 +1,16 @@
+## 0.37.0.260609
+
+### opp_env
+
+- Add `--run-install-commands` option and `install_commands` list to
+  project descriptions to support limited automatic installation of
+  external dependencies in nixless workspaces.
+
+### Database (Frameworks and Models)
+
+- omnetpp: added support calling `./install.sh` after downloading and
+  patching, if `--run-install-commands` is specified (for nixless workspaces).
+
 ## 0.36.2.260606
 
 ### opp_env

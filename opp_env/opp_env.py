@@ -308,6 +308,11 @@ def create_arg_parser():
             It expects the file system locations to be passed in via environment variables.
             It is primarily useful for testing purposes.
             """)
+        elif name=="run-install-commands": subparser.add_argument("--run-install-commands", dest="run_install_commands", default=False, action='store_true', help=
+            """
+            Execute project specific installation commands.
+            This is mostly useful in nixless workspaces where external dependency installation is not handled by Nix.
+            """)
         elif name=="isolated":    subparser.add_argument("-i", "--isolated", action=argparse.BooleanOptionalAction, default=False, help=
             """
             Run in a Nix-based isolated environment from the host operating system. The default is to run non-isolated.
@@ -419,6 +424,7 @@ def create_arg_parser():
         "no-patch",
         "no-build",
         "build-modes",
+        "run-install-commands",
         "no-isolated",
         "keep",
         "local"
@@ -463,6 +469,7 @@ def create_arg_parser():
         "no-pause",
         "no-cleanup",
         "no-patch",
+        "run-install-commands",
         "add-extra-nix-packages",
         "install",
         "no-build", # with --install
@@ -518,6 +525,7 @@ def create_arg_parser():
         "no-pause",
         "no-cleanup",
         "no-patch",
+        "run-install-commands",
         "add-extra-nix-packages",
         "install",
         "no-build", # with --install
@@ -693,7 +701,7 @@ class ProjectDescription:
                  nixos=None, stdenv=None, folder_name=None,
                  required_projects={}, nix_packages=[], vars_to_keep=[],
                  download_url=None, git_url=None, git_branch=None, download_commands=[],
-                 patch_commands=[], patch_url=None,
+                 patch_commands=[], patch_url=None, install_commands=[],
                  shell_hook_commands=[], setenv_commands=[],
                  build_commands=[], clean_commands=[], smoke_test_commands=[], test_commands=[],
                  potential_build_inputs=None, potential_build_outputs=None,
@@ -717,6 +725,7 @@ class ProjectDescription:
         self.download_commands = remove_empty(download_commands)
         self.patch_commands = remove_empty(patch_commands)
         self.patch_url = patch_url
+        self.install_commands = remove_empty(install_commands)
         self.shell_hook_commands = remove_empty(shell_hook_commands)
         self.setenv_commands = remove_empty(setenv_commands)
         self.build_commands = remove_empty(build_commands)
@@ -1228,7 +1237,7 @@ class Workspace:
         data.update(kwargs)
         self.write_project_state_file(project_description, data)
 
-    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None):
+    def download_project(self, project_description, effective_project_descriptions, patch=True, run_install_commands=False, cleanup=True, local=False, git_branch=None, vars_to_keep=None):
         def get_env(varname, what):
             value = os.environ.get(varname)
             _logger.debug(f"Checking {cyan('$'+varname)} for {what}: {cyan(value)}")
@@ -1287,6 +1296,11 @@ class Workspace:
                         self.run_commands_with_projects(effective_project_descriptions, project_dir, commands, run_setenv=False, vars_to_keep=vars_to_keep)
                 else:
                     _logger.info(f"Skipping patching step of project {cyan(project_description.get_full_name())}")
+
+            if run_install_commands and project_description.install_commands:
+                _logger.info(f"Running install commands for project {cyan(project_description.get_full_name())}")
+                commands = [ f"export LOCAL_OPERATION={'1' if local else ''}", *project_description.install_commands ]
+                self.run_commands_with_projects(effective_project_descriptions, project_dir, commands, run_setenv=False, vars_to_keep=vars_to_keep)
 
             self.update_project_state(project_description, name=project_description.get_full_name())
             self.record_project_shasums(project_description, "postdownload")
@@ -1373,10 +1387,10 @@ class Workspace:
         else:
             return list(values)[0]
 
-    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None):
+    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, run_install_commands=False, cleanup=True, local=False, git_branch=None, vars_to_keep=None):
         project_state = self.get_project_status(project_description)
         if project_state == Workspace.ABSENT:
-            self.download_project(project_description, effective_project_descriptions, patch, cleanup, local=local, git_branch=git_branch, vars_to_keep=vars_to_keep)
+            self.download_project(project_description, effective_project_descriptions, patch, run_install_commands, cleanup, local=local, git_branch=git_branch, vars_to_keep=vars_to_keep)
         elif project_state == Workspace.INCOMPLETE:
             raise Exception(f"Cannot download '{project_description}': Directory already exists")
         elif project_state == Workspace.DOWNLOADED:
@@ -1936,7 +1950,7 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     create_or_init_workspace(workspace_directory, allow_nonempty=force, nixless=nixless_workspace)
 
-def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, extra_nix_packages=None, init=False, pause_after_warnings=True, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, run_test=False, run_smoke_test=False, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, extra_nix_packages=None, init=False, pause_after_warnings=True, isolated=True, vars_to_keep=None, patch=True, run_install_commands=False, cleanup=True, local=False, build_modes=None, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -1957,7 +1971,7 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     for project_description in reversed(effective_project_descriptions):
-        workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
+        workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, run_install_commands=run_install_commands, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -1988,7 +2002,7 @@ def check_multiple_versions(project_descriptions):
             def q(l): return "[" + ", ".join(l) + "]"
             raise Exception(f"Multiple versions specified for project {cyan(name)}: {cyan(q(versions))} -- only one version of a project may be active at a time")
 
-def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, run_install_commands=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -2018,7 +2032,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     if install:
         for project_description in reversed(effective_project_descriptions):
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, run_install_commands=run_install_commands, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -2049,7 +2063,7 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, extra_nix_packages=extra_nix_packages, check_exitcode=False, vars_to_keep=vars_to_keep, build_modes=build_modes)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, run_install_commands=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
@@ -2078,7 +2092,7 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
     if install:
         for project_description in reversed(effective_project_descriptions):
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, run_install_commands=run_install_commands, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 

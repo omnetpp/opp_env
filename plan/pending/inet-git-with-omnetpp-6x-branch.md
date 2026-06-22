@@ -88,24 +88,20 @@ override, this installs INET master against the OMNeT++ `omnetpp-6.x` branch.
 `opp_env.py` ~L1268 has a leftover `print(git_branch)` in `download_project()`.
 Remove it.
 
-### 3. Tests
+### 3. Tests  ✅ DONE
 
-- `tests/smoketest_install_and_run` / build tests: add a case exercising the
-  `@branch` combo, e.g. a dry run / `--print-commands` of
-  `inet-git omnetpp-git@omnetpp-6.x` asserting OMNeT++ checks out `omnetpp-6.x`
-  and INET checks out `master`, with no release-tarball URLs.
-- Optionally add a full build of the combo to `tests/test_inet_build`
-  (slow — see Verification).
-- No change expected in `tests/smoketest_list_and_info` (no new listed version).
+- Added a resolution check to `tests/smoketest_list_and_info` (lightweight, no
+  build): `list --matching inet-git omnetpp-git` lists the combination, and
+  `list --expand inet-git` still defaults to `omnetpp-6.4.0` (not the git branch).
+  This is the right place — there is no new listed version, and the existing
+  `--print-commands`-style dry run does not exist as a flag; resolution is what
+  the change affects. The heavy `@branch`-checkout/build path is covered by the
+  full build in Verification step 3.
 
-### 4. CHANGES.md
+### 4. CHANGES.md  ✅ DONE
 
-Add a new dated section under `### Database (Frameworks and Models)`:
-
-```
-- inet: inet-git can now be installed against the omnetpp git branch
-  (omnetpp-git), enabling e.g. `opp_env install inet-git omnetpp-git@omnetpp-6.x`
-```
+Added section `0.36.3.260622` with the inet-git/omnetpp-git entry and the
+stray-print removal.
 
 ## Verification
 

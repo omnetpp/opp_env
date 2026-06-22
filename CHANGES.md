@@ -1,3 +1,17 @@
+## 0.36.3.260622
+
+### opp_env
+
+- Removed a stray debug print emitted during git checkout in `install`.
+
+### Database (Frameworks and Models)
+
+- inet: inet-git can now be installed against the omnetpp git branch
+  (omnetpp-git) in addition to the omnetpp-6.4.* releases, enabling e.g.
+  `opp_env install inet-git omnetpp-git@omnetpp-6.x`. Bare `inet-git` still
+  defaults to a released omnetpp, so the git branch stays opt-in.
+
+
 ## 0.36.2.260606
 
 ### opp_env

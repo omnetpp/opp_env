@@ -103,6 +103,16 @@ assert_contains_line 'veins-git simu5g-1.1.0'
 assert_contains_line 'veins-5.3 simu5g-git'
 assert_contains_line 'veins-git simu5g-git'
 
+# inet-git can be combined with omnetpp-git (e.g. for installing as
+# 'inet-git omnetpp-git@omnetpp-6.x'), in addition to omnetpp-6.4.* releases
+run opp_env list --matching inet-git omnetpp-git
+assert_contains_line 'inet-git omnetpp-git'
+
+# ...but bare 'inet-git' still defaults to a released omnetpp, not the git branch
+run opp_env list --expand inet-git
+assert_contains_line 'inet-git omnetpp-6.4.0'
+assert_not_contains 'inet-git omnetpp-git'
+
 run opp_env list --expand
 assert_num_lines 200 270
 assert_contains_line 'omnetpp-6.0.3'

@@ -1,0 +1,135 @@
+# Support installing INET git (master) with OMNeT++ git omnetpp-6.x branch
+
+## Goal
+
+Make `opp_env` able to install the **INET git master** branch together with the
+**OMNeT++ `omnetpp-6.x` git branch**, using the already-supported `@branch`
+syntax:
+
+```bash
+opp_env install inet-git@master omnetpp-git@omnetpp-6.x
+# equivalently, since inet-git already defaults to the master branch:
+opp_env install inet-git omnetpp-git@omnetpp-6.x
+```
+
+This needs **one database change**: `inet-git` must declare the OMNeT++ `git`
+version as a compatible dependency. No new `omnetpp-6.x` version entry is needed.
+
+## Background / findings
+
+### `@branch` syntax already exists
+
+A project name may carry an `@<branch>` suffix that overrides which git branch is
+checked out, on top of the project's normal git clone:
+
+- `chop_branch_names()` (`opp_env.py` ~L1718) splits `name@branch` into the
+  stripped project name plus a `{stripped_name: branch}` map, keyed by
+  `get_full_name()` (e.g. `omnetpp-git`).
+- `download_project()` (~L1267) does `git_branch = git_branch or
+  project_description.git_branch`, then appends `git checkout <branch>` to the
+  clone command.
+- It is only valid for projects installed **from git** (~L1252 raises otherwise),
+  which the `-git` versions are by default.
+- It is documented in the CLI help (~L255, ~L403:
+  `opp_env install inet-git@topic/mybranch`).
+
+So `omnetpp-git@omnetpp-6.x` means: use the **`omnetpp-git`** project description
+(master settings — modernized, newest nixos/toolchain, no base-release patching)
+but `git checkout omnetpp-6.x` instead of `master`. The branch override changes
+only the checkout; nix packages, patch/build commands, etc. come from the `git`
+description, which is appropriate since both `master` and `omnetpp-6.x` are
+modern branches.
+
+### Why it doesn't work today: dependency compatibility
+
+The `@` suffix changes only *which branch is checked out* — it does **not** affect
+version-compatibility resolution, which runs purely on the version string. For
+both projects that string is `"git"`.
+
+`inet-git` currently declares compatibility only with released `6.4.*` versions
+(`inet.py` ~L271):
+
+```python
+make_inet_project_description("git", ["6.4.*"]),
+```
+
+`_is_valid_combination()` rejects `(inet=git, omnetpp=git)` because `"git"` is not
+in the expanded `["6.4.*"]`. So `opp_env install inet-git omnetpp-git@...` fails
+to resolve before the branch override is ever applied.
+
+### Resolution ordering keeps the branch combo opt-in
+
+`get_project_version_names()` returns versions in **database declaration order**;
+`expand_dependencies()` takes the first valid combination. OMNeT++'s `git`
+(master) description is appended **last** (`omnetpp.py` ~L454), after all
+releases, so it is the lowest-priority match. Adding `"git"` to INET git's
+compatible list therefore does **not** change the default: bare
+`opp_env install inet-git` still resolves to the highest-priority release
+(`omnetpp-6.4.*`). The OMNeT++ git branch is selected only when the user names
+`omnetpp-git` explicitly.
+
+## Plan
+
+### 1. INET database — declare omnetpp-git as a compatible dependency for INET git  ✅ DONE
+
+File: `opp_env/database/inet.py`, `get_project_descriptions()` (~L271).
+
+```python
+        make_inet_project_description("git", ["6.4.*", "git"]),
+```
+
+`"6.4.*"` stays **first** so bare `inet-git` still defaults to a 6.4 release;
+adding `"git"` makes `(inet-git, omnetpp-git)` a valid combination that the user
+opts into by naming `omnetpp-git`. Combined with the `@omnetpp-6.x` branch
+override, this installs INET master against the OMNeT++ `omnetpp-6.x` branch.
+
+### 2. Drive-by: remove stray debug print  ✅ DONE
+
+`opp_env.py` ~L1268 has a leftover `print(git_branch)` in `download_project()`.
+Remove it.
+
+### 3. Tests
+
+- `tests/smoketest_install_and_run` / build tests: add a case exercising the
+  `@branch` combo, e.g. a dry run / `--print-commands` of
+  `inet-git omnetpp-git@omnetpp-6.x` asserting OMNeT++ checks out `omnetpp-6.x`
+  and INET checks out `master`, with no release-tarball URLs.
+- Optionally add a full build of the combo to `tests/test_inet_build`
+  (slow — see Verification).
+- No change expected in `tests/smoketest_list_and_info` (no new listed version).
+
+### 4. CHANGES.md
+
+Add a new dated section under `### Database (Frameworks and Models)`:
+
+```
+- inet: inet-git can now be installed against the omnetpp git branch
+  (omnetpp-git), enabling e.g. `opp_env install inet-git omnetpp-git@omnetpp-6.x`
+```
+
+## Verification
+
+Work in a dedicated git worktree (per global CLAUDE.md). After step 1:
+
+1. Resolution succeeds: `opp_env install inet-git omnetpp-git@omnetpp-6.x`
+   with `--print-commands` (dry run) shows OMNeT++ cloning its repo and
+   `git checkout omnetpp-6.x`, INET cloning and checking out `master`, and no
+   release-tarball URLs.
+2. Opt-in preserved: bare `opp_env install inet-git` (no omnetpp arg) still
+   resolves omnetpp to a `6.4.*` release, not `git`.
+3. Full build of `inet-git omnetpp-git@omnetpp-6.x` in a scratch workspace
+   (slow; delegate to a Sonnet subagent and verify the report + that both `out/`
+   libs exist). Confirms the master/6.x source-level compatibility the request
+   assumes.
+4. Run the updated smoke tests in `tests/`.
+
+## Open questions / risks
+
+- **Source compatibility:** INET master targets OMNeT++ master, not the 6.x
+  maintenance branch. This change makes the combination *resolvable and
+  installable*; whether it *builds* is verified in step 3. A build failure would
+  be an upstream source issue, not an `opp_env` database issue — capture the
+  result here if it occurs.
+- This relies on the `omnetpp-6.x` branch existing on GitHub (confirmed via
+  `git ls-remote https://github.com/omnetpp/omnetpp.git omnetpp-6.x`). The
+  `@branch` mechanism requires the branch to exist at install time.

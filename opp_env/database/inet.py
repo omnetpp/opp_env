@@ -113,11 +113,15 @@ def make_inet_project_description(inet_version, omnetpp_versions):
         "build_commands": [
             "make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE",
             # In nixless mode, install INET's Python requirements into omnetpp's venv
-            # (the one that is active at run time), so tests run against INET's pinned
-            # deps alongside omnetpp's — mirrors CI, which pip-installs omnetpp's then
-            # INET's requirements.txt into one venv. omnetpp built the venv (>=6.1);
-            # skip cleanly if it's absent (nix, or older omnetpp) or INET has no reqs.
-            'if [ -z "$NIX_BINTOOLS" ] && [ -f python/requirements.txt ] && [ -f "$OMNETPP_ROOT/.venv/bin/activate" ]; then source "$OMNETPP_ROOT/.venv/bin/activate" && python3 -m pip install -r python/requirements.txt; fi'
+            # (the one active at run time), so tests run against INET's pinned deps
+            # alongside omnetpp's — mirrors CI (pip install omnetpp's then INET's
+            # requirements into one venv). Use the venv's pip DIRECTLY, never
+            # `source activate`: build_commands run once per build MODE in a shared
+            # subshell, so activating the venv in the release pass leaks a mutated
+            # PATH into the debug pass and breaks opp_makemake lookup. omnetpp built
+            # the venv (>=6.1); skip cleanly if it's absent (nix / older omnetpp) or
+            # INET has no requirements.txt.
+            'if [ -z "$NIX_BINTOOLS" ] && [ -f python/requirements.txt ] && [ -x "$OMNETPP_ROOT/.venv/bin/pip" ]; then "$OMNETPP_ROOT/.venv/bin/pip" install -r python/requirements.txt; fi'
         ],
         "clean_commands": [
             "[ ! -f src/Makefile ] || make clean MODE=$BUILD_MODE"

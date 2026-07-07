@@ -1,3 +1,10 @@
+## 0.36.2.260707
+
+### Database (Frameworks and Models)
+
+- inet: added version 4.7.0
+
+
 ## 0.36.2.260606
 
 ### opp_env

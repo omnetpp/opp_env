@@ -2,6 +2,51 @@
 
 ### opp_env
 
+- Read-only Nix store dependencies: appending `@` to a version
+  (e.g. `opp_env install inet-latest omnetpp-latest@`) builds the project as a
+  real Nix package in the read-only `/nix/store` instead of the workspace.
+  The `@` automatically extends to all dependencies of the marked project.
+  Note that a trailing `@` is the read-only marker, while `@<branch>` still means
+  a git branch; the two cannot be combined.
+  Store packages are shared between workspaces (identical requests are instant
+  cache hits), are picked up by a later `shell`/`run` that names no projects at
+  all, and their `build_*`/`clean_*`/`check_*` shell functions become no-ops. Source archive checksums are obtained trust-on-first-use and
+  cached under `~/.cache/opp_env/`; use `--refresh-source-hashes` if an archive
+  changes upstream. Currently omnetpp >= 6.0 (modernized releases) and
+  inet >= 4.4 releases support this.
+  Every store package, whether named on the command line or pulled in as a
+  dependency, is symlinked into the workspace under its usual directory name plus
+  a `@` suffix, e.g. `omnetpp-6.4.0@`. Thanks to the suffix a mutable and a
+  read-only copy of the same project version can coexist in one workspace; a bare
+  project name then selects the mutable copy, and `<name>@` the read-only one.
+  The symlink is what Nix created as the package's out-link, so it doubles as its
+  garbage collection root; deleting it exposes the package to the next
+  `nix store gc`, and a later `install` relinks it (a cache hit unless the store
+  path is already gone). Nothing else depends on the symlink: the shell
+  environment (`<NAME>_ROOT`, `PATH`, `NEDPATH`, ...) is set up from the
+  `/nix/store` path, and the package metadata lives in the workspace admin
+  directory. `shell --chdir` does start the shell in the `<name>@` symlink
+  though, so the working directory stays inside the workspace.
+  Store packages no longer contain the `out/` build output tree; the finished
+  libraries and executables in `lib/`, `bin/` and `src/` are unaffected. This
+  cuts the installed size of INET by about 75% and of OMNeT++ by about 40%.
+  Note that it also changes the derivations, so store packages installed by an
+  earlier opp_env are rebuilt on the next `install`.
+  The shell prompt marks read-only projects with the same `@` suffix, e.g.
+  `omnetpp-6.4.0@+inet-4.6.0@+simu5g-1.5.0:~/w/x/simu5g-1.5.0$`.
+  Naming a project without the `@` always means the regular one, even if only the
+  store package happens to be installed -- `--install` then installs the regular
+  one alongside it. A store package in the workspace is picked up only when no
+  projects are named on the command line at all, or for a dependency an already
+  installed project was recorded as using that way. So installing a new mutable
+  project never drags its dependencies into the store silently; opp_env points out
+  the store package that could have been reused instead.
+- New `export-flake` subcommand: exports the Nix flake(s) that build a project
+  and its dependencies as Nix packages, independently of opp_env. The default
+  layout is one flake per project (dependencies wired up as flake inputs);
+  `--bundle` produces a single self-contained flake. Exports include a dev
+  shell, a README, and a `push-to-cachix.sh` helper for publishing the packages
+  to a binary cache (see `docs/binary-cache.md`).
 - Add `--run-install-commands` option and `install_commands` list to
   project descriptions to support limited automatic installation of
   external dependencies in nixless workspaces.
@@ -9,6 +54,9 @@
 
 ### Database (Frameworks and Models)
 
+- omnetpp: new `no-ide` option (>= 6.0): excludes the graphical IDE from the
+  installation; mainly useful for read-only Nix store packages, where it
+  removes the Eclipse/webkitgtk dependencies from the package closure.
 - omnetpp: added support calling `./install.sh` after downloading and
   patching, if `--run-install-commands` is specified (for nixless workspaces).
 

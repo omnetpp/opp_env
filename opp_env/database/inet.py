@@ -24,6 +24,9 @@ def make_inet_project_description(inet_version, omnetpp_versions):
         "folder_name": "inet",
         "metadata": {
             "catalog_url": "https://omnetpp.org/download-items/INET.html",
+            # can be built as a read-only Nix store package ('@' version suffix); requires a
+            # release version installed from an immutable release tarball
+            "store_buildable": bool(not is_git_branch and inet_version >= "4.4" and inet_version not in missing_releases),
         },
         "required_projects": {"omnetpp": omnetpp_versions}, # list(set([dotx(v) for v in omnetpp_versions]))},
         "nix_packages": [

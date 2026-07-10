@@ -77,8 +77,9 @@ report to `https://oppenv.omnetpp.org/report` after it has downloaded a
 project. Archives and repositories are always downloaded directly from their
 original location; the report does not contain any URL. It contains the
 project name and version, whether it was installed as a dependency of another
-project, the host OS (Linux, macOS or WSL), the CPU architecture, the `opp_env`
-version, and whether it runs in CI (the `CI` environment variable is set). The
+project, whether it was installed as a read-only Nix store package (`@`), the
+host OS (Linux, macOS or WSL), the CPU architecture, the `opp_env` version, and
+whether it runs in CI (the `CI` environment variable is set). The
 server adds the date and the country derived from the request; IP addresses
 are not stored. See the privacy policy at https://oppenv.omnetpp.org/privacy.
 The first time `opp_env` sends a report, it prints a notice about it.

@@ -1,0 +1,262 @@
+#!/usr/bin/env bash
+#
+# Tests installing projects as read-only Nix store packages (the '@' version suffix)
+# using the opp_env_testproject / opp_env_teststoreapp dummy projects, which build
+# in seconds. Requires Nix.
+#
+
+. testlib.inc || exit 1
+
+# asserts that the given path is registered as an indirect Nix garbage-collection root
+assert_is_nix_gc_root() {
+    readlink /nix/var/nix/gcroots/auto/* 2>/dev/null | grep -qx "$1" || { echo "ERROR: $1 is not a Nix GC root"; exit 1; }
+}
+
+TMPDIR=${TMPDIR:-/tmp}
+WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
+
+run opp_env init -w $WORKSPACE
+
+#
+# error cases -- these must all fail before any download or nix invocation
+#
+
+run_expect_error opp_env install -w $WORKSPACE 'inet-git@topic/foo@'
+assert_contains "cannot be combined with the read-only marker"
+
+run_expect_error opp_env install -w $WORKSPACE 'mm1k-git@'
+assert_contains "cannot be installed as a read-only Nix store package"
+
+run_expect_error opp_env install -w $WORKSPACE 'omnetpp-git@'
+assert_contains "cannot be installed as a read-only Nix store package"
+
+run_expect_error opp_env install -w $WORKSPACE 'opp_env_testproject-latest@' --options=from-git
+assert_contains "git repository"
+
+run_expect_error opp_env install -w $WORKSPACE --local 'opp_env_testproject-latest@'
+assert_contains "local cannot be combined with '@'"
+
+run_expect_error opp_env install -w $WORKSPACE --no-deps 'opp_env_testproject-latest@'
+assert_contains "no-deps cannot be combined with '@'"
+
+# a '@' project's dependency explicitly requested as a regular project is a contradiction
+run_expect_error opp_env install -w $WORKSPACE 'opp_env_teststoreapp-0.1@' opp_env_testproject-0.1
+assert_contains "can only depend on read-only store packages"
+
+# nixless workspaces cannot have store packages
+NIXLESS_WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
+run_expect_error opp_env install --init --nixless-workspace -w $NIXLESS_WORKSPACE 'opp_env_testproject-latest@'
+assert_contains "cannot be used in a nixless workspace"
+
+#
+# a mutable and a read-only copy of the same project version coexist in one workspace,
+# distinguished by the '@' suffix; a bare project name selects the mutable one
+#
+
+COEXIST_WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
+run opp_env install --init -w $COEXIST_WORKSPACE opp_env_testproject-latest
+run opp_env install -w $COEXIST_WORKSPACE 'opp_env_testproject-latest@'
+test -d $COEXIST_WORKSPACE/opp_env_testproject-0.1/.opp_env || { echo "ERROR: mutable copy lost"; exit 1; }
+test -L $COEXIST_WORKSPACE/opp_env_testproject-0.1@ || { echo "ERROR: read-only copy not symlinked alongside the mutable one"; exit 1; }
+
+run opp_env run -w $COEXIST_WORKSPACE opp_env_testproject-latest -c 'echo ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains_line "ROOT=$COEXIST_WORKSPACE/opp_env_testproject-0.1"
+
+run opp_env run -w $COEXIST_WORKSPACE 'opp_env_testproject-latest@' -c 'echo ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains "ROOT=/nix/store/"
+
+# with no project args the mutable copy wins over the store package
+run opp_env run -w $COEXIST_WORKSPACE -c 'echo ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains_line "ROOT=$COEXIST_WORKSPACE/opp_env_testproject-0.1"
+
+#
+# a store package in the workspace must not silently make a NEW, mutable project's
+# dependency read-only: mutable is the default for dependencies
+#
+
+DEPDEFAULT_WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
+run opp_env install --init -w $DEPDEFAULT_WORKSPACE 'opp_env_testproject-0.1@'
+run opp_env install -w $DEPDEFAULT_WORKSPACE opp_env_teststoreapp-0.1
+assert_contains "is also installed as a read-only Nix store package"
+assert_contains "Downloading project opp_env_testproject-0.1"
+test -d $DEPDEFAULT_WORKSPACE/opp_env_testproject-0.1/.opp_env || { echo "ERROR: dependency of a mutable project was not installed as a regular project"; exit 1; }
+
+run opp_env run -w $DEPDEFAULT_WORKSPACE opp_env_teststoreapp-0.1 -c 'echo ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains_line "ROOT=$DEPDEFAULT_WORKSPACE/opp_env_testproject-0.1"
+
+# naming a project without the '@' always means the regular one, even when only the store
+# package is installed -- '--install' then installs the regular one alongside it
+SELECT_WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
+run opp_env install --init -w $SELECT_WORKSPACE 'opp_env_testproject-0.1@'
+run opp_env run --install -w $SELECT_WORKSPACE opp_env_testproject-0.1 -c 'echo ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains "Downloading project opp_env_testproject-0.1"
+assert_contains_line "ROOT=$SELECT_WORKSPACE/opp_env_testproject-0.1"
+
+run opp_env run -w $SELECT_WORKSPACE 'opp_env_testproject-0.1@' -c 'echo ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains "ROOT=/nix/store/"
+
+#
+# ... but a dependency an installed project was already being used with as a store
+# package stays store-backed, without having to re-type the '@'
+#
+
+ESTABLISHED_WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
+run opp_env install --init -w $ESTABLISHED_WORKSPACE opp_env_teststoreapp-0.1 'opp_env_testproject-0.1@'
+test ! -e $ESTABLISHED_WORKSPACE/opp_env_testproject-0.1 || { echo "ERROR: dependency was installed as a regular project too"; exit 1; }
+
+run opp_env run -w $ESTABLISHED_WORKSPACE opp_env_teststoreapp-0.1 -c 'echo ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains "ROOT=/nix/store/"
+
+run opp_env run -w $ESTABLISHED_WORKSPACE -c 'echo ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains "ROOT=/nix/store/"
+
+#
+# basic store package install
+#
+
+run opp_env install -w $WORKSPACE 'opp_env_testproject-latest@'
+assert_contains "Read-only Nix store packages"
+assert_contains "Installed Nix store package opp_env_testproject-0.1"
+assert_not_contains "Downloading project"     # the engine-side download/patch steps are bypassed
+# the patch commands may run INSIDE the nix build (prefixed 'opp_env_testproject> ' in the
+# streamed log), but must not run engine-side (which would print the bare line)
+grep -q "^hello from patch command$" testcase.out && { echo "ERROR: engine-side patching ran for a store package"; exit 1; } || :
+
+# store packages are symlinked into the workspace under a '@'-suffixed name; the GC root
+# and the metadata live in the admin dir
+test -L $WORKSPACE/opp_env_testproject-0.1@ || { echo "ERROR: workspace symlink missing"; exit 1; }
+readlink -f $WORKSPACE/opp_env_testproject-0.1@ | grep -q '^/nix/store/' || { echo "ERROR: symlink does not point into /nix/store"; exit 1; }
+test -f $WORKSPACE/.opp_env_workspace/store/opp_env_testproject-0.1.json || { echo "ERROR: store metadata file missing"; exit 1; }
+# the '@' symlink IS the Nix GC root: nix registers an indirect root pointing at it
+assert_is_nix_gc_root $WORKSPACE/opp_env_testproject-0.1@
+test ! -e $WORKSPACE/.opp_env_workspace/store/gcroots || { echo "ERROR: obsolete separate GC root directory present"; exit 1; }
+
+#
+# the build output tree is pruned from the store package, other 'out' folders are kept
+#
+
+STORE_PATH=$(readlink -f $WORKSPACE/opp_env_testproject-0.1@)
+test ! -e $STORE_PATH/out || { echo "ERROR: build output tree not pruned from the store package"; exit 1; }
+test -f $STORE_PATH/tools/out/notabuildtree || { echo "ERROR: a non-build-tree 'out' folder was pruned"; exit 1; }
+
+#
+# environment: <NAME>_ROOT points into the store, not at the workspace symlink
+#
+
+COMMANDS_FILE=$WORKSPACE/commands.txt
+echo 'echo ROOT=$OPP_ENV_TESTPROJECT_ROOT; echo SETENV_PWD=$SETENV_PWD' > $COMMANDS_FILE
+
+run opp_env run -w $WORKSPACE 'opp_env_testproject-latest@' -c "source $COMMANDS_FILE"
+assert_contains_line "ROOT=$STORE_PATH"
+assert_contains_line "SETENV_PWD=$STORE_PATH"     # setenv is sourced in the store path, not in the symlink
+assert_contains_line "hello from setenv command"  # setenv still runs for store packages
+
+# with no project args the set comes from the workspace, so the store package is found
+run opp_env run -w $WORKSPACE -c 'echo PROJECTS=$OPP_ENV_PROJECTS'
+assert_contains_line "PROJECTS=opp_env_testproject-0.1"
+
+# ... but naming it without the '@' asks for the regular project, which is not installed here
+run_expect_error opp_env run -w $WORKSPACE opp_env_testproject-latest -c 'echo hi'
+assert_contains "is not downloaded"
+assert_contains "specify opp_env_testproject-0.1@ to use the store package instead"
+
+# 'shell --chdir' drops the user in the workspace symlink, not in the store path
+# (asserted on the log rather than on $PWD inside the shell, so that the check does not
+# depend on an interactive bash actually coming up on the host running the test)
+echo exit | run opp_env -d shell --chdir -w $WORKSPACE 'opp_env_testproject-latest@'
+assert_contains "Changing into the first project's directory $WORKSPACE/opp_env_testproject-0.1@"
+
+#
+# deleting the workspace symlink drops the GC root, but as long as the store path is
+# still there everything keeps working, and a re-install relinks (and re-roots) it
+#
+
+rm $WORKSPACE/opp_env_testproject-0.1@
+# with no project args the project set comes from the workspace, i.e. from the store metadata
+run opp_env run -w $WORKSPACE -c 'echo PROJECTS=$OPP_ENV_PROJECTS; echo ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains_line "PROJECTS=opp_env_testproject-0.1"
+assert_contains_line "ROOT=$STORE_PATH"
+
+run opp_env install -w $WORKSPACE 'opp_env_testproject-latest@'
+assert_contains "store link missing or stale"
+test -L $WORKSPACE/opp_env_testproject-0.1@ || { echo "ERROR: workspace symlink not recreated"; exit 1; }
+assert_is_nix_gc_root $WORKSPACE/opp_env_testproject-0.1@
+
+#
+# build/clean/check functions are no-ops with a message for store packages
+#
+
+run opp_env run -w $WORKSPACE -c 'build_all && check_all'
+assert_contains "read-only Nix store package"
+assert_not_contains "make MODE=release invoked"
+
+#
+# re-install with the same configuration is a no-op
+#
+
+run opp_env install -w $WORKSPACE 'opp_env_testproject-latest@'
+assert_contains "up to date"
+assert_not_contains "Building Nix derivation"
+
+#
+# changing the configuration (build modes) triggers a rebuild + repoint
+#
+
+run opp_env install -w $WORKSPACE 'opp_env_testproject-latest@' --build-modes=release
+assert_contains "configuration changed"
+assert_contains "Installed Nix store package opp_env_testproject-0.1"
+
+#
+# '@' on a dependent project propagates to its dependencies, and every store package
+# -- named on the command line or not -- gets its own '@'-suffixed workspace symlink
+#
+
+PROPAGATION_WORKSPACE=$(mktemp -d $TMPDIR/opp_env_test_XXXXXX)
+run opp_env install --init -w $PROPAGATION_WORKSPACE 'opp_env_teststoreapp-0.1@'
+assert_contains "Read-only Nix store packages"
+test -L $PROPAGATION_WORKSPACE/opp_env_teststoreapp-0.1@ || { echo "ERROR: dependent symlink missing"; exit 1; }
+test -L $PROPAGATION_WORKSPACE/opp_env_testproject-0.1@ || { echo "ERROR: dependency symlink missing"; exit 1; }
+test -f $PROPAGATION_WORKSPACE/.opp_env_workspace/store/opp_env_testproject-0.1.json || { echo "ERROR: dependency store metadata missing"; exit 1; }
+assert_is_nix_gc_root $PROPAGATION_WORKSPACE/opp_env_testproject-0.1@
+# no unsuffixed entries: those are reserved for mutable copies
+test ! -e $PROPAGATION_WORKSPACE/opp_env_testproject-0.1 || { echo "ERROR: store package occupies the mutable project name"; exit 1; }
+
+# the dependency's setenv is replayed and its ROOT var is visible in the shell
+run opp_env run -w $PROPAGATION_WORKSPACE -c 'echo TP_ROOT=$OPP_ENV_TESTPROJECT_ROOT'
+assert_contains "TP_ROOT=/nix/store/"
+
+#
+# export-flake: split (default) and bundle layouts
+#
+
+EXPORT_DIR=$WORKSPACE/exported
+run opp_env export-flake opp_env_teststoreapp-0.1 -o $EXPORT_DIR
+test -f $EXPORT_DIR/opp_env_testproject-0.1/flake.nix || { echo "ERROR: split dependency flake missing"; exit 1; }
+test -f $EXPORT_DIR/opp_env_teststoreapp-0.1/flake.nix || { echo "ERROR: split target flake missing"; exit 1; }
+test -f $EXPORT_DIR/README.md || { echo "ERROR: export README missing"; exit 1; }
+test -x $EXPORT_DIR/opp_env_teststoreapp-0.1/push-to-cachix.sh || { echo "ERROR: cachix push script missing"; exit 1; }
+
+run opp_env export-flake opp_env_teststoreapp-0.1 --bundle -o $WORKSPACE/exported-bundle
+test -f $WORKSPACE/exported-bundle/flake.nix || { echo "ERROR: bundle flake missing"; exit 1; }
+
+#
+# generator sweep: every store_buildable database entry must have purifiable commands
+#
+
+run env PYTHONPATH=.. python3 -c "
+from opp_env.opp_env import ProjectRegistry
+from opp_env.nix_builder import collect_source_urls
+registry = ProjectRegistry()
+count = 0
+for p in registry.get_all_project_descriptions():
+    if p.metadata.get('store_buildable'):
+        activated = p.activate_project_options(None, quiet=True)
+        collect_source_urls(activated)  # raises if a command cannot be purified
+        assert activated.download_url, f'{p}: store_buildable but no download_url'
+        count += 1
+print(f'sweep OK: {count} store-buildable project descriptions')
+"
+assert_contains "sweep OK"
+
+echo
+echo "PASSED"

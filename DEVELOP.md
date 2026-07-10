@@ -16,7 +16,9 @@ running `python3 -m pip install --upgrade pip`.
 ## Download Statistics
 
 After `download_project` succeeds (tarball, git clone, or `download_commands`;
-but not with `--local`), opp_env posts a JSON report to `TELEMETRY_URL`
+but not with `--local`), and after a project is first installed as a read-only
+Nix store package in a workspace (not when it is up to date or rebuilt because
+its configuration changed), opp_env posts a JSON report to `TELEMETRY_URL`
 (`$OPP_ENV_TELEMETRY_URL`, by default `https://oppenv.omnetpp.org/report`,
 served by the worker in `website/`) for the download statistics described in
 the README. The request is sent from a daemon thread with a 3 s timeout, so it

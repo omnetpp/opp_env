@@ -30,9 +30,9 @@ def tearDownModule():
     _marker_dir.cleanup()
 
 
-def project(name, version="1.0"):
+def project(name, version="1.0", store_backed=False):
     p = mock.Mock()
-    p.name, p.version = name, version
+    p.name, p.version, p.store_backed = name, version, store_backed
     p.get_full_name.return_value = f"{name}-{version}"
     return p
 
@@ -98,17 +98,20 @@ class HostOsTest(unittest.TestCase):
 
 
 class DownloadReportTest(unittest.TestCase):
-    def report(self, env, dependency=False):
+    def report(self, env, dependency=False, store_backed=False):
         with mock.patch.dict(os.environ, env, clear=True), \
                 mock.patch.object(opp_env, "get_version", return_value="1.2.3"), \
                 mock.patch.object(opp_env, "detect_host_os", return_value="macos"), \
                 mock.patch("platform.machine", return_value="arm64"):
-            return opp_env.get_download_report(project("omnetpp", "6.4.0aipre2"), dependency)
+            return opp_env.get_download_report(project("omnetpp", "6.4.0aipre2", store_backed), dependency)
 
     def test_fields(self):
         self.assertEqual(self.report({}), {
             "project": "omnetpp", "version": "6.4.0aipre2", "dependency": False, "os": "macos",
-            "arch": "arm64", "ci": False, "opp_env_version": "1.2.3"})
+            "arch": "arm64", "ci": False, "opp_env_version": "1.2.3", "store_backed": False})
+
+    def test_store_backed(self):
+        self.assertIs(self.report({}, store_backed=True)["store_backed"], True)
 
     def test_ci_and_dependency(self):
         self.assertFalse(self.report({"CI": "false"})["ci"])
@@ -258,6 +261,53 @@ class NoticeBeforeDownloadTest(unittest.TestCase):
         self.assertFalse(self.shown({"OPP_ENV_NO_TELEMETRY": "1"}))
         os.makedirs(self.workspace.get_project_root_directory(self.project))
         self.assertFalse(self.shown())
+
+
+class StorePackageReportTest(unittest.TestCase):
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.dir.cleanup)
+        self.workspace_dir = os.path.join(self.dir.name, "ws")
+        self.store_dir = os.path.join(self.dir.name, "store")
+        os.makedirs(self.workspace_dir)
+        os.makedirs(self.store_dir)
+        opp_env.Workspace.init_workspace(self.workspace_dir)
+        self.workspace = opp_env.Workspace(self.workspace_dir)
+        self.project = opp_env.resolve_projects(["omnetpp-6.1.0"])[0]
+        self.project.store_backed = True
+
+    def fake_build(self, workspace, effective_project_descriptions, project, build_modes, refresh_hashes=False):
+        target = os.path.join(self.store_dir, f"{project.get_full_name()}-{'-'.join(build_modes)}")
+        os.makedirs(target, exist_ok=True)
+        os.symlink(target, workspace.get_store_link_directory(project))
+        return os.path.realpath(target)
+
+    def install(self, build_modes=None, dependency=False):
+        from opp_env import nix_builder
+        with mock.patch.object(nix_builder, "build_store_package", side_effect=self.fake_build), \
+                mock.patch.object(nix_builder, "compute_flake_identity", return_value="identity"), \
+                mock.patch.object(opp_env, "report_download") as report:
+            self.workspace.install_store_package_if_needed(self.project, [self.project], build_modes=build_modes, dependency=dependency)
+        return report
+
+    def test_first_install_is_reported(self):
+        report = self.install(dependency=True)
+        report.assert_called_once_with(self.project, True)
+
+    def notice_before_download(self):
+        with mock.patch.object(opp_env, "show_telemetry_notice_once") as notice, mock.patch.dict(os.environ, {}, clear=True):
+            self.workspace.show_telemetry_notice_before_download([self.project])
+        return notice.called
+
+    def test_notice_before_the_first_install_only(self):
+        self.assertTrue(self.notice_before_download())
+        self.install()
+        self.assertFalse(self.notice_before_download())
+
+    def test_up_to_date_and_rebuilt_packages_are_not_reported(self):
+        self.install()
+        self.install().assert_not_called()
+        self.install(build_modes=["release"]).assert_not_called()
 
 
 class IsDependencyTest(unittest.TestCase):

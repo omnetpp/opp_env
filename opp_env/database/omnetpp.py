@@ -251,8 +251,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
 
         # use the opp_env workspace as the default IDE workspace (on 6.1 or later, where auto importing of projects are supported)
         # and copy IDE startup script into it (auto-imports projects)
-        "sed -i 's|../samples|../..|' src/utils/opp_ide""" if version >= "6.1" else None,
-        "mkdir -p ../.metadata && cp \"$OPP_ENV_DIR/templates/metadata/startup.bsh\" ../.metadata" if version >= "6.1" else None,
+        # (skipped in Nix store package builds: the parent of the project dir is the read-only /nix/store, not the workspace)
+        "[ -n \"$OPP_ENV_STORE_BUILD\" ] || sed -i 's|../samples|../..|' src/utils/opp_ide""" if version >= "6.1" else None,
+        "[ -n \"$OPP_ENV_STORE_BUILD\" ] || (mkdir -p ../.metadata && cp \"$OPP_ENV_DIR/templates/metadata/startup.bsh\" ../.metadata)" if version >= "6.1" else None,
 
         # In nixless mode, create a Python virtual environment and install required packages (needed by configure and the IDE)
         'if [ -z "$NIX_BINTOOLS" ] && [ -f python/requirements.txt ]; then python3 -m venv .venv --upgrade-deps --clear && source .venv/bin/activate && python3 -m pip install -r python/requirements.txt; fi' if version >= "6.1" else None,
@@ -279,6 +280,9 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         "metadata": {
             "modernized": is_modernized,
             "base_version": base_version,
+            # can be built as a read-only Nix store package ('@' version suffix); requires a
+            # modernized release version installed from an immutable release tarball
+            "store_buildable": bool(is_modernized and not is_git_branch and version >= "6.0" and version not in missing_releases),
         },
 
         "nixos": nixos_version,
@@ -411,6 +415,19 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
                 "git_url": "https://github.com/omnetpp/omnetpp.git",
                 "git_branch": git_branch_or_tag_name,
             },
+            **({"no-ide": {
+                "option_description": "Exclude the graphical IDE from the installation (reduces size, mainly useful for read-only Nix store packages)",
+                "option_category": "ide",
+                "option_is_default": False,
+                "nix_packages": ["@replace", *remove_blanks([*qt_packages, *tcltk_packages, *ai_packages, *other_packages, *python3package_packages])],
+                "patch_commands": ["@append",
+                    "rm -rf ide",
+                    # the launcher script must be overwritten, not just ide/ deleted: the LD_LIBRARY_PATH sed above
+                    # writes Nix store paths (webkitgtk, gtk3, ...) into it, which would otherwise keep those
+                    # packages in the runtime closure of a Nix store package build
+                    "printf '#!/bin/sh\\necho \"The OMNeT++ IDE is not included in this installation (no-ide option).\" >&2\\nexit 1\\n' > src/utils/opp_ide",
+                ],
+            }} if version >= "6.0" and version != "git" else {}),
         }
     }
 

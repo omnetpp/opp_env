@@ -1,5 +1,6 @@
 import argparse
 import copy
+import datetime
 import itertools
 import json
 import logging
@@ -256,6 +257,14 @@ def create_arg_parser():
             character. For example, 'opp_env install inet-git@topic/mybranch' checks out 'topic/mybranch' from the git repo (the branch must exist),
             then patches and builds it in the same way it would with the 'master' branch. This is a convenient way to set up a work environment
             if you want to work on (or contribute to) a specific project.
+            Appending an '@' to a project (e.g. 'omnetpp-latest@') installs it as a read-only Nix package
+            in the Nix store ('/nix/store') instead of the workspace, with a symlink named 'omnetpp-6.4.0@'
+            placed into the workspace. The trailing '@' is distinct from the '@<branch>' git branch syntax above,
+            and the two cannot be combined. The '@' automatically extends to all dependencies of the marked
+            project, as a read-only project can only depend on read-only projects, and each of them gets its own
+            '@'-suffixed symlink. Because of the suffix, a mutable and a read-only copy of the same project
+            version can coexist in a workspace; a bare project name then selects the mutable one, and the
+            symlinks are for browsing the sources and can be deleted at any time.
             """)
         elif name=="projects-optional": subparser.add_argument("projects", nargs="*", help=
             """
@@ -363,6 +372,12 @@ def create_arg_parser():
             (The default is to stay in the current directory.)
             """)
         elif name=="command":    subparser.add_argument("-c", "--command", help="""Specifies the command that is run in the environment""")
+        elif name=="refresh-source-hashes": subparser.add_argument("--refresh-source-hashes", dest="refresh_source_hashes", default=False, action='store_true', help=
+            """
+            Re-download the source archives of Nix store packages ('@' suffix) and refresh their cached
+            checksums. Use this when a store package build fails with a hash mismatch, which typically
+            means the source archive was re-generated upstream (e.g. GitHub archive tarballs).
+            """)
         else: raise Exception(f"Internal error: unrecognized option name '{name}'")
 
     def add_arguments(subparser, names):
@@ -427,7 +442,8 @@ def create_arg_parser():
         "run-install-commands",
         "no-isolated",
         "keep",
-        "local"
+        "local",
+        "refresh-source-hashes"
     ])
 
     subparser = subparsers.add_parser("shell", help="Opens a shell in the environment of the specified projects", description=dedent("""
@@ -536,8 +552,38 @@ def create_arg_parser():
         "quiet",
         "no-isolated",
         "keep",
-        "local"
+        "local",
+        "refresh-source-hashes"
     ])
+
+    subparser = subparsers.add_parser("export-flake", help="Exports the Nix flake that builds the specified projects as Nix packages", description=dedent(
+        """
+        Exports the Nix flake(s) that build the specified project and its dependencies as
+        read-only Nix packages, the same way the '@' version suffix of 'opp_env install' does.
+        The exported flakes are self-sufficient: they can be built with 'nix build' on any
+        Linux machine with Nix installed, without opp_env being present, and can be published
+        (e.g. on GitHub, or in a binary cache via cachix) independently of opp_env.
+
+        By default, one flake directory is written per project, with dependencies referenced
+        as flake inputs (e.g. the 'inet' flake refers to the 'omnetpp' flake via a 'path:'
+        input URL that can be edited to a 'github:' URL when publishing). With '--bundle',
+        a single self-contained flake is written instead, with the derivations of all
+        dependencies inlined.
+
+        Examples:
+            $ opp_env export-flake omnetpp-6.4.0 -o ./flakes
+            $ opp_env export-flake inet-latest --bundle -o ./inet-flake
+        """),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    add_arguments(subparser, [
+        "projects",
+        "quiet",
+        "options",
+        "build-modes",
+        "refresh-source-hashes"
+    ])
+    subparser.add_argument("-o", "--output-dir", dest="output_dir", default=".", metavar="DIR", help="The directory to write the flake(s) into (default: the current directory)")
+    subparser.add_argument("--bundle", default=False, action='store_true', help="Write a single self-contained flake instead of one flake per project")
 
     subparser = subparsers.add_parser("maint", help="Maintenance functions", description="Maintenance functions for internal use.")
     subparser.add_argument("-u", "--update-catalog", metavar="download-items-dir", dest="catalog_dir", help="Update the opp_env installation commands in the model catalog of omnetpp.org. The argument should point to the `download-items/` subdir of a checked-out copy of the https://github.com/omnetpp/omnetpp.org/ repository.")
@@ -567,6 +613,8 @@ def process_arguments():
     kwargs = {k: v for k, v in vars(args).items() if v is not None}
     if "workspace_directory" in kwargs:
         kwargs["workspace_directory"] = os.path.abspath(kwargs["workspace_directory"])
+    if "output_dir" in kwargs:
+        kwargs["output_dir"] = os.path.abspath(kwargs["output_dir"])
     if "options" in kwargs:
         # split up and flatten list
         kwargs["requested_options"] = [name.strip() for arg in args.options for name in arg.split(",") if name.strip()]
@@ -737,6 +785,10 @@ class ProjectDescription:
         self.options = options or {}
         self.metadata = metadata or {}  # examples: catalog_url, release_year, original_version
 
+        # not constructor arguments -- filled in after dependency resolution / option activation
+        self.store_backed = False    # True: installed as a read-only Nix store package ('@' suffix)
+        self.active_options = []     # option names activated by activate_project_options()
+
         # remove null elements from lists inside options, too
         for option_name, option_entries in self.options.items():
             for field_name, field_value in option_entries.items():
@@ -790,6 +842,7 @@ class ProjectDescription:
                     effective_options.append(option)
 
         new_project_description = copy.deepcopy(self)
+        new_project_description.active_options = effective_options
 
         def set_or_extend_attr_from_option(project_description, field_name, field_value):
             # Modify the attribute in the project description: if it's a list, extend or replace based on the first element of field_value; otherwise overwrite it
@@ -1183,7 +1236,8 @@ class Workspace:
 
     def get_installed_projects(self):
         def is_project(folder_name):
-            return os.path.isdir(os.path.join(self.root_directory, folder_name, self.PROJECT_ADMIN_DIR))
+            return os.path.isdir(os.path.join(self.root_directory, folder_name, self.PROJECT_ADMIN_DIR)) or \
+                   os.path.isfile(os.path.join(self.get_store_metadata_directory(), folder_name + ".json"))
         def get_project_description(folder_name):
             try:
                 global project_registry
@@ -1191,11 +1245,50 @@ class Workspace:
             except Exception as e:
                 _logger.warning(f"Failed to load project description for '{folder_name}': {e}")
                 return None
-        result = [get_project_description(folder) for folder in os.listdir(self.root_directory) if is_project(folder)]
+        # '@'-suffixed entries are the symlinks of store packages, which are enumerated from
+        # their metadata below; a mutable copy of the same version takes precedence over them
+        folders = [folder for folder in os.listdir(self.root_directory) if not folder.endswith("@") and is_project(folder)]
+        # store packages whose workspace symlink has gone missing are still known via their metadata
+        store_metadata_dir = self.get_store_metadata_directory()
+        if os.path.isdir(store_metadata_dir):
+            folders += [file[:-len(".json")] for file in os.listdir(store_metadata_dir) if file.endswith(".json") and file[:-len(".json")] not in folders]
+        result = [get_project_description(folder) for folder in folders]
         return [p for p in result if p]
 
     def get_project_root_directory(self, project_description):
         return os.path.join(self.root_directory, project_description.get_full_folder_name())
+
+    def get_store_link_directory(self, project_description):
+        # Store packages are symlinked into the workspace under the same name as regular projects
+        # plus a '@' suffix, so that a mutable and a read-only copy of the same project version
+        # can coexist there.
+        return self.get_project_root_directory(project_description) + "@"
+
+    def get_project_effective_root_directory(self, project_description):
+        # The directory the project actually lives in: the Nix store path for store-backed
+        # projects, the workspace directory for regular ones. Environment setup (<NAME>_ROOT,
+        # the working directory for setenv, and everything setenv derives from $(pwd)) must
+        # use this, so that the environment stays valid when the user deletes the workspace
+        # symlink, which is merely a convenience for browsing the sources.
+        if project_description.store_backed:
+            metadata = self.read_store_package_metadata(project_description)
+            if metadata and metadata.get("store_path"):
+                return metadata["store_path"]
+            link = self.get_store_link_directory(project_description)
+            if os.path.islink(link):
+                return os.path.realpath(link)
+        return self.get_project_root_directory(project_description)
+
+    def get_project_browsing_directory(self, project_description):
+        # Where to drop the user: the workspace entry, which for a store package is the '@' symlink
+        # -- shorter, and it keeps them inside the workspace. Falls back to the store path itself
+        # when the user has deleted the link. Note that this is deliberately not what the project's
+        # environment is built from; see get_project_effective_root_directory().
+        if project_description.store_backed:
+            link = self.get_store_link_directory(project_description)
+            if os.path.isdir(link):
+                return link
+        return self.get_project_effective_root_directory(project_description)
 
     def get_project_admin_directory(self, project_description, create=False):
         dir = os.path.join(self.get_project_root_directory(project_description), self.PROJECT_ADMIN_DIR)
@@ -1205,6 +1298,49 @@ class Workspace:
 
     def get_project_admin_file(self, project_description, filename, create_dir=False):
         return os.path.join(self.get_project_admin_directory(project_description, create=create_dir), filename)
+
+    # Projects installed as read-only Nix store packages ('@' suffix) are represented in the
+    # workspace by a <folder_name>-<version>@ -> /nix/store/... symlink, which Nix creates as the
+    # package's out-link and therefore also acts as its garbage-collection root, plus a metadata
+    # JSON file in the workspace admin dir. Deleting the symlink exposes the package to the next
+    # `nix store gc`; a reinstall then rebuilds (or re-fetches) and relinks it. The state/shasum
+    # files of regular projects cannot be used here, as they would have to live inside the
+    # read-only store path.
+
+    def get_store_metadata_directory(self):
+        return os.path.join(self.get_workspace_admin_directory(), "store")
+
+    def get_store_package_metadata_file(self, project_description):
+        return os.path.join(self.get_store_metadata_directory(), project_description.get_full_folder_name() + ".json")
+
+    def read_store_package_metadata(self, project_description):
+        metadata_file = self.get_store_package_metadata_file(project_description)
+        if not os.path.isfile(metadata_file):
+            return None
+        with open(metadata_file) as f:
+            return json.load(f)
+
+    def write_store_package_metadata(self, project_description, data):
+        os.makedirs(self.get_store_metadata_directory(), exist_ok=True)
+        with open(self.get_store_package_metadata_file(project_description), "w") as f:
+            json.dump(data, f, indent=2)
+
+    def remove_store_package_metadata(self, project_description):
+        metadata_file = self.get_store_package_metadata_file(project_description)
+        if os.path.isfile(metadata_file):
+            os.remove(metadata_file)
+
+    def is_store_backed_project(self, project_description):
+        # A project already marked with '@' on the command line is store-backed no matter what else
+        # is in the workspace. Otherwise the store package is only adopted when there is no mutable
+        # copy of the same version to be ambiguous with -- the two are allowed to coexist.
+        if project_description.store_backed:
+            return True
+        if os.path.isdir(self.get_project_root_directory(project_description)):
+            return False
+        link = self.get_store_link_directory(project_description)
+        return self.read_store_package_metadata(project_description) is not None or \
+               (os.path.islink(link) and os.path.realpath(link).startswith("/nix/store/"))
 
     def is_project_modified(self, project_description):
         postdownload_shasums = self.read_project_shasums(project_description, "postdownload")
@@ -1226,7 +1362,17 @@ class Workspace:
             json.dump(data, f)
 
     def get_project_status(self, project_description):
+        # note: this keys off the decision mark_and_validate_store_backed() has already made, not off
+        # what the workspace happens to contain -- a store package of a project that is being used as
+        # a regular one here must not be mistaken for the regular one being installed
         project_directory = self.get_project_root_directory(project_description)
+        if project_description.store_backed:
+            # note: without this branch, the workspace entry would be followed and the state file
+            # looked for inside the read-only store package, misreporting the project as INCOMPLETE.
+            # The store path is what matters here; the workspace symlink is optional.
+            metadata = self.read_store_package_metadata(project_description)
+            healthy = metadata is not None and os.path.isdir(metadata.get("store_path") or "")
+            return self.DOWNLOADED if healthy else self.INCOMPLETE
         data = self.read_project_state_file(project_description)
         return self.ABSENT if not os.path.isdir(project_directory) else \
                self.INCOMPLETE if not data else \
@@ -1404,6 +1550,67 @@ class Workspace:
 
         assert self.get_project_status(project_description) == Workspace.DOWNLOADED, f"Wrong project status {self.get_project_status(project_description)} after download"
 
+    def install_store_package_if_needed(self, project_description, effective_project_descriptions, build_modes=None, refresh_hashes=False):
+        # Installs the project as a read-only Nix store package: builds the Nix derivation, which
+        # places the GC-rooting out-link at the project's '@'-suffixed workspace directory. A no-op
+        # if the installed package already matches the request; a mismatch (different options, build
+        # modes, etc.) or a missing link triggers a rebuild -- safe and cheap, because store paths
+        # are immutable and unchanged inputs are instant Nix cache hits.
+        from opp_env.nix_builder import build_store_package, compute_flake_identity
+        desired = {
+            "name": project_description.get_full_name(),
+            "nixos": project_description.nixos,
+            "stdenv": project_description.stdenv,
+            "options": sorted(project_description.active_options),
+            "build_modes": sorted(build_modes or ["debug", "release"]),
+            "dependencies": sorted(p.get_full_name() for p in Workspace._get_dependencies(project_description, effective_project_descriptions)),
+            # covers everything else that determines the derivation (source hashes, the
+            # generator itself), so opp_env upgrades correctly invalidate installed packages
+            "flake_identity": compute_flake_identity(self, effective_project_descriptions, project_description, sorted(build_modes or ["debug", "release"]), refresh_hashes=refresh_hashes),
+        }
+        identity_keys = list(desired.keys())
+        link = self.get_store_link_directory(project_description)
+        if os.path.islink(self._legacy_gc_root(project_description)) and os.path.islink(link):
+            # a workspace from before the GC root moved into the workspace symlink: drop the link
+            # so that the rebuild below re-creates it through Nix, registering it as the GC root
+            os.remove(link)
+
+        existing = self.read_store_package_metadata(project_description)
+        if existing and all(existing.get(key) == desired[key] for key in identity_keys) and \
+                os.path.islink(link) and os.path.isdir(link) and os.path.realpath(link) == existing.get("store_path"):
+            _logger.info(f"Nix store package {project_description.get_full_name(colored=True)} is {green('up to date')} (read-only, unmodifiable by construction)")
+            return
+        if existing:
+            changed = [key for key in identity_keys if existing.get(key) != desired[key]]
+            _logger.info(f"Nix store package {project_description.get_full_name(colored=True)} configuration changed ({', '.join(changed) or 'store link missing or stale'}), rebuilding")
+        else:
+            _logger.info(f"Building Nix store package for {project_description.get_full_name(colored=True)} in workspace {cyan(self.root_directory)}")
+
+        if os.path.islink(link):
+            os.remove(link)  # stale out-link; the store path itself is immutable, rebuild + repoint is safe
+
+        store_path = build_store_package(self, effective_project_descriptions, project_description, desired["build_modes"], refresh_hashes=refresh_hashes)
+        if not (os.path.islink(link) and os.path.realpath(link) == store_path):
+            raise Exception(f"Internal error: the store package build did not leave a symlink at '{link}' pointing to '{store_path}'")
+        desired["store_path"] = store_path
+        desired["created"] = datetime.datetime.now().isoformat(timespec="seconds")
+        self.write_store_package_metadata(project_description, desired)
+        self._remove_legacy_gc_root(project_description)
+        _logger.info(f"Installed Nix store package {project_description.get_full_name(colored=True)} -> {cyan(store_path)}")
+
+    def _legacy_gc_root(self, project_description):
+        # earlier versions kept a separate GC root here; the workspace symlink is the root now,
+        # and leaving the old one behind would pin the store path it last pointed to forever
+        return os.path.join(self.get_store_metadata_directory(), "gcroots", project_description.get_full_folder_name())
+
+    def _remove_legacy_gc_root(self, project_description):
+        legacy_root = self._legacy_gc_root(project_description)
+        if os.path.islink(legacy_root):
+            os.remove(legacy_root)
+        gcroots_dir = os.path.dirname(legacy_root)
+        if os.path.isdir(gcroots_dir) and not os.listdir(gcroots_dir):
+            os.rmdir(gcroots_dir)
+
     def _read_file_if_exists(self, fname):
         try:
             with open(fname) as f:
@@ -1510,28 +1717,47 @@ class Workspace:
             }}
             export -f {function_name}"""
 
+        def make_noop_function(function_name, message):
+            # for read-only Nix store packages: building/cleaning/testing in place is not possible
+            # (and not needed), but the functions must exist so that the *_all functions keep working
+            return f"""
+                function {function_name} ()
+                {{
+                    echo -e "{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} {message}"
+                }}
+                export -f {function_name}
+            """
+
+        def store_package_noop(function_name, p):
+            return make_noop_function(function_name, f"{p.get_full_name()} is a read-only Nix store package")
+
         project_build_function_commands = [
-            make_build_function("build_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.build_commands))
+            make_build_function("build_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.build_commands)) if not p.store_backed else
+            store_package_noop("build_" + p.name, p)
             for p in effective_project_descriptions
         ]
 
         project_clean_function_commands = [
-            make_build_function("clean_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.clean_commands))
+            make_build_function("clean_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.clean_commands)) if not p.store_backed else
+            store_package_noop("clean_" + p.name, p)
             for p in effective_project_descriptions
         ]
 
         project_smoke_test_function_commands = [
-            make_build_function("smoke_test_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.smoke_test_commands if p.smoke_test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No smoke test commands were specified'"]))
+            make_build_function("smoke_test_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.smoke_test_commands if p.smoke_test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No smoke test commands were specified'"])) if not p.store_backed else
+            store_package_noop("smoke_test_" + p.name, p)
             for p in effective_project_descriptions
         ]
 
         project_test_function_commands = [
-            make_build_function("test_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.test_commands if p.test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No test commands were specified'"]))
+            make_build_function("test_" + p.name, f"${p.name.upper()}_ROOT", join_commands(p.test_commands if p.test_commands else [ f"echo -e '{SHELL_YELLOW}SKIPPING:{SHELL_NOCOLOR} No test commands were specified'"])) if not p.store_backed else
+            store_package_noop("test_" + p.name, p)
             for p in effective_project_descriptions
         ]
 
         project_check_function_commands = [
-            make_check_function("check_" + p.name, p.get_full_name(), f"${p.name.upper()}_ROOT")
+            make_check_function("check_" + p.name, p.get_full_name(), f"${p.name.upper()}_ROOT") if not p.store_backed else
+            make_noop_function("check_" + p.name, f"{p.get_full_name()} is a read-only Nix store package -- its contents are unmodifiable by construction")
             for p in effective_project_descriptions
         ]
 
@@ -1576,12 +1802,15 @@ class Workspace:
         combined_packages = project_nix_packages + (extra_nix_packages or [])
         project_nix_packages = list({pkg: None for pkg in combined_packages})  # Use a dict to maintain uniqueness
         project_vars_to_keep = sum([p.vars_to_keep for p in effective_project_descriptions], [])
-        project_setenv_commands = sum([[f"cd '{self.get_project_root_directory(p)}'", *p.setenv_commands] for p in reversed(effective_project_descriptions)], [])
-        project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={self.get_project_root_directory(p)}" for p in effective_project_descriptions]
+        project_setenv_commands = sum([[f"cd '{self.get_project_effective_root_directory(p)}'", *p.setenv_commands] for p in reversed(effective_project_descriptions)], [])
+        project_root_environment_variable_assignments = [f"export {p.name.upper()}_ROOT={self.get_project_effective_root_directory(p)}" for p in effective_project_descriptions]
         project_version_environment_variable_assignments = [f"export {p.name.upper()}_VERSION=\"{p.version}\"" for p in effective_project_descriptions]
 
-        # a custom prompt spec to help users distinguish an opp_env shell from a normal terminal session
-        prompt = f"\\[\\e[01;33m\\]{session_name}\\[\\e[00m\\]:\\[\\e[01;34m\\]\\w\\[\\e[00m\\]\\$ "
+        # a custom prompt spec to help users distinguish an opp_env shell from a normal terminal session;
+        # read-only Nix store packages are marked with the same '@' suffix that installs them.
+        # Note that this cannot reuse session_name, which ends up as a Nix store path name, where '@' is illegal.
+        prompt_name = '+'.join([str(d) + ("@" if d.store_backed else "") for d in reversed(effective_project_descriptions)])
+        prompt = f"\\[\\e[01;33m\\]{prompt_name}\\[\\e[00m\\]:\\[\\e[01;34m\\]\\w\\[\\e[00m\\]\\$ "
 
         is_macos = platform.system().lower() == "darwin"
         nproc_command = "nproc" if not is_macos else "sysctl -n hw.ncpu"
@@ -1729,6 +1958,24 @@ class Workspace:
             raise Exception(f"Child process exit code {result.returncode}")
         return result
 
+def chop_store_markers(project_names):
+    # a trailing "@" on a project name means: install it as a read-only Nix store package.
+    # This must run before chop_branch_names(): a trailing "@" is the store marker, while an
+    # "@" followed by anything is a git branch specification, and the two are incompatible.
+    stripped_projects = []
+    store_marked = set()  # the stripped tokens that carried a "@"
+    for name in project_names:
+        name = name.rstrip('/')  # tolerate tab-completion slash before the '@' too
+        if name.endswith('@'):
+            name = name[:-1].rstrip('/')
+            if not name:
+                raise Exception("A lone '@' is not a valid project specification")
+            if "@" in name:
+                raise Exception(f"'{name}@': a git branch ('@<branch>') cannot be combined with the read-only marker (trailing '@') -- Nix store packages must be built from immutable release sources")
+            store_marked.add(name)
+        stripped_projects.append(name)
+    return stripped_projects, store_marked
+
 def chop_branch_names(project_names):
     # if a project name contains "@", the part after that is a git branch name
     git_branches = {}
@@ -1776,11 +2023,105 @@ def resolve_workspace(workspace_directory, init, nixless_workspace):
         workspace = Workspace(workspace_directory)
     return workspace
 
+def mark_and_validate_store_backed(effective_project_descriptions, store_specified, regular_specified, workspace, local=False, no_dependency_resolution=False):
+    # Marks the projects to be installed as read-only Nix store packages ('@' suffix) by setting
+    # their store_backed attribute, propagates the marking to all of their dependencies
+    # (read-only projects can only depend on read-only projects), and validates the result.
+
+    # seed from the '@' markers given on the command line; this must come first, as
+    # is_store_backed_project() below lets an explicit marker override the workspace contents
+    for p in effective_project_descriptions:
+        if p.get_full_name() in store_specified:
+            p.store_backed = True
+
+    # Adopt store-backedness from the workspace where the user has not said which of the two they
+    # want. Naming a project without the '@' asks for the regular one, so it is never adopted --
+    # that is the whole point of the two being able to coexist. What is left is the project set
+    # taken from the workspace itself (no project arguments at all), and dependencies an already
+    # installed project has been using as store packages; a dependency of something new and mutable
+    # stays mutable, even when the workspace happens to contain a store package of it.
+    workspace_store = set()
+    if workspace:
+        adopt_all = not (store_specified | regular_specified)  # no project arguments
+        # dependencies that an already installed project in this set was last used with as a store package
+        established = set()
+        for p in effective_project_descriptions:
+            established.update(dep[:-1] for dep in workspace.read_project_state_file(p).get("last_started_with", []) if dep.endswith("@"))
+        for p in effective_project_descriptions:
+            if p.get_full_name() in regular_specified:
+                continue
+            if (adopt_all or p.get_full_name() in established) and workspace.is_store_backed_project(p):
+                p.store_backed = True
+                workspace_store.add(p.get_full_name())
+
+    # propagate transitively to dependencies (_get_dependencies is transitive, so one pass suffices)
+    propagated = set()
+    for p in [p for p in effective_project_descriptions if p.store_backed]:
+        for dep in Workspace._get_dependencies(p, effective_project_descriptions):
+            if not dep.store_backed:
+                dep.store_backed = True
+                propagated.add(dep.get_full_name())
+
+    # point out the store package the user may have meant to reuse, as installing a mutable copy
+    # of the same version next to it is a full download and build
+    if workspace:
+        for p in effective_project_descriptions:
+            if not p.store_backed and workspace.read_store_package_metadata(p) is not None:
+                _logger.info(f"Note: {p.get_full_name(colored=True)} is also installed as a read-only Nix store package in this workspace; "
+                             f"it is being used as a regular project here -- specify {cyan(p.get_full_name() + '@')} to use the store package instead")
+
+    marked = [p for p in effective_project_descriptions if p.store_backed]
+    if not marked:
+        return
+
+    if workspace and workspace.nixless:
+        raise Exception("'@' (read-only Nix store packages) cannot be used in a nixless workspace")
+    if local:
+        raise Exception("--local cannot be combined with '@' (Nix store package builds fetch their sources themselves)")
+    if no_dependency_resolution:
+        raise Exception("--no-deps cannot be combined with '@' (Nix store packages must be built together with their exact dependencies)")
+    if sys.platform != "linux":
+        raise Exception("'@' (read-only Nix store packages) is currently only supported on Linux")
+
+    # a project explicitly requested as regular, but pulled into read-only by a dependent's '@'
+    conflicting = sorted((regular_specified & propagated) - workspace_store)
+    if conflicting:
+        raise Exception(f"Project {cyan(conflicting[0])} was explicitly requested as a regular workspace project, "
+                        f"but it is a dependency of a read-only ('@') project, and read-only store packages can only depend on read-only store packages. "
+                        f"Add '@' to '{conflicting[0]}' as well, or remove it from the command line.")
+
+    for p in marked:
+        if not p.metadata.get("store_buildable"):
+            raise Exception(f"Project {p.get_full_name(colored=True)} cannot be installed as a read-only Nix store package ('@') -- "
+                            f"currently only recent omnetpp and inet release versions support this")
+        if p.git_url:
+            raise Exception(f"Cannot build {p.get_full_name(colored=True)} as a Nix store package: its source comes from a git repository/branch, "
+                            f"which is not an immutable release archive. Remove the '@', or drop the 'from-git' option.")
+        if not p.download_url:
+            raise Exception(f"Cannot build {p.get_full_name(colored=True)} as a Nix store package: it has no release download URL "
+                            f"(custom download commands are not supported for store packages)")
+
+    # warn if a workspace-adopted store package was built from a different database entry than the current one
+    if workspace:
+        for p in marked:
+            metadata = workspace.read_store_package_metadata(p)
+            if metadata and (metadata.get("nixos") != p.nixos or metadata.get("stdenv") != p.stdenv):
+                _logger.warning(f"The installed Nix store package {p.get_full_name(colored=True)} was built with a different "
+                                f"nixos/stdenv than the current project database specifies, reinstall recommended")
+
+    _logger.info(f"Read-only Nix store packages: {cyan(str(marked))}")
+
 def check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings=True):
+    def dependency_names(project_description):
+        # store-backed dependencies are suffixed with '@', so that flipping a dependency between
+        # a workspace install and a store install triggers the "different set of dependencies" warning
+        return [ p.get_full_name() + ("@" if p.store_backed else "") for p in Workspace._get_dependencies(project_description, effective_project_descriptions) ]
     for project_description in effective_project_descriptions:
+        if project_description.store_backed:
+            continue  # read-only store packages are immutable, their dependency set is fixed at build time
         data = workspace.read_project_state_file(project_description)
         last_started_with = data.get("last_started_with", None)
-        starting_with = [ p.get_full_name() for p in Workspace._get_dependencies(project_description, effective_project_descriptions) ]
+        starting_with = dependency_names(project_description)
         if last_started_with is not None and starting_with != last_started_with:
             def q(l): return "[" + ", ".join(l) + "]"
             _logger.warning(f"Project {cyan(project_description)} is now being used with a different set of dependencies "
@@ -1791,7 +2132,9 @@ def check_project_dependencies(effective_project_descriptions, workspace, pause_
 
 def update_saved_project_dependencies(effective_project_descriptions, workspace):
     for project_description in effective_project_descriptions:
-        starting_with = [ p.get_full_name() for p in Workspace._get_dependencies(project_description, effective_project_descriptions) ]
+        if project_description.store_backed:
+            continue  # the store package is read-only, its state file cannot (and need not) be updated
+        starting_with = [ p.get_full_name() + ("@" if p.store_backed else "") for p in Workspace._get_dependencies(project_description, effective_project_descriptions) ]
         workspace.update_project_state(project_description, last_started_with=starting_with)
 
 
@@ -1940,6 +2283,8 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
                     print(f"- {cyan(option_name)}{default_mark}: {option_description}")
                 else:
                     print(f"- {cyan(option_name)}{default_mark}")
+        if project_description.metadata.get("store_buildable"):
+            print(f"\nNote: Can be installed as a read-only Nix store package by appending '@' to the version, e.g. `opp_env install {project_description.get_full_name()}@`")
         if len(project_descriptions) > 1:
             print("\n--------")
     print()
@@ -1950,28 +2295,37 @@ def info_subcommand_main(projects, raw=False, requested_options=None, **kwargs):
 def init_subcommand_main(workspace_directory=None, force=False, nixless_workspace=False, **kwargs):
     create_or_init_workspace(workspace_directory, allow_nonempty=force, nixless=nixless_workspace)
 
-def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, extra_nix_packages=None, init=False, pause_after_warnings=True, isolated=True, vars_to_keep=None, patch=True, run_install_commands=False, cleanup=True, local=False, build_modes=None, run_test=False, run_smoke_test=False, **kwargs):
+def install_subcommand_main(projects, workspace_directory=None, install_without_build=False, requested_options=None, no_dependency_resolution=False, nixless_workspace=False, extra_nix_packages=None, init=False, pause_after_warnings=True, isolated=True, vars_to_keep=None, patch=True, run_install_commands=False, cleanup=True, local=False, build_modes=None, run_test=False, run_smoke_test=False, refresh_source_hashes=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
+    projects, store_marked = chop_store_markers(projects)
     projects, git_branches = chop_branch_names(projects)
     if git_branches:
         _logger.info(f"Requested Git branches: {git_branches}")
 
     specified_project_descriptions = resolve_projects(projects)
+    # map the typed tokens to the (alias-resolved) descriptions by position, not by name
+    store_specified = {d.get_full_name() for t, d in zip(projects, specified_project_descriptions) if t in store_marked}
+    regular_specified = {d.get_full_name() for t, d in zip(projects, specified_project_descriptions) if t not in store_marked}
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = sort_by_project_dependencies(project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options))
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
 
+    mark_and_validate_store_backed(effective_project_descriptions, store_specified, regular_specified, workspace, local=local, no_dependency_resolution=no_dependency_resolution)
+
     check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings)
 
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     for project_description in reversed(effective_project_descriptions):
-        workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, run_install_commands=run_install_commands, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
+        if project_description.store_backed:
+            workspace.install_store_package_if_needed(project_description, effective_project_descriptions, build_modes=build_modes, refresh_hashes=refresh_source_hashes)
+        else:
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, run_install_commands=run_install_commands, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -2002,11 +2356,12 @@ def check_multiple_versions(project_descriptions):
             def q(l): return "[" + ", ".join(l) + "]"
             raise Exception(f"Multiple versions specified for project {cyan(name)}: {cyan(q(versions))} -- only one version of a project may be active at a time")
 
-def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, run_install_commands=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, **kwargs):
+def shell_subcommand_main(projects, workspace_directory=[], chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, run_install_commands=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, refresh_source_hashes=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
+    projects, store_marked = chop_store_markers(projects)
     projects, git_branches = chop_branch_names(projects)
     if git_branches and not install:
         raise Exception("Git branch may only be specified when the project is installed")
@@ -2014,12 +2369,17 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
         _logger.info(f"Requested Git branches: {git_branches}")
 
     specified_project_descriptions = resolve_projects(projects) if projects else workspace.get_installed_projects()
+    # map the typed tokens to the (alias-resolved) descriptions by position, not by name
+    store_specified = {d.get_full_name() for t, d in zip(projects, specified_project_descriptions) if t in store_marked}
+    regular_specified = {d.get_full_name() for t, d in zip(projects, specified_project_descriptions) if t not in store_marked} if projects else set()
     check_multiple_versions(specified_project_descriptions)
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = sort_by_project_dependencies(project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options))
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
+
+    mark_and_validate_store_backed(effective_project_descriptions, store_specified, regular_specified, workspace, local=local, no_dependency_resolution=no_dependency_resolution)
 
     if not install:
         for project_description in effective_project_descriptions:
@@ -2032,7 +2392,10 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     if install:
         for project_description in reversed(effective_project_descriptions):
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, run_install_commands=run_install_commands, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
+            if project_description.store_backed:
+                workspace.install_store_package_if_needed(project_description, effective_project_descriptions, build_modes=build_modes, refresh_hashes=refresh_source_hashes)
+            else:
+                workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, run_install_commands=run_install_commands, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -2050,24 +2413,31 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
     extra_nix_packages_str = f" with extra packages: {cyan(' '.join(extra_nix_packages))}" if extra_nix_packages else ""
     _logger.info(f"Starting {cyan(kind)} shell for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}{extra_nix_packages_str}")
 
+    working_directory = None
     if chdir and effective_project_descriptions:
         first_project_description = effective_project_descriptions[0]
-        first_project_dir = workspace.get_project_root_directory(first_project_description)
+        first_project_dir = workspace.get_project_browsing_directory(first_project_description)
         if chdir == "convenience":
-            chdir = not is_subdirectory(os.getcwd(), first_project_dir)  # "is outside the project dir"
+            # os.getcwd() is always resolved, so compare against the real directory -- for a store
+            # package that is the store path, whether the user got there through the symlink or not
+            chdir = not is_subdirectory(os.getcwd(), os.path.realpath(first_project_dir))  # "is outside the project dir"
         if chdir:
             _logger.debug(f"Changing into the first project's directory {cyan(first_project_dir)}")
             os.chdir(first_project_dir)
+            # os.chdir() resolves the symlink, so the shell has to cd there again logically for
+            # its working directory (and prompt) to show the workspace path rather than the store path
+            working_directory = first_project_dir
         else:
             _logger.debug(f"No need to change directory, wd={cyan(os.getcwd())} is already under the first project's directory {cyan(first_project_dir)}")
 
-    workspace.run_commands_with_projects(effective_project_descriptions, commands=commands, interactive=True, isolated=isolated, extra_nix_packages=extra_nix_packages, check_exitcode=False, vars_to_keep=vars_to_keep, build_modes=build_modes)
+    workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, commands=commands, interactive=True, isolated=isolated, extra_nix_packages=extra_nix_packages, check_exitcode=False, vars_to_keep=vars_to_keep, build_modes=build_modes)
 
-def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, run_install_commands=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, run_test=False, run_smoke_test=False, **kwargs):
+def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=False, requested_options=None, no_dependency_resolution=False, init=False, extra_nix_packages=None, install=False, install_without_build=False, run_install_commands=False, build=False, nixless_workspace=False, isolated=True, vars_to_keep=None, patch=True, cleanup=True, local=False, build_modes=None, pause_after_warnings=True, run_test=False, run_smoke_test=False, refresh_source_hashes=False, **kwargs):
     global project_registry
 
     workspace = resolve_workspace(workspace_directory, init, nixless_workspace)
 
+    projects, store_marked = chop_store_markers(projects)
     projects, git_branches = chop_branch_names(projects)
     if git_branches and not install:
         raise Exception("Git branch may only be specified when the project is installed")
@@ -2075,12 +2445,17 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
         _logger.info(f"Requested Git branches: {git_branches}")
 
     specified_project_descriptions = resolve_projects(projects) if projects else workspace.get_installed_projects()
+    # map the typed tokens to the (alias-resolved) descriptions by position, not by name
+    store_specified = {d.get_full_name() for t, d in zip(projects, specified_project_descriptions) if t in store_marked}
+    regular_specified = {d.get_full_name() for t, d in zip(projects, specified_project_descriptions) if t not in store_marked} if projects else set()
     check_multiple_versions(specified_project_descriptions)
     if no_dependency_resolution:
         effective_project_descriptions = sort_by_project_dependencies(activate_project_options(specified_project_descriptions, requested_options))
     else:
         effective_project_descriptions = sort_by_project_dependencies(project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options))
     _logger.info(f"Using specified projects {cyan(str(specified_project_descriptions))} with effective projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)}")
+
+    mark_and_validate_store_backed(effective_project_descriptions, store_specified, regular_specified, workspace, local=local, no_dependency_resolution=no_dependency_resolution)
 
     if not install:
         for project_description in effective_project_descriptions:
@@ -2092,7 +2467,10 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
     if install:
         for project_description in reversed(effective_project_descriptions):
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, run_install_commands=run_install_commands, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
+            if project_description.store_backed:
+                workspace.install_store_package_if_needed(project_description, effective_project_descriptions, build_modes=build_modes, refresh_hashes=refresh_source_hashes)
+            else:
+                workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, run_install_commands=run_install_commands, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -2108,6 +2486,26 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
     extra_nix_packages_str = f" with extra packages: {cyan(' '.join(extra_nix_packages))}" if extra_nix_packages else ""
     _logger.info(f"Running command for projects {cyan(str(effective_project_descriptions))} in workspace {cyan(workspace.root_directory)} in {cyan(kind)} mode{extra_nix_packages_str}")
     workspace.run_commands_with_projects(effective_project_descriptions, working_directory=working_directory, commands=commands, isolated=isolated, extra_nix_packages=extra_nix_packages, vars_to_keep=vars_to_keep, build_modes=build_modes)
+
+def export_flake_subcommand_main(projects, output_dir=".", requested_options=None, build_modes=None, bundle=False, refresh_source_hashes=False, **kwargs):
+    global project_registry
+
+    projects, store_marked = chop_store_markers(projects)  # the '@' suffix is accepted and implied
+    projects, git_branches = chop_branch_names(projects)
+    if git_branches:
+        raise Exception("A git branch may not be specified for 'export-flake' -- Nix packages must be built from immutable release sources")
+
+    specified_project_descriptions = resolve_projects(projects)
+    effective_project_descriptions = sort_by_project_dependencies(project_registry.compute_effective_project_descriptions(specified_project_descriptions, requested_options))
+    _logger.info(f"Exporting flake for {cyan(str(effective_project_descriptions))} to {cyan(output_dir)}")
+
+    # for export, every effective project becomes a store package
+    store_all = {p.get_full_name() for p in effective_project_descriptions}
+    mark_and_validate_store_backed(effective_project_descriptions, store_all, set(), workspace=None)
+
+    target_project = effective_project_descriptions[0]
+    from opp_env.nix_builder import export_flake
+    export_flake(effective_project_descriptions, target_project, sorted(build_modes or ["debug", "release"]), output_dir, bundle=bundle, refresh_hashes=refresh_source_hashes)
 
 def upgrade_subcommand_main(**kwargs):
     import subprocess
@@ -2203,6 +2601,8 @@ def main():
             shell_subcommand_main(**kwargs)
         elif subcommand == "run":
             run_subcommand_main(**kwargs)
+        elif subcommand == "export-flake":
+            export_flake_subcommand_main(**kwargs)
         elif subcommand == "maint":
             maint_subcommand_main(**kwargs)
         elif subcommand == "upgrade":

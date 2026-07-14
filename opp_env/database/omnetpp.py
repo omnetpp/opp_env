@@ -237,8 +237,12 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
         f"echo 'omnetpp-{version}' > Version",
         "[ -f configure.user.dist ] && cp configure.user.dist configure.user", # create default configure.user from configure.user.dist
         "sed -i 's|^WITH_LIBXML=no|WITH_LIBXML=yes|' configure.user" if "libxml2" in other_packages else None,  # we can use LIBXML even on later version of OMNeT++ where it is optional
-        "sed -i 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",  # we currently don't support OSG and osgEarth in opp_env
-        "sed -i 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
+        # Keep WITH_OSG / WITH_OSGEARTH enabled only when the library is actually
+        # present (pkg-config). opp_env's controlled (nix) environments don't ship
+        # OSG, so they fall back to =no; a host toolchain with OSG installed keeps
+        # it on, enabling the OSG visualizer showcases.
+        "pkg-config --exists openscenegraph 2>/dev/null || sed -i 's|^WITH_OSG=yes|WITH_OSG=no|' configure.user",
+        "pkg-config --exists osgearth 2>/dev/null || sed -i 's|^WITH_OSGEARTH=yes|WITH_OSGEARTH=no|' configure.user",
         "sed -i 's|^WITH_PARSIM=no|WITH_PARSIM=yes|' configure.user" if version >= "6.0" else None, # NOTE: we need WITH_PARSIM (but not MPI) for the "d" fingerprint ingredient to work
         """sed -i 's|#MPI_LIBS="-lmpi++ -lmpi"   #SGI|#MPI_LIBS="-lmpi++ -lmpi"   #SGI\\nMPI_LIBS="-ldisabled"|' configure.user""" if version >= "5.0" else None,
         """sed -i 's|#include "parsim/cmemcommbuffer.h"|#ifdef WITH_PARSIM\\n#include "parsim/cmemcommbuffer.h"\\n#endif|' src/sim/cfingerprint.cc""" if version.startswith("5.0") else None,

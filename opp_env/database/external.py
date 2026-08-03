@@ -3173,4 +3173,86 @@ def get_project_descriptions():
             ],
             "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
         },
+
+        {
+            "name": "simu5g_nasctime", "version": "1.0.0",
+            "description": "Simu5G fork adding NR dual-connectivity transport diversity, required by nascTime's IEEE 802.1CB FRER support",
+            "details": """A fork of Simu5G 1.5.0 maintained for nascTime (https://github.com/MohamedSeliem/Simu5G, tag nasctime-v1.0). It adds dual-connectivity secondary-leg attach, per-DRB leg routing and GTP-U tunnel peer override, plus several upstream fixes. It is a strict superset of Simu5G 1.5.0, so anything that works with the official release also works here.""",
+            "required_projects": {"inet": ["4.6.*"], "omnetpp": ["6.4.*", "6.3.*"]},
+            "patch_commands": [
+                r"""sed -i -E 's|-KINET_PROJ=[^ ]+|-KINET_PROJ=$(INET_ROOT)|' Makefile""",
+                r"""find . -name omnetpp.ini | xargs -n1 sed -i -E 's|^image-path|#image-path|'""",  # we use OMNETPP_IMAGE_PATH instead
+            ],
+            "setenv_commands": [
+                r"""export OMNETPP_IMAGE_PATH="$OMNETPP_IMAGE_PATH:$SIMU5G_NASCTIME_ROOT/images" """,
+                r"""source setenv -f""",  # also exports SIMU5G_ROOT, which is what nasctime's Makefile and launchers look for
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+            "smoke_test_commands": [
+                r"""cd simulations/lte/demo""",
+                r"""SIMU5G_EMULATION_ROOT=$SIMU5G_ROOT/emulation""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then DEBUG_SUFFIX=""; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_SUFFIX="_dbg"; fi""",
+                r"""opp_run$DEBUG_SUFFIX -l $SIMU5G_ROOT/src/simu5g -l $INET_ROOT/src/INET -n $SIMU5G_ROOT/simulations:$SIMU5G_EMULATION_ROOT:$SIMU5G_ROOT/src:$INET_ROOT/src -c VideoStreaming -r 0 -u Cmdenv --sim-time-limit=10s""",
+            ],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/MohamedSeliem/Simu5G/archive/refs/tags/nasctime-v1.0.tar.gz",
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/MohamedSeliem/Simu5G.git",
+                    "git_branch": "nasctime-v1.0",
+                },
+            },
+        },
+
+        {
+            "name": "nasctime", "version": "1.0.1",
+            "required_projects": {"simu5g_nasctime": ["1.0.0"], "inet": ["4.6.*"], "omnetpp": ["6.4.*", "6.3.*"]},
+            "description": "5G-TSN bridge model implementing 3GPP Release 16 TSN integration (TS 23.501), with gPTP transparent clock, PCP/5QI QoS mapping and IEEE 802.1CB FRER",
+            "details": """nascTime models the 5G system as a transparent IEEE 802.1AS-compliant bridge between two TSN network segments, providing NW-TT and DS-TT translators, SDAP-based QoS mapping, CNC-style configuration, static BMCA clock hierarchy, and IEEE 802.1CB Frame Replication and Elimination for Reliability (FRER). The FRER features require simu5g_nasctime, a patched Simu5G, instead of the official release.""",
+            "metadata": {
+                #TODO "catalog_url": "https://omnetpp.org/download-items/nascTime.html",
+            },
+            "nix_packages": [
+                "python3",  # for the result post-processing scripts of the example simulations
+            ],
+            "patch_commands": [
+                r"""chmod +x bin/*""",
+            ],
+            "setenv_commands": [
+                r"""source setenv -f""",
+                r"""echo 'Hint: To run nascTime simulations, change into a subfolder of "tests/" or "simulations/demos/", and run "nasctime -f <inifile>".'""",
+            ],
+            "build_commands": [r"""make makefiles && make -j$NIX_BUILD_CORES MODE=$BUILD_MODE"""],
+            "clean_commands": [r"""make clean MODE=$BUILD_MODE"""],
+            "smoke_test_commands": [
+                r"""cd tests/bridge_test""",
+                r"""if [ "$BUILD_MODE" = "release" ]; then DEBUG_SUFFIX=""; fi""",
+                r"""if [ "$BUILD_MODE" = "debug" ]; then DEBUG_SUFFIX="_dbg"; fi""",
+                r"""nasctime$DEBUG_SUFFIX -f omnetpp.ini -c FullBridgeTest -u Cmdenv --sim-time-limit=1s""",
+            ],
+            "options": {
+                "from-release": {
+                    "option_description": "Install from release tarball on GitHub",
+                    "option_category": "download",
+                    "option_is_default": True,
+                    "download_url": "https://github.com/MohamedSeliem/nascTime-5gtsn/archive/refs/tags/v1.0.1.tar.gz",
+                },
+                "from-git": {
+                    "option_description": "Install from git repo on GitHub",
+                    "option_category": "download",
+                    "option_is_default": False,
+                    "git_url": "https://github.com/MohamedSeliem/nascTime-5gtsn.git",
+                    "git_branch": "master",
+                },
+            },
+        },
     ]

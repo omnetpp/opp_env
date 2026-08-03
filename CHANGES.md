@@ -1,3 +1,13 @@
+## 0.36.2.260805
+
+### Database (Frameworks and Models)
+
+- nasctime: added nasctime-1.0.1, a 5G-TSN bridge model implementing 3GPP
+  Release 16 TSN integration
+- simu5g_nasctime: added version 1.0, the patched Simu5G fork that nascTime's
+  IEEE 802.1CB FRER features require
+
+
 ## 0.36.2.260713
 
 ### Database (Frameworks and Models)

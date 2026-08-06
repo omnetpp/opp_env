@@ -54,6 +54,12 @@
 
 ### Database (Frameworks and Models)
 
+- omnetpp: fixed the `name` sentinel that tells `setenv` and `install.sh` they are
+  already in a properly set up nix shell: it has to be exactly `opp_shell`, and
+  exported. With the previous value, `setenv` re-entered omnetpp's own `.opp_shell`
+  flake through `nix print-dev-env` on every NixOS shell, which printed
+  `did not evaluate to a derivation` for store packages and
+  `nix: command not found` in isolated shells.
 - omnetpp: new `no-ide` option (>= 6.0): excludes the graphical IDE from the
   installation; mainly useful for read-only Nix store packages, where it
   removes the Eclipse/webkitgtk dependencies from the package closure.

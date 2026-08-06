@@ -331,7 +331,11 @@ def make_omnetpp_project_description(version, base_version=None, is_modernized=F
             *configuration_patch_commands
         ],
         "setenv_commands": [
-            "name=omnetpp-nix-env",
+            # tells setenv and install.sh that they are already in a properly set up nix shell:
+            # 'opp_shell' is the exact sentinel they test for (it is what omnetpp's own
+            # .opp_shell flake exports), otherwise setenv re-enters that flake with
+            # 'nix print-dev-env', which fails outright when omnetpp lives in the nix store
+            "export name=opp_shell",
 
             # need to set OMNETPP_IMAGE_PATH explicitly, otherwise any model that sets it will silently make stock omnetpp images inaccessible;
             # unfortunately omnetpp setenv scripts don't set OMNETPP_IMAGE_PATH, so do it here

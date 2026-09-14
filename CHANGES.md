@@ -1,3 +1,10 @@
+## 0.36.2.260914
+
+### Database (Frameworks and Models)
+
+- simu5g: added versions 1.5.1, 1.5.2, 1.6.0 and 1.7.0
+
+
 ## 0.36.2.260805
 
 ### Database (Frameworks and Models)

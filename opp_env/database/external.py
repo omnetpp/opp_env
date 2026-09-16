@@ -170,7 +170,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd simulations && ../src/run_flora$BUILD_MODE_SUFFIX -u Cmdenv -r 0 --sim-time-limit=50000s""",
             ],
-            "required_projects": {"omnetpp": ["6.4.*", "6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},  # inet-4.6 not supported: scalar PHY headers moved/removed and UdpControlInfo_m.h removed
+            "required_projects": {"omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"], "inet": ["4.5.*"]},  # inet-4.6 not supported: scalar PHY headers moved/removed and UdpControlInfo_m.h removed
             "download_url": "https://github.com/florasim/flora/releases/download/v1.2.0/flora-1.2.0.tgz",
             "patch_commands": [
                 r"""sed -i -E 's|INET_DIR = [^ ]+|INET_DIR = $(INET_ROOT)|' Makefile""",
@@ -506,7 +506,7 @@ def get_project_descriptions():
                 r"""if [ "$BUILD_MODE" = "debug" ]; then BUILD_MODE_SUFFIX="_dbg"; fi""",
                 r"""cd examples/hls && inetgpl$BUILD_MODE_SUFFIX -c Experiment1 -u Cmdenv --sim-time-limit=1s""",
             ],
-            "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.4.*", "6.3.*", "6.2.*", "6.1.*", "6.0.*"]},
+            "required_projects": {"inet": ["4.5.*"], "omnetpp": ["6.3.*", "6.2.*", "6.1.*", "6.0.*"]},
             "download_url": "https://github.com/inet-framework/inet-gpl/archive/refs/tags/v1.0.tar.gz",
             "setenv_commands": [r"""source setenv""",
                                 r"""echo 'Hint: Use `inetgpl` command in any of the example simulation folders.'"""],
@@ -3042,7 +3042,7 @@ def get_project_descriptions():
 
         {
             "name": "sixgdetcom_allinone", "version": "20250910",   # last commit of master branch as of time of writing
-            "required_projects": {"omnetpp": ["6.2.*"]},
+            "required_projects": {"omnetpp": ["6.2.*"]},  # don't add omnetpp-6.4: nixos-26.05's ffmpeg-8 has no avcodec_close(), used by the bundled INET 4.5 fork's VoipStream
             "description": "6GDetCom Simulator Framework",
             "details": """A simulator framework for validating the concepts for a wireless-friendly design for end-to-end deterministic communication. Part of the deliverables D4.1 "DetCom Simulator Framework (Release 1)" and D4.1 "DetCom Simulator Framework (Release 1)" of the DETERMINISTIC6G project. Also contains measurement data from the DETERMINISTIC6G project (https://github.com/DETERMINISTIC6G/deterministic6g_data). Furthermore, this version uses DETERMINISTIC6G's modified version of INET, and not one installed by opp_env.""",
             "nix_packages": [
@@ -3098,7 +3098,7 @@ def get_project_descriptions():
 
         {
             "name": "pileach_allinone", "version": "20250425",   # last commit of master branch as of time of writing
-            "required_projects": {"omnetpp": ["6.0.*"]},
+            "required_projects": {"omnetpp": ["6.0.*"]},  # don't add omnetpp-6.4: nixos-26.05's ffmpeg-8 has no avcodec_close(), used by the bundled INET 4.5.4's VoipStream
             "description": "Low-Energy Adaptive Clustering Hierarchy (LEACH) protocol, a classic hierarchical routing protocol for wireless sensor networks.",
             "details": "This version downloads its own copy of INET 4.5.4, and does not use one installed by opp_env.",
             "metadata": {

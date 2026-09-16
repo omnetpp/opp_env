@@ -1,3 +1,16 @@
+## 0.36.2.260916
+
+### Database (Frameworks and Models)
+
+- simu5g: simu5g-1.7.0 can now also be used with inet-4.7
+- inet: inet-4.5.4 turned out not to work with omnetpp-6.4 (nixos-26.05's
+  ffmpeg-8 dropped avcodec_close(), still used by INET's VoipStream feature),
+  so that combination was removed. Projects that only work with inet-4.5.*,
+  such as simu5g-1.3.x, flora-1.2.0 and inetgpl-1.0, now install with
+  omnetpp-6.3.0 instead of 6.4.0. inet-3.8.5 was also restricted to
+  omnetpp-6.3 and below, as it was never tested with 6.4.
+
+
 ## 0.36.2.260914
 
 ### Database (Frameworks and Models)

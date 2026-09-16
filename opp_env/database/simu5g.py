@@ -54,7 +54,7 @@ def get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versio
 
 def get_project_descriptions():
     return [ get_simu5g_project_description(simu5g_version, inet_versions, omnetpp_versions) for simu5g_version, inet_versions, omnetpp_versions in [
-        ["1.7.0", ["4.6.*", "4.5.*"], ["6.4.*", "6.3.*", "6.2.*"]],
+        ["1.7.0", ["4.7.*", "4.6.*", "4.5.*"], ["6.4.*", "6.3.*", "6.2.*"]],
         ["1.6.0", ["4.6.*", "4.5.*"], ["6.4.*", "6.3.*", "6.2.*"]],
         ["1.5.2", ["4.6.*", "4.5.*"], ["6.4.*", "6.3.*", "6.2.*"]],
         ["1.5.1", ["4.6.*", "4.5.*"], ["6.4.*", "6.3.*", "6.2.*"]],

@@ -1,3 +1,10 @@
+## 0.36.2.260921
+
+### Database (Frameworks and Models)
+
+- flora: added flora-1.3.1, a bugfix release over 1.3.0
+
+
 ## 0.36.2.260916
 
 ### Database (Frameworks and Models)

@@ -1,3 +1,11 @@
+## 0.36.2.260925
+
+### Database (Frameworks and Models)
+
+- flora: added flora-1.3.2, which fixes an `ASSERT(!fsm.busy)` failure in
+  LoRaMac that aborted debug-mode simulations with flora-1.3.1
+
+
 ## 0.36.2.260921
 
 ### Database (Frameworks and Models)

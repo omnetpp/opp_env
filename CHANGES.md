@@ -1,3 +1,12 @@
+## 0.36.2.261008
+
+### Database (Frameworks and Models)
+
+- simu5g: added simu5g-1.8.0, which requires inet-4.7 and omnetpp-6.4. Its main
+  new feature is support for IPv6, IPv4v6, Ethernet and Unstructured PDU
+  sessions besides IPv4. `simu5g-latest` now resolves to this version.
+
+
 ## 0.36.2.260925
 
 ### Database (Frameworks and Models)

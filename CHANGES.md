@@ -5,7 +5,9 @@
 - The WSL image (`opp_env.wsl` in the "opp_env - WSL image" release) and the
   `ghcr.io/omnetpp/opp_env` docker image are now built and published
   automatically after each PyPI release. They contain exactly the released
-  opp_env version, which is also noted in the release description.
+  opp_env version, which is also noted in the release description, together
+  with the download count of earlier builds (re-uploading the image resets the
+  count GitHub shows for the asset).
 
 
 ## 0.36.2.261008

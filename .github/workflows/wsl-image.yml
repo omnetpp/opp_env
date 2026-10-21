@@ -74,30 +74,40 @@ jobs:
         docker push "$IMAGE:$VERSION"
         docker push "$IMAGE:latest"
 
-    # upload under a temporary name first, so the download URL is only missing for a moment
+    # Upload under a temporary name first, so the download URL is only missing for a moment.
+    # A new asset starts with a zero download count, so the old asset's count is carried over
+    # into the release body before the old asset is deleted. The id of the last counted asset
+    # is recorded too, so that re-running after a failed delete does not count it twice.
     - name: Replace opp_env.wsl in the 'wsl' release
       if: inputs.publish
       run: |
         mv docker/opp_env.wsl opp_env.wsl.new
         gh release upload wsl opp_env.wsl.new --clobber --repo "$REPO"
-        asset_id() { gh api "repos/$REPO/releases/tags/wsl" --jq ".assets[] | select(.name == \"$1\") | .id"; }
-        old_id=$(asset_id opp_env.wsl)
-        new_id=$(asset_id opp_env.wsl.new)
-        if [ -n "$old_id" ]; then gh api -X DELETE "repos/$REPO/releases/assets/$old_id"; fi
-        gh api -X PATCH "repos/$REPO/releases/assets/$new_id" -f name=opp_env.wsl > /dev/null
-
-    - name: Update the version note in the 'wsl' release
-      if: inputs.publish
-      run: |
-        gh release view wsl --repo "$REPO" --json body --jq .body > body.md
-        python3 - body.md "$VERSION" "$(date -u +%Y-%m-%d)" <<'EOF'
+        gh api "repos/$REPO/releases/tags/wsl" > release.json
+        old_id=$(jq -r '.assets[] | select(.name == "opp_env.wsl") | .id' release.json)
+        old_count=$(jq -r '.assets[] | select(.name == "opp_env.wsl") | .download_count' release.json)
+        new_id=$(jq -r '.assets[] | select(.name == "opp_env.wsl.new") | .id' release.json)
+        jq -r .body release.json > body.md
+        python3 - body.md "$VERSION" "$(date -u +%Y-%m-%d)" "$old_id" "$old_count" <<'EOF'
         import re, sys
-        path, version, date = sys.argv[1:]
+        path, version, date, old_id, old_count = sys.argv[1:]
         begin, end = "<!-- wsl-image-version -->", "<!-- /wsl-image-version -->"
-        note = f"{begin}\n**Contains opp_env {version}, built on {date}.**\n{end}"
-        body = open(path).read().rstrip()
         pattern = re.escape(begin) + ".*?" + re.escape(end)
-        body = re.sub(pattern, lambda m: note, body, flags=re.S) if re.search(pattern, body, flags=re.S) else body + "\n\n" + note
+        body = open(path).read().rstrip()
+        match = re.search(pattern, body, flags=re.S)
+        block = match.group(0) if match else ""
+        m = re.search(r"Downloads of earlier builds: (\d+)", block)
+        earlier = int(m.group(1)) if m else 0
+        m = re.search(r"<!-- counted-asset: (\d*) -->", block)
+        counted = m.group(1) if m else ""
+        if old_id and old_id != counted:
+            earlier += int(old_count)
+            counted = old_id
+        note = (f"{begin}\n**Contains opp_env {version}, built on {date}.**\n\n"
+                f"Downloads of earlier builds: {earlier}\n<!-- counted-asset: {counted} -->\n{end}")
+        body = body.replace(block, note) if match else body + "\n\n" + note
         open(path, "w").write(body + "\n")
         EOF
         gh release edit wsl --repo "$REPO" --notes-file body.md
+        if [ -n "$old_id" ]; then gh api -X DELETE "repos/$REPO/releases/assets/$old_id"; fi
+        gh api -X PATCH "repos/$REPO/releases/assets/$new_id" -f name=opp_env.wsl > /dev/null

@@ -45,7 +45,7 @@ jobs:
           *) echo "::error::Publishing is only allowed from main or a tag, not from $GITHUB_REF"; exit 1 ;;
         esac
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Determine the opp_env version
       env:

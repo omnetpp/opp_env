@@ -1,7 +1,17 @@
 #!/bin/sh
+# Usage: build [<opp_env version>]    (default: the latest version on PyPI)
+# Set CONTAINER=docker to build with docker instead of podman.
 
-DOCKER_BUILDKIT=1 podman build -t ghcr.io/omnetpp/opp_env:latest -t ghcr.io/omnetpp/opp_env:$(date +%y%m%d) .
+set -e
+cd "$(dirname "$0")"
 
-podman run --user opp_env --replace --name opp_env_wsl ghcr.io/omnetpp/opp_env:latest
-podman export opp_env_wsl | gzip --best > opp_env.wsl
-podman rm opp_env_wsl
+CONTAINER=${CONTAINER:-podman}
+IMAGE=ghcr.io/omnetpp/opp_env
+VERSION=${1:-$(curl -fsSL https://pypi.org/pypi/opp-env/json | python3 -c 'import json,sys; print(json.load(sys.stdin)["info"]["version"])')}
+
+DOCKER_BUILDKIT=1 $CONTAINER build --build-arg OPP_ENV_VERSION="$VERSION" -t "$IMAGE:latest" -t "$IMAGE:$VERSION" .
+
+$CONTAINER rm -f opp_env_wsl > /dev/null 2>&1 || true
+$CONTAINER create --name opp_env_wsl "$IMAGE:$VERSION" > /dev/null
+$CONTAINER export opp_env_wsl | gzip --best > opp_env.wsl
+$CONTAINER rm opp_env_wsl

@@ -43,15 +43,18 @@ COPY --chown=$USER:root nix.conf /home/${USER}/.config/nix/nix.conf
 COPY --chown=$USER:root keyfile.glib-2.0 /home/${USER}/.config/glib-2.0/keyfile
 COPY --chown=$USER:root profile /home/${USER}/.profile
 
-# trick: check if the github repo has a new release and force a rebuild of the remaining layers    
-ADD "https://api.github.com/repos/omnetpp/opp_env/releases?per_page=1" latest_commit
+ARG OPP_ENV_VERSION
 
-# install uv and then opp_env
+# install uv and then opp_env; retry because a just-published version may take a few minutes to show up on PyPI
 RUN /bin/bash -c '\
-    rm latest_commit \
+    test -n "$OPP_ENV_VERSION" \
     && curl -LsSf https://astral.sh/uv/install.sh | sh \
     && source ~/.local/bin/env \
     && uv venv --clear --seed --no-project --prompt opp_env \
     && source ~/.venv/bin/activate \
-    && uv pip install --upgrade opp-env \
+    && for i in $(seq 20); do \
+           uv pip install --no-cache "opp-env==$OPP_ENV_VERSION" && break; \
+           [ $i = 20 ] && exit 1; \
+           echo "opp-env $OPP_ENV_VERSION is not available on PyPI yet, retrying in 30s"; sleep 30; \
+       done \
     && opp_env init --force'

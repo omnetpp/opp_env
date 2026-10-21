@@ -1,0 +1,103 @@
+name: Build and release the opp_env WSL image
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        default: ''
+      publish:
+        type: boolean
+        default: true
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "opp_env version to install from PyPI (empty: the latest one)"
+        type: string
+        default: ''
+      publish:
+        description: "Push the docker image to ghcr and replace opp_env.wsl in the 'wsl' release"
+        type: boolean
+        default: false
+
+jobs:
+  wsl-image:
+    name: Build and release the WSL image
+    runs-on: ubuntu-latest
+    # never cancel a run that may be in the middle of replacing the release asset
+    concurrency:
+      group: wsl-image
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      packages: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      IMAGE: ghcr.io/omnetpp/opp_env
+
+    steps:
+    - name: Check that publishing is allowed from this ref
+      if: inputs.publish
+      run: |
+        case "$GITHUB_REF" in
+          refs/heads/main|refs/tags/*) ;;
+          *) echo "::error::Publishing is only allowed from main or a tag, not from $GITHUB_REF"; exit 1 ;;
+        esac
+
+    - uses: actions/checkout@v4
+
+    - name: Determine the opp_env version
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+      run: |
+        VERSION=${INPUT_VERSION:-$(curl -fsSL https://pypi.org/pypi/opp-env/json | jq -r .info.version)}
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+    - name: Build the docker image and the WSL image
+      run: CONTAINER=docker docker/build "$VERSION"
+
+    - name: Smoke test
+      run: |
+        gzip -t docker/opp_env.wsl
+        # the image's .profile (sourced by the entrypoint) runs 'clear', which fails without TERM
+        docker run --rm -e TERM=xterm -e EXPECTED_VERSION="$VERSION" "$IMAGE:$VERSION" bash -c '
+          set -e
+          test "$(opp_env --version)" = "$EXPECTED_VERSION"
+          nix --version
+          opp_env list > /dev/null'
+
+    - name: Push the docker image to ghcr
+      if: inputs.publish
+      run: |
+        echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        docker push "$IMAGE:$VERSION"
+        docker push "$IMAGE:latest"
+
+    # upload under a temporary name first, so the download URL is only missing for a moment
+    - name: Replace opp_env.wsl in the 'wsl' release
+      if: inputs.publish
+      run: |
+        mv docker/opp_env.wsl opp_env.wsl.new
+        gh release upload wsl opp_env.wsl.new --clobber --repo "$REPO"
+        asset_id() { gh api "repos/$REPO/releases/tags/wsl" --jq ".assets[] | select(.name == \"$1\") | .id"; }
+        old_id=$(asset_id opp_env.wsl)
+        new_id=$(asset_id opp_env.wsl.new)
+        if [ -n "$old_id" ]; then gh api -X DELETE "repos/$REPO/releases/assets/$old_id"; fi
+        gh api -X PATCH "repos/$REPO/releases/assets/$new_id" -f name=opp_env.wsl > /dev/null
+
+    - name: Update the version note in the 'wsl' release
+      if: inputs.publish
+      run: |
+        gh release view wsl --repo "$REPO" --json body --jq .body > body.md
+        python3 - body.md "$VERSION" "$(date -u +%Y-%m-%d)" <<'EOF'
+        import re, sys
+        path, version, date = sys.argv[1:]
+        begin, end = "<!-- wsl-image-version -->", "<!-- /wsl-image-version -->"
+        note = f"{begin}\n**Contains opp_env {version}, built on {date}.**\n{end}"
+        body = open(path).read().rstrip()
+        pattern = re.escape(begin) + ".*?" + re.escape(end)
+        body = re.sub(pattern, lambda m: note, body, flags=re.S) if re.search(pattern, body, flags=re.S) else body + "\n\n" + note
+        open(path, "w").write(body + "\n")
+        EOF
+        gh release edit wsl --repo "$REPO" --notes-file body.md

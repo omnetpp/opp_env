@@ -52,6 +52,18 @@ jobs:
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
 
+  wsl-image:
+    name: Build and release the WSL image
+    needs:
+    - publish-to-pypi
+    permissions:
+      contents: write
+      packages: write
+    uses: ./.github/workflows/wsl-image.yml
+    with:
+      version: ${{ github.ref_name }}
+      publish: true
+
   github-release:
     name: >-
       Sign the Python 🐍 distribution 📦 with Sigstore

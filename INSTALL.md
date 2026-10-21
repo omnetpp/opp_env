@@ -67,7 +67,7 @@ the procedure is the same as on Linux.
 `opp_env` cannot be installed on Windows directly because Nix is not available on that platform.
 However, you can use it inside a WSL2 (Windows Subsystem for Linux) container.
 
-For Windows, we provide a pre-packaged WSL2 container image based on Ubuntu 24.04
+For Windows, we provide a pre-packaged WSL2 container image based on Ubuntu 26.04
 that includes all necessary dependencies (Python3, pip, Nix, etc.).
 
 To install the `opp_env` WSL2 image, open a command prompt and run the following command:

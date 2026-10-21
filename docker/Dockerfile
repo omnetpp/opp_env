@@ -3,7 +3,7 @@
 # The base image
 FROM ubuntu:26.04
 LABEL maintainer="Rudolf Hornig <rudi@omnetpp.org>"
-LABEL org.opencontainers.image.source = "https://github.com/omnetpp/opp_env"
+LABEL org.opencontainers.image.source="https://github.com/omnetpp/opp_env"
 
 ARG USER=opp_env
 ENV USER=${USER}

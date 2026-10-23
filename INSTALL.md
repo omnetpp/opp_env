@@ -87,6 +87,12 @@ or just start opp_env from the start menu.
 Once you are inside the container, you can run the `opp_env` command as
 suggested in the previous section.
 
+The image upgrades `opp_env` to the latest version automatically, at most once a day,
+when a shell is started. To only get a notice when a new version is available, run
+`touch ~/.opp_env_auto_upgrade_disable`; to disable the check altogether, run
+`touch ~/.opp_env_upgrade_check_disable`. Images imported before this feature was added
+keep their old behavior (a notice only); upgrade those with `uv pip install --upgrade opp_env`.
+
 
 ## In Docker
 

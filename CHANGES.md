@@ -8,6 +8,12 @@
   opp_env version, which is also noted in the release description, together
   with the download count of earlier builds (re-uploading the image resets the
   count GitHub shows for the asset).
+- The WSL image now upgrades opp_env automatically, at most once a day, when an
+  interactive shell is started (before entering the development shell of the
+  last workspace). `touch ~/.opp_env_auto_upgrade_disable` switches back to
+  only showing a notice about new versions, `touch ~/.opp_env_upgrade_check_disable`
+  disables the check. This also fixes the notice, which was never shown before.
+  Already imported WSL images keep their old behavior.
 
 
 ## 0.36.2.261008

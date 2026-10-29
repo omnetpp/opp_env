@@ -1,6 +1,6 @@
 ## Unreleased
 
-### opp_env
+### opp_env WSL Image
 
 - The WSL image (`opp_env.wsl` in the "opp_env - WSL image" release) and the
   `ghcr.io/omnetpp/opp_env` docker image are now built and published
@@ -14,6 +14,15 @@
   only showing a notice about new versions, `touch ~/.opp_env_upgrade_check_disable`
   disables the check. This also fixes the notice, which was never shown before.
   Already imported WSL images keep their old behavior.
+
+### Database (Frameworks and Models)
+
+- omnetpp: added version 6.5.0
+- add omnetpp-6.5 support to the following projects: inet-4.7.0, inet-4.6.0,
+  inet-git, simu5g-1.4.*, simu5g-1.5.*, simu5g-1.6.0, simu5g-1.7.0,
+  simu5g-1.8.0, simu5g-git, flora-1.3.*, inetgpl-4.6.0, openflow-20250717,
+  inbaversim-0.3.0, inbaversim-0.1.0, inbaversim-git, simu5g_nasctime-1.0.0,
+  nasctime-1.0.1 (note: inet-git now requires omnetpp-6.5)
 
 
 ## 0.36.2.261008

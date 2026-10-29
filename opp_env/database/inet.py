@@ -182,9 +182,9 @@ def make_inet_project_description(inet_version, omnetpp_versions):
 
 def get_all_inet_released_versions():
     return [ make_inet_project_description(inet_version, omnetpp_versions) for inet_version, omnetpp_versions in [
-        ["4.7.0", ["6.4.*", "6.4.0aipre2"]],
-        ["4.6.0", ["6.4.*", "6.3.*", "6.2.*", "6.4.0aipre2"]],
-        # omnetpp-6.4 selects nixos-26.05, whose ffmpeg-8 dropped the deprecated avcodec_close(); VoipStream (which we enable) still uses it:
+        ["4.7.0", ["6.5.*", "6.4.*", "6.4.0aipre2"]],
+        ["4.6.0", ["6.5.*", "6.4.*", "6.3.*", "6.2.*", "6.4.0aipre2"]],
+        # omnetpp-6.4 and later select nixos-26.05, whose ffmpeg-8 dropped the deprecated avcodec_close(); VoipStream (which we enable) still uses it:
         # "error: use of undeclared identifier 'avcodec_close'" in AudioOutFile.cc, VoipStreamSender.cc, VoipStreamReceiver.cc. Fixed in inet-4.6.0.
         ["4.5.4", ["6.3.*", "6.2.*", "6.1.*", "6.0.*"]],
         ["4.5.2", ["6.0.*"]],
@@ -271,7 +271,7 @@ def get_project_descriptions():
     return [
         *get_all_inet_released_versions(),
         inet_20100323, inet_20061020, # hand-picked time-stamped versions
-        make_inet_project_description("git", ["6.4.*"]),
+        make_inet_project_description("git", ["6.5.*"]),
     ]
 
 inet_20100323 = {

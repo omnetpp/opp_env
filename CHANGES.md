@@ -1,3 +1,13 @@
+## 0.36.2.261110
+
+### Database (Frameworks and Models)
+
+- simu5g: added simu5g-1.8.1, a bug fix release which, like simu5g-1.8.0,
+  requires inet-4.7 and omnetpp-6.4 or 6.5. Most of its fixes change simulation
+  results, notably in NR (no more silent data loss when the H-ARQ processes run
+  out, lower NR downlink delays). `simu5g-latest` now resolves to this version.
+
+
 ## 0.36.2.261030
 
 ### opp_env WSL Image

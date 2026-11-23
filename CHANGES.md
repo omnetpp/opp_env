@@ -1,4 +1,4 @@
-## Unreleased
+## 0.36.3.261123
 
 ### opp_env
 
@@ -12,7 +12,17 @@
   `--add-extra-nix-packages python3Packages.<name>`, or install them into a
   virtualenv (`python3 -m venv`). Also, `VIRTUAL_ENV` is now unset in such
   sessions, so that a host virtualenv that was active when opp_env was started
-  does not become the install target of `uv pip install`.
+  does not become the install target of `uv pip install`. Fixes #42
+  (https://github.com/omnetpp/opp_env/issues/42).
+
+### Database (Frameworks and Models)
+
+- opp_repl: added opp_repl-0.5 and opp_repl-git. opp_repl is an interactive
+  Python REPL and a set of command-line tools (`opp_repl`, `opp_run_*_tests`,
+  ...) for running and testing OMNeT++ simulations. opp_repl-0.5 requires
+  omnetpp-6.1 or later (coverage tests need omnetpp-6.2), opp_repl-git requires
+  omnetpp-6.2 or later. The MCP server is only available with omnetpp-6.2 and
+  later.
 
 
 ## 0.36.2.261110

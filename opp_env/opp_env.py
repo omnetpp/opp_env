@@ -1644,6 +1644,17 @@ class Workspace:
         tools_nix_packages = ["bashInteractive", "gitFull", "openssh", "curl", "gzip", "which", "gnused", "gnutar", "perl", "findutils", "coreutils"]
         nix_packages = uniq(nix_packages + tools_nix_packages)
 
+        # Add the matching pip for each Python interpreter in the session. Otherwise, in a non-isolated session
+        # "pip install" runs the host OS pip, which installs into the host Python: the install appears to succeed,
+        # but the package is not visible to the session's (Nix) Python. Nix pip does not install into the Nix Python:
+        # it reports a PEP 668 "externally-managed-environment" error (or "Permission denied" with nixpkgs older than 23.05).
+        # Also unset VIRTUAL_ENV, so that a host virtualenv that was active when opp_env was started does not become
+        # the install target of "uv pip install" (host uv works fine otherwise, as it refuses to install without a venv).
+        python_interpreters = [pkg for pkg in nix_packages if re.fullmatch(r"python3\d*", pkg)]
+        if python_interpreters:
+            nix_packages = uniq(nix_packages + [f"{python}Packages.pip" for python in python_interpreters])
+            script = "unset VIRTUAL_ENV VIRTUAL_ENV_PROMPT\n" + script
+
         shell_options = "-exo pipefail" if tracing else "-eo pipefail"
         flake_dir = os.path.join(self.get_workspace_admin_directory(), nixos)
         os.makedirs(flake_dir, exist_ok=True)

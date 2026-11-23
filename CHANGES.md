@@ -1,3 +1,20 @@
+## Unreleased
+
+### opp_env
+
+- Sessions whose projects use a Nix-provided Python now also contain the
+  matching Nix `pip`. Previously, `pip install` in a (non-isolated) `opp_env
+  shell` ran the host OS pip, which installed the package into the host Python:
+  the install appeared to succeed, but the package was not visible to the
+  session's Python. Now `pip install` and `python3 -m pip install` fail with an
+  "externally-managed-environment" error (with nixpkgs older than 23.05, i.e.
+  omnetpp-5.x: with "Permission denied"). Add Python packages with
+  `--add-extra-nix-packages python3Packages.<name>`, or install them into a
+  virtualenv (`python3 -m venv`). Also, `VIRTUAL_ENV` is now unset in such
+  sessions, so that a host virtualenv that was active when opp_env was started
+  does not become the install target of `uv pip install`.
+
+
 ## 0.36.2.261110
 
 ### Database (Frameworks and Models)

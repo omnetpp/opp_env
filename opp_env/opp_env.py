@@ -839,6 +839,7 @@ class ProjectRegistry:
             "simulte",
             "simu5g",
             "external",
+            "opp_repl",
             "testproject"
         ]
 

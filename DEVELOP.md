@@ -13,6 +13,13 @@ added ability to make local modifications that will take effect immediately.
 In case of other errors, try upgrading pip to the latest version first by
 running `python3 -m pip install --upgrade pip`.
 
+## Website
+
+The `website/` folder holds https://oppenv.omnetpp.org: the site itself, the
+privacy policy, and the Cloudflare Worker that serves them and receives the
+download reports. See `website/README.md` for local testing and deployment. It
+is not part of the Python package.
+
 ## Building the Python Package
 
 To build the Python package, you first need to install the `build` package by

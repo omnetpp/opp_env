@@ -1,0 +1,25 @@
+name = "oppenv-website"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+# Only reachable through oppenv.omnetpp.org.
+workers_dev = false
+preview_urls = false
+
+routes = [
+  { pattern = "oppenv.omnetpp.org", custom_domain = true },
+]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "oppenv-stats"
+database_id = "1d16bef4-80e9-4087-ae2d-356a9d24198a"
+
+# /report accepts at most 60 reports per minute from one IP address. The namespace_id is an arbitrary
+# number that only has to be unique among the account's rate limiters.
+[[ratelimits]]
+name = "REPORT_LIMITER"
+namespace_id = "1001"
+simple = { limit = 60, period = 60 }
+
+[assets]
+directory = "./public"

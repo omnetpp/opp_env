@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy policy - opp_env</title>
+<link rel="stylesheet" href="/styles.css">
+<link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+.page { padding: 120px 0 64px; }
+.page .container { max-width: 800px; }
+.page h1 { font-size: 2.5rem; color: #2d3748; margin-bottom: 0.5rem; }
+.page h2 { font-size: 1.5rem; color: #2d3748; margin: 2.5rem 0 0.75rem; }
+.page .updated { color: #718096; font-size: 0.9rem; margin-bottom: 2rem; }
+.page p, .page li { color: #4a5568; }
+.page ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+.page li { margin-bottom: 0.4rem; }
+.page p code, .page li code { background: #edf2f7; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+</style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/"><img height="50pt" src="/images/opp_env_logo.svg" alt="opp_env"></a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/#features" class="nav-link">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/#installation" class="nav-link">Installation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/#usage" class="nav-link">Usage</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/#models" class="nav-link">Models</a>
+                </li>
+                <li class="nav-item">
+                    <a href="https://github.com/omnetpp/opp_env" class="nav-link nav-cta" target="_blank">GitHub</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main-content" class="page">
+        <div class="container">
+      <h1>Privacy policy</h1>
+      <p class="updated">opp_env download statistics · last updated 27 November 2026</p>
+
+      <p>
+        <a href="https://github.com/omnetpp/opp_env">opp_env</a> reports which OMNeT++
+        releases and simulation models it downloads, so that the OMNeT++ project can
+        see how they are used. This page describes what is recorded, why, and how to
+        opt out.
+      </p>
+
+      <h2>How it works</h2>
+      <p>
+        opp_env downloads archives and repositories directly from their original
+        location (usually GitHub), under that site's own privacy policy. After a
+        project has been downloaded successfully, opp_env sends a short report to
+        <code>https://oppenv.omnetpp.org/report</code>. The report contains no URL,
+        only the data listed below. Nothing is sent
+        when installing from local copies (<code>--local</code>).
+      </p>
+
+      <h2>What is recorded</h2>
+      <p>For each downloaded project, one record with:</p>
+      <ul>
+        <li>the date (UTC, without the time of day);</li>
+        <li>the country the report came from, as determined by Cloudflare from the
+          IP address at the time of the request;</li>
+        <li>sent by opp_env: the project name and version, whether it was installed
+          as a dependency of another project, the host operating system (Linux,
+          macOS or WSL), the CPU architecture, the opp_env version, and whether it
+          runs in a CI system (the <code>CI</code> environment variable is set).</li>
+      </ul>
+
+      <h2>What is not recorded</h2>
+      <p>
+        IP addresses, user or host names, file paths, download URLs, cookies, or any
+        other identifier are not stored, and neither is the time of day, so a record
+        cannot be traced back to a person or a machine. Downloads reported together
+        (for example a model and the OMNeT++ release it needs) share their date,
+        country and platform, but so do downloads by different users on the same day.
+      </p>
+
+      <h2>Why</h2>
+      <p>
+        To learn which OMNeT++ versions and models are actually used, on which
+        platforms, and in which regions. This helps decide which versions and
+        platforms to keep supporting and testing, and shows model authors how
+        their work is used.
+      </p>
+
+      <h2>Infrastructure</h2>
+      <p>
+        The reports are received by a Cloudflare Worker and stored in Cloudflare D1.
+        Cloudflare necessarily processes each request, including its IP address, to
+        deliver it; see the
+        <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare privacy policy</a>.
+        To prevent abuse, Cloudflare counts the reports from each IP address for one
+        minute; these counters are not stored with the statistics. The service does
+        not keep request logs of its own.
+      </p>
+
+      <h2>How long records are kept</h2>
+      <p>
+        Indefinitely. Since the records contain no personal data, they are kept to
+        show long-term trends.
+      </p>
+
+      <h2>Opting out</h2>
+      <p>
+        Set the <code>OPP_ENV_NO_TELEMETRY</code> or <code>DO_NOT_TRACK</code>
+        environment variable to any non-empty value:
+      </p>
+      <div class="code-block"><code>export OPP_ENV_NO_TELEMETRY=1</code></div>
+      <p>opp_env then sends no reports at all. Downloads work the same either way.</p>
+
+      <h2>Questions</h2>
+      <p>
+        Open an issue in the
+        <a href="https://github.com/omnetpp/opp_env/issues">opp_env issue tracker</a>.
+      </p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>opp_env</h3>
+                    <p>Simplifying OMNeT++ Model Installations</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/omnetpp/opp_env" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/blob/main/INSTALL.md" target="_blank">Installation Guide</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/blob/main/DEVELOP.md" target="_blank">Development Guide</a></li>
+                        <li><a href="https://pypistats.org/packages/opp-env" target="_blank">PyPI Statistics</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://omnetpp.org" target="_blank">OMNeT++ Website</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/issues" target="_blank">Report Issues</a></li>
+                        <li><a href="https://github.com/omnetpp/omnetpp/discussions/1317" target="_blank">Discussions</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>License</h4>
+                    <p>Licensed under <a href="https://github.com/omnetpp/opp_env/blob/main/LICENSE" target="_blank">LGPL-3.0</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 OpenSim Ltd. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/script.js"></script>
+</body>
+</html>

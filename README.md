@@ -70,6 +70,27 @@ To open a shell prompt where you can use the recently installed Simu5G model, ty
 > If you frequently install new versions of OMNeT++ and/or simulation models, it's recommended to
 > run `nix store gc` periodically to reclaim disk space occupied by older, unused dependencies.
 
+## Download Statistics
+
+To learn which OMNeT++ versions and models are used, `opp_env` sends a short
+report to `https://oppenv.omnetpp.org/report` after it has downloaded a
+project. Archives and repositories are always downloaded directly from their
+original location; the report does not contain any URL. It contains the
+project name and version, whether it was installed as a dependency of another
+project, the host OS (Linux, macOS or WSL), the CPU architecture, the `opp_env`
+version, and whether it runs in CI (the `CI` environment variable is set). The
+server adds the date and the country derived from the request; IP addresses
+are not stored. See the privacy policy at https://oppenv.omnetpp.org/privacy.
+The first time `opp_env` sends a report, it prints a notice about it.
+
+To opt out, set the `OPP_ENV_NO_TELEMETRY` (or `DO_NOT_TRACK`) environment
+variable to any non-empty value:
+
+    export OPP_ENV_NO_TELEMETRY=1
+
+If the server cannot be reached, the download is simply not counted; the
+report never makes an installation fail.
+
 ## Available Packages
 
 To see the list of available packages, type: `opp_env list`. The output from `opp_env list` from October 31, 2024:

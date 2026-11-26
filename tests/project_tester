@@ -23,6 +23,9 @@ parser.add_argument("project_filters", nargs="*", metavar="project-filter", help
     shell from expanding them with the list of files/directories in the current directory.""")
 args = parser.parse_args()
 
+# test runs must not show up in the download statistics
+os.environ["OPP_ENV_NO_TELEMETRY"] = "1"
+
 # Set variables for program names
 command = args.command
 project_filters = args.project_filters

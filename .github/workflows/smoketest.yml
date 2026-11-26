@@ -30,6 +30,10 @@ jobs:
     - name: Install locally
       run: python3 -m pip install -e .
 
+    - name: Telemetry unit tests
+      working-directory: tests
+      run: python3 test_telemetry.py
+
     - name: '"Nixless" smoke test'
       working-directory: tests
       run: ./smoketest_nixless

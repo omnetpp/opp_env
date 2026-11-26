@@ -1,4 +1,5 @@
 import argparse
+import atexit
 import copy
 import itertools
 import json
@@ -8,10 +9,15 @@ import subprocess
 import sys
 import re
 import shutil
+import ssl
 import tempfile
 import importlib
 import importlib.metadata
 import platform
+import threading
+import time
+import urllib.error
+import urllib.request
 from collections import OrderedDict
 
 # make sure that this run-time version check is in synch with the metadata for python requirement in the project.toml file.
@@ -195,7 +201,12 @@ def create_arg_parser():
         """),
         epilog=
         "For command-specific help, type 'opp_env COMMAND -h'. For example, 'opp_env install -h' prints a "
-        "detailed description and the available options of the 'install' subcommand.",
+        "detailed description and the available options of the 'install' subcommand.\n\n"
+        "After downloading a project, opp_env reports its name and version, whether it is a dependency, the host OS "
+        "and CPU architecture, whether it runs in CI, and the opp_env version to https://oppenv.omnetpp.org/report "
+        "for anonymous download statistics "
+        "(see https://oppenv.omnetpp.org/privacy). Set OPP_ENV_NO_TELEMETRY or DO_NOT_TRACK to any non-empty "
+        "value to turn this off.",
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--help-intro", default=False, action='store_true', help="Prints a short introduction to the opp_env tool")
     parser.add_argument("-d", "--debug", default=False, action='store_true', help="Equivalent to '--print-stacktrace --log-level DEBUG'")
@@ -593,6 +604,106 @@ def get_version():
         return importlib.metadata.version("opp_env")
     except importlib.metadata.PackageNotFoundError:
         return "unknown"
+
+TELEMETRY_URL = os.environ.get("OPP_ENV_TELEMETRY_URL") or "https://oppenv.omnetpp.org/report"
+TELEMETRY_TIMEOUT_SECONDS = 3
+TELEMETRY_EXIT_WAIT_SECONDS = 1
+
+_pending_reports = []
+_telemetry_notice_shown = False
+
+def is_env_flag_set(name):
+    return os.environ.get(name, "").lower() not in ("", "0", "false")
+
+# Any non-empty value opts out, even "0": when in doubt, do not report.
+def is_telemetry_enabled():
+    return not os.environ.get("OPP_ENV_NO_TELEMETRY") and not os.environ.get("DO_NOT_TRACK")
+
+def detect_host_os():
+    system = platform.system().lower()
+    if system == "darwin":
+        return "macos"
+    if system == "linux":
+        try:
+            with open("/proc/sys/kernel/osrelease") as f:
+                if "microsoft" in f.read().lower():
+                    return "wsl"
+        except OSError:
+            pass
+        return "linux"
+    return system or "unknown"
+
+def get_download_report(project_description, dependency=False):
+    return {
+        "project": project_description.name,
+        "version": project_description.version,
+        "dependency": dependency,
+        "os": detect_host_os(),
+        "arch": platform.machine() or "unknown",
+        "ci": is_env_flag_set("CI"),
+        "opp_env_version": get_version(),
+    }
+
+def send_download_report(report):
+    data = json.dumps(report).encode()
+    user_agent = f"opp_env/{get_version()}"
+    # telemetry must never break an install
+    try:
+        try:
+            request = urllib.request.Request(TELEMETRY_URL, method="POST", data=data,
+                                             headers={"Content-Type": "application/json", "User-Agent": user_agent})
+            with urllib.request.urlopen(request, timeout=TELEMETRY_TIMEOUT_SECONDS):
+                pass
+        except (urllib.error.URLError, ssl.SSLError) as e:
+            # e.g. the python.org build on macOS before its "Install Certificates" step; curl uses the system's
+            # certificates, so those users are still counted
+            if not isinstance(getattr(e, "reason", e), ssl.SSLCertVerificationError):
+                raise
+            subprocess.run(["curl", "--silent", "--show-error", "--fail", "--max-time", str(TELEMETRY_TIMEOUT_SECONDS),
+                            "-H", "Content-Type: application/json", "-A", user_agent, "--data-binary", "@-", TELEMETRY_URL],
+                           input=data, capture_output=True, check=True)
+        _logger.debug(f"Reported download of {report['project']}-{report['version']} to {TELEMETRY_URL}")
+    except Exception as e:
+        _logger.debug(f"Could not report download of {report['project']}-{report['version']} to {TELEMETRY_URL}: {e}")
+
+def get_telemetry_notice_marker_path():
+    config_home = os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
+    return os.path.join(config_home, "omnetpp", "opp_env-telemetry-notice-shown")
+
+def show_telemetry_notice_once():
+    global _telemetry_notice_shown
+    marker = get_telemetry_notice_marker_path()
+    if _telemetry_notice_shown or os.path.exists(marker):
+        return
+    _logger.info("opp_env reports each download (project name and version, host OS and CPU architecture, opp_env version) "
+                 "to oppenv.omnetpp.org for anonymous usage statistics, see https://oppenv.omnetpp.org/privacy. "
+                 f"To turn this off, set {cyan('OPP_ENV_NO_TELEMETRY=1')}. This notice is shown only once.")
+    _telemetry_notice_shown = True
+    # a read-only home directory (e.g. some CI containers) only means the notice comes again next time
+    try:
+        os.makedirs(os.path.dirname(marker), exist_ok=True)
+        with open(marker, "w"):
+            pass
+    except OSError as e:
+        _logger.debug(f"Could not create {marker}: {e}")
+
+def report_download(project_description, dependency=False):
+    if not is_telemetry_enabled():
+        return None
+    show_telemetry_notice_once()
+    # a daemon thread, so a slow server does not delay the install (usually a much longer build follows)
+    thread = threading.Thread(target=send_download_report, args=(get_download_report(project_description, dependency),), daemon=True)
+    thread.start()
+    _pending_reports.append(thread)
+    return thread
+
+# Without this, commands that exit right after downloading (e.g. `install --no-build`) would never get a
+# report out; a responsive server needs far less than this, and a slow one may cost at most this once.
+@atexit.register
+def wait_for_pending_reports(max_wait_seconds=TELEMETRY_EXIT_WAIT_SECONDS):
+    deadline = time.monotonic() + max_wait_seconds
+    for thread in _pending_reports:
+        thread.join(max(0, deadline - time.monotonic()))
 
 import os
 import platform
@@ -1229,7 +1340,7 @@ class Workspace:
         data.update(kwargs)
         self.write_project_state_file(project_description, data)
 
-    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None):
+    def download_project(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None, dependency=False):
         def get_env(varname, what):
             value = os.environ.get(varname)
             _logger.debug(f"Checking {cyan('$'+varname)} for {what}: {cyan(value)}")
@@ -1304,6 +1415,9 @@ class Workspace:
                     shutil.rmtree(project_dir)
             raise e
 
+        if not local:
+            report_download(project_description, dependency)
+
     def record_project_shasums(self, project_description, snapshot_name):
         # exclude the Simulation IDE's directory from the shasum, because ./configure and eclipse itself modifies stuff in it
         project_root = self.get_project_root_directory(project_description)
@@ -1353,6 +1467,12 @@ class Workspace:
             log_list('Disappeared files', disappeared_files)
             log_list('Changed files', changed_files)
 
+    def show_telemetry_notice_before_download(self, project_descriptions, local=False):
+        # here and not with the first report: that is sent after the download, and the notice would get
+        # lost in the download and build output
+        if not local and is_telemetry_enabled() and any(self.get_project_status(p) == Workspace.ABSENT for p in project_descriptions):
+            show_telemetry_notice_once()
+
     def show_warnings_before_download(self, project_descriptions, pause_after_warnings=True):
         # the ones that have warnings and are not yet downloaded
         projects_to_warn = [p for p in project_descriptions if self.get_project_status(p) ==  Workspace.ABSENT and p.warnings ]
@@ -1374,10 +1494,10 @@ class Workspace:
         else:
             return list(values)[0]
 
-    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None):
+    def download_project_if_needed(self, project_description, effective_project_descriptions, patch=True, cleanup=True, local=False, git_branch=None, vars_to_keep=None, dependency=False):
         project_state = self.get_project_status(project_description)
         if project_state == Workspace.ABSENT:
-            self.download_project(project_description, effective_project_descriptions, patch, cleanup, local=local, git_branch=git_branch, vars_to_keep=vars_to_keep)
+            self.download_project(project_description, effective_project_descriptions, patch, cleanup, local=local, git_branch=git_branch, vars_to_keep=vars_to_keep, dependency=dependency)
         elif project_state == Workspace.INCOMPLETE:
             raise Exception(f"Cannot download '{project_description}': Directory already exists")
         elif project_state == Workspace.DOWNLOADED:
@@ -1740,6 +1860,9 @@ def chop_branch_names(project_names):
             stripped_projects.append(project_name)
     return stripped_projects, git_branches
 
+def is_dependency(project_description, specified_project_descriptions):
+    return project_description.name not in [p.name for p in specified_project_descriptions]
+
 def resolve_projects(project_full_names, remove_trailing_slash=True):
     global project_registry
     project_descriptions = [project_registry.get_project_description(ProjectReference.parse(p.rstrip('/') if remove_trailing_slash else p)) for p in project_full_names]
@@ -1966,10 +2089,11 @@ def install_subcommand_main(projects, workspace_directory=None, install_without_
 
     check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings)
 
+    workspace.show_telemetry_notice_before_download(effective_project_descriptions, local)
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     for project_description in reversed(effective_project_descriptions):
-        workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
+        workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep, dependency=is_dependency(project_description, specified_project_descriptions))
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -2026,11 +2150,13 @@ def shell_subcommand_main(projects, workspace_directory=[], chdir=False, request
 
     check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings)
 
+    if install:
+        workspace.show_telemetry_notice_before_download(effective_project_descriptions, local)
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
 
     if install:
         for project_description in reversed(effective_project_descriptions):
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep, dependency=is_dependency(project_description, specified_project_descriptions))
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 
@@ -2087,10 +2213,12 @@ def run_subcommand_main(projects, command=None, workspace_directory=None, chdir=
 
     check_project_dependencies(effective_project_descriptions, workspace, pause_after_warnings)
 
+    if install:
+        workspace.show_telemetry_notice_before_download(effective_project_descriptions, local)
     workspace.show_warnings_before_download(effective_project_descriptions, pause_after_warnings)
     if install:
         for project_description in reversed(effective_project_descriptions):
-            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep)
+            workspace.download_project_if_needed(project_description, effective_project_descriptions, patch=patch, cleanup=cleanup, local=local, git_branch=git_branches.get(project_description.get_full_name()), vars_to_keep=vars_to_keep, dependency=is_dependency(project_description, specified_project_descriptions))
 
     update_saved_project_dependencies(effective_project_descriptions, workspace)
 

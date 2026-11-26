@@ -1,5 +1,8 @@
 set -e
 
+# test runs must not show up in the download statistics
+export OPP_ENV_NO_TELEMETRY=1
+
 rm -f test.out
 
 run() {

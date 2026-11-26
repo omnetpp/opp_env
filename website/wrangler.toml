@@ -1,7 +1,7 @@
 name = "oppenv-website"
 main = "src/index.js"
 compatibility_date = "2026-11-01"
-# Only reachable through oppenv.omnetpp.org.
+# Only reachable through oppenv.omnetpp.org, where Cloudflare Access protects /stats/.
 workers_dev = false
 preview_urls = false
 

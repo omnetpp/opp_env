@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Usage: ./smoke.sh [base-url]   (default: http://localhost:8787, i.e. `wrangler dev`)
-# Note: against production this adds five rows (opp_env version 0.0.0-smoke, CI) to the statistics.
+# Note: against production this adds five rows (opp_env version 0.0.0-smoke, CI) to the statistics, and the
+# /stats/ checks fail there unless the request carries a Cloudflare Access session.
 set -uo pipefail
 
 BASE="${1:-http://localhost:8787}"
@@ -66,6 +67,34 @@ check "stylesheet is served" "/styles.css" 200
 check "logo is served" "/images/opp_env_logo.svg" 200
 check "privacy policy is served" "/privacy" 200
 check "unknown path is 404" "/nothing" 404
+check "unknown stats path is 404" "/stats/nothing" 404
+check "stats page is served" "/stats/" 200
+check "stats without slash redirects" "/stats" 307 "$BASE/stats/"
+check "chart library is served" "/stats/chart.umd.min.js" 200
+check "csv export is served" "/stats/csv" 200
+check "api: valid query" "/stats/api?group=project&from=2026-01-01&ci=0" 200
+check "api: two groups" "/stats/api?group=week&group2=os&dependency=1" 200
+check "api: group is required" "/stats/api?project=inet" 400
+check "api: unknown dimension" "/stats/api?group=ip" 400
+check "api: url is not a dimension" "/stats/api?group=url" 400
+check "api: unknown parameter" "/stats/api?group=project&sql=1" 400
+check "api: bad date" "/stats/api?group=project&from=yesterday" 400
+check "api: bad flag value" "/stats/api?group=project&ci=yes" 400
+check "api: same group twice" "/stats/api?group=os&group2=os" 400
+check "api: inherited name as group" "/stats/api?group=constructor" 400
+check "api: inherited name as filter" "/stats/api?group=project&toString=x" 400
+
+body=$(curl -s "$BASE/stats/api?group=os")
+if [[ "$body" == '{"rows":['* ]]; then echo "ok:   api returns rows"; else echo "FAIL: api body: $body"; failures=$((failures + 1)); fi
+
+# The smoke reports include one without "dependency" (NULL) and some with false (0).
+dups=$(curl -s "$BASE/stats/api?group=dependency" | grep -o '"dependency":[^,}]*' | sort | uniq -d)
+result "api: NULL and 0 form one group" "$dups" ""
+
+result "csv header" "$(curl -s "$BASE/stats/csv" | head -1 | tr -d '\r')" "date,project,version,dependency,country,os,arch,opp_env_version,ci,store_backed"
+
+cc=$(curl -s -o /dev/null -D - "$BASE/stats/api?group=os" | tr -d '\r' | grep -i '^cache-control:')
+if [[ "$cc" == *private* ]]; then echo "ok:   api responses are private"; else echo "FAIL: api cache-control: $cc"; failures=$((failures + 1)); fi
 
 if [[ "$failures" -gt 0 ]]; then
     echo "$failures check(s) failed"

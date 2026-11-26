@@ -4,10 +4,11 @@ The opp_env website and download statistics, served by one Cloudflare Worker
 (`oppenv-website`) on the custom domain `oppenv.omnetpp.org`:
 
 - `public/` is served as static assets: the site (`index.html`, `styles.css`,
-  `script.js`, `images/`) and the privacy policy (`privacy.html`, served at
-  `/privacy`).
+  `script.js`, `images/`), the privacy policy (`privacy.html`, served at
+  `/privacy`), and the statistics dashboard (`stats/`).
 - `src/` handles the requests that match no file: `POST /report` (download
-  reports from opp_env); anything else gets a plain-text `404`.
+  reports from opp_env), `GET /stats/api` and `GET /stats/csv`; anything else
+  gets a plain-text `404`.
 
 This folder is not part of the opp_env Python package (see `MANIFEST.in`).
 
@@ -44,10 +45,65 @@ No IP addresses and no download URLs are stored. Users opt out by setting
 `OPP_ENV_NO_TELEMETRY` or `DO_NOT_TRACK` to any non-empty value; see
 `public/privacy.html`.
 
+## Dashboard
+
+`https://oppenv.omnetpp.org/stats/` is a dashboard for `@omnetpp.org` and
+`@omnest.com` users (see *Access* below): a static page in `public/stats/`
+with the site's navigation, footer and styling (Chart.js is vendored as
+`chart.umd.min.js`; like the rest of the site, it uses the self-hosted Inter
+font in `public/fonts/`), backed by two endpoints in `src/stats.js`:
+
+    GET /stats/api?group=<dim>[&group2=<dim>][&from=YYYY-MM-DD][&to=YYYY-MM-DD][&<dim>=<value>...]
+    GET /stats/csv
+
+`api`:
+
+- dimensions: `project, version, country, os, arch, opp_env_version, ci,
+  dependency`, and the time buckets `day, week, month` (UTC; a week is labeled
+  by its Monday) which can only be grouped by, not filtered on;
+- returns `{"rows": [{"<group>": ..., "<group2>": ..., "n": ...}]}`; NULL values
+  come back as `""` (or `0` for `ci`/`dependency`);
+- unknown parameters or dimensions give `400`; values are always bound
+  parameters;
+- results are cached in the worker for 15 minutes (Cache API), and sent to the
+  browser as `cache-control: private, no-cache`.
+
+`csv` streams the whole `downloads` table (all rows, no filters) as
+`omnetpp-downloads-<date>.csv`, with the columns `date, project, version,
+dependency, country, os, arch, opp_env_version, ci, store_backed`. The dashboard
+itself does not use `store_backed` yet.
+
+Every query scans the matching rows. If the table ever grows past about a
+million rows, add a daily rollup table behind the same API. The CSV export
+makes one D1 call per 10000 rows, and a request may only make a limited number
+of them (50 on the Workers free plan), so it also needs a different approach
+before that.
+
+## Access
+
+The worker does no authentication itself; Cloudflare Access protects
+`oppenv.omnetpp.org/stats` in front of it. `workers_dev` and `preview_urls` are
+off, so there is no other way to reach the worker. One-time setup in the
+Cloudflare dashboard (Zero Trust):
+
+1. **Settings → Authentication → Login methods**: add **Google Workspace**
+   (an OAuth client in the Workspace's Google Cloud console with the redirect
+   URL `https://<team>.cloudflareaccess.com/cdn-cgi/access/callback`, and the
+   Workspace's primary domain). It only signs in accounts of that one
+   Workspace, so omnest.com users need omnest.com to be a domain of the same
+   Workspace, or a second Google Workspace login method for theirs. Keep
+   **One-time PIN** enabled as a fallback.
+2. **Access → Applications → Add → Self-hosted**: domain `oppenv.omnetpp.org`,
+   path `stats`; login methods Google Workspace and One-time PIN.
+3. Policy *Allow*, include **Emails ending in** `@omnetpp.org` and `@omnest.com`.
+
+An Access path also covers everything below it, so this protects the
+dashboard, `api` and `csv`, but not the site or `/report`.
+
 ## Deploy
 
 Deploys are manual, from this folder. The first time, create the D1 database
-and its table:
+and its table, and set up Access (above):
 
     npx wrangler login
     npx wrangler d1 create oppenv-stats            # put the printed id into wrangler.toml
@@ -62,7 +118,15 @@ its DNS record; it fails while another DNS record for that name exists.
 
 ### Checking a deployment
 
-    ./smoke.sh https://oppenv.omnetpp.org
+Without an Access session:
+
+    ./smoke.sh https://oppenv.omnetpp.org         # the /stats/ checks fail without a session
+    curl -sI https://oppenv.omnetpp.org/stats/                  # 302 to <team>.cloudflareaccess.com
+    curl -sI "https://oppenv.omnetpp.org/stats/api?group=os"    # same
+    curl -sI https://oppenv.omnetpp.org/stats/csv               # same
+
+Signed in, check that the browser gets `cache-control: private, no-cache` for
+`api` (a zone-level Browser Cache TTL override would replace it).
 
 Since `/report` answers `204` before writing, also check that a real report is
 stored. Run opp_env itself, so bot protection sees the real client:
@@ -84,10 +148,12 @@ itself cannot be skipped per path on the Free plan; it has to be turned off).
 ## Local testing
 
     npx wrangler d1 execute oppenv-stats --local --file schema.sql
-    npx wrangler dev                               # site at http://localhost:8787/
+    node seed.js > .wrangler/seed.sql              # fake rows for the dashboard (replaces all local rows)
+    npx wrangler d1 execute oppenv-stats --local --file .wrangler/seed.sql
+    npx wrangler dev                               # site at http://localhost:8787/, dashboard at /stats/
     ./smoke.sh                                     # in another terminal
 
-Against production, `./smoke.sh
+There is no Access locally. Against production, `./smoke.sh
 https://oppenv.omnetpp.org` adds five rows (opp_env version `0.0.0-smoke`,
 flagged as CI) to the statistics; delete them with
 `DELETE FROM downloads WHERE opp_env_version = '0.0.0-smoke'`.

@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Model statistics - opp_env</title>
+<link rel="stylesheet" href="/styles.css">
+<link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+:root {
+  --page: #f7fafc;
+  --surface-1: #ffffff;
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --grid: #e2e8f0;
+  --axis: #cbd5e0;
+  --border: rgba(0, 0, 0, 0.1);
+  --wash: rgba(102, 126, 234, 0.06);
+  --other: #898781;
+  --series-1: #667eea; --series-2: #eb6834; --series-3: #1baf7a;
+  --series-4: #eda100; --series-5: #e87ba4; --series-6: #008300;
+}
+.page { background: var(--page); color: var(--text-primary); font-size: 14px; line-height: 1.45; padding: 110px 0 64px; }
+.page h1 { font-size: 2.5rem; color: var(--text-primary); margin-bottom: 0.5rem; }
+.page h2 { font-size: 1.1rem; color: var(--text-primary); margin: 0; }
+.page p { margin: 0; }
+.subtitle { color: var(--text-secondary); margin: 0 0 24px !important; max-width: 760px; font-size: 1rem; }
+
+.filters { margin-bottom: 20px; }
+.filters-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: end; }
+.filters-row + .filters-row { margin-top: 10px; }
+.filters-row[hidden] { display: none; }
+.filters-row.toggles { align-items: center; }
+.filters label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--text-secondary); }
+.filters label.check { flex-direction: row; align-items: center; gap: 6px; font-size: 13px; }
+.filters input[type="date"], .page select {
+  font: inherit; font-size: 13px; color: var(--text-primary);
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 8px;
+}
+.page select { min-width: 96px; }
+.page select:disabled { color: var(--text-muted); }
+.page select:focus, .filters input:focus { outline: 2px solid #667eea; outline-offset: 1px; }
+.btn-small { font-family: inherit; padding: 5px 14px; font-size: 13px; border-width: 1px; }
+.btn-primary.btn-small { border-color: transparent; }
+.btn-small:hover { text-decoration: none; }
+
+.card {
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 16px 18px 12px; margin-bottom: 20px;
+  transition: opacity 120ms;
+}
+.loading .card { opacity: 0.55; }
+.card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 12px; }
+.card-head .spacer { flex: 1; }
+.card-head label { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+
+.total { display: flex; align-items: baseline; gap: 12px; margin: 0 0 20px; }
+.total-value { font-size: 48px; font-weight: 700; line-height: 1; color: #667eea; }
+.total-label, .hint { color: var(--text-secondary); }
+.hint { font-size: 12px; }
+
+.chart-box { position: relative; height: 300px; }
+.bars-box { position: relative; }
+
+details { margin-top: 8px; }
+summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; }
+.page table { border-collapse: collapse; width: 100%; font-size: 13px; margin-top: 8px; }
+.page th, .page td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--grid); }
+.page th { color: var(--text-secondary); font-weight: 500; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tbody tr.clickable { cursor: pointer; }
+tbody tr.clickable:hover { background: var(--wash); }
+.table-scroll { max-height: 420px; overflow: auto; }
+
+.error { color: #e53e3e !important; margin: 0 0 16px !important; }
+.empty { color: var(--text-muted); padding: 40px 0; text-align: center; }
+.note { color: var(--text-muted) !important; font-size: 13px; margin-top: 32px !important; }
+.note code { background: #edf2f7; color: var(--text-primary); padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/"><img height="50pt" src="/images/opp_env_logo.svg" alt="opp_env"></a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/#features" class="nav-link">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/#installation" class="nav-link">Installation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/#usage" class="nav-link">Usage</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/#models" class="nav-link">Models</a>
+                </li>
+                <li class="nav-item">
+                    <a href="https://github.com/omnetpp/opp_env" class="nav-link nav-cta" target="_blank">GitHub</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+<main class="page" id="app">
+<div class="container" id="main-content">
+  <h1>Model statistics</h1>
+  <p class="subtitle">
+    Downloads of OMNeT++ releases and simulation models by
+    <a href="https://github.com/omnetpp/opp_env">opp_env</a>, which reports each project it has downloaded successfully.
+    One count per downloaded project; no IP addresses are stored.
+    Times are UTC; data may be up to 15 minutes old. <a href="/privacy">Privacy policy</a>
+  </p>
+
+  <form class="filters" id="filters" onsubmit="return false">
+    <div class="filters-row toggles">
+      <label class="check"><input type="checkbox" name="dep"> Include projects downloaded as dependencies</label>
+      <label class="check"><input type="checkbox" name="ci"> Include downloads by CI processes</label>
+      <button type="button" id="reset" class="btn btn-secondary btn-small">Reset</button>
+      <a class="btn btn-primary btn-small" href="csv" download>Download all data (CSV)</a>
+    </div>
+    <div class="filters-row">
+      <label>Time range
+        <select name="range">
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="365">Last 12 months</option>
+          <option value="all">All time</option>
+          <option value="custom">Custom range…</option>
+        </select>
+      </label>
+      <label>Project <select name="project"></select></label>
+      <label>Version <select name="version"></select></label>
+      <label>Country <select name="country"></select></label>
+      <label>OS <select name="os"></select></label>
+      <label>Architecture <select name="arch"></select></label>
+    </div>
+    <div class="filters-row custom-range" hidden>
+      <label>From <input type="date" name="from" required></label>
+      <label>To <input type="date" name="to" required></label>
+    </div>
+  </form>
+
+  <p class="error" id="error" hidden></p>
+
+  <div class="total">
+    <span class="total-value" id="total">–</span>
+    <span class="total-label" id="total-label">downloads</span>
+  </div>
+
+  <section class="card">
+    <div class="card-head">
+      <h2 id="timeline-title">Downloads over time</h2>
+      <span class="spacer"></span>
+      <label>Split by
+        <select name="split" form="filters">
+          <option value="">Nothing</option>
+          <option value="project">Project</option>
+          <option value="version">Version</option>
+          <option value="country">Country</option>
+          <option value="os">OS</option>
+          <option value="arch">Architecture</option>
+          <option value="opp_env_version">opp_env version</option>
+          <option value="dependency">Requested / dependency</option>
+          <option value="ci">CI</option>
+        </select>
+      </label>
+    </div>
+    <div class="chart-box"><canvas id="timeline" role="img" aria-label="Downloads over time"></canvas></div>
+    <details>
+      <summary>Show data table</summary>
+      <div class="table-scroll"><table id="timeline-table"></table></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <h2>Downloads by</h2>
+      <select name="group" form="filters" aria-label="Group by">
+        <option value="project">Project</option>
+        <option value="version">Version</option>
+        <option value="country">Country</option>
+        <option value="os">OS</option>
+        <option value="arch">Architecture</option>
+        <option value="opp_env_version">opp_env version</option>
+        <option value="dependency">Requested / dependency</option>
+        <option value="ci">CI</option>
+      </select>
+      <span class="spacer"></span>
+      <span class="hint">Click a bar or row to filter by it</span>
+    </div>
+    <div class="bars-box" id="bars-box"><canvas id="bars" role="img" aria-label="Downloads by dimension"></canvas></div>
+    <div class="table-scroll"><table id="group-table"></table></div>
+  </section>
+
+  <p class="note">
+    Opt out of being counted: set <code>OPP_ENV_NO_TELEMETRY=1</code> in your environment.
+    · <a href="/privacy">Privacy policy</a>
+  </p>
+</div>
+</main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>opp_env</h3>
+                    <p>Simplifying OMNeT++ Model Installations</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/omnetpp/opp_env" target="_blank">GitHub Repository</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/blob/main/INSTALL.md" target="_blank">Installation Guide</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/blob/main/DEVELOP.md" target="_blank">Development Guide</a></li>
+                        <li><a href="https://pypistats.org/packages/opp-env" target="_blank">PyPI Statistics</a></li>
+                        <li><a href="/stats/">Model Statistics</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://omnetpp.org" target="_blank">OMNeT++ Website</a></li>
+                        <li><a href="https://github.com/omnetpp/opp_env/issues" target="_blank">Report Issues</a></li>
+                        <li><a href="https://github.com/omnetpp/omnetpp/discussions/1317" target="_blank">Discussions</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>License</h4>
+                    <p>Licensed under <a href="https://github.com/omnetpp/opp_env/blob/main/LICENSE" target="_blank">LGPL-3.0</a></p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 OpenSim Ltd. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+<script src="chart.umd.min.js"></script>
+<script src="app.js"></script>
+<script src="/script.js"></script>
+</body>
+</html>

@@ -16,9 +16,10 @@ running `python3 -m pip install --upgrade pip`.
 ## Website
 
 The `website/` folder holds https://oppenv.omnetpp.org: the site itself, the
-privacy policy, and the Cloudflare Worker that serves them and receives the
-download reports. See `website/README.md` for local testing and deployment. It
-is not part of the Python package.
+privacy policy, the download statistics dashboard, and the Cloudflare Worker
+that serves all of it and receives the download reports. See
+`website/README.md` for local testing and deployment. It is not part of the
+Python package.
 
 ## Building the Python Package
 

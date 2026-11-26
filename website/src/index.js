@@ -1,3 +1,5 @@
+import { handleStatsApi, handleStatsCsv } from "./stats.js";
+
 const MAX_REPORT_BYTES = 1024;
 
 // The values end up on the dashboard, so only plausible tokens are stored.
@@ -116,6 +118,10 @@ export default {
       return handleReport(request, env, ctx);
     if (request.method !== "GET" && request.method !== "HEAD")
       return text("Method not allowed\n", 405, { allow: "GET, HEAD" });
+    if (pathname === "/stats/api")
+      return handleStatsApi(request, env, ctx);
+    if (pathname === "/stats/csv")
+      return handleStatsCsv(request, env);
     return text("Not found\n", 404);
   },
 };

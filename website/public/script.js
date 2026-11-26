@@ -307,7 +307,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Accessibility improvements
 document.addEventListener('DOMContentLoaded', function() {
-    
+    const skipLink = document.createElement('a');
+    skipLink.href = '#main-content';
+    skipLink.textContent = 'Skip to main content';
+    skipLink.style.cssText = 'position: absolute; top: -40px; left: 6px; z-index: 1001; padding: 8px 12px; ' +
+        'background: #667eea; color: white; border-radius: 4px; text-decoration: none;';
+
     skipLink.addEventListener('focus', function() {
         this.style.top = '6px';
     });

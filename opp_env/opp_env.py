@@ -201,12 +201,7 @@ def create_arg_parser():
         """),
         epilog=
         "For command-specific help, type 'opp_env COMMAND -h'. For example, 'opp_env install -h' prints a "
-        "detailed description and the available options of the 'install' subcommand.\n\n"
-        "After downloading a project, opp_env reports its name and version, whether it is a dependency, the host OS "
-        "and CPU architecture, whether it runs in CI, and the opp_env version to https://oppenv.omnetpp.org/report "
-        "for anonymous download statistics "
-        "(see https://oppenv.omnetpp.org/privacy). Set OPP_ENV_NO_TELEMETRY or DO_NOT_TRACK to any non-empty "
-        "value to turn this off.",
+        "detailed description and the available options of the 'install' subcommand.",
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--help-intro", default=False, action='store_true', help="Prints a short introduction to the opp_env tool")
     parser.add_argument("-d", "--debug", default=False, action='store_true', help="Equivalent to '--print-stacktrace --log-level DEBUG'")
@@ -404,6 +399,10 @@ def create_arg_parser():
 
         To ensure maximum reproducibility, the 'install' command runs the session in isolated mode.
         This can be changed by specifying the '--non-isolated' option.
+
+        After a download, opp_env reports the project and version to oppenv.omnetpp.org for anonymous
+        download statistics (see https://oppenv.omnetpp.org/privacy). To turn this off, set
+        OPP_ENV_NO_TELEMETRY=1.
 
         Examples:
             $ opp_env install inet-latest  # installs the latest version of INET, with a matching OMNeT++ version

@@ -674,8 +674,8 @@ def show_telemetry_notice_once():
     marker = get_telemetry_notice_marker_path()
     if _telemetry_notice_shown or os.path.exists(marker):
         return
-    _logger.info("opp_env reports each download (project name and version, host OS and CPU architecture, opp_env version) "
-                 "to oppenv.omnetpp.org for anonymous usage statistics, see https://oppenv.omnetpp.org/privacy. "
+    _logger.info("opp_env reports each download anonymously to oppenv.omnetpp.org for download statistics, "
+                 "see https://oppenv.omnetpp.org/privacy. "
                  f"To turn this off, set {cyan('OPP_ENV_NO_TELEMETRY=1')}. This notice is shown only once.")
     _telemetry_notice_shown = True
     # a read-only home directory (e.g. some CI containers) only means the notice comes again next time

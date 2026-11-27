@@ -2,10 +2,13 @@
 
 ### opp_env
 
-- opp_env now sends anonymous download statistics (which projects and versions
-  are downloaded, and on which platforms) to help decide which OMNeT++ versions
-  and models to support. A one-time notice is printed before the first
-  download. Set `OPP_ENV_NO_TELEMETRY=1` to opt out. See https://oppenv.omnetpp.org/privacy.
+- opp_env now reports successful downloads to oppenv.omnetpp.org, anonymously:
+  which project and version was downloaded, and on which platform. This shows
+  which projects the user community is interested in, so we can help the
+  community where it is most needed: for example, reviving an unmaintained
+  model that is still in demand, or helping the developers of an active
+  project. A one-time notice is printed before the first download. Set
+  `OPP_ENV_NO_TELEMETRY=1` to opt out. See https://oppenv.omnetpp.org/privacy.
 
 
 ## 0.36.3.261123

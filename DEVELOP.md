@@ -31,7 +31,8 @@ a one-time notice (INFO level) and creates
 the `omnetpp` directory is meant to be shared by all OMNeT++ tools), so the
 notice does not appear again. If that file cannot be created (e.g. a read-only
 home directory), the notice is shown once per run instead. Delete the file to
-see the notice again.
+see the notice again. The notice is not shown in CI (the `CI` environment
+variable is set), where nobody reads it and the file is usually not kept.
 
 The worker only accepts project names of lowercase letters, digits and `_`, and
 versions of letters, digits and `._+-` (at most 40 characters each); reports

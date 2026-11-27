@@ -229,6 +229,11 @@ class TelemetryNoticeTest(unittest.TestCase):
         self.assertEqual(self.notices(env={"OPP_ENV_NO_TELEMETRY": "1"}), [])
         self.assertFalse(os.path.exists(self.marker))
 
+    def test_not_shown_in_ci(self):
+        self.assertEqual(self.notices(env={"CI": "true"}), [])
+        self.assertFalse(os.path.exists(self.marker))
+        self.assertEqual(len(self.notices(env={"CI": "false"})), 1)
+
     def test_marker_path_follows_xdg_config_home(self):
         with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": "/cfg", "HOME": "/home/u"}):
             self.assertEqual(real_get_telemetry_notice_marker_path(), "/cfg/omnetpp/opp_env-telemetry-notice-shown")

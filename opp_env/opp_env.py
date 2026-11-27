@@ -672,7 +672,8 @@ def get_telemetry_notice_marker_path():
 def show_telemetry_notice_once():
     global _telemetry_notice_shown
     marker = get_telemetry_notice_marker_path()
-    if _telemetry_notice_shown or os.path.exists(marker):
+    # nobody reads it in CI, and there the marker is usually lost, so it would come on every run
+    if _telemetry_notice_shown or is_env_flag_set("CI") or os.path.exists(marker):
         return
     _logger.info("opp_env reports each download anonymously to oppenv.omnetpp.org for download statistics, "
                  "see https://oppenv.omnetpp.org/privacy. "

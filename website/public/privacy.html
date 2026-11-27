@@ -58,8 +58,8 @@
       <p>
         <a href="https://github.com/omnetpp/opp_env">opp_env</a> reports which OMNeT++
         releases and simulation models it downloads, so that the OMNeT++ project can
-        see how they are used. This page describes what is recorded, why, and how to
-        opt out.
+        see which of them the user community is interested in. This page describes
+        what is recorded, why, and how to opt out.
       </p>
 
       <h2>How it works</h2>
@@ -69,8 +69,9 @@
         project has been downloaded successfully, opp_env sends a short report to
         <code>https://oppenv.omnetpp.org/report</code>. The report contains no URL,
         only the data listed below. Nothing is sent
-        when installing from local copies (<code>--local</code>). The first time
-        opp_env sends a report, it prints a notice that says so and how to opt out.
+        when installing from local copies (<code>--local</code>). Before its first
+        download, opp_env prints a notice that says so and how to opt out (not in CI
+        systems, where nobody would read it).
       </p>
 
       <h2>What is recorded</h2>

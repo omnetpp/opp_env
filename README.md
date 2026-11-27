@@ -72,16 +72,14 @@ To open a shell prompt where you can use the recently installed Simu5G model, ty
 
 ## Download Statistics
 
-To learn which OMNeT++ versions and models are used, `opp_env` sends a short
-report to `https://oppenv.omnetpp.org/report` after it has downloaded a
-project. Archives and repositories are always downloaded directly from their
-original location; the report does not contain any URL. It contains the
-project name and version, whether it was installed as a dependency of another
-project, the host OS (Linux, macOS or WSL), the CPU architecture, the `opp_env`
-version, and whether it runs in CI (the `CI` environment variable is set). The
-server adds the date and the country derived from the request; IP addresses
-are not stored. See the privacy policy at https://oppenv.omnetpp.org/privacy.
-The first time `opp_env` sends a report, it prints a notice about it.
+After downloading a project, `opp_env` reports it anonymously to
+oppenv.omnetpp.org: which project and version was downloaded, and on which
+platform. This shows which projects the user community is interested in, so
+we can help the community where it is most needed: for example, reviving an
+unmaintained model that is still in demand, or helping the developers of an
+active project. Before its first download, `opp_env` prints a notice about
+this. What exactly is recorded is described in the privacy policy at
+https://oppenv.omnetpp.org/privacy.
 
 To opt out, set the `OPP_ENV_NO_TELEMETRY` (or `DO_NOT_TRACK`) environment
 variable to any non-empty value:

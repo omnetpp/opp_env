@@ -330,14 +330,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Preload critical resources
-document.addEventListener('DOMContentLoaded', function() {
-    // Preload fonts
-    const fontLink = document.createElement('link');
-    fontLink.rel = 'preload';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
-    fontLink.as = 'style';
-    document.head.appendChild(fontLink);
-});
-
 console.log('opp_env website loaded successfully! 🚀');
